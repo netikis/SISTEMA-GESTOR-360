@@ -1251,6 +1251,7 @@
                     <summary style="cursor:pointer; font-weight:700; color:var(--dark-navy); font-size:13px;">📋 Discriminação dia a dia (jornada esperada × ponto)</summary>
                     <p class="folha-detalhe" style="margin:10px 0;">Cada linha corresponde a um dia do mês: <b>jornada esperada</b> (cadastro + feriados + sábado), <b>horas computadas</b> pelas batidas e a <b>diferença</b> (esperado − trabalhado). Serve para conferência interna e documentação.</p>
                     <button type="button" class="btn-pdf-relatorio" style="margin-bottom:10px;" onclick="exportarPDFDiscriminacaoFolha()">📥 EXPORTAR DISCRIMINAÇÃO EM PDF</button>
+                    <button type="button" class="btn-pdf-relatorio" style="margin-bottom:10px; margin-left:8px; background:#17a2b8;" onclick="rhAjustarJornadaCompletaDia()">🕐 Corrigir jornada completa do dia (RH)</button>
                     <div id="f-tabela-discriminacao" style="overflow-x:auto; max-height:420px; overflow-y:auto; border:1px solid #e0e6ed; border-radius:10px;"></div>
                 </details>
             </div>
@@ -2024,6 +2025,59 @@ function separarDataSegura(dataString) {
         if (!Number.isFinite(dia) || !Number.isFinite(mes) || !Number.isFinite(ano) || !Number.isFinite(hh) || !Number.isFinite(mm)) return NaN;
         const dt = new Date(ano, mes, dia, hh, mm, 0, 0);
         return dt.getTime();
+    }
+
+    /** Chave única DD/MM/AAAA para agrupar batidas do mesmo dia na folha. */
+    function formatarDataBrPadrao(dataString) {
+        const s = separarDataSegura(dataString);
+        if (!dataString || s.ano === 'Outros') return String(dataString || '').trim();
+        return `${s.dia}/${s.mes}/${s.ano}`;
+    }
+
+    /** Unifica variações de texto (acentos, maiúsculas) nos tipos de batida. */
+    function normalizarTipoBatidaPonto(tipo) {
+        const t = String(tipo || '').trim().toLowerCase()
+            .normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+        if (t === 'entrada') return 'Entrada';
+        if (t === 'saida' || t === 'saida final' || t === 'sair') return 'Saída';
+        if (t === 'inicio intervalo' || t === 'intervalo' || t === 'almoco' || t === 'saida almoco') return 'Início Intervalo';
+        if (t === 'fim intervalo' || t === 'volta' || t === 'retorno' || t === 'retorno intervalo' || t === 'volta almoco') return 'Fim Intervalo';
+        return String(tipo || '').trim();
+    }
+
+    function resumoBatidasDiaParaFolha(batidasRaw) {
+        const batidas = (batidasRaw || [])
+            .map(b => (b ? { ...b, tipo: normalizarTipoBatidaPonto(b.tipo) } : b))
+            .filter(b => b && ['Entrada', 'Saída', 'Início Intervalo', 'Fim Intervalo'].includes(b.tipo))
+            .sort((a, b) => (Number(a.timestamp) || 0) - (Number(b.timestamp) || 0));
+        if (!batidas.length) return 'Nenhuma batida válida (ou todas canceladas).';
+        const tipos = new Set(batidas.map(b => b.tipo));
+        const faltam = [];
+        if (!tipos.has('Entrada')) faltam.push('Entrada');
+        if (!tipos.has('Saída')) faltam.push('Saída');
+        if (tipos.has('Início Intervalo') && !tipos.has('Fim Intervalo')) faltam.push('Fim intervalo');
+        if (tipos.has('Fim Intervalo') && !tipos.has('Início Intervalo')) faltam.push('Início intervalo');
+        const lista = batidas.map(b => `${b.tipo} ${b.hora || '?'}`).join('; ');
+        if (!faltam.length) return `Batidas: ${lista}.`;
+        return `Batidas: ${lista}. Falta(m) no dia: ${faltam.join(', ')}.`;
+    }
+
+    function horariosJornadaPadraoFuncionario(func, dataBR) {
+        const he = normalizarHoraHHmm(func.hora_entrada || '07:30');
+        const hs = normalizarHoraHHmm(func.hora_saida || '17:00');
+        const intMin = Math.max(0, Number(func.intervalo_minutos ?? 60));
+        const tsEnt = parseDataHoraBrLocalParaTimestamp(dataBR, he);
+        const tsSai = parseDataHoraBrLocalParaTimestamp(dataBR, hs);
+        let inicioInt = '12:00';
+        let fimInt = '13:00';
+        if (Number.isFinite(tsEnt) && Number.isFinite(tsSai) && tsSai > tsEnt) {
+            const meio = tsEnt + (tsSai - tsEnt) / 2;
+            const dtMeio = new Date(meio);
+            inicioInt = normalizarHoraHHmm(`${dtMeio.getHours()}:${dtMeio.getMinutes()}`);
+            const dtFim = new Date(meio + intMin * 60000);
+            fimInt = normalizarHoraHHmm(`${dtFim.getHours()}:${dtFim.getMinutes()}`);
+        }
+        return { entrada: he, inicioIntervalo: inicioInt, fimIntervalo: fimInt, saida: hs };
     }
 
     function parseDataIsoFuncionario(campo) {
@@ -4874,6 +4928,7 @@ window.gerarFolhaPagamento = async function() {
         Swal.showLoading();
 
         const funcionario = window.listaFuncionarios[funcId];
+        window.ultimoFuncIdFolha = funcId;
         // Trava de segurança: se o salário vier quebrado, assume 0
         const salarioBase = parseMoedaLocal(funcionario.salario || "0") || 0; 
         const horaEntPadrão = funcionario.hora_entrada || "07:00";
@@ -5104,10 +5159,14 @@ window.gerarFolhaPagamento = async function() {
                           
             let diasTrabalhados = {};
             pontosDoMes.forEach(pt => {
-                if(!diasTrabalhados[pt.data]) {
-                    diasTrabalhados[pt.data] = [];
+                const keyDiaPt = formatarDataBrPadrao(pt.data);
+                const ptNorm = { ...pt };
+                if (!Number.isFinite(ptNorm.timestamp)) {
+                    const tsFix = parseDataHoraBrLocalParaTimestamp(ptNorm.data, ptNorm.hora);
+                    if (Number.isFinite(tsFix)) ptNorm.timestamp = tsFix;
                 }
-                diasTrabalhados[pt.data].push(pt);
+                if (!diasTrabalhados[keyDiaPt]) diasTrabalhados[keyDiaPt] = [];
+                diasTrabalhados[keyDiaPt].push(ptNorm);
             });
 
             let totalHorasExtras50Decimais = 0;
@@ -5139,13 +5198,16 @@ window.gerarFolhaPagamento = async function() {
 
             function calcularHorasDoDia(batidasRaw) {
                 const batidas = (batidasRaw || [])
-                    .filter(b => b && (b.tipo === 'Entrada' || b.tipo === 'Saída' || b.tipo === 'Início Intervalo' || b.tipo === 'Fim Intervalo') && Number.isFinite(b.timestamp))
+                    .map(b => (b ? { ...b, tipo: normalizarTipoBatidaPonto(b.tipo) } : b))
+                    .filter(b => b && ['Entrada', 'Saída', 'Início Intervalo', 'Fim Intervalo'].includes(b.tipo) && Number.isFinite(b.timestamp))
                     .sort((a, b) => (a.timestamp || 0) - (b.timestamp || 0));
 
                 let trabalhandoDesde = null;
                 let emIntervalo = false;
                 let segundosTrabalhados = 0;
                 let tevePar = false;
+                let segundosIntervaloMedido = 0;
+                let inicioIntervaloTs = null;
 
                 for (const b of batidas) {
                     if (b.tipo === 'Entrada') {
@@ -5157,21 +5219,37 @@ window.gerarFolhaPagamento = async function() {
                             tevePar = true;
                         }
                         emIntervalo = false;
+                        inicioIntervaloTs = null;
                     } else if (b.tipo === 'Início Intervalo') {
                         if (trabalhandoDesde != null && b.timestamp > trabalhandoDesde) {
                             segundosTrabalhados += (b.timestamp - trabalhandoDesde) / 1000;
                             trabalhandoDesde = null;
                             tevePar = true;
                         }
+                        inicioIntervaloTs = b.timestamp;
                         emIntervalo = true;
                     } else if (b.tipo === 'Fim Intervalo') {
+                        if (inicioIntervaloTs != null && b.timestamp > inicioIntervaloTs) {
+                            segundosIntervaloMedido += (b.timestamp - inicioIntervaloTs) / 1000;
+                        }
                         if (emIntervalo) {
                             trabalhandoDesde = b.timestamp;
                             emIntervalo = false;
                         }
+                        inicioIntervaloTs = null;
                     }
                 }
 
+                if (trabalhandoDesde != null && batidas.length) {
+                    const ult = batidas[batidas.length - 1];
+                    if (ult.tipo === 'Saída' && ult.timestamp > trabalhandoDesde) {
+                        segundosTrabalhados += (ult.timestamp - trabalhandoDesde) / 1000;
+                        tevePar = true;
+                    }
+                }
+
+                const firstEntrada = batidas.find(b => b.tipo === 'Entrada');
+                const lastSaida = [...batidas].reverse().find(b => b.tipo === 'Saída');
                 const firstTs = batidas.length ? batidas[0].timestamp : null;
                 const lastTs = batidas.length ? batidas[batidas.length - 1].timestamp : null;
                 return {
@@ -5179,15 +5257,35 @@ window.gerarFolhaPagamento = async function() {
                     tevePar,
                     firstTs,
                     lastTs,
-                    nBatidas: batidas.length
+                    firstTsEntrada: firstEntrada ? firstEntrada.timestamp : null,
+                    lastTsSaida: lastSaida ? lastSaida.timestamp : null,
+                    segundosIntervaloMedido,
+                    nBatidas: batidas.length,
+                    temEntrada: !!firstEntrada,
+                    temSaida: !!lastSaida
                 };
             }
 
             function horasTrabalhadasParaDesconto(r, horasDevidasNoDia) {
+                const intervaloAlmocoH = intervaloMinutosPadrao / 60;
                 let h = r.horasFechadas;
-                if (!r.tevePar && r.nBatidas >= 2 && r.firstTs != null && r.lastTs != null && r.lastTs > r.firstTs) {
+                const cap = (horasDevidasNoDia || 8) * 1.35;
+
+                if (r.temEntrada && r.temSaida && r.firstTsEntrada != null && r.lastTsSaida != null && r.lastTsSaida > r.firstTsEntrada) {
+                    const spanH = (r.lastTsSaida - r.firstTsEntrada) / (1000 * 60 * 60);
+                    const intervaloH = r.segundosIntervaloMedido > 0
+                        ? r.segundosIntervaloMedido / 3600
+                        : intervaloAlmocoH;
+                    const porFaixa = Math.max(0, spanH - intervaloH);
+                    const porFaixaCap = Math.min(porFaixa, cap);
+                    if (!r.tevePar && r.nBatidas >= 2) {
+                        h = Math.max(h, porFaixaCap);
+                    } else if (porFaixaCap > h + 0.08) {
+                        h = Math.max(h, Math.min(porFaixaCap, horasDevidasNoDia || porFaixaCap));
+                    }
+                } else if (!r.tevePar && r.nBatidas >= 2 && r.firstTs != null && r.lastTs != null && r.lastTs > r.firstTs) {
                     const spanH = (r.lastTs - r.firstTs) / (1000 * 60 * 60);
-                    h = Math.max(h, Math.min(spanH, (horasDevidasNoDia || 8) * 1.35));
+                    h = Math.max(h, Math.min(spanH, cap));
                 }
                 return h;
             }
@@ -5220,8 +5318,8 @@ window.gerarFolhaPagamento = async function() {
                 }
 
                 // Extra 50% só com fechamento de períodos (evita inflar por batida solta)
-                if (r.tevePar && r.horasFechadas > jornadaDiariaHoras) {
-                    totalHorasExtras50Decimais += (r.horasFechadas - jornadaDiariaHoras);
+                if (r.tevePar && horasTrabalhadas > jornadaDiariaHoras) {
+                    totalHorasExtras50Decimais += (horasTrabalhadas - jornadaDiariaHoras);
                 }
             });
 
@@ -5348,7 +5446,9 @@ window.gerarFolhaPagamento = async function() {
                     diasDevidosNoMes += 1;
                 }
 
-                const rD = calcularHorasDoDia(diasTrabalhados[keyDia] || []);
+                const batidasDiaArr = diasTrabalhados[keyDia] || [];
+                const resumoBatidasDia = resumoBatidasDiaParaFolha(batidasDiaArr);
+                const rD = calcularHorasDoDia(batidasDiaArr);
                 const workedD = horasTrabalhadasParaDesconto(rD, expectedD);
                 const faltaD = workedD > 0 ? Math.max(0, expectedD - workedD) : null;
                 let diaPago = workedD > 0;
@@ -5361,7 +5461,7 @@ window.gerarFolhaPagamento = async function() {
                         diaPago = true;
                         situacao = (faltaD === 0)
                             ? 'Jornada do dia cumprida (sem horas devidas).'
-                            : `Atraso e/ou saída antecipada: faltaram ${formatarHorasDecimais(faltaD)} para completar a jornada esperada.`;
+                            : `Atraso e/ou saída antecipada: faltaram ${formatarHorasDecimais(faltaD)} para completar a jornada esperada. ${resumoBatidasDia}`;
                     } else {
                         faltasInjustificadas += 1;
                         diaPago = false;
@@ -5372,9 +5472,9 @@ window.gerarFolhaPagamento = async function() {
                     horasFaltantes += Math.max(0, expectedD - workedD);
                     situacao = (faltaD === 0)
                         ? 'Jornada do dia cumprida (sem horas devidas).'
-                        : `Atraso e/ou saída antecipada: faltaram ${formatarHorasDecimais(faltaD)} para completar a jornada esperada.`;
+                        : `Atraso e/ou saída antecipada: faltaram ${formatarHorasDecimais(faltaD)} para completar a jornada esperada. ${resumoBatidasDia}`;
                 } else {
-                    situacao = 'Sem registro de ponto neste dia — não entra como “dia pago” no salário proporcional e não soma atraso em horas (regra por ponto).';
+                    situacao = `Sem registro de ponto neste dia — não entra como “dia pago” no salário proporcional. ${resumoBatidasDia}`;
                 }
 
                 const esperadoTxtLinha = (dowD === 6)
@@ -6711,12 +6811,175 @@ window.gerarFolhaPagamento = async function() {
             if (val.notaAjuste) patch.ajuste_datahora_rh_nota = val.notaAjuste;
             await updateDoc(doc(db, 'ponto_registros', pontoId), patch);
             Swal.close();
-            Swal.fire('Atualizado', 'Data e hora do batimento foram alteradas.', 'success');
+            Swal.fire(
+                'Atualizado',
+                'Data e hora desta batida foram alteradas.<br><br><small>Se o dia ainda aparecer com poucas horas, confira <b>todas</b> as batidas (principalmente a <b>Saída</b> no horário final). Use <b>Corrigir jornada completa do dia (RH)</b> na folha ou registe as batidas que faltam. Depois, gere a folha de novo.</small>',
+                'success'
+            );
             buscarPonto();
         } catch (e) {
             console.error(e);
             Swal.close();
             Swal.fire('Erro', 'Não foi possível atualizar. Verifique permissões do Firestore (update em ponto_registros).', 'error');
+        }
+    };
+
+    window.rhAjustarJornadaCompletaDia = async function (dataBrSugerida) {
+        const empresaLogada = localStorage.getItem('empresaGestor');
+        if (!empresaLogada) {
+            return Swal.fire('Atenção', 'Entre como gestor.', 'warning');
+        }
+        const funcId = window.ultimoFuncIdFolha || document.getElementById('pt-func-select').value;
+        if (!funcId || !window.listaFuncionarios || !window.listaFuncionarios[funcId]) {
+            return Swal.fire('Atenção', 'Selecione o funcionário na folha ou em Consultar ponto antes de corrigir a jornada.', 'warning');
+        }
+        const func = window.listaFuncionarios[funcId];
+        const dataIsoSug = dataBrSugerida ? dataBrParaInputDateIso(dataBrSugerida) : '';
+        const padrao = horariosJornadaPadraoFuncionario(func, dataBrSugerida || '01/01/2026');
+
+        const result = await Swal.fire({
+            title: 'Corrigir jornada completa (RH)',
+            html:
+                '<p style="font-size:12px;text-align:left;margin:0 0 10px;line-height:1.45;">Define ou atualiza as <b>4 batidas</b> do dia (entrada, almoço e saída) conforme o horário do cadastro. Batidas canceladas são ignoradas; as existentes do mesmo tipo são atualizadas.</p>' +
+                '<label style="display:block;text-align:left;font-size:12px;margin-top:8px;">Data</label>' +
+                '<input id="pt-jorn-data" type="date" class="swal2-input" style="margin-top:4px;" value="' + (dataIsoSug || '') + '">' +
+                '<label style="display:block;text-align:left;font-size:12px;margin-top:10px;">Entrada</label>' +
+                '<input id="pt-jorn-entrada" type="time" class="swal2-input" style="margin-top:4px;" value="' + padrao.entrada + '">' +
+                '<label style="display:block;text-align:left;font-size:12px;margin-top:10px;">Início intervalo</label>' +
+                '<input id="pt-jorn-ini-int" type="time" class="swal2-input" style="margin-top:4px;" value="' + padrao.inicioIntervalo + '">' +
+                '<label style="display:block;text-align:left;font-size:12px;margin-top:10px;">Fim intervalo</label>' +
+                '<input id="pt-jorn-fim-int" type="time" class="swal2-input" style="margin-top:4px;" value="' + padrao.fimIntervalo + '">' +
+                '<label style="display:block;text-align:left;font-size:12px;margin-top:10px;">Saída</label>' +
+                '<input id="pt-jorn-saida" type="time" class="swal2-input" style="margin-top:4px;" value="' + padrao.saida + '">' +
+                '<label style="display:block;text-align:left;font-size:12px;margin-top:10px;">Obra / local</label>' +
+                '<input id="pt-jorn-obra" type="text" class="swal2-input" style="margin-top:4px;" placeholder="Ex.: Obra / escritório">',
+            width: 520,
+            showCancelButton: true,
+            confirmButtonText: 'Guardar jornada',
+            cancelButtonText: 'Fechar',
+            confirmButtonColor: '#17a2b8',
+            focusConfirm: false,
+            didOpen: function () {
+                const elD = document.getElementById('pt-jorn-data');
+                if (elD && !elD.value) {
+                    const ag = new Date();
+                    elD.value = ag.getFullYear() + '-' + String(ag.getMonth() + 1).padStart(2, '0') + '-' + String(ag.getDate()).padStart(2, '0');
+                }
+            },
+            preConfirm: function () {
+                const dataIso = document.getElementById('pt-jorn-data').value;
+                const obra = (document.getElementById('pt-jorn-obra').value || '').trim();
+                if (!dataIso) {
+                    Swal.showValidationMessage('Indique a data.');
+                    return false;
+                }
+                if (!obra) {
+                    Swal.showValidationMessage('Indique obra / local.');
+                    return false;
+                }
+                const dataBR = inputDateIsoParaDataBr(dataIso);
+                const horas = {
+                    'Entrada': normalizarHoraHHmm(document.getElementById('pt-jorn-entrada').value),
+                    'Início Intervalo': normalizarHoraHHmm(document.getElementById('pt-jorn-ini-int').value),
+                    'Fim Intervalo': normalizarHoraHHmm(document.getElementById('pt-jorn-fim-int').value),
+                    'Saída': normalizarHoraHHmm(document.getElementById('pt-jorn-saida').value)
+                };
+                for (const k of Object.keys(horas)) {
+                    const ts = parseDataHoraBrLocalParaTimestamp(dataBR, horas[k]);
+                    if (!Number.isFinite(ts)) {
+                        Swal.showValidationMessage('Hora inválida em ' + k + '.');
+                        return false;
+                    }
+                }
+                return { dataBR: dataBR, obra: obra, horas: horas };
+            }
+        });
+
+        if (!result.isConfirmed || !result.value) return;
+
+        const val = result.value;
+        Swal.fire({ title: 'A gravar jornada...', allowOutsideClick: false, didOpen: function () { Swal.showLoading(); } });
+
+        try {
+            const user = await ensureAuth();
+            const authUid = user && user.uid ? user.uid : localStorage.getItem('auth_uid') || null;
+            const cancelados = new Set();
+            try {
+                const qEvt = query(collection(db, 'ponto_eventos'), where('funcionario_id', '==', funcId));
+                const snapEvt = await getDocs(qEvt);
+                snapEvt.forEach((ed) => {
+                    const ev = ed.data();
+                    if (ev && ev.tipo === 'CANCELAMENTO' && ev.ponto_id) cancelados.add(ev.ponto_id);
+                });
+            } catch (_) { /* sem eventos */ }
+
+            const qP = query(collection(db, 'ponto_registros'), where('funcionario_id', '==', funcId));
+            const snapP = await getDocs(qP);
+            const keyDia = formatarDataBrPadrao(val.dataBR);
+            const porTipo = {};
+            snapP.forEach((docSnap) => {
+                if (cancelados.has(docSnap.id)) return;
+                const d = docSnap.data();
+                if (formatarDataBrPadrao(d.data) !== keyDia) return;
+                const tipoN = normalizarTipoBatidaPonto(d.tipo);
+                if (!['Entrada', 'Saída', 'Início Intervalo', 'Fim Intervalo'].includes(tipoN)) return;
+                let ts = d.timestamp;
+                if (!Number.isFinite(ts)) ts = parseDataHoraBrLocalParaTimestamp(d.data, d.hora);
+                const item = { id: docSnap.id, ts: Number(ts) || 0 };
+                if (!porTipo[tipoN] || item.ts < porTipo[tipoN].ts) porTipo[tipoN] = item;
+            });
+
+            const tiposOrdem = ['Entrada', 'Início Intervalo', 'Fim Intervalo', 'Saída'];
+            let atualizados = 0;
+            let criados = 0;
+            for (const tipo of tiposOrdem) {
+                const hora = val.horas[tipo];
+                const ts = parseDataHoraBrLocalParaTimestamp(val.dataBR, hora);
+                const existente = porTipo[tipo];
+                if (existente) {
+                    await updateDoc(doc(db, 'ponto_registros', existente.id), {
+                        data: val.dataBR,
+                        hora: hora,
+                        timestamp: ts,
+                        ajuste_jornada_rh_em: serverTimestamp(),
+                        ajuste_jornada_rh_uid: authUid
+                    });
+                    atualizados += 1;
+                } else {
+                    await addDoc(collection(db, 'ponto_registros'), {
+                        empresa_id: empresaLogada,
+                        funcionario_id: funcId,
+                        auth_uid: authUid,
+                        nome: func.nome || 'Funcionário',
+                        tipo: tipo,
+                        obra: val.obra,
+                        data: val.dataBR,
+                        hora: hora,
+                        latitude: null,
+                        longitude: null,
+                        foto: '',
+                        timestamp: ts,
+                        client_device_tz: Intl.DateTimeFormat().resolvedOptions().timeZone || 'unknown',
+                        created_at: serverTimestamp(),
+                        registo_manual_rh: true,
+                        jornada_completa_rh: true,
+                        gestor_rh_uid: authUid
+                    });
+                    criados += 1;
+                }
+            }
+
+            Swal.close();
+            Swal.fire(
+                'Jornada guardada',
+                `Dia ${val.dataBR}: ${atualizados} batida(s) atualizada(s), ${criados} criada(s).<br><br>Gere a folha de novo para ver as horas corrigidas.`,
+                'success'
+            );
+            if (typeof buscarPonto === 'function') buscarPonto();
+        } catch (e) {
+            console.error(e);
+            Swal.close();
+            Swal.fire('Erro', 'Não foi possível guardar a jornada. Verifique permissões do Firestore.', 'error');
         }
     };
 
