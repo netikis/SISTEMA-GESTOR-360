@@ -2080,6 +2080,37 @@ function separarDataSegura(dataString) {
         return { entrada: he, inicioIntervalo: inicioInt, fimIntervalo: fimInt, saida: hs };
     }
 
+    /** Funcionário ativo no contexto RH (folha, ponto, etc.). */
+    function obterFuncionarioIdContextoRH() {
+        if (window.ultimoFuncIdFolha) return window.ultimoFuncIdFolha;
+        const ordem = ['folha-func-select', 'pt-func-select', 'p-func-select', 'b-func-select', 'ac-func-select', 'df-func-select'];
+        for (let i = 0; i < ordem.length; i++) {
+            const el = document.getElementById(ordem[i]);
+            if (el && el.value) return el.value;
+        }
+        return '';
+    }
+
+    function registrarFuncionarioContextoRH(funcId) {
+        if (!funcId) return;
+        window.ultimoFuncIdFolha = funcId;
+        ['folha-func-select', 'pt-func-select', 'p-func-select', 'b-func-select'].forEach(function (id) {
+            const el = document.getElementById(id);
+            if (el) el.value = funcId;
+        });
+    }
+
+    function vincularSelectsFuncionarioContextoRH() {
+        ['folha-func-select', 'pt-func-select'].forEach(function (id) {
+            const el = document.getElementById(id);
+            if (!el || el.dataset.ctxRhBound === '1') return;
+            el.dataset.ctxRhBound = '1';
+            el.addEventListener('change', function () {
+                if (el.value) registrarFuncionarioContextoRH(el.value);
+            });
+        });
+    }
+
     function parseDataIsoFuncionario(campo) {
         if (!campo) return null;
         const s = String(campo).trim();
@@ -4902,6 +4933,7 @@ window.exportarPDF = function(tipo) {
                     select.innerHTML = opcoesHTML;
                 }
             });
+            vincularSelectsFuncionarioContextoRH();
             
             if (document.getElementById('lista-funcionarios-gerencial')) {
                 document.getElementById('lista-funcionarios-gerencial').innerHTML = gerenciaHTML;
@@ -4928,7 +4960,7 @@ window.gerarFolhaPagamento = async function() {
         Swal.showLoading();
 
         const funcionario = window.listaFuncionarios[funcId];
-        window.ultimoFuncIdFolha = funcId;
+        registrarFuncionarioContextoRH(funcId);
         // Trava de segurança: se o salário vier quebrado, assume 0
         const salarioBase = parseMoedaLocal(funcionario.salario || "0") || 0; 
         const horaEntPadrão = funcionario.hora_entrada || "07:00";
@@ -6829,10 +6861,11 @@ window.gerarFolhaPagamento = async function() {
         if (!empresaLogada) {
             return Swal.fire('Atenção', 'Entre como gestor.', 'warning');
         }
-        const funcId = window.ultimoFuncIdFolha || document.getElementById('pt-func-select').value;
+        const funcId = obterFuncionarioIdContextoRH();
         if (!funcId || !window.listaFuncionarios || !window.listaFuncionarios[funcId]) {
-            return Swal.fire('Atenção', 'Selecione o funcionário na folha ou em Consultar ponto antes de corrigir a jornada.', 'warning');
+            return Swal.fire('Atenção', 'Selecione o funcionário no campo da folha de pagamento (ou em Consultar ponto) e tente de novo.', 'warning');
         }
+        registrarFuncionarioContextoRH(funcId);
         const func = window.listaFuncionarios[funcId];
         const dataIsoSug = dataBrSugerida ? dataBrParaInputDateIso(dataBrSugerida) : '';
         const padrao = horariosJornadaPadraoFuncionario(func, dataBrSugerida || '01/01/2026');
@@ -6970,12 +7003,16 @@ window.gerarFolhaPagamento = async function() {
             }
 
             Swal.close();
-            Swal.fire(
+            const recalcFolha = document.getElementById('folha-func-select') && document.getElementById('folha-func-select').value === funcId;
+            await Swal.fire(
                 'Jornada guardada',
-                `Dia ${val.dataBR}: ${atualizados} batida(s) atualizada(s), ${criados} criada(s).<br><br>Gere a folha de novo para ver as horas corrigidas.`,
+                `Dia ${val.dataBR}: ${atualizados} batida(s) atualizada(s), ${criados} criada(s).` +
+                    (recalcFolha ? '<br><br>A folha será recalculada automaticamente.' : '<br><br>Clique em <b>Calcular fechamento</b> na folha para atualizar as horas.'),
                 'success'
             );
-            if (typeof buscarPonto === 'function') buscarPonto();
+            if (recalcFolha && typeof gerarFolhaPagamento === 'function') {
+                await gerarFolhaPagamento();
+            }
         } catch (e) {
             console.error(e);
             Swal.close();
