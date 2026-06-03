@@ -1249,10 +1249,10 @@
 
                 <details id="f-discriminacao-wrap" open style="margin-top:18px; border-top:1px solid #eee; padding-top:12px;">
                     <summary style="cursor:pointer; font-weight:700; color:var(--dark-navy); font-size:13px;">📋 Discriminação dia a dia (jornada esperada × ponto)</summary>
-                    <p class="folha-detalhe" style="margin:10px 0;">Cada linha corresponde a um dia do mês: <b>jornada esperada</b> (cadastro + feriados + sábado), <b>horas computadas</b> pelas batidas e a <b>diferença</b> (esperado − trabalhado). Serve para conferência interna e documentação.</p>
+                    <p class="folha-detalhe" style="margin:10px 0;">Cada linha corresponde a um <b>dia do calendário</b> do mês (01 até o último dia — maio tem <b>31</b>, fevereiro 28, etc.). <b>Role a tabela</b> para ver todos os dias. O salário mensal CLT ainda usa <b>÷ 30</b> comercial; isso não remove o dia 31 da lista.</p>
                     <button type="button" class="btn-pdf-relatorio" style="margin-bottom:10px;" onclick="exportarPDFDiscriminacaoFolha()">📥 EXPORTAR DISCRIMINAÇÃO EM PDF</button>
                     <button type="button" class="btn-pdf-relatorio" style="margin-bottom:10px; margin-left:8px; background:#17a2b8;" onclick="rhAjustarJornadaCompletaDia()">🕐 Corrigir jornada completa do dia (RH)</button>
-                    <div id="f-tabela-discriminacao" style="overflow-x:auto; max-height:420px; overflow-y:auto; border:1px solid #e0e6ed; border-radius:10px;"></div>
+                    <div id="f-tabela-discriminacao" style="overflow-x:auto; max-height:560px; overflow-y:auto; border:1px solid #e0e6ed; border-radius:10px;"></div>
                 </details>
             </div>
         </div>
@@ -2109,6 +2109,14 @@ function separarDataSegura(dataString) {
                 if (el.value) registrarFuncionarioContextoRH(el.value);
             });
         });
+    }
+
+    /** Quantidade de dias do mês no calendário (mes 1–12). Maio/2026 = 31. */
+    function diasNoCalendarioMes(ano, mes1a12) {
+        const y = parseInt(String(ano), 10);
+        const m = parseInt(String(mes1a12), 10);
+        if (!Number.isFinite(y) || !Number.isFinite(m) || m < 1 || m > 12) return 0;
+        return new Date(y, m, 0).getDate();
     }
 
     function parseDataIsoFuncionario(campo) {
@@ -5047,7 +5055,7 @@ window.gerarFolhaPagamento = async function() {
         }
 
         function horasDevidasNoMes(ano, mes1a12, jornadaLiquidaHoras, sabadoHoras, holidaySet) {
-            const totalDias = new Date(ano, mes1a12, 0).getDate();
+            const totalDias = diasNoCalendarioMes(ano, mes1a12);
             let soma = 0;
             for (let d = 1; d <= totalDias; d++) {
                 const iso = isoDateLocal(ano, mes1a12, d);
@@ -5368,8 +5376,8 @@ window.gerarFolhaPagamento = async function() {
             let valorDiaSalario = valorDiaMensalClt;
             let valorHoraDesconto = valorDiaMensalClt / horasBaseDescontoPorDia;
             const anoNum = Number(anoSelected);
-            const mesNum = Number(mesSelected);
-            const diasNoMesCalc = new Date(anoNum, mesNum, 0).getDate();
+            const mesNum = parseInt(String(mesSelected).trim(), 10);
+            const diasNoMesCalc = diasNoCalendarioMes(anoNum, mesNum);
             let horasFaltantes = 0;
             let diasPagos = 0;
             let diasNoVinculoCalendario = 0;
@@ -5573,7 +5581,9 @@ window.gerarFolhaPagamento = async function() {
                 (totalDinheiro + totalProduto + valorDescontoHoras + totalDescontosLancados);
 
             document.getElementById('f-nome-display').innerText = funcionario.nome;
-            document.getElementById('f-periodo-display').innerText = `Referência: ${mesSelected} / ${anoSelected}`;
+            const mesNomeCal = nomeMeses[mesSelected] || mesSelected;
+            document.getElementById('f-periodo-display').innerText =
+                `Referência: ${mesNomeCal} / ${anoSelected} (${diasNoMesCalc} dias no calendário)`;
 
             document.getElementById('f-salario-mensal-contrato').innerText = formatarMoeda(salarioBase);
 
