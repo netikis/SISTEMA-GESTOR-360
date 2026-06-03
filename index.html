@@ -1137,6 +1137,19 @@
             </div>
         </div>
 
+        <div style="background:#f8fafc; padding:12px; border-radius:8px; border:1px solid #e0e6ed; margin:12px 0;">
+            <div style="font-size:13px; font-weight:700; color:var(--dark-navy); margin-bottom:8px;">Opções do fechamento (batidas)</div>
+            <label style="display:flex; align-items:center; gap:8px; font-size:13px; cursor:pointer; margin-bottom:6px;">
+                <input type="checkbox" id="folha-opc-extras" checked style="width:18px; height:18px;">
+                <span>Incluir <b>horas extras</b> (+50% dia útil · +100% domingo/feriado) no líquido</span>
+            </label>
+            <label style="display:flex; align-items:center; gap:8px; font-size:13px; cursor:pointer;">
+                <input type="checkbox" id="folha-opc-desconto-horas" checked style="width:18px; height:18px;">
+                <span>Incluir <b>desconto por atrasos</b> (horas que faltaram na jornada) no líquido</span>
+            </label>
+            <p style="font-size:11px; color:#666; margin:8px 0 0; line-height:1.4;">Se desmarcar, o sistema ainda <b>calcula e mostra</b> o valor na folha (e na discriminação dia a dia), mas <b>não soma nem desconta</b> no líquido. A escolha fica guardada neste navegador.</p>
+        </div>
+
         <button class="btn-enviar" onclick="gerarFolhaPagamento()">💰 CALCULAR FECHAMENTO</button>
 
         <div id="resultado-folha" style="display: none;">
@@ -1148,9 +1161,9 @@
                 </div>
 
                 <p id="f-explicacao-regras" class="folha-detalhe" style="margin-top:0; margin-bottom:12px; text-align:left; background:#f8fafc; padding:10px; border-radius:8px; border:1px solid #e0e6ed;">
-                    <b>Mensal (CLT):</b> salário do mês (÷ 30) com DSR — domingos/feriados/sábados sem escala entram; desconto por <b>falta</b> (dia útil/sábado de escala sem ponto).<br>
+                    <b>Mensal (CLT):</b> salário do mês com DSR — dias contados no <b>calendário real</b> (maio = 31, etc.); desconto de <b>falta</b> usa valor do dia (salário ÷ 30 comercial).<br>
                     <b>Por ponto:</b> salário ÷ dias a trabalhar no mês × dias com batida (não ÷ 30).<br>
-                    Em ambos: <b>férias CLT</b>, <b>extras</b> (+50% / +100%), <b>atrasos</b> (÷ 30 ÷ 8), vales/produtos e descontos lançados (INSS). Ajuda de custo é PLUS (fora do líquido).
+                    Em ambos: <b>férias CLT</b>, vales/produtos e descontos lançados (INSS). <b>Extras</b> e <b>desconto de atrasos</b> só entram no líquido se estiverem marcados nas opções acima da folha. Ajuda de custo é PLUS (fora do líquido).
                 </p>
 
                 <div class="folha-secao-titulo">Salário do período</div>
@@ -1165,6 +1178,10 @@
                 <div class="folha-linha" id="f-linha-dias-devidos" style="display:none;">
                     <span>Dias a trabalhar no mês (escala):</span>
                     <strong id="f-dias-devidos">0</strong>
+                </div>
+                <div class="folha-linha" id="f-linha-dias-calendario" style="display:none;">
+                    <span>Dias no calendário do mês:</span>
+                    <strong id="f-dias-calendario-mes">0</strong>
                 </div>
                 <div class="folha-linha">
                     <span id="f-label-dias-pagos">Dias pagos (com registro de trabalho):</span>
@@ -1863,6 +1880,7 @@
         carregarListaDeFuncionarios();
         const mesAtual = String(new Date().getMonth() + 1).padStart(2, '0');
         document.getElementById('folha-mes').value = mesAtual;
+        initFolhaOpcoesCalculo();
         initAjudaCustoDatasPadrao();
         initDescontosFolhaDatasPadrao();
         document.getElementById('backup-mes').value = mesAtual;
@@ -2109,6 +2127,35 @@ function separarDataSegura(dataString) {
                 if (el.value) registrarFuncionarioContextoRH(el.value);
             });
         });
+    }
+
+    function initFolhaOpcoesCalculo() {
+        const elEx = document.getElementById('folha-opc-extras');
+        const elDc = document.getElementById('folha-opc-desconto-horas');
+        if (!elEx || !elDc) return;
+        const sEx = localStorage.getItem('folha_incluir_extras');
+        const sDc = localStorage.getItem('folha_incluir_desconto_horas');
+        if (sEx !== null) elEx.checked = sEx === '1';
+        if (sDc !== null) elDc.checked = sDc === '1';
+        const gravar = function () {
+            localStorage.setItem('folha_incluir_extras', elEx.checked ? '1' : '0');
+            localStorage.setItem('folha_incluir_desconto_horas', elDc.checked ? '1' : '0');
+        };
+        if (elEx.dataset.folhaOpcBound !== '1') {
+            elEx.dataset.folhaOpcBound = '1';
+            elDc.dataset.folhaOpcBound = '1';
+            elEx.addEventListener('change', gravar);
+            elDc.addEventListener('change', gravar);
+        }
+    }
+
+    function lerFolhaOpcoesCalculo() {
+        const elEx = document.getElementById('folha-opc-extras');
+        const elDc = document.getElementById('folha-opc-desconto-horas');
+        return {
+            incluirExtras: elEx ? elEx.checked : true,
+            incluirDescontoHoras: elDc ? elDc.checked : true
+        };
     }
 
     /** Quantidade de dias do mês no calendário (mes 1–12). Maio/2026 = 31. */
@@ -4313,14 +4360,6 @@ window.exportarPDF = function(tipo) {
         doc.text(formatarMoeda(pack.liquido), margem + largura - 6, y + 10, { align: 'right' });
         y += liqH + 5;
 
-        if (pack.bancoHorasTxt && y < FOOTER_Y - 28) {
-            doc.setFont('helvetica', 'italic');
-            doc.setFontSize(7.5);
-            doc.setTextColor(100, 100, 100);
-            doc.text('Banco de horas (info.): ' + pack.bancoHorasTxt, margem, y);
-            y += 5;
-        }
-
         const temPlus = pack.ajudaCustoTotal > 0 || (pack.ajudaCustoItens && pack.ajudaCustoItens.length);
         if (temPlus && y < FOOTER_Y - 20) {
             y = pdfHoleriteSecaoBarra(doc, y, 'RECEBIMENTOS PLUS (fora do líquido)', [13, 110, 253], largura, margem);
@@ -5542,11 +5581,10 @@ window.gerarFolhaPagamento = async function() {
                 valorDiaSalario = valorDiaMensalClt;
                 if (mesCheio) {
                     salarioProporcional = salarioBase - (faltasInjustificadas * valorDiaSalario);
-                    diasPagosExibir = 30 - faltasInjustificadas;
                 } else {
                     salarioProporcional = (valorDiaSalario * diasNoVinculoCalendario) - (faltasInjustificadas * valorDiaSalario);
-                    diasPagosExibir = Math.max(0, diasNoVinculoCalendario - faltasInjustificadas);
                 }
+                diasPagosExibir = Math.max(0, diasNoVinculoCalendario - faltasInjustificadas);
                 salarioProporcional = Math.max(0, salarioProporcional);
             } else {
                 const divPonto = diasDevidosNoMes > 0 ? diasDevidosNoMes : diasMesParaSalario;
@@ -5558,7 +5596,10 @@ window.gerarFolhaPagamento = async function() {
             valorHoraDesconto = valorDiaSalario / horasBaseDescontoPorDia;
             const valorBaseFeriasMes = valorDiaMensalClt * diasFeriasNoMes;
             const valorFeriasClt = feriasInicioIso && diasFeriasNoMes > 0 ? valorBaseFeriasMes * (4 / 3) : 0;
-            const valorDescontoHoras = horasFaltantes * valorHoraDesconto;
+            const valorDescontoHorasCalc = horasFaltantes * valorHoraDesconto;
+            const opcoesFolha = lerFolhaOpcoesCalculo();
+            const valorExtrasFolha = opcoesFolha.incluirExtras ? valorTotalReceberExtras : 0;
+            const valorDescontoHorasFolha = opcoesFolha.incluirDescontoHoras ? valorDescontoHorasCalc : 0;
 
             // Banco de horas (saldo): crédito - débito (atrasos)
             const bancoHorasSaldoDecimais = (bancoHorasCreditoDecimais || 0) - (horasFaltantes || 0);
@@ -5571,14 +5612,16 @@ window.gerarFolhaPagamento = async function() {
             console.log("Dias pagos (trabalhados):", diasPagos);
             console.log("Salário proporcional:", salarioProporcional.toFixed(2));
             console.log("Salário Base:", salarioBase);
-            console.log("Total Extras:", valorTotalReceberExtras);
+            console.log("Total Extras (calc):", valorTotalReceberExtras, "| no líquido:", valorExtrasFolha);
+            console.log("Desconto horas (calc):", valorDescontoHorasCalc, "| no líquido:", valorDescontoHorasFolha);
+            console.log("Opções folha:", opcoesFolha);
             console.log("Total Vales Dinheiro:", totalDinheiro);
             console.log("Total Vales Produto:", totalProduto);
 
             // 3. CÁLCULO DO LÍQUIDO — valor real do fechamento (pode ser negativo se vales/atrasos excederem créditos)
             const liquidoReceber =
-                (salarioProporcional + valorFeriasClt + valorTotalReceberExtras) -
-                (totalDinheiro + totalProduto + valorDescontoHoras + totalDescontosLancados);
+                (salarioProporcional + valorFeriasClt + valorExtrasFolha) -
+                (totalDinheiro + totalProduto + valorDescontoHorasFolha + totalDescontosLancados);
 
             document.getElementById('f-nome-display').innerText = funcionario.nome;
             const mesNomeCal = nomeMeses[mesSelected] || mesSelected;
@@ -5607,14 +5650,20 @@ window.gerarFolhaPagamento = async function() {
             }
 
             const elLabelDias = document.getElementById('f-label-dias-pagos');
+            const elLinhaDiasCal = document.getElementById('f-linha-dias-calendario');
+            if (elLinhaDiasCal) {
+                elLinhaDiasCal.style.display = tipoRemuneracao === 'mensal' ? 'flex' : 'none';
+            }
             if (elLabelDias) {
                 elLabelDias.innerText = tipoRemuneracao === 'mensal'
-                    ? 'Dias referência no mês (incl. DSR / descanso):'
+                    ? 'Dias referência pagos (calendário − faltas, incl. DSR):'
                     : 'Dias trabalhados (com batida de ponto):';
             }
-            document.getElementById('f-dias-pagos').innerText = String(
-                tipoRemuneracao === 'mensal' ? diasNoVinculoCalendario : diasPagosExibir
-            );
+            document.getElementById('f-dias-pagos').innerText = String(diasPagosExibir);
+            const elDiasCal = document.getElementById('f-dias-calendario-mes');
+            if (elDiasCal) {
+                elDiasCal.innerText = String(diasNoMesCalc);
+            }
 
             const elLinhaFaltas = document.getElementById('f-linha-faltas-mensal');
             const elFaltas = document.getElementById('f-faltas-mensal');
@@ -5634,9 +5683,10 @@ window.gerarFolhaPagamento = async function() {
             if (detSal) {
                 if (tipoRemuneracao === 'mensal') {
                     if (mesCheio) {
-                        detSal.innerHTML = `<b>Modo mensal CLT</b> — mês inteiro no vínculo.<br>
-                        <b>Conta:</b> ${formatarMoeda(salarioBase)} (salário contrato)${faltasInjustificadas > 0 ? ' − ' + faltasInjustificadas + ' falta(s) × ' + formatarMoeda(valorDiaSalario) : ''} = <b>${formatarMoeda(salarioProporcional)}</b>.<br>
-                        <span style="color:#888;">Domingos, feriados e sábados sem escala entram no salário (DSR). Falta = dia útil ou sábado de escala sem ponto.</span>`;
+                        detSal.innerHTML = `<b>Modo mensal CLT</b> — mês inteiro no vínculo (${diasNoMesCalc} dias no calendário).<br>
+                        <b>Conta:</b> ${formatarMoeda(salarioBase)} (salário contrato)${faltasInjustificadas > 0 ? ' − ' + faltasInjustificadas + ' falta(s) × ' + formatarMoeda(valorDiaSalario) + ' (÷ 30 comercial)' : ''} = <b>${formatarMoeda(salarioProporcional)}</b>.<br>
+                        <b>Dias referência:</b> ${diasPagosExibir} (${diasNoVinculoCalendario} no vínculo${faltasInjustificadas > 0 ? ' − ' + faltasInjustificadas + ' falta(s)' : ''}).<br>
+                        <span style="color:#888;">Domingos, feriados e sábados sem escala entram no salário (DSR). O desconto por falta usa salário ÷ 30; a contagem de dias segue o calendário real do mês.</span>`;
                     } else {
                         detSal.innerHTML = `<b>Modo mensal CLT</b> — mês parcial (admissão/desligamento).<br>
                         <b>Conta:</b> ${diasNoVinculoCalendario} dia(s) no vínculo × ${formatarMoeda(valorDiaSalario)}${faltasInjustificadas > 0 ? ' − ' + faltasInjustificadas + ' falta(s) × ' + formatarMoeda(valorDiaSalario) : ''} = <b>${formatarMoeda(salarioProporcional)}</b>.<br>
@@ -5678,17 +5728,24 @@ window.gerarFolhaPagamento = async function() {
             const m50 = Math.round((totalHorasExtras50Decimais - h50) * 60);
             const h100 = Math.floor(totalHorasExtras100Decimais);
             const m100 = Math.round((totalHorasExtras100Decimais - h100) * 60);
+            const sufixoExtrasLiq = opcoesFolha.incluirExtras ? '' : ' — não incluído no líquido';
             document.getElementById('f-horas-extras-texto').innerText =
-                `(+) Horas extras (${h50}h ${m50}m úteis +50% · ${h100}h ${m100}m dom/fer +100%):`;
-            document.getElementById('f-valor-extras').innerText = formatarMoeda(valorTotalReceberExtras);
+                `(+) Horas extras (${h50}h ${m50}m úteis +50% · ${h100}h ${m100}m dom/fer +100%)${sufixoExtrasLiq}:`;
+            document.getElementById('f-valor-extras').innerText = formatarMoeda(valorExtrasFolha);
             const detEx = document.getElementById('f-detalhe-extras');
             if (detEx) {
                 const v50 = totalHorasExtras50Decimais * (valorHoraNormal220 * 1.5);
                 const v100 = totalHorasExtras100Decimais * (valorHoraNormal220 * 2.0);
-                detEx.innerHTML = `<b>Base da hora extra:</b> salário ÷ 220 = <b>${formatarMoeda(valorHoraNormal220)}/h</b>.<br>
+                let htmlEx = `<b>Base da hora extra:</b> salário ÷ 220 = <b>${formatarMoeda(valorHoraNormal220)}/h</b>.<br>
                 • Dia útil (+50%): ${h50}h ${m50}m → ${formatarMoeda(v50)}<br>
                 • Domingo/feriado (+100%): ${h100}h ${m100}m → ${formatarMoeda(v100)}<br>
-                <span style="color:#888;">Domingo e feriados cadastrados no calendário entram como +100% (paga como 2× a hora normal).</span>`;
+                <b>Total calculado:</b> ${formatarMoeda(valorTotalReceberExtras)}`;
+                if (!opcoesFolha.incluirExtras) {
+                    htmlEx += `<br><span style="color:#856404;background:#fff3cd;padding:4px 8px;border-radius:6px;display:inline-block;margin-top:4px;">Opção desmarcada: extras <b>não entram</b> no líquido (use banco de horas ou acerto à parte).</span>`;
+                } else {
+                    htmlEx += `<br><span style="color:#888;">Domingo e feriados cadastrados no calendário entram como +100% (paga como 2× a hora normal).</span>`;
+                }
+                detEx.innerHTML = htmlEx;
             }
 
             const bancoAbs = Math.abs(bancoHorasSaldoDecimais);
@@ -5757,14 +5814,20 @@ window.gerarFolhaPagamento = async function() {
 
             const horasFaltDisplay = Math.floor(horasFaltantes);
             const minFaltDisplay = Math.round((horasFaltantes - horasFaltDisplay) * 60);
+            const sufixoDescLiq = opcoesFolha.incluirDescontoHoras ? '' : ' — não incluído no líquido';
             document.getElementById('f-desconto-horas-texto').innerText =
-                `(-) Atrasos / horas devidas (${horasFaltDisplay}h ${minFaltDisplay}m):`;
-            document.getElementById('f-valor-desconto-horas').innerText = formatarMoeda(valorDescontoHoras);
+                `(-) Atrasos / horas devidas (${horasFaltDisplay}h ${minFaltDisplay}m)${sufixoDescLiq}:`;
+            document.getElementById('f-valor-desconto-horas').innerText = formatarMoeda(valorDescontoHorasFolha);
             const detAtr = document.getElementById('f-detalhe-desconto-atrasos');
             if (detAtr) {
-                detAtr.innerHTML = `<b>Hora de desconto (atraso):</b> (salário ÷ 30 ÷ 8) = <b>${formatarMoeda(valorHoraDesconto)}/h</b>.<br>
-                <b>Conta:</b> ${horasFaltDisplay}h ${minFaltDisplay}m × ${formatarMoeda(valorHoraDesconto)}/h = <b>${formatarMoeda(valorDescontoHoras)}</b>.<br>
-                <span style="color:#888;">São somadas, dia a dia, as horas que faltaram para completar a jornada esperada em cada dia em que houve trabalho.</span>`;
+                let htmlAtr = `<b>Hora de desconto (atraso):</b> (salário ÷ 30 ÷ 8) = <b>${formatarMoeda(valorHoraDesconto)}/h</b>.<br>
+                <b>Conta:</b> ${horasFaltDisplay}h ${minFaltDisplay}m × ${formatarMoeda(valorHoraDesconto)}/h = <b>${formatarMoeda(valorDescontoHorasCalc)}</b>.`;
+                if (!opcoesFolha.incluirDescontoHoras) {
+                    htmlAtr += `<br><span style="color:#856404;background:#fff3cd;padding:4px 8px;border-radius:6px;display:inline-block;margin-top:4px;">Opção desmarcada: desconto por atrasos <b>não reduz</b> o líquido neste fechamento.</span>`;
+                } else {
+                    htmlAtr += `<br><span style="color:#888;">São somadas, dia a dia, as horas que faltaram para completar a jornada esperada em cada dia em que houve trabalho.</span>`;
+                }
+                detAtr.innerHTML = htmlAtr;
             }
 
             const nDescLanc = itensDescontosFolha.length;
@@ -5801,9 +5864,15 @@ window.gerarFolhaPagamento = async function() {
             }
             const detLiq = document.getElementById('f-formula-liquido');
             if (detLiq) {
+                const lblExtrasForm = opcoesFolha.incluirExtras
+                    ? formatarMoeda(valorExtrasFolha) + ' (extras)'
+                    : '0,00 (extras — opção desligada; calc. ' + formatarMoeda(valorTotalReceberExtras) + ')';
+                const lblAtrasosForm = opcoesFolha.incluirDescontoHoras
+                    ? formatarMoeda(valorDescontoHorasFolha) + ' (atrasos)'
+                    : '0,00 (atrasos — opção desligada; calc. ' + formatarMoeda(valorDescontoHorasCalc) + ')';
                 let txtForm = `<b>Fórmula do líquido:</b><br>
-                ${formatarMoeda(salarioProporcional)} (proporcional) + ${formatarMoeda(valorFeriasClt)} (férias CLT) + ${formatarMoeda(valorTotalReceberExtras)} (extras)
-                − ${formatarMoeda(totalDinheiro)} (vales) − ${formatarMoeda(totalProduto)} (produtos) − ${formatarMoeda(valorDescontoHoras)} (atrasos)${totalDescontosLancados > 0 ? ' − ' + formatarMoeda(totalDescontosLancados) + ' (INSS/outros)' : ''}
+                ${formatarMoeda(salarioProporcional)} (proporcional) + ${formatarMoeda(valorFeriasClt)} (férias CLT) + ${lblExtrasForm}
+                − ${formatarMoeda(totalDinheiro)} (vales) − ${formatarMoeda(totalProduto)} (produtos) − ${lblAtrasosForm}${totalDescontosLancados > 0 ? ' − ' + formatarMoeda(totalDescontosLancados) + ' (INSS/outros)' : ''}
                 = <b>${formatarMoeda(liquidoReceber)}</b>`;
                 if (nAjuda > 0) {
                     txtForm += `<br><br><span style="color:#0d6efd;"><b>Recebimento PLUS (fora do líquido):</b> Ajuda de custo ${formatarMoeda(totalAjudaCusto)} — pago à parte, sem somar nem descontar do valor acima.</span>`;
@@ -5871,7 +5940,8 @@ window.gerarFolhaPagamento = async function() {
                 { label: 'Férias + 1/3 constitucional (' + diasFeriasNoMes + ' dias)', valor: valorFeriasClt },
                 {
                     label: 'Horas extras (' + h50 + 'h ' + m50 + 'm +50% · ' + h100 + 'h ' + m100 + 'm +100%)',
-                    valor: valorTotalReceberExtras
+                    valor: valorExtrasFolha,
+                    valorCalculado: valorTotalReceberExtras
                 }
             ];
             const descontosPdf = [
@@ -5879,7 +5949,8 @@ window.gerarFolhaPagamento = async function() {
                 { label: 'Produtos / materiais', valor: totalProduto },
                 {
                     label: 'Atrasos / horas devidas (' + horasFaltDisplay + 'h ' + minFaltDisplay + 'm)',
-                    valor: valorDescontoHoras
+                    valor: valorDescontoHorasFolha,
+                    valorCalculado: valorDescontoHorasCalc
                 }
             ];
             itensDescontosFolha.forEach(it => {
@@ -5903,10 +5974,13 @@ window.gerarFolhaPagamento = async function() {
                 diasPagos: diasPagosExibir,
                 proventos: proventosPdf,
                 descontos: descontosPdf,
-                totalProventos: salarioProporcional + valorFeriasClt + valorTotalReceberExtras,
-                totalDescontos: totalDinheiro + totalProduto + valorDescontoHoras + totalDescontosLancados,
+                totalProventos: salarioProporcional + valorFeriasClt + valorExtrasFolha,
+                totalDescontos: totalDinheiro + totalProduto + valorDescontoHorasFolha + totalDescontosLancados,
                 liquido: liquidoReceber,
                 liquidoNegativo: liquidoReceber < 0,
+                opcoesFolha: opcoesFolha,
+                extrasCalculado: valorTotalReceberExtras,
+                descontoHorasCalculado: valorDescontoHorasCalc,
                 bancoHorasTxt: (typeof sinalBanco !== 'undefined' ? sinalBanco : '') + bancoH + 'h ' + bancoM + 'm',
                 ajudaCustoTotal: totalAjudaCusto,
                 ajudaCustoItens: itensAjudaCusto.slice(),
