@@ -838,7 +838,7 @@
         </select>
         <p style="font-size: 11px; color: #666; margin: 0 0 12px 0;">
             <b>Mensal:</b> domingos, feriados e sábados sem escala entram no salário (DSR). Falta = dia útil/sábado de escala sem ponto.<br>
-            <b>Por ponto:</b> salário ÷ <b>dias a trabalhar no mês</b> (seg–sex + sábado com escala) × dias com batida — <b>não usa ÷ 30</b>.
+            <b>Por ponto:</b> salário ÷ <b>dias a trabalhar no mês</b>; dia útil/sábado de escala <b>sem ponto = falta</b> (desconto de 1 dia).
         </p>
 
         <label style="margin-top: 12px; border-bottom: 1px solid #eee; padding-bottom: 5px;">Vínculo e férias (folha de pagamento)</label>
@@ -929,7 +929,8 @@
         
         <button id="btnExportarPonto" class="btn-pdf-relatorio" style="display:none;" onclick="exportarPDF('ponto')">📥 EXPORTAR RELATÓRIO PDF</button>
         <button type="button" class="btn-enviar" style="margin-top:12px; width:100%; background:#2c6f9e; box-shadow:none;" onclick="abrirRegistoPontoManualRH()">➕ Registar batida manual (RH) — caderno / correção</button>
-        <p style="font-size:11px;color:#666;margin:6px 0 0 0;">Use após escolher o funcionário no campo acima. Grava entrada, intervalo, fim de intervalo ou saída com <b>data e hora à escolha</b> (ex.: leitura do caderno de obra).</p>
+        <button type="button" class="btn-enviar" style="margin-top:8px; width:100%; background:#b02a37; box-shadow:none;" onclick="rhGerirFaltaDia()">🚫 Falta injustificada / atestado (RH)</button>
+        <p style="font-size:11px;color:#666;margin:6px 0 0 0;">Use após escolher o funcionário. <b>Falta injustificada</b> desconta o dia (e DSR, se o RH marcar). <b>Atestado / justificada</b> remove a falta automática (dia sem ponto).</p>
         
         <div id="lista-ponto-resultados" style="margin-top: 20px;">
             <p style="text-align: center; color: #888; font-size: 13px;">Aqui aparecerão os horários e locais.</p>
@@ -1162,7 +1163,7 @@
 
                 <p id="f-explicacao-regras" class="folha-detalhe" style="margin-top:0; margin-bottom:12px; text-align:left; background:#f8fafc; padding:10px; border-radius:8px; border:1px solid #e0e6ed;">
                     <b>Mensal (CLT):</b> salário do mês com DSR — dias contados no <b>calendário real</b> (maio = 31, etc.); desconto de <b>falta</b> usa valor do dia (salário ÷ 30 comercial).<br>
-                    <b>Por ponto:</b> salário ÷ dias a trabalhar no mês × dias com batida (não ÷ 30).<br>
+                    <b>Por ponto:</b> salário ÷ dias a trabalhar no mês; dia útil/sábado de escala <b>sem ponto = falta</b> (desconto de 1 dia).<br>
                     Em ambos: <b>férias CLT</b>, vales/produtos e descontos lançados (INSS). <b>Extras</b> e <b>desconto de atrasos</b> só entram no líquido se estiverem marcados nas opções acima da folha. Ajuda de custo é PLUS (fora do líquido).
                 </p>
 
@@ -1234,6 +1235,16 @@
                     <span>(-) Produtos / Materiais:</span>
                     <strong id="f-valor-produtos">R$ 0,00</strong>
                 </div>
+                <div class="folha-linha desconto" id="f-linha-desconto-faltas" style="display:none;">
+                    <span id="f-desconto-faltas-texto">(-) Faltas injustificadas (0 dia):</span>
+                    <strong id="f-valor-desconto-faltas">R$ 0,00</strong>
+                </div>
+                <p id="f-detalhe-desconto-faltas" class="folha-detalhe"></p>
+                <div class="folha-linha desconto" id="f-linha-desconto-dsr" style="display:none;">
+                    <span id="f-desconto-dsr-texto">(-) DSR perdido (0 descanso):</span>
+                    <strong id="f-valor-desconto-dsr">R$ 0,00</strong>
+                </div>
+                <p id="f-detalhe-desconto-dsr" class="folha-detalhe"></p>
                 <div class="folha-linha desconto">
                     <span id="f-desconto-horas-texto">(-) Atrasos / horas devidas (0h):</span>
                     <strong id="f-valor-desconto-horas">R$ 0,00</strong>
@@ -1269,6 +1280,7 @@
                     <p class="folha-detalhe" style="margin:10px 0;">Cada linha corresponde a um <b>dia do calendário</b> do mês (01 até o último dia — maio tem <b>31</b>, fevereiro 28, etc.). <b>Role a tabela</b> para ver todos os dias. O salário mensal CLT ainda usa <b>÷ 30</b> comercial; isso não remove o dia 31 da lista.</p>
                     <button type="button" class="btn-pdf-relatorio" style="margin-bottom:10px;" onclick="exportarPDFDiscriminacaoFolha()">📥 EXPORTAR DISCRIMINAÇÃO EM PDF</button>
                     <button type="button" class="btn-pdf-relatorio" style="margin-bottom:10px; margin-left:8px; background:#17a2b8;" onclick="rhAjustarJornadaCompletaDia()">🕐 Corrigir jornada completa do dia (RH)</button>
+                    <button type="button" class="btn-pdf-relatorio" style="margin-bottom:10px; margin-left:8px; background:#b02a37;" onclick="rhGerirFaltaDia()">🚫 Falta injustificada / atestado (RH)</button>
                     <div id="f-tabela-discriminacao" style="overflow-x:auto; max-height:560px; overflow-y:auto; border:1px solid #e0e6ed; border-radius:10px;"></div>
                 </details>
             </div>
@@ -2156,6 +2168,107 @@ function separarDataSegura(dataString) {
             incluirExtras: elEx ? elEx.checked : true,
             incluirDescontoHoras: elDc ? elDc.checked : true
         };
+    }
+
+    function isoParaDataBr(iso) {
+        if (!iso || String(iso).indexOf('-') < 0) return '';
+        const p = String(iso).split('-');
+        return `${p[2]}/${p[1]}/${p[0]}`;
+    }
+
+    function chaveSemanaDsrDomingo(isoOuDate) {
+        const dt = typeof isoOuDate === 'string' ? isoParaDateLocal(isoOuDate) : isoOuDate;
+        if (!dt) return '';
+        const d = new Date(dt.getTime());
+        d.setDate(d.getDate() - d.getDay());
+        return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+    }
+
+    /** DSR perdido: 1 descanso (domingo) por semana com falta injustificada em dia devido (CLT / Súmula 146). */
+    function calcularDsrPerdidosPorFaltas(faltasIsoLista, anoNum, mesNum, diasNoMesCalc, admIso, demIso) {
+        const semanasComFalta = new Set();
+        (faltasIsoLista || []).forEach(function (iso) {
+            if (!iso || !isDiaContratoAtivo(iso, admIso, demIso)) return;
+            const k = chaveSemanaDsrDomingo(iso);
+            if (k) semanasComFalta.add(k);
+        });
+        const domingosPerdidos = [];
+        for (let d = 1; d <= diasNoMesCalc; d++) {
+            const isoD = `${anoNum}-${String(mesNum).padStart(2, '0')}-${String(d).padStart(2, '0')}`;
+            const dt = new Date(anoNum, mesNum - 1, d);
+            if (dt.getDay() !== 0) continue;
+            if (!isDiaContratoAtivo(isoD, admIso, demIso)) continue;
+            const semKey = chaveSemanaDsrDomingo(isoD);
+            if (semanasComFalta.has(semKey)) {
+                domingosPerdidos.push({ iso: isoD, dataBr: isoParaDataBr(isoD), semana: semKey });
+            }
+        }
+        return { dsrPerdidos: domingosPerdidos.length, domingosPerdidos: domingosPerdidos };
+    }
+
+    function eventoFaltaNoMes(ev, mesSelected, anoSelected) {
+        if (!ev) return false;
+        let iso = ev.data_iso || '';
+        if (!iso && ev.data_br) {
+            const br = formatarDataBrPadrao(ev.data_br);
+            const s = separarDataSegura(br);
+            if (s.ano !== 'Outros') iso = `${s.ano}-${s.mes}-${s.dia}`;
+        }
+        if (!iso) return false;
+        const p = iso.split('-');
+        return Number(p[1]) === Number(mesSelected) && Number(p[0]) === Number(anoSelected);
+    }
+
+    function indexarEventosFaltasRh(snapEvt, mesSelected, anoSelected) {
+        const injust = new Map();
+        const just = new Map();
+        snapEvt.forEach(function (ed) {
+            const ev = ed.data();
+            if (!ev || !eventoFaltaNoMes(ev, mesSelected, anoSelected)) return;
+            let iso = ev.data_iso || '';
+            if (!iso && ev.data_br) {
+                const br = formatarDataBrPadrao(ev.data_br);
+                const s = separarDataSegura(br);
+                if (s.ano !== 'Outros') iso = `${s.ano}-${s.mes}-${s.dia}`;
+            }
+            if (!iso) return;
+            const item = {
+                id: ed.id,
+                motivo: ev.motivo || '',
+                iso: iso,
+                dataBr: isoParaDataBr(iso),
+                descontarDsr: ev.descontar_dsr !== false
+            };
+            if (ev.tipo === 'FALTA_INJUSTIFICADA') injust.set(iso, item);
+            if (ev.tipo === 'FALTA_JUSTIFICADA') just.set(iso, item);
+        });
+        return { injust: injust, just: just };
+    }
+
+    function ehFaltaInjustificadaNoDia(isoD, workedD, faltasRhInjust, faltasRhJust) {
+        if (faltasRhJust && faltasRhJust.has(isoD)) return false;
+        if (faltasRhInjust && faltasRhInjust.has(isoD)) return true;
+        return workedD <= 0;
+    }
+
+    /** Falta automática (sem RH) sempre desconta DSR; RH pode optar por não descontar DSR no registo. */
+    function faltaInjustDescontaDsr(evRh, marcadaRhInjust) {
+        if (!marcadaRhInjust) return true;
+        if (!evRh) return true;
+        return evRh.descontarDsr !== false;
+    }
+
+    function textoDescontoFaltaInjust(marcadaRhInjust, evRh, textoBaseAutomatico, resumoExtra) {
+        const comDsr = faltaInjustDescontaDsr(evRh, marcadaRhInjust);
+        const motivoTxt = evRh && evRh.motivo ? ' — ' + evRh.motivo : '';
+        const base = marcadaRhInjust
+            ? 'Falta injustificada registada pelo RH' + motivoTxt + '.'
+            : textoBaseAutomatico;
+        const extra = resumoExtra ? ' ' + resumoExtra : '';
+        if (comDsr) {
+            return base + ' Desconto: 1 dia + DSR da semana (se domingo no mês).' + extra;
+        }
+        return base + ' Desconto: 1 dia apenas (RH optou por não descontar DSR).' + extra;
     }
 
     /** Quantidade de dias do mês no calendário (mes 1–12). Maio/2026 = 31. */
@@ -5216,6 +5329,8 @@ window.gerarFolhaPagamento = async function() {
             const pontoSnap = await getDocs(qPonto);
 
             const canceladosPonto = new Set();
+            let faltasRhInjust = new Map();
+            let faltasRhJust = new Map();
             try {
                 const qEvtP = query(collection(db, "ponto_eventos"), where("funcionario_id", "==", funcId));
                 const snapEvtP = await getDocs(qEvtP);
@@ -5223,6 +5338,9 @@ window.gerarFolhaPagamento = async function() {
                     const ev = ed.data();
                     if (ev && ev.tipo === "CANCELAMENTO" && ev.ponto_id) canceladosPonto.add(ev.ponto_id);
                 });
+                const idxF = indexarEventosFaltasRh(snapEvtP, mesSelected, anoSelected);
+                faltasRhInjust = idxF.injust;
+                faltasRhJust = idxF.just;
             } catch (_) { /* sem eventos */ }
 
             let pontosDoMes = [];
@@ -5421,6 +5539,8 @@ window.gerarFolhaPagamento = async function() {
             let diasPagos = 0;
             let diasNoVinculoCalendario = 0;
             let faltasInjustificadas = 0;
+            const datasFaltasInjustificadasIso = [];
+            const datasFaltasComDsrIso = [];
             let diasFeriasNoMes = 0;
             let diasDevidosNoMes = 0;
             const discriminacaoDias = [];
@@ -5533,27 +5653,65 @@ window.gerarFolhaPagamento = async function() {
                 let diaPago = workedD > 0;
                 let situacao = '';
 
+                const marcadaRhInjust = faltasRhInjust.has(isoD);
+                const marcadaRhJust = faltasRhJust.has(isoD);
+                const ehFaltaInjust = ehFaltaInjustificadaNoDia(isoD, workedD, faltasRhInjust, faltasRhJust);
+
                 if (tipoRemuneracao === 'mensal') {
-                    if (workedD > 0) {
+                    if (ehFaltaInjust) {
+                        faltasInjustificadas += 1;
+                        datasFaltasInjustificadasIso.push(isoD);
+                        const evRh = faltasRhInjust.get(isoD);
+                        if (faltaInjustDescontaDsr(evRh, marcadaRhInjust)) datasFaltasComDsrIso.push(isoD);
+                        diaPago = false;
+                        situacao = textoDescontoFaltaInjust(
+                            marcadaRhInjust,
+                            evRh,
+                            'Falta injustificada (sem registro de ponto).',
+                            resumoBatidasDia
+                        );
+                    } else if (workedD > 0) {
                         diasPagos += 1;
                         horasFaltantes += Math.max(0, expectedD - workedD);
                         diaPago = true;
                         situacao = (faltaD === 0)
                             ? 'Jornada do dia cumprida (sem horas devidas).'
                             : `Atraso e/ou saída antecipada: faltaram ${formatarHorasDecimais(faltaD)} para completar a jornada esperada. ${resumoBatidasDia}`;
+                        if (marcadaRhJust) {
+                            const ej = faltasRhJust.get(isoD);
+                            situacao += ` Atestado/justificativa RH${ej && ej.motivo ? ': ' + ej.motivo : ''}.`;
+                        }
                     } else {
-                        faltasInjustificadas += 1;
                         diaPago = false;
-                        situacao = 'Falta injustificada (sem registro de ponto) — desconto de 1 dia (salário ÷ 30) no modo mensal CLT.';
+                        situacao = 'Sem registro de ponto — verifique se há atestado RH ou marque falta injustificada.';
                     }
+                } else if (ehFaltaInjust) {
+                    faltasInjustificadas += 1;
+                    datasFaltasInjustificadasIso.push(isoD);
+                    const evRh = faltasRhInjust.get(isoD);
+                    if (faltaInjustDescontaDsr(evRh, marcadaRhInjust)) datasFaltasComDsrIso.push(isoD);
+                    diaPago = false;
+                    situacao = textoDescontoFaltaInjust(
+                        marcadaRhInjust,
+                        evRh,
+                        'Falta injustificada (dia útil/sábado de escala sem ponto).',
+                        resumoBatidasDia
+                    );
                 } else if (diaPago) {
                     diasPagos += 1;
                     horasFaltantes += Math.max(0, expectedD - workedD);
                     situacao = (faltaD === 0)
                         ? 'Jornada do dia cumprida (sem horas devidas).'
                         : `Atraso e/ou saída antecipada: faltaram ${formatarHorasDecimais(faltaD)} para completar a jornada esperada. ${resumoBatidasDia}`;
+                    if (marcadaRhJust) {
+                        const ej = faltasRhJust.get(isoD);
+                        situacao += ` Justificada pelo RH${ej && ej.motivo ? ': ' + ej.motivo : ''}.`;
+                    }
+                } else if (marcadaRhJust) {
+                    const ej = faltasRhJust.get(isoD);
+                    situacao = `Ausência justificada pelo RH (atestado)${ej && ej.motivo ? ' — ' + ej.motivo : ''}. Não conta como falta nem desconta DSR.`;
                 } else {
-                    situacao = `Sem registro de ponto neste dia — não entra como “dia pago” no salário proporcional. ${resumoBatidasDia}`;
+                    situacao = `Sem registro de ponto. Marque <b>falta injustificada</b> ou <b>atestado</b> no RH se aplicável. ${resumoBatidasDia}`;
                 }
 
                 const esperadoTxtLinha = (dowD === 6)
@@ -5567,7 +5725,7 @@ window.gerarFolhaPagamento = async function() {
                     esperadoTxt: esperadoTxtLinha,
                     trabalhadoTxt: formatarHorasDecimais(workedD),
                     diferencaTxt: formatarHorasDecimais(expectedD - workedD),
-                    diaPagoTxt: tipoRemuneracao === 'mensal'
+                    diaPagoTxt: (tipoRemuneracao === 'mensal' || tipoRemuneracao === 'ponto')
                         ? (diaPago ? 'Sim' : 'Falta')
                         : (diaPago ? 'Sim' : 'Não'),
                     situacao
@@ -5589,10 +5747,11 @@ window.gerarFolhaPagamento = async function() {
             } else {
                 const divPonto = diasDevidosNoMes > 0 ? diasDevidosNoMes : diasMesParaSalario;
                 valorDiaSalario = salarioBase / divPonto;
-                salarioProporcional = valorDiaSalario * diasPagos;
-                diasPagosExibir = diasPagos;
+                const diasElegiveisPonto = Math.max(0, diasDevidosNoMes - faltasInjustificadas);
+                const diasRemuneradosPonto = Math.min(diasPagos, diasElegiveisPonto);
+                salarioProporcional = valorDiaSalario * diasRemuneradosPonto;
+                diasPagosExibir = diasRemuneradosPonto;
             }
-
             valorHoraDesconto = valorDiaSalario / horasBaseDescontoPorDia;
             const valorBaseFeriasMes = valorDiaMensalClt * diasFeriasNoMes;
             const valorFeriasClt = feriasInicioIso && diasFeriasNoMes > 0 ? valorBaseFeriasMes * (4 / 3) : 0;
@@ -5600,6 +5759,13 @@ window.gerarFolhaPagamento = async function() {
             const opcoesFolha = lerFolhaOpcoesCalculo();
             const valorExtrasFolha = opcoesFolha.incluirExtras ? valorTotalReceberExtras : 0;
             const valorDescontoHorasFolha = opcoesFolha.incluirDescontoHoras ? valorDescontoHorasCalc : 0;
+
+            const dsrCalc = calcularDsrPerdidosPorFaltas(
+                datasFaltasComDsrIso, anoNum, mesNum, diasNoMesCalc, admIso, demIso
+            );
+            const dsrPerdidos = dsrCalc.dsrPerdidos;
+            const valorDescontoFaltasLinha = valorDiaSalario * faltasInjustificadas;
+            const valorDescontoDsr = valorDiaSalario * dsrPerdidos;
 
             // Banco de horas (saldo): crédito - débito (atrasos)
             const bancoHorasSaldoDecimais = (bancoHorasCreditoDecimais || 0) - (horasFaltantes || 0);
@@ -5621,7 +5787,7 @@ window.gerarFolhaPagamento = async function() {
             // 3. CÁLCULO DO LÍQUIDO — valor real do fechamento (pode ser negativo se vales/atrasos excederem créditos)
             const liquidoReceber =
                 (salarioProporcional + valorFeriasClt + valorExtrasFolha) -
-                (totalDinheiro + totalProduto + valorDescontoHorasFolha + totalDescontosLancados);
+                (totalDinheiro + totalProduto + valorDescontoHorasFolha + valorDescontoDsr + totalDescontosLancados);
 
             document.getElementById('f-nome-display').innerText = funcionario.nome;
             const mesNomeCal = nomeMeses[mesSelected] || mesSelected;
@@ -5668,12 +5834,14 @@ window.gerarFolhaPagamento = async function() {
             const elLinhaFaltas = document.getElementById('f-linha-faltas-mensal');
             const elFaltas = document.getElementById('f-faltas-mensal');
             if (elLinhaFaltas && elFaltas) {
-                if (tipoRemuneracao === 'mensal') {
-                    elLinhaFaltas.style.display = 'flex';
-                    elFaltas.innerText = String(faltasInjustificadas);
-                } else {
-                    elLinhaFaltas.style.display = 'none';
-                }
+                elLinhaFaltas.style.display = faltasInjustificadas > 0 ? 'flex' : 'none';
+                elFaltas.innerText = String(faltasInjustificadas);
+            }
+            const elLabelFaltas = document.querySelector('#f-linha-faltas-mensal span');
+            if (elLabelFaltas) {
+                elLabelFaltas.innerText = tipoRemuneracao === 'mensal'
+                    ? 'Faltas (desconto 1 dia cada, ÷ 30):'
+                    : 'Faltas sem ponto (desconto 1 dia cada):';
             }
             const elTipoRem = document.getElementById('f-tipo-remuneracao-display');
             if (elTipoRem) elTipoRem.innerText = labelTipoRemuneracao(tipoRemuneracao);
@@ -5694,9 +5862,12 @@ window.gerarFolhaPagamento = async function() {
                     }
                 } else {
                     const divP = diasDevidosNoMes > 0 ? diasDevidosNoMes : diasMesParaSalario;
-                    detSal.innerHTML = `<b>Modo por ponto</b> — salário ÷ <b>${divP}</b> dias a trabalhar no mês (não ÷ 30).<br>
-                        <b>Conta:</b> ${formatarMoeda(salarioBase)} ÷ ${divP} = ${formatarMoeda(valorDiaSalario)}/dia × ${diasPagosExibir} dia(s) com ponto = <b>${formatarMoeda(salarioProporcional)}</b>.<br>
-                        <span style="color:#888;">Só entra dia com batida (seg–sex e sábado com escala). Domingo/feriado não entram no proporcional (extra +100% se houver ponto).</span>`;
+                    detSal.innerHTML = `<b>Modo por ponto</b> — salário ÷ <b>${divP}</b> dias a trabalhar no mês.<br>
+                        <b>Conta:</b> ${formatarMoeda(salarioBase)} ÷ ${divP} = ${formatarMoeda(valorDiaSalario)}/dia` +
+                        (faltasInjustificadas > 0
+                            ? ` × ${divP} dias devidos − ${faltasInjustificadas} falta(s) × ${formatarMoeda(valorDiaSalario)} = <b>${formatarMoeda(salarioProporcional)}</b>.`
+                            : ` × ${diasPagosExibir} dia(s) com ponto = <b>${formatarMoeda(salarioProporcional)}</b>.`) +
+                        `<br><span style="color:#888;">Dia útil ou sábado de escala <b>sem batida</b> = falta (desconto de 1 dia). Domingo/feriado não entram no proporcional.</span>`;
                 }
             }
 
@@ -5812,6 +5983,56 @@ window.gerarFolhaPagamento = async function() {
             document.getElementById('f-valor-vales').innerText = formatarMoeda(totalDinheiro);
             document.getElementById('f-valor-produtos').innerText = formatarMoeda(totalProduto);
 
+            const elLinhaDf = document.getElementById('f-linha-desconto-faltas');
+            const elLinhaDsr = document.getElementById('f-linha-desconto-dsr');
+            if (elLinhaDf) {
+                elLinhaDf.style.display = faltasInjustificadas > 0 ? 'flex' : 'none';
+                const elTxt = document.getElementById('f-desconto-faltas-texto');
+                const elVal = document.getElementById('f-valor-desconto-faltas');
+                if (elTxt) elTxt.innerText = `(-) Faltas injustificadas (${faltasInjustificadas} dia${faltasInjustificadas === 1 ? '' : 's'}):`;
+                if (elVal) elVal.innerText = formatarMoeda(valorDescontoFaltasLinha);
+            }
+            const detDf = document.getElementById('f-detalhe-desconto-faltas');
+            if (detDf) {
+                if (faltasInjustificadas > 0) {
+                    const datasTxt = datasFaltasInjustificadasIso.map(isoParaDataBr).join(', ');
+                    const faltasSemDsrTxt = datasFaltasInjustificadasIso
+                        .filter(function (iso) {
+                            const ev = faltasRhInjust.get(iso);
+                            return faltasRhInjust.has(iso) && ev && ev.descontarDsr === false;
+                        })
+                        .map(isoParaDataBr)
+                        .join(', ');
+                    detDf.innerHTML = `<b>Desconto por falta:</b> ${faltasInjustificadas} × ${formatarMoeda(valorDiaSalario)}/dia = <b>${formatarMoeda(valorDescontoFaltasLinha)}</b>.` +
+                        (datasTxt ? `<br><span style="color:#666;">Datas: ${datasTxt}. Pode marcar/alterar em <b>Ponto → Falta injustificada / atestado (RH)</b>.</span>` : '') +
+                        (faltasSemDsrTxt ? `<br><span style="color:#856404;">Sem desconto de DSR (opção RH): ${faltasSemDsrTxt}.</span>` : '');
+                } else {
+                    detDf.innerHTML = '';
+                }
+            }
+            if (elLinhaDsr) {
+                elLinhaDsr.style.display = dsrPerdidos > 0 ? 'flex' : 'none';
+                const elTxtD = document.getElementById('f-desconto-dsr-texto');
+                const elValD = document.getElementById('f-valor-desconto-dsr');
+                if (elTxtD) elTxtD.innerText = `(-) DSR perdido (${dsrPerdidos} descanso${dsrPerdidos === 1 ? '' : 's'}):`;
+                if (elValD) elValD.innerText = formatarMoeda(valorDescontoDsr);
+            }
+            const detDsr = document.getElementById('f-detalhe-desconto-dsr');
+            if (detDsr) {
+                if (dsrPerdidos > 0) {
+                    const doms = (dsrCalc.domingosPerdidos || []).map(function (x) { return x.dataBr; }).join(', ');
+                    detDsr.innerHTML = `<b>Descanso semanal remunerado (CLT):</b> falta injustificada na semana → perde 1 DSR (${formatarMoeda(valorDiaSalario)}/descanso).` +
+                        `<br><b>Domingos descontados neste mês:</b> ${doms || '—'}.`;
+                } else {
+                    const faltasSemDsrCount = datasFaltasInjustificadasIso.length - datasFaltasComDsrIso.length;
+                    detDsr.innerHTML = faltasInjustificadas > 0
+                        ? '<span style="color:#888;">Nenhum DSR descontado neste mês' +
+                            (faltasSemDsrCount > 0 ? ' (RH optou por não descontar DSR em ' + faltasSemDsrCount + ' falta(s)).' : ' (semana sem domingo no período ou sem falta com DSR).') +
+                            '</span>'
+                        : '';
+                }
+            }
+
             const horasFaltDisplay = Math.floor(horasFaltantes);
             const minFaltDisplay = Math.round((horasFaltantes - horasFaltDisplay) * 60);
             const sufixoDescLiq = opcoesFolha.incluirDescontoHoras ? '' : ' — não incluído no líquido';
@@ -5870,10 +6091,14 @@ window.gerarFolhaPagamento = async function() {
                 const lblAtrasosForm = opcoesFolha.incluirDescontoHoras
                     ? formatarMoeda(valorDescontoHorasFolha) + ' (atrasos)'
                     : '0,00 (atrasos — opção desligada; calc. ' + formatarMoeda(valorDescontoHorasCalc) + ')';
+                const lblDsrForm = dsrPerdidos > 0 ? formatarMoeda(valorDescontoDsr) + ' (DSR ' + dsrPerdidos + '×)' : '0,00 (DSR)';
+                const lblFaltasForm = faltasInjustificadas > 0
+                    ? formatarMoeda(valorDescontoFaltasLinha) + ' (já no proporcional; ' + faltasInjustificadas + ' falta(s))'
+                    : '0,00 (faltas)';
                 let txtForm = `<b>Fórmula do líquido:</b><br>
-                ${formatarMoeda(salarioProporcional)} (proporcional) + ${formatarMoeda(valorFeriasClt)} (férias CLT) + ${lblExtrasForm}
-                − ${formatarMoeda(totalDinheiro)} (vales) − ${formatarMoeda(totalProduto)} (produtos) − ${lblAtrasosForm}${totalDescontosLancados > 0 ? ' − ' + formatarMoeda(totalDescontosLancados) + ' (INSS/outros)' : ''}
-                = <b>${formatarMoeda(liquidoReceber)}</b>`;
+                ${formatarMoeda(salarioProporcional)} (proporcional, já c/ faltas) + ${formatarMoeda(valorFeriasClt)} (férias CLT) + ${lblExtrasForm}
+                − ${formatarMoeda(totalDinheiro)} (vales) − ${formatarMoeda(totalProduto)} (produtos) − ${lblDsrForm} − ${lblAtrasosForm}${totalDescontosLancados > 0 ? ' − ' + formatarMoeda(totalDescontosLancados) + ' (INSS/outros)' : ''}
+                = <b>${formatarMoeda(liquidoReceber)}</b><br><small>Faltas ${lblFaltasForm}.</small>`;
                 if (nAjuda > 0) {
                     txtForm += `<br><br><span style="color:#0d6efd;"><b>Recebimento PLUS (fora do líquido):</b> Ajuda de custo ${formatarMoeda(totalAjudaCusto)} — pago à parte, sem somar nem descontar do valor acima.</span>`;
                 }
@@ -5935,8 +6160,16 @@ window.gerarFolhaPagamento = async function() {
                     ? 'Salário mensal CLT' + (faltasInjustificadas > 0 ? ' (− ' + faltasInjustificadas + ' falta(s))' : '')
                     : 'Salário mensal CLT (' + diasNoVinculoCalendario + ' dias no vínculo)')
                 : ('Salário por ponto (' + diasPagosExibir + ' dias × ' + formatarMoeda(valorDiaSalario) + ')');
+            const usarSalarioBrutoHolerite = (tipoRemuneracao === 'mensal' && mesCheio) || tipoRemuneracao === 'ponto';
+            let valorProventoSalarioPdf = salarioProporcional;
+            if (tipoRemuneracao === 'mensal' && mesCheio) {
+                valorProventoSalarioPdf = salarioBase;
+            } else if (tipoRemuneracao === 'ponto') {
+                const divP = diasDevidosNoMes > 0 ? diasDevidosNoMes : diasMesParaSalario;
+                valorProventoSalarioPdf = valorDiaSalario * divP;
+            }
             const proventosPdf = [
-                { label: labelSalProp, valor: salarioProporcional },
+                { label: usarSalarioBrutoHolerite ? 'Salário mensal CLT (contrato)' : labelSalProp, valor: valorProventoSalarioPdf },
                 { label: 'Férias + 1/3 constitucional (' + diasFeriasNoMes + ' dias)', valor: valorFeriasClt },
                 {
                     label: 'Horas extras (' + h50 + 'h ' + m50 + 'm +50% · ' + h100 + 'h ' + m100 + 'm +100%)',
@@ -5944,7 +6177,20 @@ window.gerarFolhaPagamento = async function() {
                     valorCalculado: valorTotalReceberExtras
                 }
             ];
-            const descontosPdf = [
+            const descontosPdf = [];
+            if (faltasInjustificadas > 0 && usarSalarioBrutoHolerite) {
+                descontosPdf.push({
+                    label: 'Faltas injustificadas (' + faltasInjustificadas + ' dia' + (faltasInjustificadas === 1 ? '' : 's') + ')',
+                    valor: valorDescontoFaltasLinha
+                });
+            }
+            if (dsrPerdidos > 0) {
+                descontosPdf.push({
+                    label: 'DSR perdido (' + dsrPerdidos + ' descanso' + (dsrPerdidos === 1 ? '' : 's') + ')',
+                    valor: valorDescontoDsr
+                });
+            }
+            descontosPdf.push(
                 { label: 'Vales / adiantamentos', valor: totalDinheiro },
                 { label: 'Produtos / materiais', valor: totalProduto },
                 {
@@ -5952,7 +6198,7 @@ window.gerarFolhaPagamento = async function() {
                     valor: valorDescontoHorasFolha,
                     valorCalculado: valorDescontoHorasCalc
                 }
-            ];
+            );
             itensDescontosFolha.forEach(it => {
                 descontosPdf.push({
                     label: labelDescontoFolhaExibir(it),
@@ -5974,8 +6220,8 @@ window.gerarFolhaPagamento = async function() {
                 diasPagos: diasPagosExibir,
                 proventos: proventosPdf,
                 descontos: descontosPdf,
-                totalProventos: salarioProporcional + valorFeriasClt + valorExtrasFolha,
-                totalDescontos: totalDinheiro + totalProduto + valorDescontoHorasFolha + totalDescontosLancados,
+                totalProventos: valorProventoSalarioPdf + valorFeriasClt + valorExtrasFolha,
+                totalDescontos: (usarSalarioBrutoHolerite ? valorDescontoFaltasLinha : 0) + valorDescontoDsr + totalDinheiro + totalProduto + valorDescontoHorasFolha + totalDescontosLancados,
                 liquido: liquidoReceber,
                 liquidoNegativo: liquidoReceber < 0,
                 opcoesFolha: opcoesFolha,
@@ -5985,7 +6231,10 @@ window.gerarFolhaPagamento = async function() {
                 ajudaCustoTotal: totalAjudaCusto,
                 ajudaCustoItens: itensAjudaCusto.slice(),
                 tipoRemuneracao: tipoRemuneracao,
-                faltasMensal: faltasInjustificadas
+                faltasMensal: faltasInjustificadas,
+                dsrPerdidos: dsrPerdidos,
+                valorDescontoFaltas: valorDescontoFaltasLinha,
+                valorDescontoDsr: valorDescontoDsr
             };
 
             document.getElementById('resultado-folha').style.display = 'block';
@@ -6515,25 +6764,52 @@ window.gerarFolhaPagamento = async function() {
             const qEvt = query(collection(db, "ponto_eventos"), where("funcionario_id", "==", funcId));
             const snapEvt = await getDocs(qEvt);
             const infoCancelamentoPorPonto = new Map();
+            const faltasRhPorMes = {};
+            let totalFaltasRh = 0;
             snapEvt.forEach((d) => {
                 const ev = d.data();
-                if (!(ev && ev.tipo === 'CANCELAMENTO' && ev.ponto_id)) return;
-                let tsMs = 0;
-                const t = ev.criado_em;
-                if (t && typeof t.toMillis === 'function') tsMs = t.toMillis();
-                else if (t && typeof t.seconds === 'number') tsMs = t.seconds * 1000;
-                const prev = infoCancelamentoPorPonto.get(ev.ponto_id);
-                if (!prev || tsMs >= prev.tsMs) {
-                    infoCancelamentoPorPonto.set(ev.ponto_id, {
-                        tsMs: tsMs,
-                        motivo: String(ev.motivo || '—').trim()
-                    });
+                if (!ev) return;
+                if (ev.tipo === 'CANCELAMENTO' && ev.ponto_id) {
+                    let tsMs = 0;
+                    const t = ev.criado_em;
+                    if (t && typeof t.toMillis === 'function') tsMs = t.toMillis();
+                    else if (t && typeof t.seconds === 'number') tsMs = t.seconds * 1000;
+                    const prev = infoCancelamentoPorPonto.get(ev.ponto_id);
+                    if (!prev || tsMs >= prev.tsMs) {
+                        infoCancelamentoPorPonto.set(ev.ponto_id, {
+                            tsMs: tsMs,
+                            motivo: String(ev.motivo || '—').trim()
+                        });
+                    }
+                    return;
                 }
+                if (ev.tipo !== 'FALTA_INJUSTIFICADA' && ev.tipo !== 'FALTA_JUSTIFICADA') return;
+                let iso = ev.data_iso || '';
+                if (!iso && ev.data_br) {
+                    const br = formatarDataBrPadrao(ev.data_br);
+                    const s = separarDataSegura(br);
+                    if (s.ano !== 'Outros') iso = `${s.ano}-${s.mes}-${s.dia}`;
+                }
+                if (!iso) return;
+                const dataBrF = isoParaDataBr(iso);
+                const partes = separarDataSegura(dataBrF);
+                const anoF = partes.ano;
+                const mesF = partes.mes;
+                if (!faltasRhPorMes[anoF]) faltasRhPorMes[anoF] = {};
+                if (!faltasRhPorMes[anoF][mesF]) faltasRhPorMes[anoF][mesF] = [];
+                faltasRhPorMes[anoF][mesF].push({
+                    tipo: ev.tipo,
+                    iso: iso,
+                    dataBr: dataBrF,
+                    motivo: String(ev.motivo || '').trim(),
+                    descontarDsr: ev.descontar_dsr !== false
+                });
+                totalFaltasRh += 1;
             });
-            
-            if (querySnapshot.empty) { 
-                divLista.innerHTML = `<p style="color:#d9534f; text-align:center;">Nenhum registo.</p>`; 
-                return; 
+
+            if (querySnapshot.empty && totalFaltasRh === 0) {
+                divLista.innerHTML = `<p style="color:#d9534f; text-align:center;">Nenhum registo.</p>`;
+                return;
             }
 
             let agrupado = {};
@@ -6561,7 +6837,14 @@ window.gerarFolhaPagamento = async function() {
                 agrupado[ano][mes].push(dados);
             });
 
-            btnExportar.style.display = 'block'; 
+            Object.keys(faltasRhPorMes).forEach(function (anoF) {
+                if (!agrupado[anoF]) agrupado[anoF] = {};
+                Object.keys(faltasRhPorMes[anoF]).forEach(function (mesF) {
+                    if (!agrupado[anoF][mesF]) agrupado[anoF][mesF] = [];
+                });
+            });
+
+            btnExportar.style.display = querySnapshot.empty ? 'none' : 'block';
             let htmlFinal = "";
             
             let chavesAno = Object.keys(agrupado).sort((a, b) => { 
@@ -6581,7 +6864,33 @@ window.gerarFolhaPagamento = async function() {
                 
                 chavesMes.forEach(mes => {
                    const nomeDoMes = nomeMeses[mes] || mes;
-                   htmlFinal += `<details class="pasta-mes" open><summary>${nomeDoMes.toUpperCase()}</summary>...`;
+                   htmlFinal += `<details class="pasta-mes" open><summary>${nomeDoMes.toUpperCase()}</summary><div class="folder-content">`;
+
+                    const faltasMesArr = (faltasRhPorMes[ano] && faltasRhPorMes[ano][mes]) ? faltasRhPorMes[ano][mes].slice() : [];
+                    if (faltasMesArr.length) {
+                        faltasMesArr.sort(function (a, b) { return String(b.iso).localeCompare(String(a.iso)); });
+                        htmlFinal += `<div style="margin:8px 0 12px;padding:10px;background:#fff5f5;border:1px solid #f5c6cb;border-radius:8px;">
+                            <div style="font-weight:700;font-size:12px;color:#b02a37;margin-bottom:8px;">Faltas / atestados registados pelo RH</div>`;
+                        faltasMesArr.forEach(function (f) {
+                            const injust = f.tipo === 'FALTA_INJUSTIFICADA';
+                            const corF = injust ? '#b02a37' : '#28a745';
+                            const lblF = injust ? 'Falta injustificada' : 'Atestado / justificada';
+                            const detF = injust
+                                ? (f.descontarDsr === false
+                                    ? 'Desconta 1 dia de salário na folha (sem DSR — opção RH).'
+                                    : 'Desconta 1 dia de salário + DSR da semana na folha.')
+                                : 'Não conta como falta nem desconta DSR na folha.';
+                            const motivoEscF = escapeHtmlBasico(f.motivo || '');
+                            const dataBrJs = String(f.dataBr || '').replace(/\\/g, '\\\\').replace(/'/g, "\\'");
+                            htmlFinal += `<div class="resultado-item" style="border-left-color:${corF};margin-bottom:6px;">
+                                <b style="color:${corF}">${lblF}</b> — ${escapeHtmlBasico(f.dataBr)}<br>
+                                <span style="font-size:12px;color:#555;">${detF}</span>
+                                ${motivoEscF ? `<br><span style="font-size:12px;color:#666;"><b>Motivo:</b> ${motivoEscF}</span>` : ''}
+                                <button type="button" onclick="rhGerirFaltaDia('${dataBrJs}')" style="background:#6c757d;color:white;border:none;padding:6px 10px;border-radius:5px;cursor:pointer;margin-top:6px;font-size:11px;font-weight:bold;">✏️ Editar / remover</button>
+                            </div>`;
+                        });
+                        htmlFinal += `</div>`;
+                    }
 
                     agrupado[ano][mes].sort((a, b) => { 
                         return (b.timestamp || 0) - (a.timestamp || 0); 
@@ -7101,6 +7410,220 @@ window.gerarFolhaPagamento = async function() {
             console.error(e);
             Swal.close();
             Swal.fire('Erro', 'Não foi possível guardar a jornada. Verifique permissões do Firestore.', 'error');
+        }
+    };
+
+    async function removerEventosFaltaRhNaData(funcId, dataIso) {
+        const qEvt = query(collection(db, 'ponto_eventos'), where('funcionario_id', '==', funcId));
+        const snap = await getDocs(qEvt);
+        const idsApagar = [];
+        snap.forEach(function (ed) {
+            const ev = ed.data();
+            if (!ev || (ev.tipo !== 'FALTA_INJUSTIFICADA' && ev.tipo !== 'FALTA_JUSTIFICADA')) return;
+            let iso = ev.data_iso || '';
+            if (!iso && ev.data_br) {
+                const br = formatarDataBrPadrao(ev.data_br);
+                const s = separarDataSegura(br);
+                if (s.ano !== 'Outros') iso = `${s.ano}-${s.mes}-${s.dia}`;
+            }
+            if (iso === dataIso) idsApagar.push(ed.id);
+        });
+        for (let i = 0; i < idsApagar.length; i++) {
+            await deleteDoc(doc(db, 'ponto_eventos', idsApagar[i]));
+        }
+        return idsApagar.length;
+    }
+
+    window.rhGerirFaltaDia = async function (dataBrSugerida) {
+        const empresaLogada = localStorage.getItem('empresaGestor');
+        if (!empresaLogada) {
+            return Swal.fire('Atenção', 'Entre como gestor (RH).', 'warning');
+        }
+        const funcId = obterFuncionarioIdContextoRH();
+        if (!funcId || !window.listaFuncionarios || !window.listaFuncionarios[funcId]) {
+            return Swal.fire('Atenção', 'Selecione o funcionário em <b>Consultar ponto</b> ou na <b>Folha de pagamento</b>.', 'warning');
+        }
+        registrarFuncionarioContextoRH(funcId);
+        const nomeFunc = window.listaFuncionarios[funcId].nome || 'Funcionário';
+
+        let eventosExistentes = [];
+        try {
+            const qEvt = query(collection(db, 'ponto_eventos'), where('funcionario_id', '==', funcId));
+            const snap = await getDocs(qEvt);
+            snap.forEach(function (ed) {
+                const ev = ed.data();
+                if (!ev || (ev.tipo !== 'FALTA_INJUSTIFICADA' && ev.tipo !== 'FALTA_JUSTIFICADA')) return;
+                let iso = ev.data_iso || '';
+                if (!iso && ev.data_br) {
+                    const br = formatarDataBrPadrao(ev.data_br);
+                    const s = separarDataSegura(br);
+                    if (s.ano !== 'Outros') iso = `${s.ano}-${s.mes}-${s.dia}`;
+                }
+                if (!iso) return;
+                eventosExistentes.push({
+                    id: ed.id,
+                    tipo: ev.tipo,
+                    iso: iso,
+                    dataBr: isoParaDataBr(iso),
+                    motivo: String(ev.motivo || '').trim(),
+                    descontarDsr: ev.descontar_dsr !== false
+                });
+            });
+        } catch (e) {
+            console.warn('Eventos falta RH:', e);
+        }
+        eventosExistentes.sort(function (a, b) { return String(b.iso).localeCompare(String(a.iso)); });
+
+        const listaHtml = eventosExistentes.length
+            ? '<div style="max-height:150px;overflow:auto;text-align:left;font-size:11px;margin-bottom:10px;border:1px solid #ddd;border-radius:6px;padding:8px;background:#fafafa;">' +
+                eventosExistentes.slice(0, 40).map(function (e) {
+                    const injust = e.tipo === 'FALTA_INJUSTIFICADA';
+                    const cor = injust ? '#b02a37' : '#28a745';
+                    const lbl = injust ? 'Injustificada' : 'Justificada';
+                    const dsrLbl = injust && e.descontarDsr === false
+                        ? '<br><span style="color:#856404;font-size:10px;">Sem desconto de DSR</span>'
+                        : (injust ? '<br><span style="color:#666;font-size:10px;">Com desconto de DSR</span>' : '');
+                    return `<div style="margin-bottom:5px;padding:5px 6px;border-bottom:1px solid #eee;">
+                        <b style="color:${cor}">${lbl}</b> — ${escapeHtmlBasico(e.dataBr)}
+                        ${e.motivo ? '<br><span style="color:#666;">' + escapeHtmlBasico(e.motivo) + '</span>' : ''}
+                        ${dsrLbl}
+                    </div>`;
+                }).join('') + '</div>'
+            : '<p style="font-size:11px;color:#888;text-align:left;margin:0 0 10px;">Nenhuma falta ou atestado registado ainda.</p>';
+
+        const dataIsoSug = dataBrSugerida ? dataBrParaInputDateIso(dataBrSugerida) : '';
+
+        const result = await Swal.fire({
+            title: 'Falta injustificada / atestado (RH)',
+            html:
+                `<p style="font-size:12px;text-align:left;margin:0 0 8px;line-height:1.45;"><b>${escapeHtmlBasico(nomeFunc)}</b><br>
+                <b>Falta injustificada:</b> desconta 1 dia na folha (DSR opcional abaixo).<br>
+                <b>Atestado / justificada:</b> remove a falta automática (dia sem ponto).</p>` +
+                listaHtml +
+                '<p style="font-size:12px;text-align:left;margin:12px 0 6px;font-weight:700;">Registar ou alterar:</p>' +
+                '<label style="display:block;text-align:left;font-size:12px;margin-top:6px;">Data</label>' +
+                '<input id="rh-falta-data" type="date" class="swal2-input" style="margin-top:4px;" value="' + (dataIsoSug || '') + '">' +
+                '<label style="display:block;text-align:left;font-size:12px;margin-top:10px;">Ação</label>' +
+                '<select id="rh-falta-acao" class="swal2-input" style="margin-top:4px;height:auto;padding:8px;">' +
+                '<option value="INJUSTIFICADA">Falta injustificada</option>' +
+                '<option value="JUSTIFICADA">Atestado / justificada (não desconta)</option>' +
+                '<option value="REMOVER">Remover registro desta data</option>' +
+                '</select>' +
+                '<label id="rh-falta-dsr-wrap" style="display:flex;align-items:flex-start;gap:8px;text-align:left;font-size:12px;margin-top:12px;cursor:pointer;">' +
+                '<input type="checkbox" id="rh-falta-dsr" checked style="margin-top:3px;width:auto;">' +
+                '<span><b>Descontar DSR</b> (descanso semanal remunerado) na folha e holerite<br><span style="color:#666;font-size:11px;">Desmarque para descontar <b>somente o dia</b> de falta, sem perder o domingo.</span></span>' +
+                '</label>' +
+                '<label style="display:block;text-align:left;font-size:12px;margin-top:10px;">Motivo / observação</label>' +
+                '<textarea id="rh-falta-motivo" class="swal2-textarea" style="margin-top:4px;min-height:70px;" placeholder="Ex.: Falta sem aviso, atestado médico, etc."></textarea>',
+            width: 520,
+            showCancelButton: true,
+            confirmButtonText: 'Guardar',
+            cancelButtonText: 'Fechar',
+            confirmButtonColor: '#b02a37',
+            focusConfirm: false,
+            didOpen: function () {
+                const elD = document.getElementById('rh-falta-data');
+                const elA = document.getElementById('rh-falta-acao');
+                const elDsrWrap = document.getElementById('rh-falta-dsr-wrap');
+                const elDsr = document.getElementById('rh-falta-dsr');
+                function atualizarCampoDsrRh() {
+                    if (!elDsrWrap || !elA) return;
+                    elDsrWrap.style.display = elA.value === 'INJUSTIFICADA' ? 'flex' : 'none';
+                }
+                if (elA) elA.addEventListener('change', atualizarCampoDsrRh);
+                if (elD && !elD.value) {
+                    const ag = new Date();
+                    elD.value = ag.getFullYear() + '-' + String(ag.getMonth() + 1).padStart(2, '0') + '-' + String(ag.getDate()).padStart(2, '0');
+                }
+                function preencherPorData(isoRef) {
+                    if (!isoRef) return;
+                    const exist = eventosExistentes.find(function (e) { return e.iso === isoRef; });
+                    if (!exist) return;
+                    const elM = document.getElementById('rh-falta-motivo');
+                    if (elA) elA.value = exist.tipo === 'FALTA_INJUSTIFICADA' ? 'INJUSTIFICADA' : 'JUSTIFICADA';
+                    if (elM) elM.value = exist.motivo || '';
+                    if (elDsr) elDsr.checked = exist.descontarDsr !== false;
+                    atualizarCampoDsrRh();
+                }
+                if (dataIsoSug) preencherPorData(dataIsoSug);
+                if (elD) elD.addEventListener('change', function () {
+                    preencherPorData(elD.value);
+                });
+                atualizarCampoDsrRh();
+            },
+            preConfirm: function () {
+                const dataIso = document.getElementById('rh-falta-data').value;
+                const acao = document.getElementById('rh-falta-acao').value;
+                const motivo = (document.getElementById('rh-falta-motivo').value || '').trim();
+                const elDsr = document.getElementById('rh-falta-dsr');
+                const descontarDsr = elDsr ? elDsr.checked : true;
+                if (!dataIso) {
+                    Swal.showValidationMessage('Indique a data.');
+                    return false;
+                }
+                if (acao !== 'REMOVER' && motivo.length < 3) {
+                    Swal.showValidationMessage('Informe um motivo com pelo menos 3 caracteres.');
+                    return false;
+                }
+                return { dataIso: dataIso, dataBR: inputDateIsoParaDataBr(dataIso), acao: acao, motivo: motivo, descontarDsr: descontarDsr };
+            }
+        });
+
+        if (!result.isConfirmed || !result.value) return;
+
+        const val = result.value;
+        Swal.fire({ title: 'A guardar...', allowOutsideClick: false, didOpen: function () { Swal.showLoading(); } });
+
+        try {
+            const user = await ensureAuth();
+            const authUid = user && user.uid ? user.uid : localStorage.getItem('auth_uid') || null;
+            const removidos = await removerEventosFaltaRhNaData(funcId, val.dataIso);
+
+            if (val.acao === 'REMOVER') {
+                Swal.close();
+                await Swal.fire(
+                    'Removido',
+                    removidos > 0
+                        ? `Registro de falta/atestado em <b>${val.dataBR}</b> removido. Recalcule a folha para atualizar descontos.`
+                        : `Não havia registro de falta/atestado em <b>${val.dataBR}</b>.`,
+                    'success'
+                );
+            } else {
+                const tipoEvt = val.acao === 'INJUSTIFICADA' ? 'FALTA_INJUSTIFICADA' : 'FALTA_JUSTIFICADA';
+                const payloadEvt = {
+                    tipo: tipoEvt,
+                    funcionario_id: funcId,
+                    empresa_id: empresaLogada,
+                    gestor_auth_uid: authUid,
+                    data_iso: val.dataIso,
+                    data_br: val.dataBR,
+                    motivo: val.motivo,
+                    criado_em: serverTimestamp()
+                };
+                if (val.acao === 'INJUSTIFICADA') {
+                    payloadEvt.descontar_dsr = val.descontarDsr !== false;
+                }
+                await addDoc(collection(db, 'ponto_eventos'), payloadEvt);
+                Swal.close();
+                const msgTipo = val.acao === 'INJUSTIFICADA'
+                    ? (val.descontarDsr !== false
+                        ? 'Falta injustificada registada. Na folha: desconto de <b>1 dia</b> + <b>DSR</b> da semana (se houver domingo no mês).'
+                        : 'Falta injustificada registada. Na folha: desconto de <b>1 dia</b> apenas (<b>sem DSR</b>).')
+                    : 'Atestado/justificativa registada. O dia <b>não</b> contará como falta nem descontará DSR.';
+                await Swal.fire('Guardado', `${msgTipo}<br><br>Data: <b>${val.dataBR}</b>`, 'success');
+            }
+
+            const recalcFolha = document.getElementById('folha-func-select') && document.getElementById('folha-func-select').value === funcId;
+            if (typeof buscarPonto === 'function' && document.getElementById('pt-func-select') && document.getElementById('pt-func-select').value === funcId) {
+                await buscarPonto();
+            }
+            if (recalcFolha && typeof gerarFolhaPagamento === 'function') {
+                await gerarFolhaPagamento();
+            }
+        } catch (e) {
+            console.error(e);
+            Swal.close();
+            Swal.fire('Erro', 'Não foi possível guardar. Verifique permissões do Firestore (ponto_eventos).', 'error');
         }
     };
 
