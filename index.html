@@ -2245,9 +2245,23 @@ function separarDataSegura(dataString) {
         return { injust: injust, just: just };
     }
 
-    function ehFaltaInjustificadaNoDia(isoD, workedD, faltasRhInjust, faltasRhJust) {
+    function obterIsoHojeLocal() {
+        const ag = new Date();
+        return `${ag.getFullYear()}-${String(ag.getMonth() + 1).padStart(2, '0')}-${String(ag.getDate()).padStart(2, '0')}`;
+    }
+
+    /** Hoje e dias futuros sem ponto não viram falta automática — só após a data passar. */
+    function diaAguardandoPontoFolha(isoD, hojeIso, marcadaRhInjust, marcadaRhJust, workedD) {
+        if (marcadaRhInjust || marcadaRhJust) return false;
+        if ((Number(workedD) || 0) > 0) return false;
+        return isoD >= hojeIso;
+    }
+
+    function ehFaltaInjustificadaNoDia(isoD, workedD, faltasRhInjust, faltasRhJust, hojeIso) {
         if (faltasRhJust && faltasRhJust.has(isoD)) return false;
         if (faltasRhInjust && faltasRhInjust.has(isoD)) return true;
+        const hoje = hojeIso || obterIsoHojeLocal();
+        if (isoD >= hoje) return false;
         return workedD <= 0;
     }
 
@@ -5537,6 +5551,7 @@ window.gerarFolhaPagamento = async function() {
             const diasNoMesCalc = diasNoCalendarioMes(anoNum, mesNum);
             let horasFaltantes = 0;
             let diasPagos = 0;
+            let diasDescansoIncluidosRef = 0;
             let diasNoVinculoCalendario = 0;
             let faltasInjustificadas = 0;
             const datasFaltasInjustificadasIso = [];
@@ -5545,6 +5560,7 @@ window.gerarFolhaPagamento = async function() {
             let diasDevidosNoMes = 0;
             const discriminacaoDias = [];
             const nomesDiasSemana = ['Domingo', 'Segunda', 'Terça', 'Quarta', 'Quinta', 'Sexta', 'Sábado'];
+            const hojeIsoFolha = obterIsoHojeLocal();
 
             function formatarHorasDecimais(hDec) {
                 const neg = hDec < 0;
@@ -5595,12 +5611,18 @@ window.gerarFolhaPagamento = async function() {
                 if (dowD === 0 || feriadosSet.has(isoD)) {
                     const rD = calcularHorasDoDia(diasTrabalhados[keyDia] || []);
                     const workedD = horasTrabalhadasParaDesconto(rD, 24);
+                    const descansoPendente = isoD > hojeIsoFolha;
+                    if (tipoRemuneracao === 'mensal' && !descansoPendente) {
+                        diasDescansoIncluidosRef += 1;
+                    }
                     discriminacaoDias.push({
                         keyDia, nomeSemana, tipoDia: feriadosSet.has(isoD) ? 'Feriado' : 'Domingo',
                         esperadoTxt: '0h (descanso)',
                         trabalhadoTxt: formatarHorasDecimais(workedD),
                         diferencaTxt: formatarHorasDecimais(0 - workedD),
-                        diaPagoTxt: tipoRemuneracao === 'mensal' ? 'Incluído (DSR)' : 'Não',
+                        diaPagoTxt: tipoRemuneracao === 'mensal'
+                            ? (descansoPendente ? 'Pendente' : 'Incluído (DSR)')
+                            : 'Não',
                         situacao: workedD > 0
                             ? (tipoRemuneracao === 'mensal'
                                 ? 'Trabalho em descanso/feriado — pago como hora extra +100%. Dia de DSR incluído no salário mensal.'
@@ -5615,12 +5637,18 @@ window.gerarFolhaPagamento = async function() {
                 if (dowD === 6 && !(Number.isFinite(sabadoHorasPadrao) && sabadoHorasPadrao > 0)) {
                     const rD = calcularHorasDoDia(diasTrabalhados[keyDia] || []);
                     const workedD = horasTrabalhadasParaDesconto(rD, 24);
+                    const sabadoPendente = isoD > hojeIsoFolha;
+                    if (tipoRemuneracao === 'mensal' && !sabadoPendente) {
+                        diasDescansoIncluidosRef += 1;
+                    }
                     discriminacaoDias.push({
                         keyDia, nomeSemana, tipoDia: 'Sábado (sem escala)',
                         esperadoTxt: '0h (não devido)',
                         trabalhadoTxt: formatarHorasDecimais(workedD),
                         diferencaTxt: formatarHorasDecimais(0 - workedD),
-                        diaPagoTxt: tipoRemuneracao === 'mensal' ? 'Incluído (mensal)' : 'Não',
+                        diaPagoTxt: tipoRemuneracao === 'mensal'
+                            ? (sabadoPendente ? 'Pendente' : 'Incluído (mensal)')
+                            : 'Não',
                         situacao: workedD > 0
                             ? (tipoRemuneracao === 'mensal'
                                 ? 'Trabalho em sábado sem escala — crédito de banco de horas. Sábado sem jornada entra no mensal (DSR).'
@@ -5655,9 +5683,15 @@ window.gerarFolhaPagamento = async function() {
 
                 const marcadaRhInjust = faltasRhInjust.has(isoD);
                 const marcadaRhJust = faltasRhJust.has(isoD);
-                const ehFaltaInjust = ehFaltaInjustificadaNoDia(isoD, workedD, faltasRhInjust, faltasRhJust);
+                const diaAguardando = diaAguardandoPontoFolha(isoD, hojeIsoFolha, marcadaRhInjust, marcadaRhJust, workedD);
+                const ehFaltaInjust = ehFaltaInjustificadaNoDia(isoD, workedD, faltasRhInjust, faltasRhJust, hojeIsoFolha);
 
-                if (tipoRemuneracao === 'mensal') {
+                if (diaAguardando) {
+                    diaPago = false;
+                    situacao = isoD > hojeIsoFolha
+                        ? 'Dia futuro — ainda não ocorreu. Não conta como falta até passar a data.'
+                        : 'Dia em andamento — aguardando registro de ponto ou fechamento do dia.';
+                } else if (tipoRemuneracao === 'mensal') {
                     if (ehFaltaInjust) {
                         faltasInjustificadas += 1;
                         datasFaltasInjustificadasIso.push(isoD);
@@ -5725,9 +5759,11 @@ window.gerarFolhaPagamento = async function() {
                     esperadoTxt: esperadoTxtLinha,
                     trabalhadoTxt: formatarHorasDecimais(workedD),
                     diferencaTxt: formatarHorasDecimais(expectedD - workedD),
-                    diaPagoTxt: (tipoRemuneracao === 'mensal' || tipoRemuneracao === 'ponto')
-                        ? (diaPago ? 'Sim' : 'Falta')
-                        : (diaPago ? 'Sim' : 'Não'),
+                    diaPagoTxt: diaAguardando
+                        ? 'Pendente'
+                        : ((tipoRemuneracao === 'mensal' || tipoRemuneracao === 'ponto')
+                            ? (diaPago ? 'Sim' : 'Falta')
+                            : (diaPago ? 'Sim' : 'Não')),
                     situacao
                 });
             }
@@ -5737,13 +5773,6 @@ window.gerarFolhaPagamento = async function() {
 
             if (tipoRemuneracao === 'mensal') {
                 valorDiaSalario = valorDiaMensalClt;
-                if (mesCheio) {
-                    salarioProporcional = salarioBase - (faltasInjustificadas * valorDiaSalario);
-                } else {
-                    salarioProporcional = (valorDiaSalario * diasNoVinculoCalendario) - (faltasInjustificadas * valorDiaSalario);
-                }
-                diasPagosExibir = Math.max(0, diasNoVinculoCalendario - faltasInjustificadas);
-                salarioProporcional = Math.max(0, salarioProporcional);
             } else {
                 const divPonto = diasDevidosNoMes > 0 ? diasDevidosNoMes : diasMesParaSalario;
                 valorDiaSalario = salarioBase / divPonto;
@@ -5767,6 +5796,17 @@ window.gerarFolhaPagamento = async function() {
             const valorDescontoFaltasLinha = valorDiaSalario * faltasInjustificadas;
             const valorDescontoDsr = valorDiaSalario * dsrPerdidos;
 
+            if (tipoRemuneracao === 'mensal') {
+                diasPagosExibir = Math.max(0, diasPagos + diasDescansoIncluidosRef - dsrPerdidos);
+                salarioProporcional = valorDiaSalario * diasPagosExibir;
+                if (mesCheio) {
+                    salarioProporcional = Math.min(salarioBase, salarioProporcional);
+                }
+                salarioProporcional = Math.max(0, salarioProporcional);
+            }
+
+            const descontoDsrNoLiquido = tipoRemuneracao === 'mensal' ? 0 : valorDescontoDsr;
+
             // Banco de horas (saldo): crédito - débito (atrasos)
             const bancoHorasSaldoDecimais = (bancoHorasCreditoDecimais || 0) - (horasFaltantes || 0);
 
@@ -5775,7 +5815,10 @@ window.gerarFolhaPagamento = async function() {
             console.log("Hora desconto (salário/30/8):", valorHoraDesconto.toFixed(4));
             console.log("Hora normal 220h:", valorHoraNormal220.toFixed(4));
             console.log("Horas faltantes (soma dia a dia):", horasFaltantes.toFixed(2));
-            console.log("Dias pagos (trabalhados):", diasPagos);
+            console.log("Dias úteis com ponto:", diasPagos);
+            console.log("Descansos incluídos (CLT até hoje):", diasDescansoIncluidosRef);
+            console.log("DSR perdidos:", dsrPerdidos);
+            console.log("Dias referência exibir:", diasPagosExibir);
             console.log("Salário proporcional:", salarioProporcional.toFixed(2));
             console.log("Salário Base:", salarioBase);
             console.log("Total Extras (calc):", valorTotalReceberExtras, "| no líquido:", valorExtrasFolha);
@@ -5787,7 +5830,7 @@ window.gerarFolhaPagamento = async function() {
             // 3. CÁLCULO DO LÍQUIDO — valor real do fechamento (pode ser negativo se vales/atrasos excederem créditos)
             const liquidoReceber =
                 (salarioProporcional + valorFeriasClt + valorExtrasFolha) -
-                (totalDinheiro + totalProduto + valorDescontoHorasFolha + valorDescontoDsr + totalDescontosLancados);
+                (totalDinheiro + totalProduto + valorDescontoHorasFolha + descontoDsrNoLiquido + totalDescontosLancados);
 
             document.getElementById('f-nome-display').innerText = funcionario.nome;
             const mesNomeCal = nomeMeses[mesSelected] || mesSelected;
@@ -5822,7 +5865,7 @@ window.gerarFolhaPagamento = async function() {
             }
             if (elLabelDias) {
                 elLabelDias.innerText = tipoRemuneracao === 'mensal'
-                    ? 'Dias referência pagos (calendário − faltas, incl. DSR):'
+                    ? 'Dias referência pagos (úteis + descansos − DSR perdido):'
                     : 'Dias trabalhados (com batida de ponto):';
             }
             document.getElementById('f-dias-pagos').innerText = String(diasPagosExibir);
@@ -5851,14 +5894,15 @@ window.gerarFolhaPagamento = async function() {
             if (detSal) {
                 if (tipoRemuneracao === 'mensal') {
                     if (mesCheio) {
-                        detSal.innerHTML = `<b>Modo mensal CLT</b> — mês inteiro no vínculo (${diasNoMesCalc} dias no calendário).<br>
-                        <b>Conta:</b> ${formatarMoeda(salarioBase)} (salário contrato)${faltasInjustificadas > 0 ? ' − ' + faltasInjustificadas + ' falta(s) × ' + formatarMoeda(valorDiaSalario) + ' (÷ 30 comercial)' : ''} = <b>${formatarMoeda(salarioProporcional)}</b>.<br>
-                        <b>Dias referência:</b> ${diasPagosExibir} (${diasNoVinculoCalendario} no vínculo${faltasInjustificadas > 0 ? ' − ' + faltasInjustificadas + ' falta(s)' : ''}).<br>
-                        <span style="color:#888;">Domingos, feriados e sábados sem escala entram no salário (DSR). O desconto por falta usa salário ÷ 30; a contagem de dias segue o calendário real do mês.</span>`;
+                        detSal.innerHTML = `<b>Modo mensal CLT</b> — salário contrato ${formatarMoeda(salarioBase)} (÷ 30 = ${formatarMoeda(valorDiaSalario)}/dia).<br>
+                        <b>Conta proporcional:</b> ${diasPagosExibir} dia(s) referência × ${formatarMoeda(valorDiaSalario)} = <b>${formatarMoeda(salarioProporcional)}</b>${salarioProporcional >= salarioBase ? ' (teto do mês)' : ''}.<br>
+                        <b>Composição dos dias:</b> ${diasPagos} útil(is) com ponto + ${diasDescansoIncluidosRef} descanso(s) (sáb/dom/feriado)${dsrPerdidos > 0 ? ' − ' + dsrPerdidos + ' DSR perdido(s)' : ''}${faltasInjustificadas > 0 ? ' · ' + faltasInjustificadas + ' falta(s) já descontada(s) nos dias' : ''}. Cresce conforme o ponto e os dias que passam no mês.<br>
+                        <span style="color:#888;">Faltas e DSR perdido já entram no proporcional (não descontam de novo no líquido).</span>`;
                     } else {
                         detSal.innerHTML = `<b>Modo mensal CLT</b> — mês parcial (admissão/desligamento).<br>
-                        <b>Conta:</b> ${diasNoVinculoCalendario} dia(s) no vínculo × ${formatarMoeda(valorDiaSalario)}${faltasInjustificadas > 0 ? ' − ' + faltasInjustificadas + ' falta(s) × ' + formatarMoeda(valorDiaSalario) : ''} = <b>${formatarMoeda(salarioProporcional)}</b>.<br>
-                        <span style="color:#888;">Inclui fins de semana e feriados dentro do período contratual (DSR).</span>`;
+                        <b>Conta proporcional:</b> ${diasPagosExibir} dia(s) referência × ${formatarMoeda(valorDiaSalario)} = <b>${formatarMoeda(salarioProporcional)}</b>.<br>
+                        <b>Composição:</b> ${diasPagos} útil(is) com ponto + ${diasDescansoIncluidosRef} descanso(s)${dsrPerdidos > 0 ? ' − ' + dsrPerdidos + ' DSR perdido(s)' : ''}.<br>
+                        <span style="color:#888;">Inclui fins de semana e feriados já ocorridos no período contratual (DSR).</span>`;
                     }
                 } else {
                     const divP = diasDevidosNoMes > 0 ? diasDevidosNoMes : diasMesParaSalario;
@@ -5989,7 +6033,9 @@ window.gerarFolhaPagamento = async function() {
                 elLinhaDf.style.display = faltasInjustificadas > 0 ? 'flex' : 'none';
                 const elTxt = document.getElementById('f-desconto-faltas-texto');
                 const elVal = document.getElementById('f-valor-desconto-faltas');
-                if (elTxt) elTxt.innerText = `(-) Faltas injustificadas (${faltasInjustificadas} dia${faltasInjustificadas === 1 ? '' : 's'}):`;
+                if (elTxt) elTxt.innerText = tipoRemuneracao === 'mensal'
+                    ? `Faltas injustificadas (${faltasInjustificadas} dia${faltasInjustificadas === 1 ? '' : 's'}) — já no proporcional:`
+                    : `(-) Faltas injustificadas (${faltasInjustificadas} dia${faltasInjustificadas === 1 ? '' : 's'}):`;
                 if (elVal) elVal.innerText = formatarMoeda(valorDescontoFaltasLinha);
             }
             const detDf = document.getElementById('f-detalhe-desconto-faltas');
@@ -6003,7 +6049,7 @@ window.gerarFolhaPagamento = async function() {
                         })
                         .map(isoParaDataBr)
                         .join(', ');
-                    detDf.innerHTML = `<b>Desconto por falta:</b> ${faltasInjustificadas} × ${formatarMoeda(valorDiaSalario)}/dia = <b>${formatarMoeda(valorDescontoFaltasLinha)}</b>.` +
+                    detDf.innerHTML = `<b>Desconto por falta:</b> ${faltasInjustificadas} × ${formatarMoeda(valorDiaSalario)}/dia = <b>${formatarMoeda(valorDescontoFaltasLinha)}</b>${tipoRemuneracao === 'mensal' ? ' (já refletido no salário proporcional)' : ''}.` +
                         (datasTxt ? `<br><span style="color:#666;">Datas: ${datasTxt}. Pode marcar/alterar em <b>Ponto → Falta injustificada / atestado (RH)</b>.</span>` : '') +
                         (faltasSemDsrTxt ? `<br><span style="color:#856404;">Sem desconto de DSR (opção RH): ${faltasSemDsrTxt}.</span>` : '');
                 } else {
@@ -6014,14 +6060,16 @@ window.gerarFolhaPagamento = async function() {
                 elLinhaDsr.style.display = dsrPerdidos > 0 ? 'flex' : 'none';
                 const elTxtD = document.getElementById('f-desconto-dsr-texto');
                 const elValD = document.getElementById('f-valor-desconto-dsr');
-                if (elTxtD) elTxtD.innerText = `(-) DSR perdido (${dsrPerdidos} descanso${dsrPerdidos === 1 ? '' : 's'}):`;
+                if (elTxtD) elTxtD.innerText = tipoRemuneracao === 'mensal'
+                    ? `DSR perdido (${dsrPerdidos} descanso${dsrPerdidos === 1 ? '' : 's'}) — já no proporcional:`
+                    : `(-) DSR perdido (${dsrPerdidos} descanso${dsrPerdidos === 1 ? '' : 's'}):`;
                 if (elValD) elValD.innerText = formatarMoeda(valorDescontoDsr);
             }
             const detDsr = document.getElementById('f-detalhe-desconto-dsr');
             if (detDsr) {
                 if (dsrPerdidos > 0) {
                     const doms = (dsrCalc.domingosPerdidos || []).map(function (x) { return x.dataBr; }).join(', ');
-                    detDsr.innerHTML = `<b>Descanso semanal remunerado (CLT):</b> falta injustificada na semana → perde 1 DSR (${formatarMoeda(valorDiaSalario)}/descanso).` +
+                    detDsr.innerHTML = `<b>Descanso semanal remunerado (CLT):</b> falta injustificada na semana → perde 1 DSR (${formatarMoeda(valorDiaSalario)}/descanso)${tipoRemuneracao === 'mensal' ? ' — já refletido no salário proporcional' : ''}.` +
                         `<br><b>Domingos descontados neste mês:</b> ${doms || '—'}.`;
                 } else {
                     const faltasSemDsrCount = datasFaltasInjustificadasIso.length - datasFaltasComDsrIso.length;
@@ -6091,14 +6139,17 @@ window.gerarFolhaPagamento = async function() {
                 const lblAtrasosForm = opcoesFolha.incluirDescontoHoras
                     ? formatarMoeda(valorDescontoHorasFolha) + ' (atrasos)'
                     : '0,00 (atrasos — opção desligada; calc. ' + formatarMoeda(valorDescontoHorasCalc) + ')';
-                const lblDsrForm = dsrPerdidos > 0 ? formatarMoeda(valorDescontoDsr) + ' (DSR ' + dsrPerdidos + '×)' : '0,00 (DSR)';
+                const lblDsrForm = tipoRemuneracao === 'mensal'
+                    ? (dsrPerdidos > 0 ? formatarMoeda(valorDescontoDsr) + ' (DSR ' + dsrPerdidos + '× — já no proporcional)' : '0,00 (DSR)')
+                    : (dsrPerdidos > 0 ? formatarMoeda(valorDescontoDsr) + ' (DSR ' + dsrPerdidos + '×)' : '0,00 (DSR)');
                 const lblFaltasForm = faltasInjustificadas > 0
                     ? formatarMoeda(valorDescontoFaltasLinha) + ' (já no proporcional; ' + faltasInjustificadas + ' falta(s))'
                     : '0,00 (faltas)';
+                const subtraiDsrForm = tipoRemuneracao === 'mensal' ? '' : (' − ' + lblDsrForm);
                 let txtForm = `<b>Fórmula do líquido:</b><br>
-                ${formatarMoeda(salarioProporcional)} (proporcional, já c/ faltas) + ${formatarMoeda(valorFeriasClt)} (férias CLT) + ${lblExtrasForm}
-                − ${formatarMoeda(totalDinheiro)} (vales) − ${formatarMoeda(totalProduto)} (produtos) − ${lblDsrForm} − ${lblAtrasosForm}${totalDescontosLancados > 0 ? ' − ' + formatarMoeda(totalDescontosLancados) + ' (INSS/outros)' : ''}
-                = <b>${formatarMoeda(liquidoReceber)}</b><br><small>Faltas ${lblFaltasForm}.</small>`;
+                ${formatarMoeda(salarioProporcional)} (proporcional${tipoRemuneracao === 'mensal' ? ', já c/ faltas e DSR' : ''}) + ${formatarMoeda(valorFeriasClt)} (férias CLT) + ${lblExtrasForm}
+                − ${formatarMoeda(totalDinheiro)} (vales) − ${formatarMoeda(totalProduto)} (produtos)${subtraiDsrForm} − ${lblAtrasosForm}${totalDescontosLancados > 0 ? ' − ' + formatarMoeda(totalDescontosLancados) + ' (INSS/outros)' : ''}
+                = <b>${formatarMoeda(liquidoReceber)}</b><br><small>Faltas ${lblFaltasForm}${tipoRemuneracao === 'mensal' && dsrPerdidos > 0 ? ' · DSR ' + lblDsrForm + '.' : '.'}</small>`;
                 if (nAjuda > 0) {
                     txtForm += `<br><br><span style="color:#0d6efd;"><b>Recebimento PLUS (fora do líquido):</b> Ajuda de custo ${formatarMoeda(totalAjudaCusto)} — pago à parte, sem somar nem descontar do valor acima.</span>`;
                 }
@@ -6156,20 +6207,16 @@ window.gerarFolhaPagamento = async function() {
 
             const mesNomeRef = nomeMeses[mesSelected] || mesSelected;
             const labelSalProp = tipoRemuneracao === 'mensal'
-                ? (mesCheio
-                    ? 'Salário mensal CLT' + (faltasInjustificadas > 0 ? ' (− ' + faltasInjustificadas + ' falta(s))' : '')
-                    : 'Salário mensal CLT (' + diasNoVinculoCalendario + ' dias no vínculo)')
+                ? ('Salário proporcional CLT (' + diasPagosExibir + ' dias × ' + formatarMoeda(valorDiaSalario) + ')')
                 : ('Salário por ponto (' + diasPagosExibir + ' dias × ' + formatarMoeda(valorDiaSalario) + ')');
-            const usarSalarioBrutoHolerite = (tipoRemuneracao === 'mensal' && mesCheio) || tipoRemuneracao === 'ponto';
+            const usarSalarioBrutoHolerite = tipoRemuneracao === 'ponto';
             let valorProventoSalarioPdf = salarioProporcional;
-            if (tipoRemuneracao === 'mensal' && mesCheio) {
-                valorProventoSalarioPdf = salarioBase;
-            } else if (tipoRemuneracao === 'ponto') {
+            if (tipoRemuneracao === 'ponto') {
                 const divP = diasDevidosNoMes > 0 ? diasDevidosNoMes : diasMesParaSalario;
                 valorProventoSalarioPdf = valorDiaSalario * divP;
             }
             const proventosPdf = [
-                { label: usarSalarioBrutoHolerite ? 'Salário mensal CLT (contrato)' : labelSalProp, valor: valorProventoSalarioPdf },
+                { label: usarSalarioBrutoHolerite ? 'Salário por ponto (dias devidos)' : labelSalProp, valor: usarSalarioBrutoHolerite ? valorProventoSalarioPdf : salarioProporcional },
                 { label: 'Férias + 1/3 constitucional (' + diasFeriasNoMes + ' dias)', valor: valorFeriasClt },
                 {
                     label: 'Horas extras (' + h50 + 'h ' + m50 + 'm +50% · ' + h100 + 'h ' + m100 + 'm +100%)',
@@ -6184,7 +6231,7 @@ window.gerarFolhaPagamento = async function() {
                     valor: valorDescontoFaltasLinha
                 });
             }
-            if (dsrPerdidos > 0) {
+            if (dsrPerdidos > 0 && tipoRemuneracao !== 'mensal') {
                 descontosPdf.push({
                     label: 'DSR perdido (' + dsrPerdidos + ' descanso' + (dsrPerdidos === 1 ? '' : 's') + ')',
                     valor: valorDescontoDsr
@@ -6221,7 +6268,7 @@ window.gerarFolhaPagamento = async function() {
                 proventos: proventosPdf,
                 descontos: descontosPdf,
                 totalProventos: valorProventoSalarioPdf + valorFeriasClt + valorExtrasFolha,
-                totalDescontos: (usarSalarioBrutoHolerite ? valorDescontoFaltasLinha : 0) + valorDescontoDsr + totalDinheiro + totalProduto + valorDescontoHorasFolha + totalDescontosLancados,
+                totalDescontos: (usarSalarioBrutoHolerite ? valorDescontoFaltasLinha : 0) + descontoDsrNoLiquido + totalDinheiro + totalProduto + valorDescontoHorasFolha + totalDescontosLancados,
                 liquido: liquidoReceber,
                 liquidoNegativo: liquidoReceber < 0,
                 opcoesFolha: opcoesFolha,
