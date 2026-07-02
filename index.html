@@ -3123,6 +3123,108 @@ function separarDataSegura(dataString) {
         reader.readAsDataURL(file[0]);
     });
 
+    const CODIGO_BAIXA_SEM_COMPROVANTE = '0308';
+
+    function dataPagamentoHojeBr() {
+        const hoje = new Date();
+        return `${String(hoje.getDate()).padStart(2, '0')}/${String(hoje.getMonth() + 1).padStart(2, '0')}/${hoje.getFullYear()}`;
+    }
+
+    function comprimirArquivoImagemParaBase64(file) {
+        return new Promise((resolve, reject) => {
+            if (!file) return resolve('');
+            const reader = new FileReader();
+            reader.onload = (event) => {
+                const img = new Image();
+                img.onload = () => {
+                    const canvas = document.createElement('canvas');
+                    const MAX_WIDTH = 500;
+                    let width = img.width;
+                    let height = img.height;
+                    if (width > MAX_WIDTH) {
+                        height = height * (MAX_WIDTH / width);
+                        width = MAX_WIDTH;
+                    }
+                    canvas.width = width;
+                    canvas.height = height;
+                    canvas.getContext('2d').drawImage(img, 0, 0, width, height);
+                    resolve(canvas.toDataURL('image/jpeg', 0.4));
+                };
+                img.onerror = () => reject(new Error('imagem'));
+                img.src = event.target.result;
+            };
+            reader.onerror = () => reject(new Error('leitura'));
+            reader.readAsDataURL(file);
+        });
+    }
+
+    function htmlModalBaixaComprovante() {
+        return `
+            <div style="text-align:left;font-size:13px;">
+                <p style="margin:0 0 10px;color:#555;line-height:1.45;">Para dar baixa, anexe o <b>comprovante de pagamento</b> (foto, print ou recibo do banco).</p>
+                <label style="font-weight:700;display:block;margin-bottom:6px;">Comprovante de pagamento</label>
+                <input type="file" id="swal-comprovante-pgto" accept="image/*" capture="environment" style="width:100%;padding:8px;border:1px solid #ddd;border-radius:8px;box-sizing:border-box;background:#fff;">
+                <div id="swal-prev-comprovante" style="margin-top:8px;display:none;text-align:center;">
+                    <img id="swal-prev-comprovante-img" alt="Pré-visualização" style="max-width:100%;max-height:120px;border-radius:8px;border:1px solid #ddd;">
+                </div>
+                <p style="margin:14px 0 6px;font-size:12px;color:#888;border-top:1px solid #eee;padding-top:10px;">Sem comprovante? Informe o código de autorização:</p>
+                <input type="password" id="swal-codigo-baixa" placeholder="Código (somente se não tiver comprovante)" maxlength="10" class="swal2-input" style="margin:0;width:100%;height:40px;font-size:14px;">
+            </div>
+        `;
+    }
+
+    function configurarModalBaixaComprovante() {
+        window._swalComprovantePgtoBase64 = '';
+        const input = document.getElementById('swal-comprovante-pgto');
+        const prev = document.getElementById('swal-prev-comprovante');
+        const prevImg = document.getElementById('swal-prev-comprovante-img');
+        const codigo = document.getElementById('swal-codigo-baixa');
+        if (!input) return;
+        input.addEventListener('change', async function () {
+            const f = input.files && input.files[0];
+            if (!f) {
+                window._swalComprovantePgtoBase64 = '';
+                if (prev) prev.style.display = 'none';
+                return;
+            }
+            try {
+                window._swalComprovantePgtoBase64 = await comprimirArquivoImagemParaBase64(f);
+                if (prevImg) prevImg.src = window._swalComprovantePgtoBase64;
+                if (prev) prev.style.display = 'block';
+                if (codigo) codigo.value = '';
+            } catch (e) {
+                Swal.showValidationMessage('Não foi possível ler a imagem do comprovante.');
+            }
+        });
+    }
+
+    function validarBaixaComprovantePayload() {
+        const comprovante = window._swalComprovantePgtoBase64 || '';
+        const codigo = (document.getElementById('swal-codigo-baixa') && document.getElementById('swal-codigo-baixa').value || '').trim();
+        if (comprovante) {
+            return { comprovante_pagamento: comprovante, baixa_sem_comprovante: false };
+        }
+        if (codigo === CODIGO_BAIXA_SEM_COMPROVANTE) {
+            return { comprovante_pagamento: null, baixa_sem_comprovante: true };
+        }
+        if (codigo) {
+            Swal.showValidationMessage('Código incorreto.');
+            return false;
+        }
+        Swal.showValidationMessage('Anexe o comprovante ou informe o código de autorização.');
+        return false;
+    }
+
+    function montarHtmlComprovantePagamento(d) {
+        if (d.comprovante_pagamento) {
+            return `<img src="${d.comprovante_pagamento}" onclick="abrirFoto('${d.comprovante_pagamento}')" title="Comprovante de pagamento" style="width: 60px; height: 60px; object-fit: cover; border-radius: 8px; border: 2px solid #28a745; float: right; cursor: pointer; margin-left: 6px;">`;
+        }
+        if (d.baixa_sem_comprovante) {
+            return '<span style="float:right;font-size:10px;background:#fff3cd;color:#856404;padding:4px 6px;border-radius:6px;font-weight:700;margin-left:6px;">Sem comprovante</span>';
+        }
+        return '';
+    }
+
     (function initRelatorioDespesaDatasPadrao() {
         const el = document.getElementById('rd-lancamento');
         if (!el || el.value) return;
@@ -3281,26 +3383,35 @@ window.carregarFiltrosDespesas = async function() {
 
     window.marcarComoPago = async function(id) {
         Swal.fire({
-            title: 'Marcar como Pago?',
-            text: 'Esta despesa será arquivada no histórico de contas pagas.',
-            icon: 'question',
-            showCancelButton: true, confirmButtonColor: '#28a745', cancelButtonColor: '#1a2a43',
-            confirmButtonText: 'Sim, já foi pago!', cancelButtonText: 'Cancelar'
+            title: 'Dar baixa — pagamento',
+            html: htmlModalBaixaComprovante(),
+            icon: 'info',
+            showCancelButton: true,
+            confirmButtonColor: '#28a745',
+            cancelButtonColor: '#1a2a43',
+            confirmButtonText: 'Confirmar pagamento',
+            cancelButtonText: 'Cancelar',
+            didOpen: configurarModalBaixaComprovante,
+            preConfirm: validarBaixaComprovantePayload
         }).then(async (result) => {
-            if (result.isConfirmed) {
+            if (result.isConfirmed && result.value) {
                 try {
-                    const docRef = doc(db, "despesas_obras", id);
-                    const hoje = new Date();
-                    const dia = String(hoje.getDate()).padStart(2, '0');
-                    const mes = String(hoje.getMonth() + 1).padStart(2, '0');
-                    const ano = hoje.getFullYear();
-                    const dataSegura = `${dia}/${mes}/${ano}`;
-
-                    await updateDoc(docRef, { status: "pago", data_pagamento: dataSegura });
-                    Swal.fire('Sucesso!', 'A despesa foi marcada como paga.', 'success');
+                    const dataSegura = dataPagamentoHojeBr();
+                    await updateDoc(doc(db, 'despesas_obras', id), {
+                        status: 'pago',
+                        data_pagamento: dataSegura,
+                        comprovante_pagamento: result.value.comprovante_pagamento,
+                        baixa_sem_comprovante: !!result.value.baixa_sem_comprovante
+                    });
+                    const msg = result.value.baixa_sem_comprovante
+                        ? 'Baixa registada sem comprovante (código autorizado).'
+                        : 'Pagamento registado com comprovante anexado.';
+                    Swal.fire('Sucesso!', msg, 'success');
                     const busca = document.getElementById('busca-obra');
                     if (busca && busca.value.trim()) buscarDespesasObra();
-                } catch (e) { Swal.fire('Erro', 'Não foi possível atualizar.', 'error'); }
+                } catch (e) {
+                    Swal.fire('Erro', 'Não foi possível atualizar.', 'error');
+                }
             }
         });
     };
@@ -3318,7 +3429,12 @@ window.carregarFiltrosDespesas = async function() {
         }).then(async (result) => {
             if (result.isConfirmed) {
                 try {
-                    await updateDoc(doc(db, 'despesas_obras', id), { status: 'pendente', data_pagamento: null });
+                    await updateDoc(doc(db, 'despesas_obras', id), {
+                        status: 'pendente',
+                        data_pagamento: null,
+                        comprovante_pagamento: null,
+                        baixa_sem_comprovante: false
+                    });
                     Swal.fire('Atualizado', 'A despesa voltou ao estado pendente.', 'success');
                     const busca = document.getElementById('busca-obra');
                     if (busca && busca.value.trim()) buscarDespesasObra();
@@ -3492,24 +3608,30 @@ window.carregarFiltrosDespesas = async function() {
 
     window.marcarComoPagoRelatorio = async function (id) {
         Swal.fire({
-            title: 'Marcar como pago?',
-            text: 'Esta linha do relatório passará a constar como paga.',
-            icon: 'question',
+            title: 'Dar baixa — pagamento',
+            html: htmlModalBaixaComprovante(),
+            icon: 'info',
             showCancelButton: true,
             confirmButtonColor: '#28a745',
             cancelButtonColor: '#1a2a43',
-            confirmButtonText: 'Sim, já foi pago!',
-            cancelButtonText: 'Cancelar'
+            confirmButtonText: 'Confirmar pagamento',
+            cancelButtonText: 'Cancelar',
+            didOpen: configurarModalBaixaComprovante,
+            preConfirm: validarBaixaComprovantePayload
         }).then(async (result) => {
-            if (result.isConfirmed) {
+            if (result.isConfirmed && result.value) {
                 try {
-                    const hoje = new Date();
-                    const dia = String(hoje.getDate()).padStart(2, '0');
-                    const mes = String(hoje.getMonth() + 1).padStart(2, '0');
-                    const ano = hoje.getFullYear();
-                    const dataSegura = `${dia}/${mes}/${ano}`;
-                    await updateDoc(doc(db, COLECAO_RELATORIO_DESPESAS, id), { status: 'pago', data_pagamento: dataSegura });
-                    Swal.fire('Sucesso!', 'Linha marcada como paga.', 'success');
+                    const dataSegura = dataPagamentoHojeBr();
+                    await updateDoc(doc(db, COLECAO_RELATORIO_DESPESAS, id), {
+                        status: 'pago',
+                        data_pagamento: dataSegura,
+                        comprovante_pagamento: result.value.comprovante_pagamento,
+                        baixa_sem_comprovante: !!result.value.baixa_sem_comprovante
+                    });
+                    const msg = result.value.baixa_sem_comprovante
+                        ? 'Baixa registada sem comprovante (código autorizado).'
+                        : 'Pagamento registado com comprovante anexado.';
+                    Swal.fire('Sucesso!', msg, 'success');
                     recarregarRelatorioDespesasTabularSeCarregado();
                 } catch (e) {
                     Swal.fire('Erro', 'Não foi possível atualizar.', 'error');
@@ -3531,7 +3653,12 @@ window.carregarFiltrosDespesas = async function() {
         }).then(async (result) => {
             if (result.isConfirmed) {
                 try {
-                    await updateDoc(doc(db, COLECAO_RELATORIO_DESPESAS, id), { status: 'pendente', data_pagamento: null });
+                    await updateDoc(doc(db, COLECAO_RELATORIO_DESPESAS, id), {
+                        status: 'pendente',
+                        data_pagamento: null,
+                        comprovante_pagamento: null,
+                        baixa_sem_comprovante: false
+                    });
                     Swal.fire('Atualizado', 'Linha voltou ao estado pendente.', 'success');
                     recarregarRelatorioDespesasTabularSeCarregado();
                 } catch (e) {
@@ -3613,8 +3740,14 @@ window.carregarFiltrosDespesas = async function() {
 
             arr.forEach(d => {
                 const st = d.status === 'pago' ? 'pago' : 'pendente';
+                let badgeExtra = '';
+                if (st === 'pago' && d.comprovante_pagamento) {
+                    badgeExtra = '<br><span style="font-size:10px;color:#28a745;font-weight:700;cursor:pointer;" onclick="abrirFoto(\'' + d.comprovante_pagamento + '\')">📎 Ver comprovante</span>';
+                } else if (st === 'pago' && d.baixa_sem_comprovante) {
+                    badgeExtra = '<br><span style="font-size:10px;color:#856404;">Sem comprovante</span>';
+                }
                 const badge = st === 'pago'
-                    ? '<span style="background:#d4edda;color:#155724;padding:2px 6px;border-radius:4px;font-weight:bold;">Pago</span><br><span style="font-size:10px;color:#666;">' + escapeHtmlBasico(d.data_pagamento || '') + '</span>'
+                    ? '<span style="background:#d4edda;color:#155724;padding:2px 6px;border-radius:4px;font-weight:bold;">Pago</span><br><span style="font-size:10px;color:#666;">' + escapeHtmlBasico(d.data_pagamento || '') + '</span>' + badgeExtra
                     : '<span style="background:#fff3cd;color:#856404;padding:2px 6px;border-radius:4px;font-weight:bold;">Pendente</span>';
                 const refDoc = escapeHtmlBasico(refChequeBoletoDesp(d));
                 const rawObs = String(d.observacao || '').trim();
@@ -3761,9 +3894,10 @@ window.carregarFiltrosDespesas = async function() {
                     ordenarRelatorioDespesasPorVencimento(agrupadoPagas[ano][mes]);
                     agrupadoPagas[ano][mes].forEach(d => {
                         const fotoHtml = d.foto_recibo ? `<img src="${d.foto_recibo}" onclick="abrirFoto('${d.foto_recibo}')" style="width: 60px; height: 60px; object-fit: cover; border-radius: 8px; border: 2px solid #e0e6ed; float: right; cursor: pointer;">` : '';
+                        const compPgtoHtml = montarHtmlComprovantePagamento(d);
                         htmlPagas += `
                             <div class="resultado-item" style="border-left-color: #28a745; opacity: 0.85; background: #f4fdf6;">
-                                ${fotoHtml}
+                                ${fotoHtml}${compPgtoHtml}
                                 <b style="color: #28a745; font-size: 16px;">R$ ${d.valor_string}</b> <span style="font-size: 10px; background: #d4edda; color: #155724; padding: 2px 6px; border-radius: 4px; margin-left: 5px; font-weight: bold;">PAGO EM: ${d.data_pagamento || 'N/A'}</span><br>
                                 <span style="font-size: 13px; color: #555;"><b>Obra:</b> ${d.obra_nome}</span><br>
                                 <span style="font-size: 13px; color: #555;"><b>Fornecedor:</b> ${d.loja_nome}</span><br>
