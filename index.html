@@ -5795,9 +5795,11 @@ window.gerarFolhaPagamento = async function() {
             const dsrPerdidos = dsrCalc.dsrPerdidos;
             const valorDescontoFaltasLinha = valorDiaSalario * faltasInjustificadas;
             const valorDescontoDsr = valorDiaSalario * dsrPerdidos;
+            let salarioBrutoPeriodoMensal = 0;
 
             if (tipoRemuneracao === 'mensal') {
                 diasPagosExibir = Math.max(0, diasPagos + diasDescansoIncluidosRef - dsrPerdidos);
+                salarioBrutoPeriodoMensal = valorDiaSalario * (diasPagos + diasDescansoIncluidosRef + faltasInjustificadas);
                 salarioProporcional = valorDiaSalario * diasPagosExibir;
                 if (mesCheio) {
                     salarioProporcional = Math.min(salarioBase, salarioProporcional);
@@ -5805,7 +5807,12 @@ window.gerarFolhaPagamento = async function() {
                 salarioProporcional = Math.max(0, salarioProporcional);
             }
 
-            const descontoDsrNoLiquido = tipoRemuneracao === 'mensal' ? 0 : valorDescontoDsr;
+            const descontoFaltasNoLiquido = (tipoRemuneracao === 'mensal' && faltasInjustificadas > 0)
+                ? valorDescontoFaltasLinha
+                : 0;
+            const descontoDsrNoLiquido = (tipoRemuneracao === 'mensal' && dsrPerdidos > 0)
+                ? valorDescontoDsr
+                : (tipoRemuneracao === 'ponto' ? valorDescontoDsr : 0);
 
             // Banco de horas (saldo): crédito - débito (atrasos)
             const bancoHorasSaldoDecimais = (bancoHorasCreditoDecimais || 0) - (horasFaltantes || 0);
@@ -5819,7 +5826,10 @@ window.gerarFolhaPagamento = async function() {
             console.log("Descansos incluídos (CLT até hoje):", diasDescansoIncluidosRef);
             console.log("DSR perdidos:", dsrPerdidos);
             console.log("Dias referência exibir:", diasPagosExibir);
-            console.log("Salário proporcional:", salarioProporcional.toFixed(2));
+            console.log("Salário bruto período:", salarioBrutoPeriodoMensal.toFixed(2));
+            console.log("Desconto faltas no líquido:", descontoFaltasNoLiquido);
+            console.log("Desconto DSR no líquido:", descontoDsrNoLiquido);
+            console.log("Salário proporcional (dias referência):", salarioProporcional.toFixed(2));
             console.log("Salário Base:", salarioBase);
             console.log("Total Extras (calc):", valorTotalReceberExtras, "| no líquido:", valorExtrasFolha);
             console.log("Desconto horas (calc):", valorDescontoHorasCalc, "| no líquido:", valorDescontoHorasFolha);
@@ -5830,7 +5840,7 @@ window.gerarFolhaPagamento = async function() {
             // 3. CÁLCULO DO LÍQUIDO — valor real do fechamento (pode ser negativo se vales/atrasos excederem créditos)
             const liquidoReceber =
                 (salarioProporcional + valorFeriasClt + valorExtrasFolha) -
-                (totalDinheiro + totalProduto + valorDescontoHorasFolha + descontoDsrNoLiquido + totalDescontosLancados);
+                (totalDinheiro + totalProduto + valorDescontoHorasFolha + descontoFaltasNoLiquido + descontoDsrNoLiquido + totalDescontosLancados);
 
             document.getElementById('f-nome-display').innerText = funcionario.nome;
             const mesNomeCal = nomeMeses[mesSelected] || mesSelected;
@@ -5895,14 +5905,13 @@ window.gerarFolhaPagamento = async function() {
                 if (tipoRemuneracao === 'mensal') {
                     if (mesCheio) {
                         detSal.innerHTML = `<b>Modo mensal CLT</b> — salário contrato ${formatarMoeda(salarioBase)} (÷ 30 = ${formatarMoeda(valorDiaSalario)}/dia).<br>
-                        <b>Conta proporcional:</b> ${diasPagosExibir} dia(s) referência × ${formatarMoeda(valorDiaSalario)} = <b>${formatarMoeda(salarioProporcional)}</b>${salarioProporcional >= salarioBase ? ' (teto do mês)' : ''}.<br>
-                        <b>Composição dos dias:</b> ${diasPagos} útil(is) com ponto + ${diasDescansoIncluidosRef} descanso(s) (sáb/dom/feriado)${dsrPerdidos > 0 ? ' − ' + dsrPerdidos + ' DSR perdido(s)' : ''}${faltasInjustificadas > 0 ? ' · ' + faltasInjustificadas + ' falta(s) já descontada(s) nos dias' : ''}. Cresce conforme o ponto e os dias que passam no mês.<br>
-                        <span style="color:#888;">Faltas e DSR perdido já entram no proporcional (não descontam de novo no líquido).</span>`;
+                        <b>(+) Proporcional:</b> ${diasPagosExibir} dia(s) referência × ${formatarMoeda(valorDiaSalario)} = <b>${formatarMoeda(salarioProporcional)}</b><br>
+                        <span style="color:#666;">Composição: ${diasPagos} útil(is) c/ ponto + ${diasDescansoIncluidosRef} descanso(s) − ${dsrPerdidos} DSR perdido(s).</span><br>
+                        <b>(−) No líquido:</b> faltas ${formatarMoeda(valorDescontoFaltasLinha)} (${faltasInjustificadas} dia(s)) + DSR ${formatarMoeda(valorDescontoDsr)} (${dsrPerdidos} descanso(s)).`;
                     } else {
                         detSal.innerHTML = `<b>Modo mensal CLT</b> — mês parcial (admissão/desligamento).<br>
-                        <b>Conta proporcional:</b> ${diasPagosExibir} dia(s) referência × ${formatarMoeda(valorDiaSalario)} = <b>${formatarMoeda(salarioProporcional)}</b>.<br>
-                        <b>Composição:</b> ${diasPagos} útil(is) com ponto + ${diasDescansoIncluidosRef} descanso(s)${dsrPerdidos > 0 ? ' − ' + dsrPerdidos + ' DSR perdido(s)' : ''}.<br>
-                        <span style="color:#888;">Inclui fins de semana e feriados já ocorridos no período contratual (DSR).</span>`;
+                        <b>(+) Proporcional:</b> ${diasPagosExibir} dia(s) × ${formatarMoeda(valorDiaSalario)} = <b>${formatarMoeda(salarioProporcional)}</b>.<br>
+                        <b>(−) No líquido:</b> faltas ${formatarMoeda(valorDescontoFaltasLinha)} + DSR ${formatarMoeda(valorDescontoDsr)}.`;
                     }
                 } else {
                     const divP = diasDevidosNoMes > 0 ? diasDevidosNoMes : diasMesParaSalario;
@@ -6033,9 +6042,7 @@ window.gerarFolhaPagamento = async function() {
                 elLinhaDf.style.display = faltasInjustificadas > 0 ? 'flex' : 'none';
                 const elTxt = document.getElementById('f-desconto-faltas-texto');
                 const elVal = document.getElementById('f-valor-desconto-faltas');
-                if (elTxt) elTxt.innerText = tipoRemuneracao === 'mensal'
-                    ? `Faltas injustificadas (${faltasInjustificadas} dia${faltasInjustificadas === 1 ? '' : 's'}) — já no proporcional:`
-                    : `(-) Faltas injustificadas (${faltasInjustificadas} dia${faltasInjustificadas === 1 ? '' : 's'}):`;
+                if (elTxt) elTxt.innerText = `(-) Faltas injustificadas (${faltasInjustificadas} dia${faltasInjustificadas === 1 ? '' : 's'}):`;
                 if (elVal) elVal.innerText = formatarMoeda(valorDescontoFaltasLinha);
             }
             const detDf = document.getElementById('f-detalhe-desconto-faltas');
@@ -6049,7 +6056,7 @@ window.gerarFolhaPagamento = async function() {
                         })
                         .map(isoParaDataBr)
                         .join(', ');
-                    detDf.innerHTML = `<b>Desconto por falta:</b> ${faltasInjustificadas} × ${formatarMoeda(valorDiaSalario)}/dia = <b>${formatarMoeda(valorDescontoFaltasLinha)}</b>${tipoRemuneracao === 'mensal' ? ' (já refletido no salário proporcional)' : ''}.` +
+                    detDf.innerHTML = `<b>Desconto por falta:</b> ${faltasInjustificadas} × ${formatarMoeda(valorDiaSalario)}/dia = <b>${formatarMoeda(valorDescontoFaltasLinha)}</b> (descontado no líquido).` +
                         (datasTxt ? `<br><span style="color:#666;">Datas: ${datasTxt}. Pode marcar/alterar em <b>Ponto → Falta injustificada / atestado (RH)</b>.</span>` : '') +
                         (faltasSemDsrTxt ? `<br><span style="color:#856404;">Sem desconto de DSR (opção RH): ${faltasSemDsrTxt}.</span>` : '');
                 } else {
@@ -6060,16 +6067,14 @@ window.gerarFolhaPagamento = async function() {
                 elLinhaDsr.style.display = dsrPerdidos > 0 ? 'flex' : 'none';
                 const elTxtD = document.getElementById('f-desconto-dsr-texto');
                 const elValD = document.getElementById('f-valor-desconto-dsr');
-                if (elTxtD) elTxtD.innerText = tipoRemuneracao === 'mensal'
-                    ? `DSR perdido (${dsrPerdidos} descanso${dsrPerdidos === 1 ? '' : 's'}) — já no proporcional:`
-                    : `(-) DSR perdido (${dsrPerdidos} descanso${dsrPerdidos === 1 ? '' : 's'}):`;
+                if (elTxtD) elTxtD.innerText = `(-) DSR perdido (${dsrPerdidos} descanso${dsrPerdidos === 1 ? '' : 's'}):`;
                 if (elValD) elValD.innerText = formatarMoeda(valorDescontoDsr);
             }
             const detDsr = document.getElementById('f-detalhe-desconto-dsr');
             if (detDsr) {
                 if (dsrPerdidos > 0) {
                     const doms = (dsrCalc.domingosPerdidos || []).map(function (x) { return x.dataBr; }).join(', ');
-                    detDsr.innerHTML = `<b>Descanso semanal remunerado (CLT):</b> falta injustificada na semana → perde 1 DSR (${formatarMoeda(valorDiaSalario)}/descanso)${tipoRemuneracao === 'mensal' ? ' — já refletido no salário proporcional' : ''}.` +
+                    detDsr.innerHTML = `<b>Descanso semanal remunerado (CLT):</b> falta injustificada na semana → perde 1 DSR (${formatarMoeda(valorDiaSalario)}/descanso) — descontado no líquido.` +
                         `<br><b>Domingos descontados neste mês:</b> ${doms || '—'}.`;
                 } else {
                     const faltasSemDsrCount = datasFaltasInjustificadasIso.length - datasFaltasComDsrIso.length;
@@ -6139,17 +6144,16 @@ window.gerarFolhaPagamento = async function() {
                 const lblAtrasosForm = opcoesFolha.incluirDescontoHoras
                     ? formatarMoeda(valorDescontoHorasFolha) + ' (atrasos)'
                     : '0,00 (atrasos — opção desligada; calc. ' + formatarMoeda(valorDescontoHorasCalc) + ')';
-                const lblDsrForm = tipoRemuneracao === 'mensal'
-                    ? (dsrPerdidos > 0 ? formatarMoeda(valorDescontoDsr) + ' (DSR ' + dsrPerdidos + '× — já no proporcional)' : '0,00 (DSR)')
-                    : (dsrPerdidos > 0 ? formatarMoeda(valorDescontoDsr) + ' (DSR ' + dsrPerdidos + '×)' : '0,00 (DSR)');
+                const lblDsrForm = dsrPerdidos > 0 ? formatarMoeda(valorDescontoDsr) + ' (DSR ' + dsrPerdidos + '×)' : '0,00 (DSR)';
                 const lblFaltasForm = faltasInjustificadas > 0
-                    ? formatarMoeda(valorDescontoFaltasLinha) + ' (já no proporcional; ' + faltasInjustificadas + ' falta(s))'
+                    ? formatarMoeda(valorDescontoFaltasLinha) + ' (faltas ' + faltasInjustificadas + '×)'
                     : '0,00 (faltas)';
-                const subtraiDsrForm = tipoRemuneracao === 'mensal' ? '' : (' − ' + lblDsrForm);
+                const subFaltas = (tipoRemuneracao === 'mensal' && faltasInjustificadas > 0) ? (' − ' + lblFaltasForm) : '';
+                const subDsr = dsrPerdidos > 0 ? (' − ' + lblDsrForm) : '';
                 let txtForm = `<b>Fórmula do líquido:</b><br>
-                ${formatarMoeda(salarioProporcional)} (proporcional${tipoRemuneracao === 'mensal' ? ', já c/ faltas e DSR' : ''}) + ${formatarMoeda(valorFeriasClt)} (férias CLT) + ${lblExtrasForm}
-                − ${formatarMoeda(totalDinheiro)} (vales) − ${formatarMoeda(totalProduto)} (produtos)${subtraiDsrForm} − ${lblAtrasosForm}${totalDescontosLancados > 0 ? ' − ' + formatarMoeda(totalDescontosLancados) + ' (INSS/outros)' : ''}
-                = <b>${formatarMoeda(liquidoReceber)}</b><br><small>Faltas ${lblFaltasForm}${tipoRemuneracao === 'mensal' && dsrPerdidos > 0 ? ' · DSR ' + lblDsrForm + '.' : '.'}</small>`;
+                ${formatarMoeda(salarioProporcional)} (proporcional) + ${formatarMoeda(valorFeriasClt)} (férias CLT) + ${lblExtrasForm}
+                − ${formatarMoeda(totalDinheiro)} (vales) − ${formatarMoeda(totalProduto)} (produtos)${subFaltas}${subDsr} − ${lblAtrasosForm}${totalDescontosLancados > 0 ? ' − ' + formatarMoeda(totalDescontosLancados) + ' (INSS/outros)' : ''}
+                = <b>${formatarMoeda(liquidoReceber)}</b>`;
                 if (nAjuda > 0) {
                     txtForm += `<br><br><span style="color:#0d6efd;"><b>Recebimento PLUS (fora do líquido):</b> Ajuda de custo ${formatarMoeda(totalAjudaCusto)} — pago à parte, sem somar nem descontar do valor acima.</span>`;
                 }
@@ -6206,8 +6210,11 @@ window.gerarFolhaPagamento = async function() {
             }
 
             const mesNomeRef = nomeMeses[mesSelected] || mesSelected;
+            const diasBrutoProporcionalMensal = tipoRemuneracao === 'mensal'
+                ? (diasPagos + diasDescansoIncluidosRef + faltasInjustificadas)
+                : 0;
             const labelSalProp = tipoRemuneracao === 'mensal'
-                ? ('Salário proporcional CLT (' + diasPagosExibir + ' dias × ' + formatarMoeda(valorDiaSalario) + ')')
+                ? ('Salário proporcional CLT (' + diasPagosExibir + ' dias líquidos × ' + formatarMoeda(valorDiaSalario) + ')')
                 : ('Salário por ponto (' + diasPagosExibir + ' dias × ' + formatarMoeda(valorDiaSalario) + ')');
             const usarSalarioBrutoHolerite = tipoRemuneracao === 'ponto';
             let valorProventoSalarioPdf = salarioProporcional;
@@ -6225,13 +6232,19 @@ window.gerarFolhaPagamento = async function() {
                 }
             ];
             const descontosPdf = [];
+            if (faltasInjustificadas > 0 && tipoRemuneracao === 'mensal') {
+                descontosPdf.push({
+                    label: 'Faltas injustificadas (' + faltasInjustificadas + ' dia' + (faltasInjustificadas === 1 ? '' : 's') + ')',
+                    valor: valorDescontoFaltasLinha
+                });
+            }
             if (faltasInjustificadas > 0 && usarSalarioBrutoHolerite) {
                 descontosPdf.push({
                     label: 'Faltas injustificadas (' + faltasInjustificadas + ' dia' + (faltasInjustificadas === 1 ? '' : 's') + ')',
                     valor: valorDescontoFaltasLinha
                 });
             }
-            if (dsrPerdidos > 0 && tipoRemuneracao !== 'mensal') {
+            if (dsrPerdidos > 0 && (tipoRemuneracao === 'mensal' || tipoRemuneracao === 'ponto')) {
                 descontosPdf.push({
                     label: 'DSR perdido (' + dsrPerdidos + ' descanso' + (dsrPerdidos === 1 ? '' : 's') + ')',
                     valor: valorDescontoDsr
@@ -6267,8 +6280,8 @@ window.gerarFolhaPagamento = async function() {
                 diasPagos: diasPagosExibir,
                 proventos: proventosPdf,
                 descontos: descontosPdf,
-                totalProventos: valorProventoSalarioPdf + valorFeriasClt + valorExtrasFolha,
-                totalDescontos: (usarSalarioBrutoHolerite ? valorDescontoFaltasLinha : 0) + descontoDsrNoLiquido + totalDinheiro + totalProduto + valorDescontoHorasFolha + totalDescontosLancados,
+                totalProventos: (usarSalarioBrutoHolerite ? valorProventoSalarioPdf : salarioProporcional) + valorFeriasClt + valorExtrasFolha,
+                totalDescontos: descontoFaltasNoLiquido + descontoDsrNoLiquido + totalDinheiro + totalProduto + valorDescontoHorasFolha + totalDescontosLancados,
                 liquido: liquidoReceber,
                 liquidoNegativo: liquidoReceber < 0,
                 opcoesFolha: opcoesFolha,
@@ -8503,14 +8516,65 @@ async function monitorarVencimentosObras() {
 window.confirmarLeituraAlerta = function(id) {
     const hj = new Date().toISOString().substring(0, 10);
     localStorage.setItem(`novo_aviso_${id}_${hj}`, "true");
-    
+
     const el = document.getElementById(`card-alerta-${id}`);
     if (el) {
         el.style.opacity = "0";
         el.style.transform = "translateX(50px)";
-        setTimeout(() => el.remove(), 400);
+        setTimeout(() => {
+            el.remove();
+            atualizarContagemPainelAlertas();
+        }, 400);
     }
 };
+
+window.confirmarLeituraTodosAlertas = function() {
+    const cards = document.querySelectorAll('#alerta-container-global [id^="card-alerta-"]');
+    if (!cards.length) return;
+    const hj = new Date().toISOString().substring(0, 10);
+    cards.forEach((el) => {
+        const id = el.id.replace('card-alerta-', '');
+        localStorage.setItem(`novo_aviso_${id}_${hj}`, "true");
+        el.style.opacity = "0";
+        el.style.transform = "translateX(50px)";
+    });
+    setTimeout(() => {
+        const container = document.getElementById("alerta-container-global");
+        if (container) {
+            container.innerHTML = "";
+            container.style.display = "none";
+        }
+        sessionStorage.removeItem('alertas_painel_minimizado');
+    }, 400);
+};
+
+window.togglePainelAlertasMinimizado = function() {
+    const minimizado = sessionStorage.getItem('alertas_painel_minimizado') === '1';
+    sessionStorage.setItem('alertas_painel_minimizado', minimizado ? '0' : '1');
+    const container = document.getElementById("alerta-container-global");
+    if (!container) return;
+    const barra = container.querySelector('.alerta-barra-minimizada');
+    const painel = container.querySelector('.alerta-painel-wrapper');
+    if (barra) barra.style.display = minimizado ? 'none' : 'flex';
+    if (painel) painel.style.display = minimizado ? 'block' : 'none';
+};
+
+function atualizarContagemPainelAlertas() {
+    const cards = document.querySelectorAll('#alerta-container-global [id^="card-alerta-"]');
+    if (!cards.length) {
+        const container = document.getElementById("alerta-container-global");
+        if (container) {
+            container.innerHTML = "";
+            container.style.display = "none";
+        }
+        sessionStorage.removeItem('alertas_painel_minimizado');
+        return;
+    }
+    const qtd = cards.length;
+    document.querySelectorAll('.alerta-contagem-qtd').forEach((el) => {
+        el.textContent = String(qtd);
+    });
+}
 
 // Layout atualizado para exibir OBRA e LOJA
 function montarPainelAlerta(id, loja, obra, desc, titulo, tipo, link) {
@@ -8535,24 +8599,45 @@ function montarPainelAlerta(id, loja, obra, desc, titulo, tipo, link) {
 
 function renderizarAlertasNoCanto(conteudo, som) {
     let container = document.getElementById("alerta-container-global");
-    
+
     if (!container) {
         container = document.createElement("div");
         container.id = "alerta-container-global";
-        container.style.cssText = "position:fixed; bottom:20px; right:20px; z-index:999999; max-height:80vh; overflow-y:auto; padding:5px;";
-        
+        container.style.cssText = "position:fixed; bottom:20px; right:20px; z-index:999999; max-height:80vh; padding:5px;";
+
         const telaPatrao = document.getElementById('tela-patrao');
         if (telaPatrao) {
             telaPatrao.appendChild(container);
         } else {
-            document.body.appendChild(container); // Fallback caso a tela não exista
+            document.body.appendChild(container);
         }
     }
-    
-    container.style.display = 'block';
-    container.innerHTML = conteudo;
 
-    if (som) {
+    const qtd = (conteudo.match(/card-alerta-/g) || []).length;
+    const minimizado = sessionStorage.getItem('alertas_painel_minimizado') === '1';
+
+    container.style.display = 'block';
+    container.innerHTML = `
+        <div class="alerta-barra-minimizada" style="display:${minimizado ? 'flex' : 'none'}; align-items:center; gap:8px; background:#1a2a43; color:#fff; padding:10px 14px; border-radius:10px; box-shadow:0 6px 20px rgba(0,0,0,0.2); min-width:200px;">
+            <span style="font-weight:700; font-size:13px; flex:1; cursor:pointer;" onclick="window.togglePainelAlertasMinimizado()" title="Clique para expandir">🔔 <span class="alerta-contagem-qtd">${qtd}</span> vencimento(s)</span>
+            <button type="button" onclick="window.confirmarLeituraTodosAlertas()" style="background:#d9534f; color:#fff; border:none; border-radius:6px; padding:4px 8px; font-weight:700; font-size:10px; cursor:pointer;" title="Silenciar todos">Fechar</button>
+            <button type="button" onclick="window.togglePainelAlertasMinimizado()" style="background:#fff; color:#1a2a43; border:none; border-radius:6px; padding:4px 10px; font-weight:700; font-size:12px; cursor:pointer;">Expandir</button>
+        </div>
+        <div class="alerta-painel-wrapper" style="display:${minimizado ? 'none' : 'block'};">
+            <div class="alerta-painel-header" style="display:flex; align-items:center; justify-content:space-between; gap:8px; background:#fff; border:1px solid #e0e0e0; border-radius:10px 10px 0 0; padding:10px 12px; margin-bottom:0; box-shadow:0 4px 12px rgba(0,0,0,0.06); width:340px; box-sizing:border-box;">
+                <span style="font-weight:800; font-size:13px; color:#1a2a43;">⚠️ Vencimentos (<span class="alerta-contagem-qtd">${qtd}</span>)</span>
+                <div style="display:flex; gap:6px; flex-shrink:0;">
+                    <button type="button" onclick="window.confirmarLeituraTodosAlertas()" style="background:#d9534f; color:#fff; border:none; border-radius:6px; padding:5px 10px; font-weight:700; font-size:11px; cursor:pointer;" title="Silenciar todos os alertas de hoje">Fechar tudo</button>
+                    <button type="button" onclick="window.togglePainelAlertasMinimizado()" style="background:#f8f9fa; border:1px solid #ddd; border-radius:6px; padding:5px 10px; font-weight:700; font-size:14px; cursor:pointer; line-height:1;" title="Minimizar painel">−</button>
+                </div>
+            </div>
+            <div class="alerta-painel-corpo" style="max-height:70vh; overflow-y:auto; padding-top:4px;">
+                ${conteudo}
+            </div>
+        </div>
+    `;
+
+    if (som && !minimizado) {
         const audio = new Audio('https://actions.google.com/sounds/v1/alarms/beep_short.ogg');
         audio.play().catch(() => {});
     }
