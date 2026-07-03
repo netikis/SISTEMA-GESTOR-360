@@ -8310,68 +8310,177 @@ window.gerarFolhaPagamento = async function() {
         }
     };
 
-    window.gerarEnviarPDF = async function(id) {
-        const dados = window.valesEncontrados[id]; 
-        const empresaLogada = dados.empresa_id || "Empresa";
-        
-        Swal.fire({ 
-            title: 'Gerando Documento...', 
-            text: 'Aguarde', 
-            allowOutsideClick: false 
-        }); 
-        Swal.showLoading();
-        
-       const horaPDF = dados.hora_criacao ? ` às ${dados.hora_criacao}` : ""; 
-        document.getElementById('pdf-empresa-nome').innerText = empresaLogada; 
-        document.getElementById('pdf-data').innerText = "Data: " + (dados.data_criacao || "") + horaPDF; 
-        document.getElementById('pdf-texto').innerHTML = dados.texto; 
-        document.getElementById('pdf-assinatura').src = dados.assinatura; 
-        document.getElementById('pdf-nome-ass').innerText = dados.nome;
-
-        try {
-            await new Promise(r => setTimeout(r, 800)); 
-            
-            const { jsPDF } = window.jspdf; 
-            const pdf = new jsPDF('p', 'mm', 'a4'); 
-            const element = document.getElementById('area-pdf-escondida');
-            
-            const canvasImg = await html2canvas(element, { scale: 2, useCORS: true }); 
-            const imgData = canvasImg.toDataURL('image/jpeg');
-            const pdfWidth = pdf.internal.pageSize.getWidth(); 
-            const pdfHeight = (canvasImg.height * pdfWidth) / canvasImg.width;
-            
-            pdf.addImage(imgData, 'JPEG', 0, 0, pdfWidth, pdfHeight);
-            
-            const nomeDoArquivo = `Recibo_${dados.nome.replace(/\s+/g, '_')}.pdf`; 
-            const file = new File([pdf.output('blob')], nomeDoArquivo, { type: "application/pdf" });
-            const msg = `*${empresaLogada}*\n\nOlá ${dados.nome}, anexo a sua via do recibo.`;
-
-            let sucessoCompartilhamento = false;
-            
-            if (navigator.canShare && navigator.canShare({ files: [file] })) {
-                try { 
-                    await navigator.share({ files: [file], title: 'Recibo', text: msg }); 
-                    sucessoCompartilhamento = true; 
-                    Swal.close(); 
-                } catch(e) { 
-                    if (e.name !== 'AbortError') {
-                        console.error("Bloqueado", e); 
-                    } else { 
-                        Swal.close(); 
-                        return; 
-                    } 
-                }
-            }
-            
-            if (!sucessoCompartilhamento) { 
-                pdf.save(nomeDoArquivo); 
-                Swal.fire('PDF Descarregado!', 'Guardado nas Transferências.', 'success').then(() => { 
-                    window.location.href = `https://api.whatsapp.com/send?phone=55${dados.tel}&text=${encodeURIComponent(msg)}`; 
-                }); 
-            }
-        } catch(e) { 
-            Swal.fire('Erro', 'Falha no PDF.', 'error'); 
+    async function obterDadosValePorId(id) {
+        if (window.valesEncontrados && window.valesEncontrados[id]) {
+            return window.valesEncontrados[id];
         }
+        const snap = await getDoc(doc(db, 'vales_sistema', id));
+        if (!snap.exists()) return null;
+        const dados = { id: snap.id, ...snap.data() };
+        window.valesEncontrados = window.valesEncontrados || {};
+        window.valesEncontrados[id] = dados;
+        return dados;
+    }
+
+    function preencherAreaPdfReciboVale(dados) {
+        const horaPDF = dados.hora_criacao ? ` às ${dados.hora_criacao}` : '';
+        document.getElementById('pdf-empresa-nome').innerText = dados.empresa_id || 'Empresa';
+        document.getElementById('pdf-data').innerText = 'Data: ' + (dados.data_criacao || dados.data || '') + horaPDF;
+        document.getElementById('pdf-texto').innerHTML = dados.texto || '';
+        const imgAss = document.getElementById('pdf-assinatura');
+        if (dados.assinatura) {
+            imgAss.src = dados.assinatura;
+            imgAss.style.display = 'block';
+        } else {
+            imgAss.removeAttribute('src');
+            imgAss.style.display = 'none';
+        }
+        document.getElementById('pdf-nome-ass').innerText = dados.nome || '';
+    }
+
+    function nomeArquivoReciboVale(dados, prefixo) {
+        const dataLimpa = String(dados.data_criacao || dados.data || 'sem-data').replace(/\//g, '-');
+        const nomeLimpo = String(dados.nome || 'funcionario').replace(/\s+/g, '_');
+        return `${prefixo || 'Recibo'}_${nomeLimpo}_${dataLimpa}.pdf`;
+    }
+
+    async function criarPdfReciboValeBlob(dados) {
+        preencherAreaPdfReciboVale(dados);
+        await new Promise((r) => setTimeout(r, 500));
+        const { jsPDF } = window.jspdf;
+        const pdf = new jsPDF('p', 'mm', 'a4');
+        const element = document.getElementById('area-pdf-escondida');
+        const canvasImg = await html2canvas(element, { scale: 2, useCORS: true });
+        const imgData = canvasImg.toDataURL('image/jpeg');
+        const pdfWidth = pdf.internal.pageSize.getWidth();
+        const pdfHeight = (canvasImg.height * pdfWidth) / canvasImg.width;
+        pdf.addImage(imgData, 'JPEG', 0, 0, pdfWidth, pdfHeight);
+        const blob = pdf.output('blob');
+        return {
+            blob,
+            url: URL.createObjectURL(blob),
+            nomeArquivo: nomeArquivoReciboVale(dados, 'Recibo')
+        };
+    }
+
+    function htmlPreviewReciboVale(dados) {
+        const assinado = String(dados.status || '').toLowerCase() === 'assinado';
+        const hora = dados.hora_criacao ? ` às ${dados.hora_criacao}` : '';
+        const assHtml = assinado && dados.assinatura
+            ? `<div style="margin-top:18px;text-align:center;"><img src="${dados.assinatura}" alt="Assinatura" style="max-height:120px;border:1px solid #ddd;border-radius:8px;background:#fff;padding:6px;"><div style="margin-top:8px;font-weight:700;color:#1a2a43;">${escapeHtmlBasico(dados.nome || '')}</div><div style="font-size:12px;color:#666;">Assinatura digital do funcionário</div></div>`
+            : `<p style="margin-top:16px;padding:10px;background:#fff3cd;border:1px solid #ffc107;border-radius:8px;color:#856404;font-weight:700;">⏳ Recibo ainda sem assinatura do funcionário.</p>`;
+        return `
+            <div style="text-align:left;font-size:13px;line-height:1.5;">
+                <div style="text-align:center;margin-bottom:12px;padding-bottom:10px;border-bottom:2px solid #1a2a43;">
+                    <b style="color:#1a2a43;font-size:15px;">${escapeHtmlBasico(dados.empresa_id || 'Empresa')}</b><br>
+                    <span style="font-size:12px;color:#666;">Recibo oficial — ${assinado ? 'Assinado' : 'Pendente'}</span>
+                </div>
+                <div style="font-size:12px;color:#666;margin-bottom:10px;"><b>Data:</b> ${escapeHtmlBasico((dados.data_criacao || dados.data || '') + hora)}</div>
+                <div style="font-size:12px;margin-bottom:8px;"><b>Tipo:</b> ${escapeHtmlBasico(dados.tipo || '')} &nbsp;|&nbsp; <b>Valor:</b> R$ ${escapeHtmlBasico(String(dados.valor || '0'))}</div>
+                <div style="font-size:13px;color:#333;text-align:justify;margin:12px 0;padding:12px;background:#f8fafc;border-radius:8px;border:1px solid #e0e6ed;">${dados.texto || ''}</div>
+                ${assinado ? `<div style="font-size:12px;color:#666;"><b>Descrição:</b> ${escapeHtmlBasico(dados.descricao || '')}</div>` : ''}
+                ${assHtml}
+            </div>
+        `;
+    }
+
+    window.abrirReciboValeTela = async function (id) {
+        try {
+            const dados = await obterDadosValePorId(id);
+            if (!dados) return Swal.fire('Erro', 'Recibo não encontrado.', 'error');
+            await Swal.fire({
+                title: 'Recibo do vale',
+                html: htmlPreviewReciboVale(dados),
+                width: 680,
+                showCancelButton: true,
+                showDenyButton: true,
+                confirmButtonText: '📥 Baixar PDF',
+                denyButtonText: '📄 Abrir PDF',
+                cancelButtonText: 'Fechar',
+                confirmButtonColor: '#1a2a43',
+                denyButtonColor: '#217346',
+                cancelButtonColor: '#6c757d'
+            }).then(async (result) => {
+                if (result.isConfirmed) await window.baixarReciboValePdf(id);
+                else if (result.isDenied) await window.visualizarReciboValePdf(id);
+            });
+        } catch (e) {
+            Swal.fire('Erro', 'Não foi possível abrir o recibo.', 'error');
+        }
+    };
+
+    window.visualizarReciboValePdf = async function (id) {
+        Swal.fire({ title: 'Gerando PDF...', allowOutsideClick: false });
+        Swal.showLoading();
+        try {
+            const dados = await obterDadosValePorId(id);
+            if (!dados) return Swal.fire('Erro', 'Recibo não encontrado.', 'error');
+            const pdf = await criarPdfReciboValeBlob(dados);
+            Swal.close();
+            const novaAba = window.open(pdf.url, '_blank');
+            if (!novaAba) {
+                return Swal.fire('Atenção', 'O navegador bloqueou a nova aba. Use «Baixar PDF».', 'warning');
+            }
+            setTimeout(() => URL.revokeObjectURL(pdf.url), 120000);
+        } catch (e) {
+            Swal.fire('Erro', 'Falha ao gerar o PDF para visualização.', 'error');
+        }
+    };
+
+    window.baixarReciboValePdf = async function (id) {
+        Swal.fire({ title: 'Gerando PDF...', allowOutsideClick: false });
+        Swal.showLoading();
+        try {
+            const dados = await obterDadosValePorId(id);
+            if (!dados) return Swal.fire('Erro', 'Recibo não encontrado.', 'error');
+            const pdf = await criarPdfReciboValeBlob(dados);
+            const link = document.createElement('a');
+            link.href = pdf.url;
+            link.download = pdf.nomeArquivo;
+            document.body.appendChild(link);
+            link.click();
+            link.remove();
+            setTimeout(() => URL.revokeObjectURL(pdf.url), 5000);
+            Swal.fire('Baixado!', 'O recibo foi guardado no seu dispositivo.', 'success');
+        } catch (e) {
+            Swal.fire('Erro', 'Falha ao gerar o PDF.', 'error');
+        }
+    };
+
+    window.compartilharReciboValeWhats = async function (id) {
+        const dados = await obterDadosValePorId(id);
+        if (!dados) return Swal.fire('Erro', 'Recibo não encontrado.', 'error');
+        Swal.fire({ title: 'Gerando PDF...', allowOutsideClick: false });
+        Swal.showLoading();
+        try {
+            const pdf = await criarPdfReciboValeBlob(dados);
+            const empresaLogada = dados.empresa_id || 'Empresa';
+            const file = new File([pdf.blob], pdf.nomeArquivo, { type: 'application/pdf' });
+            const msg = `*${empresaLogada}*\n\nOlá ${dados.nome}, anexo a sua via do recibo.`;
+            if (navigator.canShare && navigator.canShare({ files: [file] })) {
+                await navigator.share({ files: [file], title: 'Recibo', text: msg });
+                Swal.close();
+                return;
+            }
+            const link = document.createElement('a');
+            link.href = pdf.url;
+            link.download = pdf.nomeArquivo;
+            document.body.appendChild(link);
+            link.click();
+            link.remove();
+            Swal.fire('PDF baixado', 'Abrindo WhatsApp para enviar o arquivo.', 'info').then(() => {
+                const tel = dados.tel || (window.listaFuncionarios && window.listaFuncionarios[dados.funcionario_id] && window.listaFuncionarios[dados.funcionario_id].tel);
+                if (tel) {
+                    window.open(`https://api.whatsapp.com/send?phone=55${tel}&text=${encodeURIComponent(msg)}`, '_blank');
+                }
+            });
+        } catch (e) {
+            Swal.fire('Erro', 'Falha ao preparar o envio.', 'error');
+        }
+    };
+
+    window.gerarEnviarPDF = async function(id) {
+        await window.abrirReciboValeTela(id);
     };
 
     let signaturePad;
@@ -8612,11 +8721,15 @@ window.gerarFolhaPagamento = async function() {
                         <span style="font-size: 12px; color: #888;"><b>Data:</b> ${v.data_criacao || v.data} ${v.hora_criacao ? 'às '+v.hora_criacao : ''}</span><br>
                         <div style="margin-top: 5px; font-size: 12px; color: #444;"><i>${v.descricao}</i></div>
                         
-                        <div style="display: flex; gap: 8px; margin-top: 15px;">
+                        <div style="display: flex; gap: 8px; margin-top: 15px; flex-wrap: wrap;">
                             ${isAssinado 
-                                ? `<button onclick="gerarEnviarPDF('${v.id}')" style="flex:1; background: #1a2a43; color: white; border: none; padding: 10px; border-radius: 8px; font-size: 11px; font-weight: bold; cursor:pointer;">📄 VER RECIBO</button>` 
-                                : `<button onclick="reenviarLinkVale('${v.id}')" style="flex:1; background: #25D366; color: white; border: none; padding: 10px; border-radius: 8px; font-size: 11px; font-weight: bold; cursor:pointer;">🟢 REENVIAR LINK</button>`}
-                            <button onclick="excluirVale('${v.id}')" style="flex:1; background: #d9534f; color: white; border: none; padding: 10px; border-radius: 8px; font-size: 11px; font-weight: bold; cursor:pointer;">🗑️ APAGAR</button>
+                                ? `<button type="button" onclick="abrirReciboValeTela('${v.id}')" style="flex:1; min-width:120px; background:#4285F4; color:white; border:none; padding:10px; border-radius:8px; font-size:11px; font-weight:bold; cursor:pointer;">👁️ VER NA TELA</button>
+                                   <button type="button" onclick="visualizarReciboValePdf('${v.id}')" style="flex:1; min-width:120px; background:#217346; color:white; border:none; padding:10px; border-radius:8px; font-size:11px; font-weight:bold; cursor:pointer;">📄 ABRIR PDF</button>
+                                   <button type="button" onclick="baixarReciboValePdf('${v.id}')" style="flex:1; min-width:120px; background:#1a2a43; color:white; border:none; padding:10px; border-radius:8px; font-size:11px; font-weight:bold; cursor:pointer;">📥 BAIXAR PDF</button>
+                                   <button type="button" onclick="compartilharReciboValeWhats('${v.id}')" style="flex:1; min-width:120px; background:#25D366; color:white; border:none; padding:10px; border-radius:8px; font-size:11px; font-weight:bold; cursor:pointer;">🟢 WHATSAPP</button>` 
+                                : `<button type="button" onclick="abrirReciboValeTela('${v.id}')" style="flex:1; min-width:120px; background:#4285F4; color:white; border:none; padding:10px; border-radius:8px; font-size:11px; font-weight:bold; cursor:pointer;">👁️ VER TEXTO</button>
+                                   <button type="button" onclick="reenviarLinkVale('${v.id}')" style="flex:1; min-width:120px; background:#25D366; color:white; border:none; padding:10px; border-radius:8px; font-size:11px; font-weight:bold; cursor:pointer;">🟢 REENVIAR LINK</button>`}
+                            <button type="button" onclick="excluirVale('${v.id}')" style="flex:1; min-width:120px; background:#d9534f; color:white; border:none; padding:10px; border-radius:8px; font-size:11px; font-weight:bold; cursor:pointer;">🗑️ APAGAR</button>
                         </div>
                     </div>
                 `;
@@ -8725,10 +8838,13 @@ window.gerarFolhaPagamento = async function() {
                         <span style="font-size: 12px; color: #888;"><b>Data:</b> ${v.data_criacao || v.data} ${v.hora_criacao ? 'às '+v.hora_criacao : ''}</span><br>
                         <div style="margin-top: 5px; font-size: 12px; color: #444;"><i>${v.descricao}</i></div>
                         
-                        <div style="display: flex; gap: 8px; margin-top: 15px;">
+                        <div style="display: flex; gap: 8px; margin-top: 15px; flex-wrap: wrap;">
                             ${isAssinado 
-                                ? `<button onclick="gerarPdfFuncionario('${v.id}')" style="flex:1; background: #1a2a43; color: white; border: none; padding: 10px; border-radius: 8px; font-size: 11px; font-weight: bold; cursor:pointer;">📄 BAIXAR MEU RECIBO (PDF)</button>` 
-                                : `<button onclick="window.location.href='?id=${v.id}'" style="flex:1; background: #d4a017; color: var(--dark-navy); border: none; padding: 10px; border-radius: 8px; font-size: 11px; font-weight: bold; cursor:pointer;">✍️ ASSINAR AGORA</button>`}
+                                ? `<button type="button" onclick="abrirReciboValeTela('${v.id}')" style="flex:1; min-width:120px; background:#4285F4; color:white; border:none; padding:10px; border-radius:8px; font-size:11px; font-weight:bold; cursor:pointer;">👁️ VER NA TELA</button>
+                                   <button type="button" onclick="visualizarReciboValePdf('${v.id}')" style="flex:1; min-width:120px; background:#217346; color:white; border:none; padding:10px; border-radius:8px; font-size:11px; font-weight:bold; cursor:pointer;">📄 ABRIR PDF</button>
+                                   <button type="button" onclick="baixarReciboValePdf('${v.id}')" style="flex:1; min-width:120px; background:#1a2a43; color:white; border:none; padding:10px; border-radius:8px; font-size:11px; font-weight:bold; cursor:pointer;">📥 BAIXAR PDF</button>` 
+                                : `<button type="button" onclick="window.location.href='?id=${v.id}'" style="flex:1; min-width:120px; background:#d4a017; color:var(--dark-navy); border:none; padding:10px; border-radius:8px; font-size:11px; font-weight:bold; cursor:pointer;">✍️ ASSINAR AGORA</button>
+                                   <button type="button" onclick="abrirReciboValeTela('${v.id}')" style="flex:1; min-width:120px; background:#4285F4; color:white; border:none; padding:10px; border-radius:8px; font-size:11px; font-weight:bold; cursor:pointer;">👁️ VER TEXTO</button>`}
                         </div>
                     </div>
                 `;
@@ -8741,43 +8857,8 @@ window.gerarFolhaPagamento = async function() {
         }
     };
 
-    // Função de PDF exclusiva para o funcionário baixar, sem envolver compartilhamento de WhatsApp
     window.gerarPdfFuncionario = async function(id) {
-        const dados = window.valesEncontrados[id]; 
-        const empresaLogada = dados.empresa_id || "Empresa";
-        
-        Swal.fire({ title: 'Gerando Recibo...', allowOutsideClick: false }); 
-        Swal.showLoading();
-        
-        const horaPDF = dados.hora_criacao ? ` às ${dados.hora_criacao}` : ""; 
-        document.getElementById('pdf-empresa-nome').innerText = empresaLogada; 
-        document.getElementById('pdf-data').innerText = "Data: " + (dados.data_criacao || "") + horaPDF; 
-        document.getElementById('pdf-texto').innerHTML = dados.texto; 
-        document.getElementById('pdf-assinatura').src = dados.assinatura; 
-        document.getElementById('pdf-nome-ass').innerText = dados.nome;
-
-        try {
-            await new Promise(r => setTimeout(r, 800)); 
-            
-            const { jsPDF } = window.jspdf; 
-            const pdf = new jsPDF('p', 'mm', 'a4'); 
-            const element = document.getElementById('area-pdf-escondida');
-            
-            const canvasImg = await html2canvas(element, { scale: 2, useCORS: true }); 
-            const imgData = canvasImg.toDataURL('image/jpeg');
-            const pdfWidth = pdf.internal.pageSize.getWidth(); 
-            const pdfHeight = (canvasImg.height * pdfWidth) / canvasImg.width;
-            
-            pdf.addImage(imgData, 'JPEG', 0, 0, pdfWidth, pdfHeight);
-            
-            const dataLimpa = (dados.data_criacao || "").replace(/\//g, '-');
-            const nomeDoArquivo = `Meu_Recibo_${dataLimpa}.pdf`; 
-            
-            pdf.save(nomeDoArquivo); 
-            Swal.fire('Baixado!', 'O seu recibo foi salvo no seu celular/computador.', 'success'); 
-        } catch(e) { 
-            Swal.fire('Erro', 'Falha ao gerar o PDF.', 'error'); 
-        }
+        await window.baixarReciboValePdf(id);
     };
 
     window.checarNovosPedidosManutencao = async function() {
