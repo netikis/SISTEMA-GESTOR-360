@@ -895,6 +895,93 @@
             border-color: var(--gold);
         }
 
+        .badge-tag-wrap {
+            display: inline-flex;
+            align-items: stretch;
+            border-radius: 15px;
+            overflow: hidden;
+            border: 1px solid #ccc;
+            background: #e0e6ed;
+        }
+
+        .badge-tag-wrap .badge-tag-desp {
+            border: none;
+            border-radius: 0;
+        }
+
+        .badge-tag-wrap:hover .badge-tag-desp {
+            background: var(--gold);
+            color: var(--white);
+        }
+
+        .badge-tag-excluir {
+            background: #f1f3f5;
+            color: #a94442;
+            border: none;
+            border-left: 1px solid #ccc;
+            padding: 0 9px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            line-height: 1;
+            min-width: 28px;
+        }
+
+        .badge-tag-excluir:hover {
+            background: #d9534f;
+            color: #fff;
+        }
+
+        .busca-despesas-wrap {
+            position: relative;
+            flex: 2;
+            min-width: 0;
+        }
+
+        #busca-obra-sugestoes {
+            display: none;
+            position: absolute;
+            left: 0;
+            right: 0;
+            top: calc(100% + 4px);
+            z-index: 1200;
+            max-height: 240px;
+            overflow-y: auto;
+            background: #fff;
+            border: 1px solid #c5d0de;
+            border-radius: 10px;
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
+        }
+
+        .busca-desp-sugestao {
+            display: block;
+            width: 100%;
+            text-align: left;
+            padding: 10px 12px;
+            border: none;
+            border-bottom: 1px solid #eef2f5;
+            background: #fff;
+            cursor: pointer;
+            font-size: 13px;
+            color: var(--dark-navy);
+        }
+
+        .busca-desp-sugestao:last-child {
+            border-bottom: none;
+        }
+
+        .busca-desp-sugestao:hover,
+        .busca-desp-sugestao:focus {
+            background: #eef2f5;
+        }
+
+        .busca-desp-sug-tipo {
+            font-size: 10px;
+            font-weight: 700;
+            color: #888;
+            margin-right: 6px;
+        }
+
         /* Estilo da Tela de Backup */
         .card-alerta-backup {
             background: #eef2f5;
@@ -1648,10 +1735,10 @@
             <summary style="background: #eef2f5;">➕ Lançar Nova Despesa</summary>
             <div style="padding: 15px;">
                 <label>Nome da Obra ou Local</label>
-                <input type="text" id="d-obra" placeholder="Onde o material foi usado?">
+                <input type="text" id="d-obra" list="datalist-obras-desp" autocomplete="off" placeholder="Onde o material foi usado?">
 
                 <label>Nome da Loja ou Fornecedor</label>
-                <input type="text" id="d-loja" placeholder="Onde foi comprado?">
+                <input type="text" id="d-loja" list="datalist-lojas-desp" autocomplete="off" placeholder="Onde foi comprado?">
                 <label>Número da Nota Fiscal / Recibo</label>
                 <input type="text" id="d-nf" placeholder="Ex: 123456 (Opcional)">
 
@@ -1676,9 +1763,14 @@
             <div style="padding: 15px;">
                 <label>Procurar despesas da Obra ou Loja:</label>
                 <div style="display: flex; gap: 10px;">
-                    <input type="text" id="busca-obra" placeholder="Nome da obra ou fornecedor" style="flex: 2; margin: 0;">
+                    <div class="busca-despesas-wrap">
+                        <input type="text" id="busca-obra" placeholder="Nome da obra ou fornecedor" autocomplete="off" style="width: 100%; margin: 0;" oninput="filtrarAutocompleteBuscaDespesas()" onfocus="filtrarAutocompleteBuscaDespesas()" onkeydown="teclaAutocompleteBuscaDespesas(event)">
+                        <div id="busca-obra-sugestoes" role="listbox" aria-label="Sugestões de busca"></div>
+                    </div>
                     <button onclick="buscarDespesasObra()" style="flex: 1; background: var(--dark-navy); color: white; border: none; border-radius: 10px; cursor: pointer; font-weight:bold;">Buscar</button>
                 </div>
+                <datalist id="datalist-obras-desp"></datalist>
+                <datalist id="datalist-lojas-desp"></datalist>
 
                 <div id="tags-filtros-despesas" style="display: flex; flex-wrap: wrap; gap: 8px; margin-top: 15px; padding: 10px; background: #fafcff; border-radius: 8px; border: 1px dashed #e0e6ed;">
                     <p style="font-size: 11px; color: #888; width: 100%; text-align: center; margin: 0;">A carregar locais registados...</p>
@@ -1720,9 +1812,9 @@
                     <summary style="background: #fafcff;">Adicionar linha ao relatório</summary>
                     <div style="padding: 12px; border: 1px dashed #e0e6ed; border-top: none;">
                         <label>Nome da Obra ou Local</label>
-                        <input type="text" id="rd-obra" placeholder="Onde o material foi usado?" style="margin-top: 4px;">
+                        <input type="text" id="rd-obra" list="datalist-obras-desp" autocomplete="off" placeholder="Onde o material foi usado?" style="margin-top: 4px;">
                         <label>Nome (fornecedor / loja)</label>
-                        <input type="text" id="rd-loja" placeholder="Nome ou loja" style="margin-top: 4px;">
+                        <input type="text" id="rd-loja" list="datalist-lojas-desp" autocomplete="off" placeholder="Nome ou loja" style="margin-top: 4px;">
                         <label>Número do cheque ou boleto (opcional)</label>
                         <input type="text" id="rd-cheque-boleto" placeholder="Ex.: chq. 1234 / boleto" style="margin-top: 4px;">
                         <label>Número da Nota Fiscal / Recibo (opcional)</label>
@@ -3586,6 +3678,251 @@ function separarDataSegura(dataString) {
         el.value = ag.getFullYear() + '-' + String(ag.getMonth() + 1).padStart(2, '0') + '-' + String(ag.getDate()).padStart(2, '0');
     })();
 
+    function normalizarChaveNomeDespesa(nome) {
+        return String(nome || '')
+            .trim()
+            .replace(/\s+/g, ' ')
+            .toLowerCase();
+    }
+
+    function formatarNomeCanonicoDespesa(nome) {
+        return String(nome || '')
+            .trim()
+            .replace(/\s+/g, ' ')
+            .toUpperCase();
+    }
+
+    function registrarNomeUnicoNoMapa(mapa, nome) {
+        const chave = normalizarChaveNomeDespesa(nome);
+        if (!chave) return;
+        const canonico = formatarNomeCanonicoDespesa(nome);
+        const atual = mapa.get(chave);
+        if (!atual) {
+            mapa.set(chave, { canonico, count: 1 });
+        } else {
+            atual.count += 1;
+        }
+    }
+
+    function montarCacheNomesDespesas(querySnapshot) {
+        const mapaObras = new Map();
+        const mapaLojas = new Map();
+        querySnapshot.forEach((docSnap) => {
+            const d = docSnap.data();
+            if (d.obra_nome) registrarNomeUnicoNoMapa(mapaObras, d.obra_nome);
+            if (d.loja_nome) registrarNomeUnicoNoMapa(mapaLojas, d.loja_nome);
+        });
+        const obras = Array.from(mapaObras.values()).map((x) => x.canonico).sort((a, b) => a.localeCompare(b, 'pt-BR'));
+        const lojas = Array.from(mapaLojas.values()).map((x) => x.canonico).sort((a, b) => a.localeCompare(b, 'pt-BR'));
+        const mapaTodos = new Map();
+        mapaObras.forEach((v, chave) => {
+            mapaTodos.set(chave, { canonico: v.canonico, tipo: 'obra', count: v.count });
+        });
+        mapaLojas.forEach((v, chave) => {
+            const existente = mapaTodos.get(chave);
+            if (!existente || v.count > existente.count) {
+                mapaTodos.set(chave, { canonico: v.canonico, tipo: 'loja', count: v.count });
+            }
+        });
+        const todos = Array.from(new Set([...obras, ...lojas])).sort((a, b) => a.localeCompare(b, 'pt-BR'));
+        const sugestoes = Array.from(mapaTodos.entries()).map(([chave, info]) => ({
+            chave,
+            nome: info.canonico,
+            tipo: info.tipo,
+            count: info.count
+        })).sort((a, b) => a.nome.localeCompare(b.nome, 'pt-BR'));
+        window._cacheNomesDespesas = { mapaObras, mapaLojas, mapaTodos, obras, lojas, todos, sugestoes };
+        return window._cacheNomesDespesas;
+    }
+
+    function resolverNomeCanonicoDespesa(valorDigitado, tipo) {
+        const formatado = formatarNomeCanonicoDespesa(valorDigitado);
+        const chave = normalizarChaveNomeDespesa(valorDigitado);
+        if (!chave) return formatado;
+        const cache = window._cacheNomesDespesas;
+        if (!cache) return formatado;
+        const mapa = tipo === 'obra' ? cache.mapaObras : cache.mapaLojas;
+        const hit = mapa.get(chave);
+        return hit ? hit.canonico : formatado;
+    }
+
+    function atualizarDatalistsNomesDespesas(cache) {
+        const dlObras = document.getElementById('datalist-obras-desp');
+        const dlLojas = document.getElementById('datalist-lojas-desp');
+        if (dlObras) {
+            dlObras.innerHTML = cache.obras.map((n) => `<option value="${escapeHtmlBasico(n)}"></option>`).join('');
+        }
+        if (dlLojas) {
+            dlLojas.innerHTML = cache.lojas.map((n) => `<option value="${escapeHtmlBasico(n)}"></option>`).join('');
+        }
+    }
+
+    function htmlBadgeCadastroDespesa(nome, tipo) {
+        const n = escapeHtmlBasico(nome);
+        const t = tipo === 'obra' ? 'obra' : 'loja';
+        return `<span class="badge-tag-wrap"><span class="badge-tag badge-tag-desp" data-nome="${n}" data-tipo="${t}">${n}</span><button type="button" class="badge-tag-excluir" data-nome="${n}" data-tipo="${t}" title="Excluir cadastro e todas as despesas deste nome">×</button></span>`;
+    }
+
+    function despesaCombinaNomeCadastro(d, chaveAlvo, tipo) {
+        if (tipo === 'obra') {
+            return normalizarChaveNomeDespesa(d.obra_nome || d.obra_lower || '') === chaveAlvo;
+        }
+        return normalizarChaveNomeDespesa(d.loja_nome || d.loja_lower || '') === chaveAlvo;
+    }
+
+    window.excluirCadastroNomeDespesa = async function (nome, tipo) {
+        const chaveAlvo = normalizarChaveNomeDespesa(nome);
+        if (!chaveAlvo) return;
+        const empresaLogada = localStorage.getItem('empresaGestor');
+        const tipoLabel = tipo === 'obra' ? 'Obra' : 'Loja';
+        const nomeExibir = formatarNomeCanonicoDespesa(nome);
+
+        Swal.fire({ title: 'A verificar despesas...', allowOutsideClick: false });
+        Swal.showLoading();
+
+        try {
+            const q = query(collection(db, 'despesas_obras'), where('empresa_id', '==', empresaLogada));
+            const snap = await getDocs(q);
+            const paraApagar = [];
+            snap.forEach((docSnap) => {
+                if (despesaCombinaNomeCadastro(docSnap.data(), chaveAlvo, tipo)) {
+                    paraApagar.push(docSnap.id);
+                }
+            });
+
+            Swal.close();
+            if (!paraApagar.length) {
+                return Swal.fire('Nada a apagar', 'Nenhuma despesa encontrada com este nome.', 'info');
+            }
+
+            const confirmacao = await Swal.fire({
+                title: 'Excluir cadastro?',
+                html: `Excluir o cadastro <b>${escapeHtmlBasico(nomeExibir)}</b> (${tipoLabel})?<br><br>Serão apagadas <b>${paraApagar.length}</b> despesa(s) vinculadas a este nome.<br><span style="color:#d9534f;font-weight:bold;">Esta ação não pode ser desfeita.</span><br><br>Digite <b>APAGAR</b> para confirmar.`,
+                icon: 'warning',
+                input: 'text',
+                inputPlaceholder: 'APAGAR',
+                showCancelButton: true,
+                confirmButtonColor: '#d9534f',
+                confirmButtonText: 'Sim, excluir tudo',
+                cancelButtonText: 'Cancelar',
+                preConfirm: (val) => {
+                    if (String(val || '').trim() !== 'APAGAR') {
+                        Swal.showValidationMessage('Digite APAGAR em maiúsculas para confirmar.');
+                        return false;
+                    }
+                    return true;
+                }
+            });
+
+            if (!confirmacao.isConfirmed) return;
+
+            Swal.fire({ title: 'A apagar...', allowOutsideClick: false });
+            Swal.showLoading();
+
+            for (const id of paraApagar) {
+                await deleteDoc(doc(db, 'despesas_obras', id));
+            }
+
+            const busca = document.getElementById('busca-obra');
+            if (busca && normalizarChaveNomeDespesa(busca.value) === chaveAlvo) {
+                busca.value = '';
+                const divLista = document.getElementById('lista-despesas-resultados');
+                if (divLista) {
+                    divLista.innerHTML = '<p style="text-align: center; color: #888; font-size: 13px;">Selecione uma etiqueta acima ou digite para procurar.</p>';
+                }
+                const divTotal = document.getElementById('resumo-total-despesas');
+                if (divTotal) divTotal.style.display = 'none';
+                const btnPdf = document.getElementById('btnExportarDespesas');
+                const btnXls = document.getElementById('btnExportarDespesasExcel');
+                if (btnPdf) btnPdf.style.display = 'none';
+                if (btnXls) btnXls.style.display = 'none';
+            }
+
+            await carregarFiltrosDespesas();
+            Swal.fire('Excluído!', `${paraApagar.length} despesa(s) removida(s).`, 'success');
+        } catch (e) {
+            Swal.fire('Erro', 'Não foi possível excluir o cadastro.', 'error');
+        }
+    };
+
+    window.fecharSugestoesBuscaDespesas = function () {
+        const box = document.getElementById('busca-obra-sugestoes');
+        if (box) box.style.display = 'none';
+    };
+
+    window.selecionarBuscaDespesa = function (nome) {
+        const inp = document.getElementById('busca-obra');
+        if (inp) inp.value = nome;
+        fecharSugestoesBuscaDespesas();
+        buscarDespesasObra();
+    };
+
+    window.filtrarAutocompleteBuscaDespesas = function () {
+        const input = document.getElementById('busca-obra');
+        const box = document.getElementById('busca-obra-sugestoes');
+        const cache = window._cacheNomesDespesas;
+        if (!input || !box || !cache) return;
+        const termo = normalizarChaveNomeDespesa(input.value);
+        if (!termo || termo.length < 1) {
+            box.style.display = 'none';
+            box.innerHTML = '';
+            return;
+        }
+        const matches = cache.sugestoes.filter((s) => s.chave.includes(termo)).slice(0, 15);
+        if (!matches.length) {
+            box.style.display = 'none';
+            box.innerHTML = '';
+            return;
+        }
+        box.innerHTML = matches.map((s) => {
+            const tipoLabel = s.tipo === 'obra' ? '🏢 Obra' : '🏪 Loja';
+            return `<button type="button" class="busca-desp-sugestao" data-nome="${escapeHtmlBasico(s.nome)}"><span class="busca-desp-sug-tipo">${tipoLabel}</span>${escapeHtmlBasico(s.nome)}</button>`;
+        }).join('');
+        box.style.display = 'block';
+    };
+
+    window.teclaAutocompleteBuscaDespesas = function (ev) {
+        if (ev.key === 'Enter') {
+            fecharSugestoesBuscaDespesas();
+            buscarDespesasObra();
+        } else if (ev.key === 'Escape') {
+            fecharSugestoesBuscaDespesas();
+        }
+    };
+
+    (function initAutocompleteBuscaDespesasGlobal() {
+        document.addEventListener('click', (ev) => {
+            const wrap = document.querySelector('.busca-despesas-wrap');
+            if (wrap && !wrap.contains(ev.target)) fecharSugestoesBuscaDespesas();
+        });
+        const box = document.getElementById('busca-obra-sugestoes');
+        if (box) {
+            box.addEventListener('mousedown', (ev) => {
+                const alvo = ev.target.closest('.busca-desp-sugestao');
+                if (!alvo) return;
+                ev.preventDefault();
+                selecionarBuscaDespesa(alvo.getAttribute('data-nome') || '');
+            });
+        }
+        const divTags = document.getElementById('tags-filtros-despesas');
+        if (divTags && !divTags._delegacaoOk) {
+            divTags._delegacaoOk = true;
+            divTags.addEventListener('click', (ev) => {
+                const btnDel = ev.target.closest('.badge-tag-excluir');
+                if (btnDel) {
+                    ev.preventDefault();
+                    ev.stopPropagation();
+                    excluirCadastroNomeDespesa(btnDel.getAttribute('data-nome') || '', btnDel.getAttribute('data-tipo') || 'loja');
+                    return;
+                }
+                const badge = ev.target.closest('.badge-tag-desp');
+                if (badge) {
+                    selecionarBuscaDespesa(badge.getAttribute('data-nome') || '');
+                }
+            });
+        }
+    })();
+
 window.carregarFiltrosDespesas = async function() {
         const divTags = document.getElementById('tags-filtros-despesas');
         if(!divTags) return;
@@ -3594,47 +3931,46 @@ window.carregarFiltrosDespesas = async function() {
         try {
             const q = query(collection(db, "despesas_obras"), where("empresa_id", "==", empresaLogada));
             const querySnapshot = await getDocs(q);
-            
-            let obrasAtivas = new Set(), lojasAtivas = new Set();
-            
-            querySnapshot.forEach((doc) => {
-                const d = doc.data();
-                // CORREÇÃO: Força a leitura do histórico em maiúsculo
-                if(d.obra_nome) obrasAtivas.add(d.obra_nome.trim().toUpperCase());
-                if(d.loja_nome) lojasAtivas.add(d.loja_nome.trim().toUpperCase());
-            });
-            
-            if(obrasAtivas.size === 0 && lojasAtivas.size === 0) { 
-                divTags.innerHTML = '<p style="font-size: 11px; color: #888;">Nenhuma obra ou loja registada.</p>'; 
-                return; 
+            const cache = montarCacheNomesDespesas(querySnapshot);
+            atualizarDatalistsNomesDespesas(cache);
+
+            if (cache.obras.length === 0 && cache.lojas.length === 0) {
+                divTags.innerHTML = '<p style="font-size: 11px; color: #888;">Nenhuma obra ou loja registada.</p>';
+                return;
             }
-            
-            let htmlObras = '<span style="font-size: 12px; font-weight: bold; width: 100%; color: var(--dark-navy);">🏢 Obras:</span>'; 
-            obrasAtivas.forEach(obra => { 
-                htmlObras += `<span class="badge-tag" onclick="document.getElementById('busca-obra').value='${obra}'; buscarDespesasObra();">${obra}</span>`; 
+
+            let htmlObras = '<span style="font-size: 12px; font-weight: bold; width: 100%; color: var(--dark-navy);">🏢 Obras:</span>';
+            cache.obras.forEach((obra) => {
+                htmlObras += htmlBadgeCadastroDespesa(obra, 'obra');
             });
-            
-            let htmlLojas = '<span style="font-size: 12px; font-weight: bold; width: 100%; color: var(--dark-navy); margin-top: 5px;">🏪 Lojas:</span>'; 
-            lojasAtivas.forEach(loja => { 
-                htmlLojas += `<span class="badge-tag" onclick="document.getElementById('busca-obra').value='${loja}'; buscarDespesasObra();">${loja}</span>`; 
+
+            let htmlLojas = '<span style="font-size: 12px; font-weight: bold; width: 100%; color: var(--dark-navy); margin-top: 5px;">🏪 Lojas:</span>';
+            cache.lojas.forEach((loja) => {
+                htmlLojas += htmlBadgeCadastroDespesa(loja, 'loja');
             });
-            
-            divTags.innerHTML = htmlObras + htmlLojas;
+
+            divTags.innerHTML = htmlObras + htmlLojas
+                + '<p class="texto-explicacao" style="width:100%;margin:10px 0 0;font-size:11px;">Clique na etiqueta para buscar. Use <b>×</b> para excluir o cadastro e todas as despesas daquele nome.</p>';
         } catch (e) { 
             divTags.innerHTML = '<p style="font-size: 11px; color: #d9534f;">Erro ao carregar locais.</p>'; 
         }
     };
 
   window.salvarDespesaObra = async function() {
-        // CORREÇÃO: Força tudo a ficar em maiúsculo e sem espaços sobrando nas pontas
-        const obra = document.getElementById('d-obra').value.trim().toUpperCase();
-        const loja = document.getElementById('d-loja').value.trim().toUpperCase();
+        const empresaLogada = localStorage.getItem('empresaGestor');
+        if (!window._cacheNomesDespesas) {
+            try {
+                const qCache = query(collection(db, "despesas_obras"), where("empresa_id", "==", empresaLogada));
+                montarCacheNomesDespesas(await getDocs(qCache));
+            } catch (e) { /* segue com cache vazio */ }
+        }
+        const obra = resolverNomeCanonicoDespesa(document.getElementById('d-obra').value, 'obra');
+        const loja = resolverNomeCanonicoDespesa(document.getElementById('d-loja').value, 'loja');
         const nf = document.getElementById('d-nf') ? document.getElementById('d-nf').value.trim() : "";
         const vencimento = document.getElementById('d-vencimento') ? document.getElementById('d-vencimento').value : "";
         const valor = document.getElementById('d-valor').value;
         const desc = document.getElementById('d-desc').value;
         const fotoBase64 = document.getElementById('d-anexo-base64').value;
-        const empresaLogada = localStorage.getItem('empresaGestor');
         
         if (!obra || !loja || !valor) return Swal.fire('Atenção', 'Preencha a Obra, Loja e o Valor!', 'warning');
         
@@ -3647,8 +3983,8 @@ window.carregarFiltrosDespesas = async function() {
         try {
             await addDoc(collection(db, "despesas_obras"), { 
                 empresa_id: empresaLogada, 
-                obra_nome: obra, obra_lower: obra.toLowerCase(), 
-                loja_nome: loja, loja_lower: loja.toLowerCase(), 
+                obra_nome: obra, obra_lower: normalizarChaveNomeDespesa(obra), 
+                loja_nome: loja, loja_lower: normalizarChaveNomeDespesa(loja), 
                 nota_fiscal: nf,
                 data_vencimento: vencimento,
                 data_vencimento_ts: parseDataVencimentoParaTimestamp(vencimento),
@@ -3674,8 +4010,15 @@ window.carregarFiltrosDespesas = async function() {
     };
 
     window.salvarDespesaLinhaRelatorio = async function () {
-        const obra = document.getElementById('rd-obra').value.trim().toUpperCase();
-        const loja = document.getElementById('rd-loja').value.trim().toUpperCase();
+        const empresaLogada = localStorage.getItem('empresaGestor');
+        if (!window._cacheNomesDespesas) {
+            try {
+                const qCache = query(collection(db, "despesas_obras"), where("empresa_id", "==", empresaLogada));
+                montarCacheNomesDespesas(await getDocs(qCache));
+            } catch (e) { /* segue */ }
+        }
+        const obra = resolverNomeCanonicoDespesa(document.getElementById('rd-obra').value, 'obra');
+        const loja = resolverNomeCanonicoDespesa(document.getElementById('rd-loja').value, 'loja');
         const nf = document.getElementById('rd-nf') ? document.getElementById('rd-nf').value.trim() : '';
         const chequeBoleto = document.getElementById('rd-cheque-boleto') ? document.getElementById('rd-cheque-boleto').value.trim() : '';
         const vencimento = document.getElementById('rd-vencimento') ? document.getElementById('rd-vencimento').value : '';
@@ -3683,7 +4026,6 @@ window.carregarFiltrosDespesas = async function() {
         const desc = document.getElementById('rd-desc').value;
         const observacao = document.getElementById('rd-observacao') ? document.getElementById('rd-observacao').value.trim() : '';
         const fotoBase64 = document.getElementById('rd-anexo-base64') ? document.getElementById('rd-anexo-base64').value : '';
-        const empresaLogada = localStorage.getItem('empresaGestor');
         const elLan = document.getElementById('rd-lancamento');
         const dataObj = new Date();
         const hojeIso = `${dataObj.getFullYear()}-${String(dataObj.getMonth() + 1).padStart(2, '0')}-${String(dataObj.getDate()).padStart(2, '0')}`;
@@ -3696,9 +4038,9 @@ window.carregarFiltrosDespesas = async function() {
             await addDoc(collection(db, COLECAO_RELATORIO_DESPESAS), {
                 empresa_id: empresaLogada,
                 obra_nome: obra,
-                obra_lower: obra.toLowerCase(),
+                obra_lower: normalizarChaveNomeDespesa(obra),
                 loja_nome: loja,
-                loja_lower: loja.toLowerCase(),
+                loja_lower: normalizarChaveNomeDespesa(loja),
                 nota_fiscal: nf,
                 data_vencimento: vencimento,
                 data_vencimento_ts: parseDataVencimentoParaTimestamp(vencimento),
@@ -3839,11 +4181,15 @@ window.carregarFiltrosDespesas = async function() {
             confirmButtonText: 'SALVAR',
             cancelButtonText: 'Cancelar',
             preConfirm: () => {
+                const obraRaw = document.getElementById('edit-obra').value;
+                const lojaRaw = document.getElementById('edit-loja').value;
+                const obra = resolverNomeCanonicoDespesa(obraRaw, 'obra');
+                const loja = resolverNomeCanonicoDespesa(lojaRaw, 'loja');
                 return {
-                    obra_nome: document.getElementById('edit-obra').value.trim().toUpperCase(),
-                    obra_lower: document.getElementById('edit-obra').value.trim().toLowerCase(),
-                    loja_nome: document.getElementById('edit-loja').value.trim().toUpperCase(),
-                    loja_lower: document.getElementById('edit-loja').value.trim().toLowerCase(),
+                    obra_nome: obra,
+                    obra_lower: normalizarChaveNomeDespesa(obra),
+                    loja_nome: loja,
+                    loja_lower: normalizarChaveNomeDespesa(loja),
                     nota_fiscal: document.getElementById('edit-nf').value.trim(),
                     data_vencimento: document.getElementById('edit-vencimento').value,
                     data_vencimento_ts: parseDataVencimentoParaTimestamp(document.getElementById('edit-vencimento').value),
@@ -4266,10 +4612,12 @@ window.carregarFiltrosDespesas = async function() {
     };
 
  window.buscarDespesasObra = async function() {
-        const termoBusca = document.getElementById('busca-obra').value.trim().toLowerCase();
+        const termoBusca = normalizarChaveNomeDespesa(document.getElementById('busca-obra').value);
         const empresaLogada = localStorage.getItem('empresaGestor');
         
         if (!termoBusca) return Swal.fire('Atenção', 'Digite o nome da obra ou da loja para procurar.', 'warning');
+
+        fecharSugestoesBuscaDespesas();
 
         const divLista = document.getElementById('lista-despesas-resultados');
         const divTotal = document.getElementById('resumo-total-despesas');
@@ -4293,8 +4641,8 @@ window.carregarFiltrosDespesas = async function() {
             let matching = [];
             querySnapshot.forEach(doc => {
                 const d = { id: doc.id, ...doc.data() };
-                const nomeDaObraParaBusca = (d.obra_lower || d.obra_nome || '').toLowerCase();
-                const nomeDaLojaParaBusca = (d.loja_lower || d.loja_nome || '').toLowerCase();
+                const nomeDaObraParaBusca = normalizarChaveNomeDespesa(d.obra_nome || d.obra_lower || '');
+                const nomeDaLojaParaBusca = normalizarChaveNomeDespesa(d.loja_nome || d.loja_lower || '');
                 if (nomeDaObraParaBusca.includes(termoBusca) || nomeDaLojaParaBusca.includes(termoBusca)) {
                     matching.push(d);
                 }
@@ -4449,24 +4797,23 @@ window.carregarFiltrosDespesas = async function() {
             
             querySnapshot.forEach(doc => {
                 const d = doc.data();
-                // CORREÇÃO: Agrupa removendo espaços e forçando maiúsculas
-                const obra = d.obra_nome ? d.obra_nome.trim().toUpperCase() : 'NÃO INFORMADA';
-                const loja = d.loja_nome ? d.loja_nome.trim().toUpperCase() : 'NÃO INFORMADO';
+                const obra = formatarNomeCanonicoDespesa(d.obra_nome) || 'NÃO INFORMADA';
+                const loja = formatarNomeCanonicoDespesa(d.loja_nome) || 'NÃO INFORMADO';
+                const chaveObra = normalizarChaveNomeDespesa(d.obra_nome) || '__obra_vazia__';
+                const chaveLoja = normalizarChaveNomeDespesa(d.loja_nome) || '__loja_vazia__';
                 const valor = d.valor_numero || 0;
                 const status = d.status || 'pendente';
                 
-                // Estrutura para a tabela (Obra > Loja)
-                if (!resumo[obra]) resumo[obra] = {};
-                if (!resumo[obra][loja]) resumo[obra][loja] = { pendente: 0, pago: 0 };
-                // Estrutura para o gráfico (Apenas Loja)
-                if (!grafFornecedores[loja]) grafFornecedores[loja] = { pendente: 0, pago: 0 };
+                if (!resumo[chaveObra]) resumo[chaveObra] = { label: obra, lojas: {} };
+                if (!resumo[chaveObra].lojas[chaveLoja]) resumo[chaveObra].lojas[chaveLoja] = { label: loja, pendente: 0, pago: 0 };
+                if (!grafFornecedores[chaveLoja]) grafFornecedores[chaveLoja] = { label: loja, pendente: 0, pago: 0 };
                 
                 if (status === 'pago') {
-                    resumo[obra][loja].pago += valor;
-                    grafFornecedores[loja].pago += valor;
+                    resumo[chaveObra].lojas[chaveLoja].pago += valor;
+                    grafFornecedores[chaveLoja].pago += valor;
                 } else {
-                    resumo[obra][loja].pendente += valor;
-                    grafFornecedores[loja].pendente += valor;
+                    resumo[chaveObra].lojas[chaveLoja].pendente += valor;
+                    grafFornecedores[chaveLoja].pendente += valor;
                 }
             });
             
@@ -4495,10 +4842,13 @@ window.carregarFiltrosDespesas = async function() {
             let totalGeralPago = 0;
             
             // Preencher Tabela
-            Object.keys(resumo).sort().forEach(obra => {
-                Object.keys(resumo[obra]).sort().forEach(loja => {
-                    let valPendente = resumo[obra][loja].pendente;
-                    let valPago = resumo[obra][loja].pago;
+            Object.keys(resumo).sort((a, b) => resumo[a].label.localeCompare(resumo[b].label, 'pt-BR')).forEach(chaveObra => {
+                const blocoObra = resumo[chaveObra];
+                Object.keys(blocoObra.lojas).sort((a, b) => blocoObra.lojas[a].label.localeCompare(blocoObra.lojas[b].label, 'pt-BR')).forEach(chaveLoja => {
+                    let valPendente = blocoObra.lojas[chaveLoja].pendente;
+                    let valPago = blocoObra.lojas[chaveLoja].pago;
+                    const nomeObra = blocoObra.label;
+                    const nomeLoja = blocoObra.lojas[chaveLoja].label;
                     
                     totalGeralPendente += valPendente;
                     totalGeralPago += valPago;
@@ -4508,8 +4858,8 @@ window.carregarFiltrosDespesas = async function() {
                     
                     html += `
                     <tr style="border-bottom: 1px solid #e0e6ed;">
-                        <td style="padding: 12px; border: 1px solid #e0e6ed; color: var(--dark-navy); font-weight: 600;">${obra}</td>
-                        <td style="padding: 12px; border: 1px solid #e0e6ed;">${loja}</td>
+                        <td style="padding: 12px; border: 1px solid #e0e6ed; color: var(--dark-navy); font-weight: 600;">${escapeHtmlBasico(nomeObra)}</td>
+                        <td style="padding: 12px; border: 1px solid #e0e6ed;">${escapeHtmlBasico(nomeLoja)}</td>
                         <td style="padding: 12px; border: 1px solid #e0e6ed; text-align: right; ${corPendente}">${formatarMoeda(valPendente)}</td>
                         <td style="padding: 12px; border: 1px solid #e0e6ed; text-align: right; ${corPago}">${formatarMoeda(valPago)}</td>
                     </tr>
@@ -4533,21 +4883,21 @@ window.carregarFiltrosDespesas = async function() {
             // Renderizar o Gráfico após o HTML ser inserido
             setTimeout(() => {
                 const ctx = document.getElementById('graficoFornecedores').getContext('2d');
-                if (window.graficoResumo) window.graficoResumo.destroy(); // Limpa gráfico antigo se existir
-                
+                if (window.graficoResumo) window.graficoResumo.destroy();
+                const listaGraf = Object.values(grafFornecedores).sort((a, b) => a.label.localeCompare(b.label, 'pt-BR'));
                 window.graficoResumo = new Chart(ctx, {
                     type: 'bar',
                     data: {
-                        labels: Object.keys(grafFornecedores),
+                        labels: listaGraf.map((v) => v.label),
                         datasets: [
                             { 
                                 label: '⚠️ A Pagar (R$)', 
-                                data: Object.values(grafFornecedores).map(v => v.pendente), 
+                                data: listaGraf.map(v => v.pendente), 
                                 backgroundColor: '#d9534f' 
                             },
                             { 
                                 label: '✅ Já Pago (R$)', 
-                                data: Object.values(grafFornecedores).map(v => v.pago), 
+                                data: listaGraf.map(v => v.pago), 
                                 backgroundColor: '#28a745' 
                             }
                         ]
