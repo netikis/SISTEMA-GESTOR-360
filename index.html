@@ -308,6 +308,292 @@
             display: block; 
         }
 
+        /* --- Painel Gestor: menu lateral (estilo FH Control) --- */
+        body.gestor-ativo {
+            padding: 0;
+            margin: 0;
+            overflow: hidden;
+            height: 100vh;
+            background: #3a3f48;
+        }
+
+        #tela-patrao.painel-gestor {
+            max-width: none;
+            width: 100%;
+            height: 100vh;
+            margin: 0;
+            padding: 0;
+            border-radius: 0;
+            border-top: none;
+            box-shadow: none;
+            display: none;
+            flex-direction: row;
+            overflow: hidden;
+            background: #3a3f48;
+        }
+
+        #tela-patrao.painel-gestor.gestor-visivel {
+            display: flex;
+        }
+
+        .gestor-sidebar {
+            width: 240px;
+            min-width: 240px;
+            background: #1a252f;
+            color: #ecf0f1;
+            display: flex;
+            flex-direction: column;
+            border-right: 2px solid rgba(212, 160, 23, 0.25);
+            overflow-y: auto;
+            flex-shrink: 0;
+        }
+
+        .gestor-sidebar-logo {
+            padding: 14px 14px 8px;
+            text-align: center;
+        }
+
+        .gestor-sidebar-logo img {
+            width: 100%;
+            max-height: 110px;
+            object-fit: contain;
+            border-radius: 8px;
+            background: #fff;
+            padding: 6px;
+            box-sizing: border-box;
+        }
+
+        .gestor-empresa-bar {
+            margin: 0 12px 12px;
+            padding: 10px;
+            background: rgba(255, 255, 255, 0.06);
+            border: 1px dashed rgba(212, 160, 23, 0.45);
+            border-radius: 8px;
+            font-size: 12px;
+            font-weight: 700;
+            text-align: center;
+            color: #f1c40f;
+            line-height: 1.35;
+        }
+
+        .gestor-nav {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+            padding: 0 10px;
+            flex: 1;
+        }
+
+        .gestor-menu-btn {
+            background: transparent;
+            color: #bdc3c7;
+            border: 1px solid transparent;
+            padding: 11px 12px;
+            text-align: left;
+            font-size: 12px;
+            font-weight: 700;
+            cursor: pointer;
+            border-radius: 6px;
+            transition: background-color 0.25s, color 0.25s, border-color 0.25s;
+            text-transform: uppercase;
+            font-family: 'Poppins', sans-serif;
+            width: 100%;
+        }
+
+        .gestor-menu-btn:hover {
+            background: #2c3e50;
+            color: #f1c40f;
+        }
+
+        .gestor-menu-btn.active {
+            background: #0056b3;
+            color: #f8f9fa;
+            border-color: #d4a017;
+            box-shadow: inset 3px 0 0 #d4a017;
+        }
+
+        .gestor-menu-btn.menu-despesas { color: #f5b7b1; }
+        .gestor-menu-btn.menu-despesas.active { background: #c0392b; border-color: #f1c40f; }
+        .gestor-menu-btn.menu-backup { color: #aed6f1; }
+        .gestor-menu-btn.menu-backup.active { background: #1a2a43; border-color: #d4a017; }
+
+        .gestor-sidebar-footer {
+            padding: 12px;
+            border-top: 1px solid rgba(255, 255, 255, 0.08);
+            margin-top: auto;
+        }
+
+        .gestor-btn-sair {
+            width: 100%;
+            background: transparent;
+            color: #e74c3c;
+            border: 1px solid #e74c3c;
+            padding: 10px;
+            border-radius: 8px;
+            font-weight: 700;
+            font-size: 11px;
+            cursor: pointer;
+            text-transform: uppercase;
+            font-family: 'Poppins', sans-serif;
+            transition: 0.2s;
+        }
+
+        .gestor-btn-sair:hover {
+            background: #e74c3c;
+            color: #fff;
+        }
+
+        .gestor-main-content {
+            flex: 1;
+            overflow-y: auto;
+            background: #3a3f48;
+            padding: 18px 22px 28px;
+        }
+
+        .gestor-content-header {
+            margin-bottom: 18px;
+            padding-bottom: 12px;
+            border-bottom: 2px solid rgba(212, 160, 23, 0.35);
+        }
+
+        .gestor-titulo-aba {
+            margin: 0;
+            color: #f1c40f;
+            font-size: 20px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .gestor-subtitulo-painel {
+            margin: 4px 0 0;
+            font-size: 12px;
+            color: #aeb6bf;
+            font-weight: 400;
+            text-transform: none;
+        }
+
+        .gestor-sections-wrap {
+            background: #2e343e;
+            border-radius: 12px;
+            padding: 18px 20px;
+            box-shadow: 0 8px 28px rgba(0, 0, 0, 0.28);
+            border: 1px solid rgba(255, 255, 255, 0.07);
+            min-height: 200px;
+            color: #dce1e6;
+        }
+
+        #tela-patrao .gestor-sections-wrap label {
+            color: #c8d0d8;
+        }
+
+        #tela-patrao .gestor-sections-wrap h3,
+        #tela-patrao .gestor-sections-wrap h4 {
+            color: #f1c40f;
+        }
+
+        #tela-patrao .gestor-sections-wrap p:not(.texto-explicacao):not(.folha-detalhe),
+        #tela-patrao .gestor-sections-wrap span:not(.texto-explicacao),
+        #tela-patrao .gestor-sections-wrap small {
+            color: #aeb6bf;
+        }
+
+        #tela-patrao .texto-explicacao b,
+        #tela-patrao .folha-detalhe b {
+            color: #e74c3c;
+            font-weight: 700;
+        }
+
+        #tela-patrao .gestor-sections-wrap input,
+        #tela-patrao .gestor-sections-wrap select,
+        #tela-patrao .gestor-sections-wrap textarea {
+            background-color: #ecf0f1;
+            border-color: #5d6a78;
+            color: #2c3e50;
+        }
+
+        #tela-patrao .gestor-sections-wrap input:focus,
+        #tela-patrao .gestor-sections-wrap select:focus,
+        #tela-patrao .gestor-sections-wrap textarea:focus {
+            background-color: #fff;
+            border-color: var(--gold);
+        }
+
+        #tela-patrao .gestor-sections-wrap hr {
+            border-color: rgba(255, 255, 255, 0.1);
+        }
+
+        #tela-patrao .func-item {
+            background: #ffffff;
+            border: 1px solid #e8edf2;
+            color: var(--text-color);
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+        }
+
+        #tela-patrao .resultado-item {
+            background: rgba(255, 255, 255, 0.04);
+            border-color: rgba(255, 255, 255, 0.08);
+        }
+
+        #tela-patrao .folha-secao-titulo {
+            color: #f1c40f;
+        }
+
+        #tela-patrao details summary {
+            color: #dce1e6;
+        }
+
+        @media (max-width: 900px) {
+            #tela-patrao.painel-gestor.gestor-visivel {
+                flex-direction: column;
+            }
+
+            .gestor-sidebar {
+                width: 100%;
+                min-width: 0;
+                max-height: 42vh;
+                border-right: none;
+                border-bottom: 2px solid rgba(212, 160, 23, 0.25);
+            }
+
+            .gestor-sidebar-logo {
+                display: none;
+            }
+
+            .gestor-empresa-bar {
+                margin: 8px 10px;
+                font-size: 11px;
+                padding: 6px;
+            }
+
+            .gestor-nav {
+                flex-direction: row;
+                flex-wrap: nowrap;
+                overflow-x: auto;
+                padding-bottom: 8px;
+                gap: 6px;
+            }
+
+            .gestor-menu-btn {
+                white-space: nowrap;
+                flex: 0 0 auto;
+                padding: 8px 12px;
+                font-size: 11px;
+            }
+
+            .gestor-sidebar-footer {
+                display: none;
+            }
+
+            .gestor-main-content {
+                padding: 12px;
+            }
+
+            .gestor-sections-wrap {
+                padding: 14px;
+            }
+        }
+
         .func-item { 
             display: flex; 
             justify-content: space-between; 
@@ -572,9 +858,12 @@
             padding: 10px 4px;
             line-height: 1.5;
         }
-        .folha-detalhe {
+        .folha-detalhe,
+        .texto-explicacao {
             font-size: 11px;
-            color: #666;
+            color: #e74c3c !important;
+            font-weight: 700 !important;
+            text-decoration: underline !important;
             line-height: 1.55;
             margin: 6px 0 12px 0;
             padding: 0 2px;
@@ -753,29 +1042,37 @@
     <button class="btn-logout" onclick="voltarTelaInicial()" style="margin-top: 20px; background: transparent; color: #d9534f; border: 1px solid #d9534f;">Voltar</button>
 </div>
 
-<div class="main-card" id="tela-patrao" style="display: none;">
-    <div class="header-logo" style="margin-bottom: 10px;">
-        <img src="https://i.postimg.cc/zDRJMSTn/69420f5a-5b80-457e-8146-00485162d7f2.jpg" crossorigin="anonymous" class="logo-img">
-        <div class="title-top">Gestor 360</div>
-        <p style="font-size: 11px; color: #666; margin: 4px 0 0 0; font-weight: 400; text-transform: none; letter-spacing: 0;">Despesas · Holerite · Ponto</p>
-    </div>
-    
-    <div class="empresa-destaque" id="nome-empresa-painel">Empresa...</div>
+<div class="main-card painel-gestor" id="tela-patrao" style="display: none;">
+    <aside class="gestor-sidebar">
+        <div class="gestor-sidebar-logo">
+            <img src="https://i.postimg.cc/zDRJMSTn/69420f5a-5b80-457e-8146-00485162d7f2.jpg" crossorigin="anonymous" class="logo-img" alt="Logo">
+        </div>
+        <div class="gestor-empresa-bar" id="nome-empresa-painel">Empresa...</div>
+        <nav class="gestor-nav">
+            <button type="button" class="gestor-menu-btn active" data-titulo="Equipe" onclick="mudarAba('cadastrar', this)">👥 Equipe</button>
+            <button type="button" class="gestor-menu-btn" data-titulo="Vales" onclick="mudarAba('criar', this)">💰 Vales</button>
+            <button type="button" class="gestor-menu-btn" data-titulo="Arquivo" onclick="mudarAba('buscar', this)">📁 Arquivo</button>
+            <button type="button" class="gestor-menu-btn" data-titulo="Ponto" onclick="mudarAba('ponto', this)">📍 Ponto</button>
+            <button type="button" class="gestor-menu-btn" data-titulo="Ajuda de Custo" onclick="mudarAba('ajuda-custo', this)">🧳 Ajuda de Custo</button>
+            <button type="button" class="gestor-menu-btn" data-titulo="Descontos Folha" onclick="mudarAba('descontos-folha', this)">📋 Descontos Folha</button>
+            <button type="button" class="gestor-menu-btn" data-titulo="Folha Pagamento" onclick="mudarAba('folha', this)">📄 Folha Pagamento</button>
+            <button type="button" class="gestor-menu-btn" data-titulo="Calendário" onclick="mudarAba('calendario', this)">📅 Calendário</button>
+            <button type="button" class="gestor-menu-btn" data-titulo="Terceiros" onclick="mudarAba('terceiros', this)">👷 Terceiros</button>
+            <button type="button" class="gestor-menu-btn menu-despesas" data-titulo="Despesas" onclick="mudarAba('despesas', this)">📉 Despesas</button>
+            <button type="button" class="gestor-menu-btn menu-backup" data-titulo="Backup" onclick="mudarAba('backup', this)">💾 Backup</button>
+            <button type="button" class="gestor-menu-btn" data-titulo="Pedidos Materiais" onclick="mudarAba('pedidos', this)">📦 Pedidos Materiais</button>
+        </nav>
+        <div class="gestor-sidebar-footer">
+            <button type="button" class="gestor-btn-sair" onclick="sairPainelGestor()">⬅️ Trocar de Empresa (Sair)</button>
+        </div>
+    </aside>
 
-    <div class="tabs">
-        <div class="tab active" onclick="mudarAba('cadastrar', this)">👥 Equipe</div>
-        <div class="tab" onclick="mudarAba('criar', this)">💰 Vales</div>
-        <div class="tab" onclick="mudarAba('buscar', this)">📁 Arquivo</div>
-        <div class="tab" onclick="mudarAba('ponto', this)">📍 Ponto</div>
-        <div class="tab" onclick="mudarAba('ajuda-custo', this)">🧳 Ajuda de Custo</div>
-        <div class="tab" onclick="mudarAba('descontos-folha', this)">📋 Descontos Folha</div>
-        <div class="tab" onclick="mudarAba('folha', this)">📄 Folha Pagamento</div>
-        <div class="tab" onclick="mudarAba('calendario', this)">📅 Calendário</div>
-        <div class="tab" style="background: #eef2f5; color: #1a2a43; border: 1px solid #1a2a43;" onclick="mudarAba('terceiros', this)">👷 Terceiros</div>
-        <div class="tab tab-despesas" onclick="mudarAba('despesas', this)">📉 Despesas</div>
-        <div class="tab" style="background: #1a2a43; color: white;" onclick="mudarAba('backup', this)">💾 Backup</div>
-        <div class="tab" onclick="mudarAba('pedidos', this)">📦 Pedidos Materiais</div>
-    </div>
+    <div class="gestor-main-content">
+        <div class="gestor-content-header">
+            <h2 class="gestor-titulo-aba" id="gestor-titulo-aba">Equipe</h2>
+            <p class="gestor-subtitulo-painel">Gestor 360 — Despesas · Holerite · Ponto</p>
+        </div>
+        <div class="gestor-sections-wrap">
 
     <div id="aba-cadastrar" class="view-section active">
         <label>Nome Completo</label>
@@ -784,7 +1081,7 @@
         <div style="display: flex; gap: 10px;">
             <div style="flex: 1;">
                 <label>CPF (Login)</label>
-                <input type="number" id="c-cpf" placeholder="Apenas números">
+                <input type="text" id="c-cpf" inputmode="numeric" pattern="[0-9]*" placeholder="Apenas números" autocomplete="off">
             </div>
             <div style="flex: 1;">
                 <label>Salário (R$)</label>
@@ -813,7 +1110,7 @@
             <div style="flex: 1; min-width: 160px;">
                 <label>Almoço / pausa não remunerada (minutos)</label>
                 <input type="number" id="c-intervalo" value="60" min="0" max="300" placeholder="60" title="Tempo descontado entre entrada e saída para calcular a jornada líquida esperada.">
-                <p style="font-size: 11px; color: #666; margin: 6px 0 0 0;">Ex.: 60 = 1h de almoço. Este valor entra no cálculo da folha (entrada − saída − almoço).</p>
+                <p class="texto-explicacao" style="margin: 6px 0 0 0;">Ex.: 60 = 1h de almoço. Este valor entra no cálculo da folha (entrada − saída − almoço).</p>
                 <div style="display: flex; gap: 6px; flex-wrap: wrap; margin-top: 6px;">
                     <button type="button" class="btn-enviar" style="padding: 6px 10px; font-size: 11px;" onclick="document.getElementById('c-intervalo').value='30'">30 min</button>
                     <button type="button" class="btn-enviar" style="padding: 6px 10px; font-size: 11px;" onclick="document.getElementById('c-intervalo').value='60'">1 h</button>
@@ -826,7 +1123,7 @@
             <div style="flex: 1;">
                 <label>Sábado (horas)</label>
                 <input type="number" id="c-sabado-horas" value="0" min="0" max="12" step="0.5" placeholder="0">
-                <p style="font-size: 11px; color: #888; margin: 6px 0 0 0;">* Se trabalha sábado até meio-dia, use 4. Se não trabalha, deixe 0.</p>
+                <p class="texto-explicacao" style="margin: 6px 0 0 0;">* Se trabalha sábado até meio-dia, use 4. Se não trabalha, deixe 0.</p>
             </div>
         </div>
 
@@ -836,7 +1133,7 @@
             <option value="mensal">Mensal (CLT) — salário do mês + DSR; desconto por falta</option>
             <option value="ponto">Por ponto — só paga dias com registro de batida</option>
         </select>
-        <p style="font-size: 11px; color: #666; margin: 0 0 12px 0;">
+        <p class="texto-explicacao" style="margin: 0 0 12px 0;">
             <b>Mensal:</b> domingos, feriados e sábados sem escala entram no salário (DSR). Falta = dia útil/sábado de escala sem ponto.<br>
             <b>Por ponto:</b> salário ÷ <b>dias a trabalhar no mês</b>; dia útil/sábado de escala <b>sem ponto = falta</b> (desconto de 1 dia).
         </p>
@@ -860,7 +1157,7 @@
                 <input type="number" id="c-ferias-dias" value="30" min="1" max="30" step="1" title="Período de gozo — padrão legal 30 dias">
             </div>
         </div>
-        <p style="font-size: 11px; color: #666; margin: 6px 0 0 0;">Na folha: entrada/saída limitam os dias no mês; início das férias ativa o cálculo CLT (férias + 1/3 constitucional sobre os dias de gozo no mês).</p>
+        <p class="texto-explicacao" style="margin: 6px 0 0 0;">Na folha: entrada/saída limitam os dias no mês; início das férias ativa o cálculo CLT (férias + 1/3 constitucional sobre os dias de gozo no mês).</p>
         
         <button class="btn-gold" id="btnCadastrarFunc">SALVAR FUNCIONÁRIO</button>
 
@@ -886,6 +1183,7 @@
                 <label>Tipo</label>
                 <select id="p-tipo">
                     <option value="Dinheiro">💰 Dinheiro</option>
+                    <option value="PIX">💳 PIX</option>
                     <option value="Produto">📦 Produto</option>
                 </select>
             </div>
@@ -914,12 +1212,12 @@
 
     <div id="aba-ponto" class="view-section">
         <div style="background: #eef2f5; padding: 15px; border-radius: 10px; text-align: center; margin-bottom: 20px;">
-            <p style="font-size: 12px; margin: 0 0 10px 0; color: #555;">Este é o link oficial do sistema que a equipa deve usar:</p>
+            <p class="texto-explicacao" style="margin: 0 0 10px 0; text-align: center;">Este é o link oficial do sistema que a equipa deve usar:</p>
             <button class="btn-gold" id="btnLinkPonto" style="margin: 0; padding: 10px; font-size: 13px;">Copiar Link do Sistema</button>
         </div>
 
         <label>Consultar Ponto do Funcionário:</label>
-        <p style="font-size:11px;color:#666;margin:4px 0 10px 0;line-height:1.45;">Os batimentos ficam na lista abaixo (nuvem: coleção <b>ponto_registros</b>). Um <b>cancelamento</b> só cola o aviso amarelo: o documento continua no mesmo sítio até o RH apagar com <b>APAGAR BATIDA</b> se quiser retirá-lo da base.</p>
+        <p class="texto-explicacao" style="margin:4px 0 10px 0;">Os batimentos ficam na lista abaixo (nuvem: coleção <b>ponto_registros</b>). Um <b>cancelamento</b> só cola o aviso amarelo: o documento continua no mesmo sítio até o RH apagar com <b>APAGAR BATIDA</b> se quiser retirá-lo da base.</p>
         <div style="display: flex; gap: 10px;">
             <select id="pt-func-select" class="lista-funcs" style="margin: 0; flex: 2;">
                 <option value="">A carregar...</option>
@@ -930,7 +1228,7 @@
         <button id="btnExportarPonto" class="btn-pdf-relatorio" style="display:none;" onclick="exportarPDF('ponto')">📥 EXPORTAR RELATÓRIO PDF</button>
         <button type="button" class="btn-enviar" style="margin-top:12px; width:100%; background:#2c6f9e; box-shadow:none;" onclick="abrirRegistoPontoManualRH()">➕ Registar batida manual (RH) — caderno / correção</button>
         <button type="button" class="btn-enviar" style="margin-top:8px; width:100%; background:#b02a37; box-shadow:none;" onclick="rhGerirFaltaDia()">🚫 Falta injustificada / atestado (RH)</button>
-        <p style="font-size:11px;color:#666;margin:6px 0 0 0;">Use após escolher o funcionário. <b>Falta injustificada</b> desconta o dia (e DSR, se o RH marcar). <b>Atestado / justificada</b> remove a falta automática (dia sem ponto).</p>
+        <p class="texto-explicacao" style="margin:6px 0 0 0;">Use após escolher o funcionário. <b>Falta injustificada</b> desconta o dia (e DSR, se o RH marcar). <b>Atestado / justificada</b> remove a falta automática (dia sem ponto).</p>
         
         <div id="lista-ponto-resultados" style="margin-top: 20px;">
             <p style="text-align: center; color: #888; font-size: 13px;">Aqui aparecerão os horários e locais.</p>
@@ -940,7 +1238,7 @@
     <div id="aba-ajuda-custo" class="view-section">
         <div style="background: #eef2f5; padding: 15px; border-radius: 10px; margin-bottom: 15px; border: 1px solid #1a2a43;">
             <h3 style="margin: 0; color: var(--dark-navy); text-align: center;">🧳 Ajuda de Custo</h3>
-            <p style="margin: 8px 0 0 0; font-size: 12px; color: #555; text-align: center;">
+            <p class="texto-explicacao" style="margin: 8px 0 0 0; text-align: center;">
                 Lançamentos por funcionário (dia, mês e ano). Na folha aparecem em <b>Recebimentos (PLUS)</b> — valor à parte, <b>sem somar nem descontar</b> do líquido.
             </p>
         </div>
@@ -1021,7 +1319,7 @@
     <div id="aba-descontos-folha" class="view-section">
         <div style="background: #fff5f5; padding: 15px; border-radius: 10px; margin-bottom: 15px; border: 1px solid #dc3545;">
             <h3 style="margin: 0; color: #922b21; text-align: center;">📋 Descontos na Folha</h3>
-            <p style="margin: 8px 0 0 0; font-size: 12px; color: #555; text-align: center;">
+            <p class="texto-explicacao" style="margin: 8px 0 0 0; text-align: center;">
                 Lançamentos por funcionário e <b>mês de referência</b> (INSS, IRRF, vale transporte, etc.).
                 Entram no holerite em <b>Descontos</b> e <b>reduzem o líquido</b> a receber.
             </p>
@@ -1148,7 +1446,7 @@
                 <input type="checkbox" id="folha-opc-desconto-horas" checked style="width:18px; height:18px;">
                 <span>Incluir <b>desconto por atrasos</b> (horas que faltaram na jornada) no líquido</span>
             </label>
-            <p style="font-size:11px; color:#666; margin:8px 0 0; line-height:1.4;">Se desmarcar, o sistema ainda <b>calcula e mostra</b> o valor na folha (e na discriminação dia a dia), mas <b>não soma nem desconta</b> no líquido. A escolha fica guardada neste navegador.</p>
+            <p class="texto-explicacao" style="margin:8px 0 0;">Se desmarcar, o sistema ainda <b>calcula e mostra</b> o valor na folha (e na discriminação dia a dia), mas <b>não soma nem desconta</b> no líquido. A escolha fica guardada neste navegador.</p>
         </div>
 
         <button class="btn-enviar" onclick="gerarFolhaPagamento()">💰 CALCULAR FECHAMENTO</button>
@@ -1290,7 +1588,7 @@
     <div id="aba-calendario" class="view-section">
         <div style="background: #eef2f5; padding: 15px; border-radius: 10px; margin-bottom: 15px; border: 1px solid #1a2a43;">
             <h3 style="margin: 0; color: var(--dark-navy); text-align:center;">📅 Calendário de Feriados</h3>
-            <p style="margin: 8px 0 0 0; font-size: 12px; color: #555; text-align:center;">
+            <p class="texto-explicacao" style="margin: 8px 0 0 0; text-align:center;">
                 Cadastre feriados municipal/estadual/federal. Esses dias não entram como "horas devidas" e podem virar banco de horas se houver trabalho.
             </p>
         </div>
@@ -1366,7 +1664,7 @@
                 <label>Foto do Recibo / Fatura</label>
                 <input type="file" id="d-anexo" accept="image/*" capture="environment" style="background: #fff; padding: 10px; border-radius: 8px;">
                 <input type="hidden" id="d-anexo-base64">
-                <p style="font-size: 11px; color: #888; margin-top: 5px;">* Tire uma foto clara do recibo impresso.</p>
+                <p class="texto-explicacao" style="margin-top: 5px;">* Tire uma foto clara do recibo impresso.</p>
 
                 <button class="btn-gold" id="btnSalvarDespesa" onclick="salvarDespesaObra()">SALVAR DESPESA</button>
             </div>
@@ -1392,7 +1690,7 @@
                     <button id="btnExportarDespesas" class="btn-pdf-relatorio" style="display:none; margin-top: 15px; background-color: var(--dark-navy);" onclick="exportarPDF('despesas')">📥 EXPORTAR RELATÓRIO PDF</button>
                 </div>
 
-                <p style="font-size: 12px; color: #666; margin: 10px 0 0 0;">Contas <b>vencidas</b> e <b>a vencer</b> aparecem por ordem de <b>vencimento</b> (data com ano, do mais antigo ao mais recente). O PDF da busca usa a mesma ordem.</p>
+                <p class="texto-explicacao" style="margin: 10px 0 0 0;">Contas <b>vencidas</b> e <b>a vencer</b> aparecem por ordem de <b>vencimento</b> (data com ano, do mais antigo ao mais recente). O PDF da busca usa a mesma ordem.</p>
                 <div id="lista-despesas-resultados" style="margin-top: 15px;">
                     <p style="text-align: center; color: #888; font-size: 13px;">Selecione uma etiqueta acima ou digite para procurar.</p>
                 </div>
@@ -1400,7 +1698,7 @@
 <details>
             <summary style="background: #eef2f5;">📊 Resumo de Gastos (Obra x Fornecedor)</summary>
             <div style="padding: 15px;">
-                <p style="font-size: 13px; color: #555; text-align: justify;">Esta tabela cruza os dados das Obras e Lojas. Ela soma tudo o que está pendente e o que já foi pago para cada fornecedor.</p>
+                <p class="texto-explicacao" style="text-align: justify;">Esta tabela cruza os dados das Obras e Lojas. Ela soma tudo o que está pendente e o que já foi pago para cada fornecedor.</p>
                 <button class="btn-enviar" style="margin-top: 5px;" onclick="gerarResumoFornecedores()">GERAR TABELA DE RESUMO</button>
                 
                 <div id="tabela-resumo-fornecedores" style="margin-top: 20px; overflow-x: auto;">
@@ -1412,7 +1710,7 @@
         <details open style="margin-bottom: 20px;">
             <summary style="background: #eef2f5;">Relatório de despesas</summary>
             <div style="padding: 15px;">
-                <p style="font-size: 13px; color: #555; margin-top: 0;">Esta tabela é <b>independente</b> das despesas por obra: só mostra linhas criadas aqui (coleção própria na base de dados). Nome do fornecedor, cheque/boleto, lançamento, vencimento, valor, pago/pendente, observação, editar e excluir.</p>
+                <p class="texto-explicacao" style="margin-top: 0;">Esta tabela é <b>independente</b> das despesas por obra: só mostra linhas criadas aqui (coleção própria na base de dados). Nome do fornecedor, cheque/boleto, lançamento, vencimento, valor, pago/pendente, observação, editar e excluir.</p>
 
                 <details style="margin-top: 12px; margin-bottom: 18px;">
                     <summary style="background: #fafcff;">Adicionar linha ao relatório</summary>
@@ -1457,7 +1755,7 @@
                     </div>
                     <button type="button" class="btn-enviar" style="margin: 0; padding: 12px 18px;" onclick="carregarRelatorioDespesasTabular()">Carregar tabela</button>
                 </div>
-                <p style="font-size: 12px; color: #666; margin: 8px 0 0 0;">A tabela e o PDF são ordenados pela coluna <b>Vencimento</b> (data completa com <b>ano</b>, do mais antigo ao mais recente). Ex.: <b>05/06/2025</b> vem antes de <b>14/05/2026</b> porque 2025 é anterior a 2026 — não confunda só dia/mês. A coluna <b>Lançamento</b> não segue essa ordem.</p>
+                <p class="texto-explicacao" style="margin: 8px 0 0 0;">A tabela e o PDF são ordenados pela coluna <b>Vencimento</b> (data completa com <b>ano</b>, do mais antigo ao mais recente). Ex.: <b>05/06/2025</b> vem antes de <b>14/05/2026</b> porque 2025 é anterior a 2026 — não confunda só dia/mês. A coluna <b>Lançamento</b> não segue essa ordem.</p>
                 <button type="button" class="btn-pdf-relatorio" style="margin-top: 12px; background-color: var(--dark-navy);" onclick="exportarPDFRelatorioDespesasTabelaAtual()">📥 Exportar PDF (resultado da tabela)</button>
                 <div id="tabela-relatorio-despesas-wrap" style="margin-top: 15px; overflow-x: auto;"></div>
             </div>
@@ -1467,7 +1765,7 @@
     <div id="aba-backup" class="view-section">
         <div class="card-alerta-backup">
             <h3 style="color: var(--dark-navy); margin-top: 0;">💾 Gestão de Armazenamento</h3>
-            <p style="font-size: 13px; color: #555; text-align: justify; margin-bottom: 20px;">
+            <p class="texto-explicacao" style="text-align: justify; margin-bottom: 20px;">
                 Para manter o seu sistema rápido e evitar cobranças de servidor do Google devido ao excesso de fotos pesadas, recomendamos que, ao fechar o mês, descarregue o Backup Completo Offline e, em seguida, faça a Limpeza da Nuvem.
             </p>
 
@@ -1496,17 +1794,17 @@
             </div>
 
             <button class="btn-entrada" onclick="fazerBackupMes()" style="box-shadow: none;">⬇️ 1º PASSO: BAIXAR BACKUP (OFFLINE)</button>
-            <p style="font-size: 11px; color: #888; margin-top: 5px;">* Guarda todas as fotos de pontos, vales e despesas num ficheiro seguro no seu computador.</p>
+            <p class="texto-explicacao" style="margin-top: 5px;">* Guarda todas as fotos de pontos, vales e despesas num ficheiro seguro no seu computador.</p>
 
             <button class="btn-limpar-nuvem" onclick="limparDadosMes()">🗑️ 2º PASSO: APAGAR DADOS (LIMPAR NUVEM)</button>
-            <p style="font-size: 11px; color: #d9534f; margin-top: 5px; font-weight: bold;">* Atenção: Clique apenas após garantir que o ficheiro de Backup foi salvo com segurança!</p>
+            <p class="texto-explicacao" style="margin-top: 5px;">* Atenção: Clique apenas após garantir que o ficheiro de Backup foi salvo com segurança!</p>
         </div>
     </div>
 
     <div id="aba-pedidos" class="view-section">
         <div style="background: #eef2f5; padding: 15px; border-radius: 10px; margin-bottom: 20px; text-align: center; border: 1px solid #1a2a43;">
             <h3 style="margin: 0; color: var(--dark-navy);">Gerenciamento de Materiais</h3>
-            <p style="font-size: 12px; color: #555; margin-top: 5px;">Acompanhe os pedidos feitos pelas equipes.</p>
+            <p class="texto-explicacao" style="margin-top: 5px; text-align: center;">Acompanhe os pedidos feitos pelas equipes.</p>
             <button class="btn-gold" onclick="buscarPedidosMaterial()" style="margin-top: 10px; padding: 10px;">🔄 ATUALIZAR LISTA</button>
         </div>
 
@@ -1515,7 +1813,8 @@
         </div>
     </div>
 
-    <button class="btn-logout" onclick="sairPainelGestor()" style="background: transparent; border: 1px solid #ccc; color: #666; margin-top: 40px;">⬅️ Trocar de Empresa (Sair)</button>
+    </div><!-- gestor-sections-wrap -->
+    </div><!-- gestor-main-content -->
 </div>
 
 <div class="main-card login-card" id="tela-login" style="display: none;">
@@ -1527,7 +1826,7 @@
     <p style="text-align: center; font-size: 13px; color: #555;">Digite o seu CPF para aceder ao sistema de ponto da empresa.</p>
 
     <label>Seu CPF (Somente números)</label>
-    <input type="number" id="login-cpf" placeholder="Apenas números">
+    <input type="text" id="login-cpf" inputmode="numeric" pattern="[0-9]*" placeholder="Apenas números" autocomplete="username">
 
     <label>Sua Senha</label>
     <input type="password" id="login-senha" placeholder="Digite sua senha">
@@ -1761,13 +2060,19 @@
     };
 
     window.voltarTelaInicial = function() {
+        document.body.classList.remove('gestor-ativo');
         document.querySelectorAll('.main-card').forEach(card => card.style.display = 'none');
+        const tp = document.getElementById('tela-patrao');
+        if (tp) {
+            tp.classList.remove('gestor-visivel');
+            tp.style.display = 'none';
+        }
         document.getElementById('tela-escolha-inicial').style.display = 'block';
-        atualizarLogoInterface("FH CONSTRUÇÕES CIVIS"); // Reseta a logo
+        atualizarLogoInterface("FH CONSTRUÇÕES CIVIS");
         if (document.getElementById('alerta-container-global')) {
-        document.getElementById('alerta-container-global').style.display = 'none';
-    }
-};
+            document.getElementById('alerta-container-global').style.display = 'none';
+        }
+    };
    
     window.entrarEmpresaFuncionario = function(nomeEmpresa) {
         localStorage.setItem('empresaTemporariaFuncionario', nomeEmpresa);
@@ -1882,11 +2187,34 @@
         location.reload();
     };
 
+    function painelGestorEstaVisivel() {
+        const el = document.getElementById('tela-patrao');
+        return el && el.classList.contains('gestor-visivel');
+    }
+
+    function mostrarPainelGestor() {
+        document.body.classList.add('gestor-ativo');
+        const el = document.getElementById('tela-patrao');
+        if (el) {
+            el.classList.add('gestor-visivel');
+            el.style.display = 'flex';
+        }
+    }
+
+    function ocultarPainelGestor() {
+        document.body.classList.remove('gestor-ativo');
+        const el = document.getElementById('tela-patrao');
+        if (el) {
+            el.classList.remove('gestor-visivel');
+            el.style.display = 'none';
+        }
+    }
+
     function iniciarPainelGestor() {
         const empresaLogada = localStorage.getItem('empresaGestor');
-        atualizarLogoInterface(empresaLogada); 
+        atualizarLogoInterface(empresaLogada);
         document.querySelectorAll('.main-card').forEach(card => card.style.display = 'none');
-        document.getElementById('tela-patrao').style.display = 'block';
+        mostrarPainelGestor();
         document.getElementById('nome-empresa-painel').innerText = "🏢 " + empresaLogada;
         
         carregarListaDeFuncionarios();
@@ -2373,6 +2701,25 @@ function separarDataSegura(dataString) {
         if (!stringValor) return 0;
         let limpo = String(stringValor).replace(/\./g, '').replace(',', '.');
         return parseFloat(limpo) || 0;
+    }
+
+    function normalizarCpfSomenteDigitos(valor) {
+        return String(valor || '').replace(/\D/g, '');
+    }
+
+    function normalizarSenhaFuncionario(valor) {
+        return String(valor || '').trim();
+    }
+
+    function senhaFuncionarioEstaVazia(senha) {
+        return senha == null || normalizarSenhaFuncionario(senha) === '';
+    }
+
+    function senhasFuncionarioCoincidem(armazenada, digitada) {
+        const a = normalizarSenhaFuncionario(armazenada);
+        const b = normalizarSenhaFuncionario(digitada);
+        if (!a || !b) return false;
+        return a.toLowerCase() === b.toLowerCase();
     }
 
     function timestampMeioDiaDataIso(ymd) {
@@ -5001,8 +5348,8 @@ window.exportarPDF = function(tipo) {
     };
 
     window.fazerLogin = async function() {
-        const cpf = document.getElementById('login-cpf').value; 
-        const senha = document.getElementById('login-senha').value;
+        const cpf = normalizarCpfSomenteDigitos(document.getElementById('login-cpf').value);
+        const senha = normalizarSenhaFuncionario(document.getElementById('login-senha').value);
         const empresaEscolhida = localStorage.getItem('empresaTemporariaFuncionario');
         
         if (!cpf || !senha) {
@@ -5020,42 +5367,43 @@ window.exportarPDF = function(tipo) {
         Swal.showLoading();
         
         try {
-            const q = query(collection(db, "funcionarios"), where("cpf", "==", cpf), where("empresa_id", "==", empresaEscolhida)); 
+            const q = query(collection(db, "funcionarios"), where("empresa_id", "==", empresaEscolhida));
             const querySnapshot = await getDocs(q);
             
-            if (querySnapshot.empty) {
-                return Swal.fire('Erro', 'Funcionário não encontrado nesta Empresa.', 'error'); 
-            }
-            
-            let funcId = null; 
+            let funcId = null;
             let funcData = null;
-            
-            querySnapshot.forEach((docSnap) => { 
-                funcId = docSnap.id; 
-                funcData = docSnap.data(); 
+
+            querySnapshot.forEach((docSnap) => {
+                const d = docSnap.data();
+                if (normalizarCpfSomenteDigitos(d.cpf) === cpf) {
+                    funcId = docSnap.id;
+                    funcData = d;
+                }
             });
 
-            if (!funcData.senha) {
+            if (!funcId || !funcData) {
+                return Swal.fire('Erro', 'Funcionário não encontrado nesta Empresa. Confira o CPF (somente números).', 'error');
+            }
+
+            if (senhaFuncionarioEstaVazia(funcData.senha)) {
                 await updateDoc(doc(db, "funcionarios", funcId), { senha: senha });
-                localStorage.setItem('funcLogadoId', funcId); 
+                localStorage.setItem('funcLogadoId', funcId);
                 localStorage.setItem('funcLogadoNome', funcData.nome);
-                localStorage.setItem('funcLogadoEmpresa', empresaEscolhida); 
+                localStorage.setItem('funcLogadoEmpresa', empresaEscolhida);
                 
                 Swal.fire('Senha Criada!', 'O seu utilizador foi ativado com sucesso.', 'success').then(() => {
                     location.reload();
                 });
+            } else if (!senhasFuncionarioCoincidem(funcData.senha, senha)) {
+                Swal.fire('Erro', 'Senha incorreta! Se esqueceu, peça ao RH para clicar em «Resetar» no seu cadastro.', 'error');
             } else {
-                if (funcData.senha !== senha) {
-                    Swal.fire('Erro', 'Senha incorreta!', 'error'); 
-                } else { 
-                    localStorage.setItem('funcLogadoId', funcId); 
-                    localStorage.setItem('funcLogadoNome', funcData.nome); 
-                    localStorage.setItem('funcLogadoEmpresa', empresaEscolhida);
-                    location.reload(); 
-                }
+                localStorage.setItem('funcLogadoId', funcId);
+                localStorage.setItem('funcLogadoNome', funcData.nome);
+                localStorage.setItem('funcLogadoEmpresa', empresaEscolhida);
+                location.reload();
             }
-        } catch(e) { 
-            Swal.fire('Erro', 'Falha na extração de dados.', 'error'); 
+        } catch(e) {
+            Swal.fire('Erro', 'Falha na autenticação. Tente novamente.', 'error');
         }
     };
 
@@ -5067,13 +5415,21 @@ window.exportarPDF = function(tipo) {
     };
 
     window.mudarAba = function(aba, elementoAtivado) {
-        document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+        document.querySelectorAll('.gestor-menu-btn').forEach(t => t.classList.remove('active'));
         document.querySelectorAll('.view-section').forEach(v => v.classList.remove('active'));
-        
-        if(elementoAtivado) {
+
+        if (elementoAtivado) {
             elementoAtivado.classList.add('active');
+            const tituloEl = document.getElementById('gestor-titulo-aba');
+            if (tituloEl && elementoAtivado.dataset.titulo) {
+                tituloEl.textContent = elementoAtivado.dataset.titulo;
+            }
         }
-        document.getElementById(`aba-${aba}`).classList.add('active');
+        const secao = document.getElementById(`aba-${aba}`);
+        if (secao) secao.classList.add('active');
+
+        const mainGestor = document.querySelector('.gestor-main-content');
+        if (mainGestor) mainGestor.scrollTop = 0;
 
         if (aba === 'despesas') {
             carregarFiltrosDespesas();
@@ -5404,8 +5760,9 @@ window.gerarFolhaPagamento = async function() {
                             totalProduto += v;
                             console.log("✅ Adicionado aos Produtos:", v);
                         } else {
+                            // Dinheiro, PIX e outros adiantamentos
                             totalDinheiro += v;
-                            console.log("✅ Adicionado ao Dinheiro:", v);
+                            console.log("✅ Adicionado aos Vales/PIX:", v);
                         }
                     } else {
                         console.log("❌ Ignorado: O mês ou ano não bateu.");
@@ -6441,7 +6798,7 @@ window.gerarFolhaPagamento = async function() {
     };
        document.getElementById('btnCadastrarFunc').onclick = async function() {
         const nome = document.getElementById('c-nome').value.trim();
-        const cpf = document.getElementById('c-cpf').value.trim();
+        const cpf = normalizarCpfSomenteDigitos(document.getElementById('c-cpf').value.trim());
         const salario = document.getElementById('c-salario').value.trim();
         const tel = document.getElementById('c-tel').value.trim();
         const pix = document.getElementById('c-pix') ? document.getElementById('c-pix').value.trim() : '';
@@ -8558,7 +8915,7 @@ window.gerarFolhaPagamento = async function() {
 // === INÍCIO DO SISTEMA DE ALERTAS ===
 async function monitorarVencimentosObras() {
     const empresaGestor = localStorage.getItem('empresaGestor');
-    const telaPatraoAtiva = document.getElementById('tela-patrao').style.display === 'block';
+    const telaPatraoAtiva = painelGestorEstaVisivel();
     
     // Captura a caixa de alertas (se ela já existir)
     let containerAlerta = document.getElementById("alerta-container-global");
