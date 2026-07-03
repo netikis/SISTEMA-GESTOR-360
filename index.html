@@ -23,6 +23,7 @@
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/signature_pad@4.1.7/dist/signature_pad.umd.min.js"></script>
+    <script src="https://cdn.sheetjs.com/xlsx-0.20.3/package/dist/xlsx.full.min.js"></script>
 
     <style>
         :root { 
@@ -474,42 +475,44 @@
         }
 
         .gestor-sections-wrap {
-            background: #2e343e;
+            background: #ffffff;
             border-radius: 12px;
             padding: 18px 20px;
             box-shadow: 0 8px 28px rgba(0, 0, 0, 0.28);
-            border: 1px solid rgba(255, 255, 255, 0.07);
+            border: 1px solid #e8edf2;
             min-height: 200px;
-            color: #dce1e6;
+            color: #000000;
         }
 
-        #tela-patrao .gestor-sections-wrap label {
-            color: #c8d0d8;
-        }
-
+        #tela-patrao .gestor-sections-wrap,
+        #tela-patrao .gestor-sections-wrap label,
         #tela-patrao .gestor-sections-wrap h3,
-        #tela-patrao .gestor-sections-wrap h4 {
-            color: #f1c40f;
-        }
-
+        #tela-patrao .gestor-sections-wrap h4,
         #tela-patrao .gestor-sections-wrap p:not(.texto-explicacao):not(.folha-detalhe),
         #tela-patrao .gestor-sections-wrap span:not(.texto-explicacao),
-        #tela-patrao .gestor-sections-wrap small {
-            color: #aeb6bf;
+        #tela-patrao .gestor-sections-wrap small,
+        #tela-patrao .gestor-sections-wrap b,
+        #tela-patrao .gestor-sections-wrap li,
+        #tela-patrao details summary {
+            color: #000000 !important;
+            font-weight: 700 !important;
         }
 
+        #tela-patrao .texto-explicacao,
+        #tela-patrao .folha-detalhe,
         #tela-patrao .texto-explicacao b,
         #tela-patrao .folha-detalhe b {
-            color: #e74c3c;
-            font-weight: 700;
+            color: #e74c3c !important;
+            font-weight: 700 !important;
         }
 
         #tela-patrao .gestor-sections-wrap input,
         #tela-patrao .gestor-sections-wrap select,
         #tela-patrao .gestor-sections-wrap textarea {
-            background-color: #ecf0f1;
+            background-color: #ffffff;
             border-color: #5d6a78;
-            color: #2c3e50;
+            color: #000000;
+            font-weight: 600;
         }
 
         #tela-patrao .gestor-sections-wrap input:focus,
@@ -520,27 +523,25 @@
         }
 
         #tela-patrao .gestor-sections-wrap hr {
-            border-color: rgba(255, 255, 255, 0.1);
+            border-color: #e0e6ed;
         }
 
         #tela-patrao .func-item {
             background: #ffffff;
             border: 1px solid #e8edf2;
-            color: var(--text-color);
+            color: #000000;
             box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
         }
 
         #tela-patrao .resultado-item {
-            background: rgba(255, 255, 255, 0.04);
-            border-color: rgba(255, 255, 255, 0.08);
+            background: #ffffff;
+            border-color: #e8edf2;
+            color: #000000;
         }
 
         #tela-patrao .folha-secao-titulo {
-            color: #f1c40f;
-        }
-
-        #tela-patrao details summary {
-            color: #dce1e6;
+            color: #000000 !important;
+            font-weight: 700 !important;
         }
 
         @media (max-width: 900px) {
@@ -1687,7 +1688,10 @@
                     <h4 style="margin: 0; color: #856404;">Total Gasto (Pesquisa Atual):</h4>
                     <h2 style="margin: 5px 0 0 0; color: #d9534f;" id="total-gasto-display">R$ 0,00</h2>
                     
-                    <button id="btnExportarDespesas" class="btn-pdf-relatorio" style="display:none; margin-top: 15px; background-color: var(--dark-navy);" onclick="exportarPDF('despesas')">📥 EXPORTAR RELATÓRIO PDF</button>
+                    <div style="display:flex; flex-wrap:wrap; gap:10px; justify-content:center; margin-top:15px;">
+                        <button id="btnExportarDespesas" class="btn-pdf-relatorio" style="display:none; margin:0; background-color: var(--dark-navy);" onclick="exportarPDF('despesas')">📥 EXPORTAR PDF</button>
+                        <button id="btnExportarDespesasExcel" class="btn-pdf-relatorio" style="display:none; margin:0; background-color:#217346;" onclick="exportarExcelDespesasBusca()">📊 EXPORTAR EXCEL</button>
+                    </div>
                 </div>
 
                 <p class="texto-explicacao" style="margin: 10px 0 0 0;">Contas <b>vencidas</b> e <b>a vencer</b> aparecem por ordem de <b>vencimento</b> (data com ano, do mais antigo ao mais recente). O PDF da busca usa a mesma ordem.</p>
@@ -1756,7 +1760,10 @@
                     <button type="button" class="btn-enviar" style="margin: 0; padding: 12px 18px;" onclick="carregarRelatorioDespesasTabular()">Carregar tabela</button>
                 </div>
                 <p class="texto-explicacao" style="margin: 8px 0 0 0;">A tabela e o PDF são ordenados pela coluna <b>Vencimento</b> (data completa com <b>ano</b>, do mais antigo ao mais recente). Ex.: <b>05/06/2025</b> vem antes de <b>14/05/2026</b> porque 2025 é anterior a 2026 — não confunda só dia/mês. A coluna <b>Lançamento</b> não segue essa ordem.</p>
-                <button type="button" class="btn-pdf-relatorio" style="margin-top: 12px; background-color: var(--dark-navy);" onclick="exportarPDFRelatorioDespesasTabelaAtual()">📥 Exportar PDF (resultado da tabela)</button>
+                <div style="display:flex; flex-wrap:wrap; gap:10px; margin-top:12px;">
+                    <button type="button" class="btn-pdf-relatorio" style="margin:0; background-color: var(--dark-navy);" onclick="exportarPDFRelatorioDespesasTabelaAtual()">📥 Exportar PDF (resultado da tabela)</button>
+                    <button type="button" class="btn-pdf-relatorio" style="margin:0; background-color:#217346;" onclick="exportarExcelRelatorioDespesasTabelaAtual()">📊 Exportar Excel (resultado da tabela)</button>
+                </div>
                 <div id="tabela-relatorio-despesas-wrap" style="margin-top: 15px; overflow-x: auto;"></div>
             </div>
         </details>
@@ -4138,6 +4145,126 @@ window.carregarFiltrosDespesas = async function() {
         exportarPDF('despesas');
     };
 
+    function nomeArquivoExcelSeguro(nome) {
+        return String(nome || 'despesas')
+            .normalize('NFD')
+            .replace(/[\u0300-\u036f]/g, '')
+            .replace(/[<>:"/\\|?*]+/g, '_')
+            .replace(/\s+/g, '_')
+            .slice(0, 80);
+    }
+
+    function montarDadosExcelDespesas(arr) {
+        const copia = (arr || []).slice();
+        ordenarRelatorioDespesasPorVencimento(copia);
+        return copia.map((row) => {
+            const pago = row.status === 'pago';
+            const estado = pago ? 'Pago' : 'Pendente';
+            const valorNum = Number(parseMoedaLocal(row.valor_string) || row.valor_numero || 0);
+            let situacao = estado;
+            if (!pago) {
+                situacao = despesaEstaVencida(row) ? 'Vencida' : 'A vencer';
+            }
+            return {
+                'Obra': row.obra_nome || '',
+                'Fornecedor / Loja': row.loja_nome || '',
+                'Cheque / Boleto / NF': refChequeBoletoDesp(row),
+                'Vencimento': formatarVencimentoDespesaExibir(row),
+                'Lançamento': diaLancamentoDespExibir(row),
+                'Valor (R$)': valorNum,
+                'Estado': estado,
+                'Data pagamento': row.data_pagamento || '',
+                'Situação': situacao,
+                'Descrição / Materiais': row.descricao || '',
+                'Observação': row.observacao || '',
+                'Data inserção': row.data || ''
+            };
+        });
+    }
+
+    function exportarArquivoExcelDespesas(linhas, nomeArquivo) {
+        if (!window.XLSX) {
+            return Swal.fire('Erro', 'Biblioteca Excel não carregou. Recarregue a página (Ctrl+F5).', 'error');
+        }
+        if (!linhas || !linhas.length) {
+            return Swal.fire('Atenção', 'Não há despesas para exportar. Faça a busca ou carregue a tabela primeiro.', 'warning');
+        }
+
+        const ws = XLSX.utils.json_to_sheet(linhas);
+        const colunas = Object.keys(linhas[0]);
+        ws['!cols'] = [
+            { wch: 30 },
+            { wch: 28 },
+            { wch: 24 },
+            { wch: 14 },
+            { wch: 14 },
+            { wch: 14 },
+            { wch: 12 },
+            { wch: 14 },
+            { wch: 12 },
+            { wch: 40 },
+            { wch: 30 },
+            { wch: 14 }
+        ];
+
+        const range = XLSX.utils.decode_range(ws['!ref']);
+        const idxValor = colunas.indexOf('Valor (R$)');
+        if (idxValor >= 0) {
+            for (let r = range.s.r + 1; r <= range.e.r; r += 1) {
+                const addr = XLSX.utils.encode_cell({ r, c: idxValor });
+                if (ws[addr] && typeof ws[addr].v === 'number') {
+                    ws[addr].t = 'n';
+                    ws[addr].z = '#,##0.00';
+                }
+            }
+        }
+
+        const total = linhas.reduce((s, linha) => s + (Number(linha['Valor (R$)']) || 0), 0);
+        const linhaTotal = range.e.r + 2;
+        const addrLabel = XLSX.utils.encode_cell({ r: linhaTotal, c: Math.max(0, idxValor - 1) });
+        const addrTotal = XLSX.utils.encode_cell({ r: linhaTotal, c: idxValor });
+        ws[addrLabel] = { t: 's', v: 'TOTAL (R$)' };
+        ws[addrTotal] = { t: 'n', v: total, z: '#,##0.00' };
+        const novoFim = XLSX.utils.encode_cell({ r: linhaTotal, c: range.e.c });
+        ws['!ref'] = `${ws['!ref'].split(':')[0]}:${novoFim}`;
+        ws['!autofilter'] = { ref: XLSX.utils.encode_range({ s: { r: 0, c: 0 }, e: { r: range.e.r, c: range.e.c } }) };
+
+        const wb = XLSX.utils.book_new();
+        XLSX.utils.book_append_sheet(wb, ws, 'Despesas');
+        XLSX.writeFile(wb, `${nomeArquivoExcelSeguro(nomeArquivo)}.xlsx`);
+
+        Swal.fire({
+            toast: true,
+            position: 'top-end',
+            icon: 'success',
+            title: 'Excel exportado com sucesso!',
+            showConfirmButton: false,
+            timer: 2500
+        });
+    }
+
+    window.exportarExcelDespesasBusca = function () {
+        const dados = window.dadosExportacaoDespesas;
+        const empresa = localStorage.getItem('empresaGestor') || 'Empresa';
+        const termo = (document.getElementById('busca-obra') && document.getElementById('busca-obra').value || 'despesas').trim();
+        exportarArquivoExcelDespesas(
+            montarDadosExcelDespesas(dados),
+            `despesas_${empresa}_${termo || 'busca'}`
+        );
+    };
+
+    window.exportarExcelRelatorioDespesasTabelaAtual = function () {
+        const arr = window._despesasRelatorioExport;
+        if (!arr || !arr.length) {
+            return Swal.fire('Atenção', 'Carregue a tabela primeiro (botão «Carregar tabela»).', 'warning');
+        }
+        const empresa = localStorage.getItem('empresaGestor') || 'Empresa';
+        exportarArquivoExcelDespesas(
+            montarDadosExcelDespesas(arr),
+            `relatorio_despesas_${empresa}`
+        );
+    };
+
  window.buscarDespesasObra = async function() {
         const termoBusca = document.getElementById('busca-obra').value.trim().toLowerCase();
         const empresaLogada = localStorage.getItem('empresaGestor');
@@ -4147,9 +4274,11 @@ window.carregarFiltrosDespesas = async function() {
         const divLista = document.getElementById('lista-despesas-resultados');
         const divTotal = document.getElementById('resumo-total-despesas');
         const btnExportar = document.getElementById('btnExportarDespesas');
+        const btnExportarExcel = document.getElementById('btnExportarDespesasExcel');
         
         divLista.innerHTML = "A procurar relatórios..."; divTotal.style.display = 'none';
         if (btnExportar) btnExportar.style.display = 'none';
+        if (btnExportarExcel) btnExportarExcel.style.display = 'none';
 
         window.dadosExportacaoDespesas = [];
 
@@ -4272,7 +4401,10 @@ window.carregarFiltrosDespesas = async function() {
                 </div>
             `;
             
-            divTotal.style.display = 'block'; if (btnExportar) btnExportar.style.display = 'block'; divLista.innerHTML = avisoAnosHtml;
+            divTotal.style.display = 'block';
+            if (btnExportar) btnExportar.style.display = 'inline-block';
+            if (btnExportarExcel) btnExportarExcel.style.display = 'inline-block';
+            divLista.innerHTML = avisoAnosHtml;
             
             // Renderiza na tela em três seções diferentes (pendentes já em ordem de vencimento)
             if (htmlVencidas !== "") divLista.innerHTML += `<h4 style="margin: 10px 0 5px 0; color: #dc3545; border-bottom: 2px solid #dc3545; padding-bottom: 5px;">🔴 Contas Vencidas (Atrasadas) — por vencimento ▲</h4>` + htmlVencidas;
