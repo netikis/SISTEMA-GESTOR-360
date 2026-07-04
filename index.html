@@ -932,6 +932,154 @@
             color: #fff;
         }
 
+        .painel-cadastros-desp {
+            margin-top: 15px;
+            background: #fafcff;
+            border-radius: 10px;
+            border: 1px solid #e0e6ed;
+            overflow: hidden;
+        }
+
+        .painel-cadastros-desp-header {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            align-items: center;
+            justify-content: space-between;
+            padding: 10px 12px;
+            background: #eef2f5;
+            border-bottom: 1px solid #e0e6ed;
+        }
+
+        .painel-cadastros-desp-header input {
+            flex: 1;
+            min-width: 160px;
+            margin: 0;
+            font-size: 12px;
+            padding: 8px 10px;
+            border-radius: 8px;
+            border: 1px solid #ccc;
+        }
+
+        .desp-cadastro-secao {
+            border-bottom: 1px solid #e0e6ed;
+        }
+
+        .desp-cadastro-secao:last-of-type {
+            border-bottom: none;
+        }
+
+        .desp-cadastro-secao summary {
+            padding: 10px 12px;
+            font-size: 12px;
+            font-weight: 700;
+            color: var(--dark-navy);
+            cursor: pointer;
+            background: #fff;
+            list-style: none;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .desp-cadastro-secao summary::-webkit-details-marker {
+            display: none;
+        }
+
+        .desp-cadastro-contagem {
+            font-size: 10px;
+            font-weight: 700;
+            background: #e0e6ed;
+            color: #555;
+            padding: 2px 8px;
+            border-radius: 10px;
+        }
+
+        .desp-cadastro-lista {
+            max-height: 180px;
+            overflow-y: auto;
+            padding: 6px 8px 10px;
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+            background: #fafcff;
+        }
+
+        .cadastro-desp-item {
+            display: grid;
+            grid-template-columns: 1fr 42px;
+            align-items: stretch;
+            border: 1px solid #dde3ea;
+            border-radius: 8px;
+            overflow: hidden;
+            background: #fff;
+            min-height: 38px;
+        }
+
+        .cadastro-desp-item-nome {
+            display: flex;
+            align-items: center;
+            padding: 10px 12px;
+            font-size: 13px;
+            font-weight: 700;
+            color: #1a2a43 !important;
+            cursor: pointer;
+            background: #fff;
+            text-align: left;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+            font-family: 'Poppins', sans-serif;
+            line-height: 1.3;
+        }
+
+        .cadastro-desp-item-nome:hover {
+            background: #fff8e6;
+            color: #1a2a43 !important;
+        }
+
+        #tela-patrao .gestor-sections-wrap .cadastro-desp-item-nome {
+            color: #1a2a43 !important;
+            font-weight: 700 !important;
+            font-size: 13px !important;
+            background: #fff !important;
+        }
+
+        #tela-patrao .gestor-sections-wrap .cadastro-desp-item-del {
+            color: #a94442 !important;
+        }
+
+        #tela-patrao .gestor-sections-wrap .btn-link-nota-resumo {
+            color: #1565c0 !important;
+            text-decoration: underline !important;
+        }
+
+        .cadastro-desp-item-del {
+            background: #f8f9fa;
+            color: #a94442 !important;
+            border: none;
+            border-left: 1px solid #dde3ea;
+            padding: 0;
+            font-size: 18px;
+            font-weight: bold;
+            cursor: pointer;
+            line-height: 1;
+            min-height: 38px;
+        }
+
+        .cadastro-desp-item-del:hover {
+            background: #d9534f;
+            color: #fff;
+        }
+
+        .cadastro-desp-vazio {
+            font-size: 11px;
+            color: #888;
+            padding: 10px;
+            text-align: center;
+            margin: 0;
+        }
+
         .busca-despesas-wrap {
             position: relative;
             flex: 2;
@@ -939,6 +1087,21 @@
         }
 
         #busca-obra-sugestoes {
+            display: none;
+            position: absolute;
+            left: 0;
+            right: 0;
+            top: calc(100% + 4px);
+            z-index: 1200;
+            max-height: 240px;
+            overflow-y: auto;
+            background: #fff;
+            border: 1px solid #c5d0de;
+            border-radius: 10px;
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
+        }
+
+        #rel-desp-filtro-sugestoes {
             display: none;
             position: absolute;
             left: 0;
@@ -1147,6 +1310,7 @@
             <button type="button" class="gestor-menu-btn" data-titulo="Calendário" onclick="mudarAba('calendario', this)">📅 Calendário</button>
             <button type="button" class="gestor-menu-btn" data-titulo="Terceiros" onclick="mudarAba('terceiros', this)">👷 Terceiros</button>
             <button type="button" class="gestor-menu-btn menu-despesas" data-titulo="Despesas" onclick="mudarAba('despesas', this)">📉 Despesas</button>
+            <button type="button" class="gestor-menu-btn" data-titulo="Relatório Despesas" onclick="mudarAba('relatorio-despesas', this)">📋 Relatório Despesas</button>
             <button type="button" class="gestor-menu-btn menu-backup" data-titulo="Backup" onclick="mudarAba('backup', this)">💾 Backup</button>
             <button type="button" class="gestor-menu-btn" data-titulo="Pedidos Materiais" onclick="mudarAba('pedidos', this)">📦 Pedidos Materiais</button>
         </nav>
@@ -1772,8 +1936,8 @@
                 <datalist id="datalist-obras-desp"></datalist>
                 <datalist id="datalist-lojas-desp"></datalist>
 
-                <div id="tags-filtros-despesas" style="display: flex; flex-wrap: wrap; gap: 8px; margin-top: 15px; padding: 10px; background: #fafcff; border-radius: 8px; border: 1px dashed #e0e6ed;">
-                    <p style="font-size: 11px; color: #888; width: 100%; text-align: center; margin: 0;">A carregar locais registados...</p>
+                <div id="tags-filtros-despesas" class="painel-cadastros-desp">
+                    <p class="cadastro-desp-vazio">A carregar cadastros...</p>
                 </div>
 
                 <div id="resumo-total-despesas" style="display: none; margin-top: 20px; background: #fff3cd; padding: 15px; border-radius: 10px; text-align: center; border: 1px solid #ffeeba;">
@@ -1802,9 +1966,11 @@
             </div>
         </details>
         </details>
+    </div>
 
+    <div id="aba-relatorio-despesas" class="view-section">
         <details open style="margin-bottom: 20px;">
-            <summary style="background: #eef2f5;">Relatório de despesas</summary>
+            <summary style="background: #eef2f5;">📋 Relatório de despesas</summary>
             <div style="padding: 15px;">
                 <p class="texto-explicacao" style="margin-top: 0;">Esta tabela é <b>independente</b> das despesas por obra: só mostra linhas criadas aqui (coleção própria na base de dados). Nome do fornecedor, cheque/boleto, lançamento, vencimento, valor, pago/pendente, observação, editar e excluir.</p>
 
@@ -1812,9 +1978,9 @@
                     <summary style="background: #fafcff;">Adicionar linha ao relatório</summary>
                     <div style="padding: 12px; border: 1px dashed #e0e6ed; border-top: none;">
                         <label>Nome da Obra ou Local</label>
-                        <input type="text" id="rd-obra" list="datalist-obras-desp" autocomplete="off" placeholder="Onde o material foi usado?" style="margin-top: 4px;">
+                        <input type="text" id="rd-obra" list="datalist-obras-rel" autocomplete="off" placeholder="Onde o material foi usado?" style="margin-top: 4px;">
                         <label>Nome (fornecedor / loja)</label>
-                        <input type="text" id="rd-loja" list="datalist-lojas-desp" autocomplete="off" placeholder="Nome ou loja" style="margin-top: 4px;">
+                        <input type="text" id="rd-loja" list="datalist-lojas-rel" autocomplete="off" placeholder="Nome ou loja" style="margin-top: 4px;">
                         <label>Número do cheque ou boleto (opcional)</label>
                         <input type="text" id="rd-cheque-boleto" placeholder="Ex.: chq. 1234 / boleto" style="margin-top: 4px;">
                         <label>Número da Nota Fiscal / Recibo (opcional)</label>
@@ -1836,22 +2002,27 @@
                     </div>
                 </details>
 
+                <datalist id="datalist-obras-rel"></datalist>
+                <datalist id="datalist-lojas-rel"></datalist>
+
                 <div style="display: flex; flex-wrap: wrap; gap: 10px; align-items: flex-end; margin-top: 10px;">
-                    <div style="flex: 1; min-width: 160px;">
+                    <div class="busca-despesas-wrap" style="flex: 1; min-width: 200px;">
                         <label>Filtrar por texto (obra ou fornecedor)</label>
-                        <input type="text" id="rel-desp-filtro" placeholder="Deixe vazio para listar todas" style="margin: 0;">
+                        <input type="text" id="rel-desp-filtro" placeholder="Digite para buscar..." autocomplete="off" style="width: 100%; margin: 0;" oninput="filtrarAutocompleteRelDespesas()" onfocus="filtrarAutocompleteRelDespesas()" onkeydown="teclaAutocompleteRelDespesas(event)">
+                        <div id="rel-desp-filtro-sugestoes" role="listbox" aria-label="Sugestões de filtro"></div>
                     </div>
                     <div style="min-width: 140px;">
                         <label>Estado</label>
                         <select id="rel-desp-status" style="margin: 0;">
                             <option value="todos">Todos</option>
-                            <option value="pendente">Só pendentes</option>
-                            <option value="pago">Só pagos</option>
+                            <option value="pendente">Pendentes</option>
+                            <option value="pago">Pagos</option>
+                            <option value="vencido">Vencidos</option>
                         </select>
                     </div>
                     <button type="button" class="btn-enviar" style="margin: 0; padding: 12px 18px;" onclick="carregarRelatorioDespesasTabular()">Carregar tabela</button>
                 </div>
-                <p class="texto-explicacao" style="margin: 8px 0 0 0;">A tabela e o PDF são ordenados pela coluna <b>Vencimento</b> (data completa com <b>ano</b>, do mais antigo ao mais recente). Ex.: <b>05/06/2025</b> vem antes de <b>14/05/2026</b> porque 2025 é anterior a 2026 — não confunda só dia/mês. A coluna <b>Lançamento</b> não segue essa ordem.</p>
+                <p class="texto-explicacao" style="margin: 8px 0 0 0;">Itens com vencimento já passado aparecem em <b style="color:#dc3545;">vermelho</b> como <b>VENCIDA</b>. Clique na coluna <b>Vencimento ↕</b> para alternar a ordem: cronológico → <b>vencidos primeiro</b> → mais recente. O PDF e o Excel usam a mesma ordem da tabela.</p>
                 <div style="display:flex; flex-wrap:wrap; gap:10px; margin-top:12px;">
                     <button type="button" class="btn-pdf-relatorio" style="margin:0; background-color: var(--dark-navy);" onclick="exportarPDFRelatorioDespesasTabelaAtual()">📥 Exportar PDF (resultado da tabela)</button>
                     <button type="button" class="btn-pdf-relatorio" style="margin:0; background-color:#217346;" onclick="exportarExcelRelatorioDespesasTabelaAtual()">📊 Exportar Excel (resultado da tabela)</button>
@@ -2961,7 +3132,7 @@ function separarDataSegura(dataString) {
         return formatarVencimentoIsoParaBR(obterDataVencimentoDespesa(d));
     }
 
-    /** Vencimento na tabela: ano em destaque (vermelho se já passou). */
+    /** Vencimento na tabela: vermelho se pendente e já passou. */
     function formatarVencimentoDespesaExibirHtml(d) {
         const ts = dataVencimentoTsDespesa(d);
         if (ts == null) return escapeHtmlBasico('—');
@@ -2969,10 +3140,151 @@ function separarDataSegura(dataString) {
         const dia = String(dt.getDate()).padStart(2, '0');
         const mes = String(dt.getMonth() + 1).padStart(2, '0');
         const ano = dt.getFullYear();
+        const texto = dia + '/' + mes + '/' + ano;
         const hoje = new Date();
         hoje.setHours(12, 0, 0, 0);
-        const corAno = dt.getTime() < hoje.getTime() ? '#dc3545' : '#1a2a43';
-        return escapeHtmlBasico(dia + '/' + mes + '/') + '<span style="font-weight:800;color:' + corAno + ';">' + ano + '</span>';
+        const vencida = dt.getTime() < hoje.getTime() && String(d.status || 'pendente') !== 'pago';
+        if (vencida) {
+            return '<span style="font-weight:800;color:#dc3545;">' + escapeHtmlBasico(texto) + '</span>';
+        }
+        return escapeHtmlBasico(dia + '/' + mes + '/') + '<span style="font-weight:800;color:#1a2a43;">' + ano + '</span>';
+    }
+
+    function badgeEstadoRelDespesaHtml(d) {
+        const st = d.status === 'pago' ? 'pago' : 'pendente';
+        if (st === 'pago') {
+            let badgeExtra = '';
+            if (d.comprovante_pagamento) {
+                badgeExtra = '<br><span style="font-size:10px;color:#28a745;font-weight:700;cursor:pointer;" onclick="abrirFoto(\'' + d.comprovante_pagamento + '\')">📎 Ver comprovante</span>';
+            } else if (d.baixa_sem_comprovante) {
+                badgeExtra = '<br><span style="font-size:10px;color:#856404;">Sem comprovante</span>';
+            }
+            return '<span style="background:#d4edda;color:#155724;padding:2px 6px;border-radius:4px;font-weight:bold;">Pago</span><br><span style="font-size:10px;color:#666;">' + escapeHtmlBasico(d.data_pagamento || '') + '</span>' + badgeExtra;
+        }
+        if (despesaEstaVencida(d)) {
+            return '<span style="background:#f8d7da;color:#721c24;padding:2px 8px;border-radius:4px;font-weight:bold;">⚠️ VENCIDA</span><br><span style="font-size:10px;color:#dc3545;font-weight:700;">Atrasada — pendente pagamento</span>';
+        }
+        return '<span style="background:#fff3cd;color:#856404;padding:2px 6px;border-radius:4px;font-weight:bold;">Pendente</span><br><span style="font-size:10px;color:#856404;">No prazo</span>';
+    }
+
+    window._relDespOrdemVenc = window._relDespOrdemVenc || 'cronologico';
+
+    function rotuloOrdemVencRelDesp() {
+        const m = window._relDespOrdemVenc || 'cronologico';
+        if (m === 'vencidos_topo') return 'Vencimento ⚠▲';
+        if (m === 'desc') return 'Vencimento ▼';
+        return 'Vencimento ▲';
+    }
+
+    function aplicarOrdemRelDespVencimento(arr, modo) {
+        const m = modo || window._relDespOrdemVenc || 'cronologico';
+        if (m === 'vencidos_topo') {
+            arr.sort((a, b) => {
+                const pa = a.status === 'pago' ? 2 : (despesaEstaVencida(a) ? 0 : 1);
+                const pb = b.status === 'pago' ? 2 : (despesaEstaVencida(b) ? 0 : 1);
+                if (pa !== pb) return pa - pb;
+                const ta = dataVencimentoTsDespesa(a);
+                const tb = dataVencimentoTsDespesa(b);
+                const va = ta != null ? ta : Number.MAX_SAFE_INTEGER;
+                const vb = tb != null ? tb : Number.MAX_SAFE_INTEGER;
+                if (va !== vb) return va - vb;
+                return String(a.obra_nome || '').localeCompare(String(b.obra_nome || ''), 'pt-BR');
+            });
+            return;
+        }
+        if (m === 'desc') {
+            arr.sort((a, b) => {
+                const ta = dataVencimentoTsDespesa(a);
+                const tb = dataVencimentoTsDespesa(b);
+                const va = ta != null ? ta : Number.MIN_SAFE_INTEGER;
+                const vb = tb != null ? tb : Number.MIN_SAFE_INTEGER;
+                if (va !== vb) return vb - va;
+                return String(a.obra_nome || '').localeCompare(String(b.obra_nome || ''), 'pt-BR');
+            });
+            return;
+        }
+        ordenarRelatorioDespesasPorVencimento(arr);
+    }
+
+    window.alternarOrdemVencRelDespesas = function () {
+        const modos = ['cronologico', 'vencidos_topo', 'desc'];
+        const atual = window._relDespOrdemVenc || 'cronologico';
+        const idx = modos.indexOf(atual);
+        window._relDespOrdemVenc = modos[(idx + 1) % modos.length];
+        if (window._relDespDadosFiltrados && window._relDespDadosFiltrados.length) {
+            renderizarTabelaRelatorioDespesas(window._relDespDadosFiltrados.slice());
+        } else if (typeof window.carregarRelatorioDespesasTabular === 'function') {
+            window.carregarRelatorioDespesasTabular();
+        }
+    };
+
+    function renderizarTabelaRelatorioDespesas(arrOrigem) {
+        const wrap = document.getElementById('tabela-relatorio-despesas-wrap');
+        if (!wrap) return;
+        const arr = (arrOrigem || []).slice();
+        aplicarOrdemRelDespVencimento(arr, window._relDespOrdemVenc);
+        window._despesasRelatorioExport = arr;
+        arr.forEach((d) => { window._mapRelatorioDespesasParaEdicao[d.id] = d; });
+
+        if (!arr.length) {
+            wrap.innerHTML = '<p style="text-align:center;color:#888;">Nenhum registo com os filtros actuais.</p>';
+            wrap.setAttribute('data-rel-desp-carregado', '1');
+            return;
+        }
+
+        let html = '';
+        if (relatorioDespesasTemVariosAnosVencimento(arr)) {
+            html += '<p style="font-size:12px;background:#fff8e6;border:1px solid #ffc107;border-radius:8px;padding:10px;margin:0 0 10px 0;color:#856404;">'
+                + '<b>Há vencimentos de anos diferentes.</b> A ordem usa o <b>ano inteiro</b>: '
+                + 'junho de <b>2025</b> aparece antes de maio de <b>2026</b>. '
+                + 'Itens <b style="color:#dc3545;">VENCIDA</b> estão em vermelho.</p>';
+        }
+        const tituloOrdem = rotuloOrdemVencRelDesp();
+        html += '<table style="width:100%;border-collapse:collapse;font-size:12px;background:#fff;border:1px solid #e0e6ed;">';
+        html += '<thead><tr style="background:var(--dark-navy);color:#fff;text-align:left;">';
+        html += '<th style="padding:8px;border:1px solid #152a45;">Obra</th>';
+        html += '<th style="padding:8px;border:1px solid #152a45;">Nome (fornec.)</th>';
+        html += '<th style="padding:8px;border:1px solid #152a45;">Chq. / boleto / NF</th>';
+        html += '<th style="padding:8px;border:1px solid #152a45;cursor:pointer;white-space:nowrap;" onclick="alternarOrdemVencRelDespesas()" title="Clique para alternar: cronológico → vencidos primeiro → mais recente">'
+            + tituloOrdem + ' <span style="font-size:10px;opacity:0.85;">↕</span></th>';
+        html += '<th style="padding:8px;border:1px solid #152a45;">Lançamento</th>';
+        html += '<th style="padding:8px;border:1px solid #152a45;">Valor</th>';
+        html += '<th style="padding:8px;border:1px solid #152a45;">Estado</th>';
+        html += '<th style="padding:8px;border:1px solid #152a45;">Observação</th>';
+        html += '<th style="padding:8px;border:1px solid #152a45;">Acções</th></tr></thead><tbody>';
+
+        arr.forEach((d) => {
+            const st = d.status === 'pago' ? 'pago' : 'pendente';
+            const vencida = st === 'pendente' && despesaEstaVencida(d);
+            const trFundo = vencida ? 'background:#fff5f5;border-left:4px solid #dc3545;' : '';
+            const badge = badgeEstadoRelDespesaHtml(d);
+            const refDoc = escapeHtmlBasico(refChequeBoletoDesp(d));
+            const rawObs = String(d.observacao || '').trim();
+            const obs = escapeHtmlBasico(rawObs);
+            const obsShort = rawObs.length > 100 ? escapeHtmlBasico(rawObs.slice(0, 97)) + '…' : obs;
+            const titleObs = escapeAttrBasico(rawObs);
+            html += '<tr style="vertical-align:top;border-bottom:1px solid #eee;' + trFundo + '">';
+            html += '<td style="padding:6px;border:1px solid #eee;">' + escapeHtmlBasico(d.obra_nome || '') + '</td>';
+            html += '<td style="padding:6px;border:1px solid #eee;">' + escapeHtmlBasico(d.loja_nome || '') + '</td>';
+            html += '<td style="padding:6px;border:1px solid #eee;">' + refDoc + '</td>';
+            html += '<td style="padding:6px;border:1px solid #eee;font-weight:600;white-space:nowrap;">' + formatarVencimentoDespesaExibirHtml(d) + '</td>';
+            html += '<td style="padding:6px;border:1px solid #eee;">' + escapeHtmlBasico(diaLancamentoDespExibir(d)) + '</td>';
+            html += '<td style="padding:6px;border:1px solid #eee;white-space:nowrap;"><b>R$ ' + escapeHtmlBasico(String(d.valor_string || '0')) + '</b></td>';
+            html += '<td style="padding:6px;border:1px solid #eee;">' + badge + '</td>';
+            html += '<td style="padding:6px;border:1px solid #eee;max-width:220px;font-size:11px;color:#444;" title="' + titleObs + '">' + (obsShort || '—') + '</td>';
+            html += '<td style="padding:6px;border:1px solid #eee;min-width:128px;">';
+            html += '<button type="button" onclick="editarDespesaRelatorio(\'' + d.id + '\')" style="display:block;width:100%;margin-bottom:4px;background:#4285F4;color:#fff;border:none;padding:6px;border-radius:6px;font-size:11px;cursor:pointer;">✏️ Editar</button>';
+            if (st === 'pendente') {
+                html += '<button type="button" onclick="marcarComoPagoRelatorio(\'' + d.id + '\')" style="display:block;width:100%;margin-bottom:4px;background:#28a745;color:#fff;border:none;padding:6px;border-radius:6px;font-size:11px;cursor:pointer;">✅ Pago</button>';
+            } else {
+                html += '<button type="button" onclick="marcarComoPendenteRelatorio(\'' + d.id + '\')" style="display:block;width:100%;margin-bottom:4px;background:#ffc107;color:#333;border:none;padding:6px;border-radius:6px;font-size:11px;cursor:pointer;">↩️ Pendente</button>';
+            }
+            html += '<button type="button" onclick="excluirLinhaRelatorioDespesas(\'' + d.id + '\')" style="display:block;width:100%;background:#d9534f;color:#fff;border:none;padding:6px;border-radius:6px;font-size:11px;cursor:pointer;">🗑️ Excluir</button>';
+            html += '</td></tr>';
+        });
+        html += '</tbody></table>';
+        wrap.innerHTML = html;
+        wrap.setAttribute('data-rel-desp-carregado', '1');
     }
 
     function relatorioDespesasTemVariosAnosVencimento(arr) {
@@ -3739,7 +4051,7 @@ function separarDataSegura(dataString) {
         const formatado = formatarNomeCanonicoDespesa(valorDigitado);
         const chave = normalizarChaveNomeDespesa(valorDigitado);
         if (!chave) return formatado;
-        const cache = window._cacheNomesDespesas;
+        const cache = window._cacheNomesDespesas || window._cacheNomesRelDespesas;
         if (!cache) return formatado;
         const mapa = tipo === 'obra' ? cache.mapaObras : cache.mapaLojas;
         const hit = mapa.get(chave);
@@ -3757,10 +4069,74 @@ function separarDataSegura(dataString) {
         }
     }
 
-    function htmlBadgeCadastroDespesa(nome, tipo) {
+    function htmlItemCadastroDespesa(nome, tipo) {
         const n = escapeHtmlBasico(nome);
         const t = tipo === 'obra' ? 'obra' : 'loja';
-        return `<span class="badge-tag-wrap"><span class="badge-tag badge-tag-desp" data-nome="${n}" data-tipo="${t}">${n}</span><button type="button" class="badge-tag-excluir" data-nome="${n}" data-tipo="${t}" title="Excluir cadastro e todas as despesas deste nome">×</button></span>`;
+        return '<div class="cadastro-desp-item">'
+            + '<div role="button" tabindex="0" class="cadastro-desp-item-nome badge-tag-desp" data-nome="' + n + '" data-tipo="' + t + '" title="Buscar: ' + n + '" style="color:#1a2a43 !important;font-size:13px;font-weight:700;">' + n + '</div>'
+            + '<button type="button" class="cadastro-desp-item-del badge-tag-excluir" data-nome="' + n + '" data-tipo="' + t + '" title="Excluir cadastro" style="color:#d9534f !important;">×</button>'
+            + '</div>';
+    }
+
+    function montarPainelCadastrosDespesasHtml() {
+        return ''
+            + '<div class="painel-cadastros-desp-header">'
+            + '<span style="font-size:12px;font-weight:700;color:var(--dark-navy);">📁 Cadastros salvos</span>'
+            + '<input type="text" id="filtro-lista-cadastros-desp" placeholder="Filtrar obras e lojas..." autocomplete="off" oninput="filtrarListaCadastrosDespesas()">'
+            + '</div>'
+            + '<details class="desp-cadastro-secao" open>'
+            + '<summary>🏢 Obras <span id="contagem-obras-desp" class="desp-cadastro-contagem">0</span></summary>'
+            + '<div id="lista-cadastros-obras-desp" class="desp-cadastro-lista"></div>'
+            + '</details>'
+            + '<details class="desp-cadastro-secao">'
+            + '<summary>🏪 Lojas / Fornecedores <span id="contagem-lojas-desp" class="desp-cadastro-contagem">0</span></summary>'
+            + '<div id="lista-cadastros-lojas-desp" class="desp-cadastro-lista"></div>'
+            + '</details>'
+            + '<p class="texto-explicacao" style="margin:0;padding:8px 12px;font-size:11px;">Clique no nome para buscar. Use <b>×</b> para excluir o cadastro e todas as despesas daquele nome.</p>';
+    }
+
+    window.renderizarPainelCadastrosDespesas = function (filtroDigitado) {
+        const cache = window._cacheNomesDespesas;
+        const divObras = document.getElementById('lista-cadastros-obras-desp');
+        const divLojas = document.getElementById('lista-cadastros-lojas-desp');
+        const lblObras = document.getElementById('contagem-obras-desp');
+        const lblLojas = document.getElementById('contagem-lojas-desp');
+        if (!cache || !divObras || !divLojas) return;
+
+        const filtroEl = document.getElementById('filtro-lista-cadastros-desp');
+        const termo = normalizarChaveNomeDespesa(
+            filtroDigitado != null ? filtroDigitado : (filtroEl ? filtroEl.value : '')
+        );
+        const passaFiltro = (nome) => !termo || normalizarChaveNomeDespesa(nome).includes(termo);
+        const obrasF = cache.obras.filter(passaFiltro);
+        const lojasF = cache.lojas.filter(passaFiltro);
+
+        if (lblObras) {
+            lblObras.textContent = termo ? (obrasF.length + ' / ' + cache.obras.length) : String(cache.obras.length);
+        }
+        if (lblLojas) {
+            lblLojas.textContent = termo ? (lojasF.length + ' / ' + cache.lojas.length) : String(cache.lojas.length);
+        }
+
+        divObras.innerHTML = obrasF.length
+            ? obrasF.map((o) => htmlItemCadastroDespesa(o, 'obra')).join('')
+            : '<p class="cadastro-desp-vazio">Nenhuma obra' + (termo ? ' com este filtro' : '') + '.</p>';
+        divLojas.innerHTML = lojasF.length
+            ? lojasF.map((l) => htmlItemCadastroDespesa(l, 'loja')).join('')
+            : '<p class="cadastro-desp-vazio">Nenhuma loja' + (termo ? ' com este filtro' : '') + '.</p>';
+
+        const detLojas = divLojas.closest('details');
+        if (detLojas && termo && lojasF.length && !obrasF.length) {
+            detLojas.open = true;
+        }
+    };
+
+    window.filtrarListaCadastrosDespesas = function () {
+        renderizarPainelCadastrosDespesas();
+    };
+
+    function htmlBadgeCadastroDespesa(nome, tipo) {
+        return htmlItemCadastroDespesa(nome, tipo);
     }
 
     function despesaCombinaNomeCadastro(d, chaveAlvo, tipo) {
@@ -3863,6 +4239,11 @@ function separarDataSegura(dataString) {
         const cache = window._cacheNomesDespesas;
         if (!input || !box || !cache) return;
         const termo = normalizarChaveNomeDespesa(input.value);
+        if (document.getElementById('lista-cadastros-obras-desp')) {
+            const filtroLista = document.getElementById('filtro-lista-cadastros-desp');
+            if (filtroLista) filtroLista.value = input.value;
+            renderizarPainelCadastrosDespesas(input.value);
+        }
         if (!termo || termo.length < 1) {
             box.style.display = 'none';
             box.innerHTML = '';
@@ -3915,7 +4296,7 @@ function separarDataSegura(dataString) {
                     excluirCadastroNomeDespesa(btnDel.getAttribute('data-nome') || '', btnDel.getAttribute('data-tipo') || 'loja');
                     return;
                 }
-                const badge = ev.target.closest('.badge-tag-desp');
+                const badge = ev.target.closest('.badge-tag-desp, .cadastro-desp-item-nome');
                 if (badge) {
                     selecionarBuscaDespesa(badge.getAttribute('data-nome') || '');
                 }
@@ -3935,24 +4316,14 @@ window.carregarFiltrosDespesas = async function() {
             atualizarDatalistsNomesDespesas(cache);
 
             if (cache.obras.length === 0 && cache.lojas.length === 0) {
-                divTags.innerHTML = '<p style="font-size: 11px; color: #888;">Nenhuma obra ou loja registada.</p>';
+                divTags.innerHTML = '<p class="cadastro-desp-vazio" style="padding:16px;">Nenhuma obra ou loja registada.</p>';
                 return;
             }
 
-            let htmlObras = '<span style="font-size: 12px; font-weight: bold; width: 100%; color: var(--dark-navy);">🏢 Obras:</span>';
-            cache.obras.forEach((obra) => {
-                htmlObras += htmlBadgeCadastroDespesa(obra, 'obra');
-            });
-
-            let htmlLojas = '<span style="font-size: 12px; font-weight: bold; width: 100%; color: var(--dark-navy); margin-top: 5px;">🏪 Lojas:</span>';
-            cache.lojas.forEach((loja) => {
-                htmlLojas += htmlBadgeCadastroDespesa(loja, 'loja');
-            });
-
-            divTags.innerHTML = htmlObras + htmlLojas
-                + '<p class="texto-explicacao" style="width:100%;margin:10px 0 0;font-size:11px;">Clique na etiqueta para buscar. Use <b>×</b> para excluir o cadastro e todas as despesas daquele nome.</p>';
-        } catch (e) { 
-            divTags.innerHTML = '<p style="font-size: 11px; color: #d9534f;">Erro ao carregar locais.</p>'; 
+            divTags.innerHTML = montarPainelCadastrosDespesasHtml();
+            renderizarPainelCadastrosDespesas('');
+        } catch (e) {
+            divTags.innerHTML = '<p class="cadastro-desp-vazio" style="padding:16px;color:#d9534f;">Erro ao carregar locais.</p>';
         }
     };
 
@@ -4011,11 +4382,10 @@ window.carregarFiltrosDespesas = async function() {
 
     window.salvarDespesaLinhaRelatorio = async function () {
         const empresaLogada = localStorage.getItem('empresaGestor');
-        if (!window._cacheNomesDespesas) {
-            try {
-                const qCache = query(collection(db, "despesas_obras"), where("empresa_id", "==", empresaLogada));
-                montarCacheNomesDespesas(await getDocs(qCache));
-            } catch (e) { /* segue */ }
+        if (!window._cacheNomesRelDespesas && !window._cacheNomesDespesas) {
+            if (typeof window.carregarNomesRelatorioDespesas === 'function') {
+                await window.carregarNomesRelatorioDespesas();
+            }
         }
         const obra = resolverNomeCanonicoDespesa(document.getElementById('rd-obra').value, 'obra');
         const loja = resolverNomeCanonicoDespesa(document.getElementById('rd-loja').value, 'loja');
@@ -4071,6 +4441,9 @@ window.carregarFiltrosDespesas = async function() {
                 elLan.value = ag.getFullYear() + '-' + String(ag.getMonth() + 1).padStart(2, '0') + '-' + String(ag.getDate()).padStart(2, '0');
             }
             recarregarRelatorioDespesasTabularSeCarregado();
+            if (typeof window.carregarNomesRelatorioDespesas === 'function') {
+                window.carregarNomesRelatorioDespesas();
+            }
         } catch (e) {
             console.error(e);
             Swal.fire('Falha Técnica', 'Não foi possível salvar.', 'error');
@@ -4375,12 +4748,135 @@ window.carregarFiltrosDespesas = async function() {
                     await deleteDoc(doc(db, COLECAO_RELATORIO_DESPESAS, id));
                     Swal.fire('Apagado!', 'Linha removida do relatório.', 'success');
                     recarregarRelatorioDespesasTabularSeCarregado();
+                    if (typeof window.carregarNomesRelatorioDespesas === 'function') {
+                        window.carregarNomesRelatorioDespesas();
+                    }
                 } catch (e) {
                     Swal.fire('Erro', 'Não foi possível apagar.', 'error');
                 }
             }
         });
     };
+
+    function montarCacheNomesRelDespesasFromSnaps(snapRel, snapObra) {
+        const mapaObras = new Map();
+        const mapaLojas = new Map();
+        const processarSnap = (snap) => {
+            snap.forEach((docSnap) => {
+                const d = docSnap.data();
+                if (d.obra_nome) registrarNomeUnicoNoMapa(mapaObras, d.obra_nome);
+                if (d.loja_nome) registrarNomeUnicoNoMapa(mapaLojas, d.loja_nome);
+            });
+        };
+        processarSnap(snapRel);
+        processarSnap(snapObra);
+        const mapaTodos = new Map();
+        mapaObras.forEach((v, chave) => {
+            mapaTodos.set(chave, { canonico: v.canonico, tipo: 'obra', count: v.count });
+        });
+        mapaLojas.forEach((v, chave) => {
+            const existente = mapaTodos.get(chave);
+            if (!existente || v.count > existente.count) {
+                mapaTodos.set(chave, { canonico: v.canonico, tipo: 'loja', count: v.count });
+            }
+        });
+        const obras = Array.from(mapaObras.values()).map((x) => x.canonico).sort((a, b) => a.localeCompare(b, 'pt-BR'));
+        const lojas = Array.from(mapaLojas.values()).map((x) => x.canonico).sort((a, b) => a.localeCompare(b, 'pt-BR'));
+        const sugestoes = Array.from(mapaTodos.entries()).map(([chave, info]) => ({
+            chave,
+            nome: info.canonico,
+            tipo: info.tipo,
+            count: info.count
+        })).sort((a, b) => a.nome.localeCompare(b.nome, 'pt-BR'));
+        window._cacheNomesRelDespesas = { mapaObras, mapaLojas, mapaTodos, obras, lojas, sugestoes };
+        return window._cacheNomesRelDespesas;
+    }
+
+    window.carregarNomesRelatorioDespesas = async function () {
+        const empresaLogada = localStorage.getItem('empresaGestor');
+        if (!empresaLogada) return;
+        try {
+            const qRel = query(collection(db, COLECAO_RELATORIO_DESPESAS), where('empresa_id', '==', empresaLogada));
+            const qObra = query(collection(db, 'despesas_obras'), where('empresa_id', '==', empresaLogada));
+            const [snapRel, snapObra] = await Promise.all([getDocs(qRel), getDocs(qObra)]);
+            const cache = montarCacheNomesRelDespesasFromSnaps(snapRel, snapObra);
+            const dlObras = document.getElementById('datalist-obras-rel');
+            const dlLojas = document.getElementById('datalist-lojas-rel');
+            if (dlObras) {
+                dlObras.innerHTML = cache.obras.map((n) => `<option value="${escapeHtmlBasico(n)}"></option>`).join('');
+            }
+            if (dlLojas) {
+                dlLojas.innerHTML = cache.lojas.map((n) => `<option value="${escapeHtmlBasico(n)}"></option>`).join('');
+            }
+        } catch (e) {
+            console.error(e);
+        }
+    };
+
+    window.fecharSugestoesRelDespesas = function () {
+        const box = document.getElementById('rel-desp-filtro-sugestoes');
+        if (box) box.style.display = 'none';
+    };
+
+    window.selecionarFiltroRelDespesas = function (nome) {
+        const inp = document.getElementById('rel-desp-filtro');
+        if (inp) inp.value = nome;
+        fecharSugestoesRelDespesas();
+        carregarRelatorioDespesasTabular();
+    };
+
+    window.filtrarAutocompleteRelDespesas = function () {
+        const input = document.getElementById('rel-desp-filtro');
+        const box = document.getElementById('rel-desp-filtro-sugestoes');
+        const cache = window._cacheNomesRelDespesas;
+        if (!input || !box) return;
+        if (!cache) {
+            carregarNomesRelatorioDespesas().then(() => filtrarAutocompleteRelDespesas());
+            return;
+        }
+        const termo = normalizarChaveNomeDespesa(input.value);
+        if (!termo) {
+            box.style.display = 'none';
+            box.innerHTML = '';
+            return;
+        }
+        const matches = cache.sugestoes.filter((s) => s.chave.includes(termo)).slice(0, 15);
+        if (!matches.length) {
+            box.style.display = 'none';
+            box.innerHTML = '';
+            return;
+        }
+        box.innerHTML = matches.map((s) => {
+            const tipoLabel = s.tipo === 'obra' ? '🏢 Obra' : '🏪 Loja';
+            return `<button type="button" class="busca-desp-sugestao" data-nome="${escapeHtmlBasico(s.nome)}"><span class="busca-desp-sug-tipo">${tipoLabel}</span>${escapeHtmlBasico(s.nome)}</button>`;
+        }).join('');
+        box.style.display = 'block';
+    };
+
+    window.teclaAutocompleteRelDespesas = function (ev) {
+        if (ev.key === 'Enter') {
+            fecharSugestoesRelDespesas();
+            carregarRelatorioDespesasTabular();
+        } else if (ev.key === 'Escape') {
+            fecharSugestoesRelDespesas();
+        }
+    };
+
+    (function initAutocompleteRelDespesasGlobal() {
+        document.addEventListener('click', (ev) => {
+            const wrap = document.querySelector('#rel-desp-filtro') && document.getElementById('rel-desp-filtro').closest('.busca-despesas-wrap');
+            if (wrap && !wrap.contains(ev.target)) fecharSugestoesRelDespesas();
+        });
+        const box = document.getElementById('rel-desp-filtro-sugestoes');
+        if (box) {
+            box.addEventListener('mousedown', (ev) => {
+                const alvo = ev.target.closest('.busca-desp-sugestao');
+                if (!alvo) return;
+                ev.preventDefault();
+                selecionarFiltroRelDespesas(alvo.getAttribute('data-nome') || '');
+            });
+        }
+    })();
 
     window.carregarRelatorioDespesasTabular = async function () {
         const wrap = document.getElementById('tabela-relatorio-despesas-wrap');
@@ -4392,7 +4888,8 @@ window.carregarFiltrosDespesas = async function() {
         window._mapRelatorioDespesasParaEdicao = {};
         wrap.innerHTML = '<p style="text-align:center;color:#888;">A carregar...</p>';
 
-        const termo = (document.getElementById('rel-desp-filtro') && document.getElementById('rel-desp-filtro').value || '').trim().toLowerCase();
+        fecharSugestoesRelDespesas();
+        const termo = normalizarChaveNomeDespesa(document.getElementById('rel-desp-filtro') && document.getElementById('rel-desp-filtro').value);
         const stFiltro = (document.getElementById('rel-desp-status') && document.getElementById('rel-desp-status').value) || 'todos';
 
         try {
@@ -4401,81 +4898,20 @@ window.carregarFiltrosDespesas = async function() {
             let arr = [];
             querySnapshot.forEach(docu => arr.push({ id: docu.id, ...docu.data() }));
             arr = arr.filter(d => {
-                const o = (d.obra_lower || (d.obra_nome || '').toLowerCase());
-                const l = (d.loja_lower || (d.loja_nome || '').toLowerCase());
+                const o = normalizarChaveNomeDespesa(d.obra_nome || d.obra_lower || '');
+                const l = normalizarChaveNomeDespesa(d.loja_nome || d.loja_lower || '');
                 if (termo && !o.includes(termo) && !l.includes(termo)) return false;
                 const st = d.status === 'pago' ? 'pago' : 'pendente';
                 if (stFiltro === 'pendente' && st !== 'pendente') return false;
                 if (stFiltro === 'pago' && st !== 'pago') return false;
+                if (stFiltro === 'vencido' && (st !== 'pendente' || !despesaEstaVencida(d))) return false;
                 return true;
             });
-            ordenarRelatorioDespesasPorVencimento(arr);
-            window._despesasRelatorioExport = arr;
-            arr.forEach(d => { window._mapRelatorioDespesasParaEdicao[d.id] = d; });
-
-            if (!arr.length) {
-                wrap.innerHTML = '<p style="text-align:center;color:#888;">Nenhum registo com os filtros actuais.</p>';
-                wrap.setAttribute('data-rel-desp-carregado', '1');
-                return;
+            window._relDespDadosFiltrados = arr.slice();
+            if (stFiltro === 'vencido') {
+                window._relDespOrdemVenc = 'vencidos_topo';
             }
-
-            let html = '';
-            if (relatorioDespesasTemVariosAnosVencimento(arr)) {
-                html += '<p style="font-size:12px;background:#fff8e6;border:1px solid #ffc107;border-radius:8px;padding:10px;margin:0 0 10px 0;color:#856404;">'
-                    + '<b>Há vencimentos de anos diferentes.</b> A ordem usa o <b>ano inteiro</b>: '
-                    + 'junho de <b>2025</b> aparece antes de maio de <b>2026</b>. '
-                    + 'Datas em vermelho na coluna Vencimento já passaram.</p>';
-            }
-            html += '<table style="width:100%;border-collapse:collapse;font-size:12px;background:#fff;border:1px solid #e0e6ed;">';
-            html += '<thead><tr style="background:var(--dark-navy);color:#fff;text-align:left;">';
-            html += '<th style="padding:8px;border:1px solid #152a45;">Obra</th>';
-            html += '<th style="padding:8px;border:1px solid #152a45;">Nome (fornec.)</th>';
-            html += '<th style="padding:8px;border:1px solid #152a45;">Chq. / boleto / NF</th>';
-            html += '<th style="padding:8px;border:1px solid #152a45;" title="Tabela ordenada por esta coluna (mais antigo primeiro)">Vencimento ▲</th>';
-            html += '<th style="padding:8px;border:1px solid #152a45;">Lançamento</th>';
-            html += '<th style="padding:8px;border:1px solid #152a45;">Valor</th>';
-            html += '<th style="padding:8px;border:1px solid #152a45;">Estado</th>';
-            html += '<th style="padding:8px;border:1px solid #152a45;">Observação</th>';
-            html += '<th style="padding:8px;border:1px solid #152a45;">Acções</th></tr></thead><tbody>';
-
-            arr.forEach(d => {
-                const st = d.status === 'pago' ? 'pago' : 'pendente';
-                let badgeExtra = '';
-                if (st === 'pago' && d.comprovante_pagamento) {
-                    badgeExtra = '<br><span style="font-size:10px;color:#28a745;font-weight:700;cursor:pointer;" onclick="abrirFoto(\'' + d.comprovante_pagamento + '\')">📎 Ver comprovante</span>';
-                } else if (st === 'pago' && d.baixa_sem_comprovante) {
-                    badgeExtra = '<br><span style="font-size:10px;color:#856404;">Sem comprovante</span>';
-                }
-                const badge = st === 'pago'
-                    ? '<span style="background:#d4edda;color:#155724;padding:2px 6px;border-radius:4px;font-weight:bold;">Pago</span><br><span style="font-size:10px;color:#666;">' + escapeHtmlBasico(d.data_pagamento || '') + '</span>' + badgeExtra
-                    : '<span style="background:#fff3cd;color:#856404;padding:2px 6px;border-radius:4px;font-weight:bold;">Pendente</span>';
-                const refDoc = escapeHtmlBasico(refChequeBoletoDesp(d));
-                const rawObs = String(d.observacao || '').trim();
-                const obs = escapeHtmlBasico(rawObs);
-                const obsShort = rawObs.length > 100 ? escapeHtmlBasico(rawObs.slice(0, 97)) + '…' : obs;
-                const titleObs = escapeAttrBasico(rawObs);
-                html += '<tr style="vertical-align:top;border-bottom:1px solid #eee;">';
-                html += '<td style="padding:6px;border:1px solid #eee;">' + escapeHtmlBasico(d.obra_nome || '') + '</td>';
-                html += '<td style="padding:6px;border:1px solid #eee;">' + escapeHtmlBasico(d.loja_nome || '') + '</td>';
-                html += '<td style="padding:6px;border:1px solid #eee;">' + refDoc + '</td>';
-                html += '<td style="padding:6px;border:1px solid #eee;font-weight:600;white-space:nowrap;">' + formatarVencimentoDespesaExibirHtml(d) + '</td>';
-                html += '<td style="padding:6px;border:1px solid #eee;">' + escapeHtmlBasico(diaLancamentoDespExibir(d)) + '</td>';
-                html += '<td style="padding:6px;border:1px solid #eee;white-space:nowrap;"><b>R$ ' + escapeHtmlBasico(String(d.valor_string || '0')) + '</b></td>';
-                html += '<td style="padding:6px;border:1px solid #eee;">' + badge + '</td>';
-                html += '<td style="padding:6px;border:1px solid #eee;max-width:220px;font-size:11px;color:#444;" title="' + titleObs + '">' + (obsShort || '—') + '</td>';
-                html += '<td style="padding:6px;border:1px solid #eee;min-width:128px;">';
-                html += '<button type="button" onclick="editarDespesaRelatorio(\'' + d.id + '\')" style="display:block;width:100%;margin-bottom:4px;background:#4285F4;color:#fff;border:none;padding:6px;border-radius:6px;font-size:11px;cursor:pointer;">✏️ Editar</button>';
-                if (st === 'pendente') {
-                    html += '<button type="button" onclick="marcarComoPagoRelatorio(\'' + d.id + '\')" style="display:block;width:100%;margin-bottom:4px;background:#28a745;color:#fff;border:none;padding:6px;border-radius:6px;font-size:11px;cursor:pointer;">✅ Pago</button>';
-                } else {
-                    html += '<button type="button" onclick="marcarComoPendenteRelatorio(\'' + d.id + '\')" style="display:block;width:100%;margin-bottom:4px;background:#ffc107;color:#333;border:none;padding:6px;border-radius:6px;font-size:11px;cursor:pointer;">↩️ Pendente</button>';
-                }
-                html += '<button type="button" onclick="excluirLinhaRelatorioDespesas(\'' + d.id + '\')" style="display:block;width:100%;background:#d9534f;color:#fff;border:none;padding:6px;border-radius:6px;font-size:11px;cursor:pointer;">🗑️ Excluir</button>';
-                html += '</td></tr>';
-            });
-            html += '</tbody></table>';
-            wrap.innerHTML = html;
-            wrap.setAttribute('data-rel-desp-carregado', '1');
+            renderizarTabelaRelatorioDespesas(arr);
         } catch (e) {
             console.error(e);
             wrap.innerHTML = '<p style="text-align:center;color:#d9534f;">Erro ao carregar despesas.</p>';
@@ -4485,9 +4921,7 @@ window.carregarFiltrosDespesas = async function() {
     window.exportarPDFRelatorioDespesasTabelaAtual = function () {
         const arr = window._despesasRelatorioExport;
         if (!arr || !arr.length) return Swal.fire('Atenção', 'Carregue a tabela primeiro (botão «Carregar tabela»).', 'warning');
-        const copia = arr.slice();
-        ordenarRelatorioDespesasPorVencimento(copia);
-        window.dadosExportacaoDespesas = copia;
+        window.dadosExportacaoDespesas = arr.slice();
         exportarPDF('despesas');
     };
 
@@ -4500,12 +4934,15 @@ window.carregarFiltrosDespesas = async function() {
             .slice(0, 80);
     }
 
-    function montarDadosExcelDespesas(arr) {
+    function montarDadosExcelDespesas(arr, opts) {
         const copia = (arr || []).slice();
-        ordenarRelatorioDespesasPorVencimento(copia);
+        if (!opts || !opts.manterOrdem) {
+            ordenarRelatorioDespesasPorVencimento(copia);
+        }
         return copia.map((row) => {
             const pago = row.status === 'pago';
-            const estado = pago ? 'Pago' : 'Pendente';
+            const vencida = !pago && despesaEstaVencida(row);
+            const estado = pago ? 'Pago' : (vencida ? 'Vencida' : 'Pendente');
             const valorNum = Number(parseMoedaLocal(row.valor_string) || row.valor_numero || 0);
             let situacao = estado;
             if (!pago) {
@@ -4606,7 +5043,7 @@ window.carregarFiltrosDespesas = async function() {
         }
         const empresa = localStorage.getItem('empresaGestor') || 'Empresa';
         exportarArquivoExcelDespesas(
-            montarDadosExcelDespesas(arr),
+            montarDadosExcelDespesas(arr, { manterOrdem: true }),
             `relatorio_despesas_${empresa}`
         );
     };
@@ -4776,6 +5213,52 @@ window.carregarFiltrosDespesas = async function() {
         });
     };
 
+    window.abrirNotaResumoPorIndice = function (indice) {
+        const lista = window._notasResumoVisualizarAtual || [];
+        const item = lista[indice];
+        if (item && item.foto_recibo) abrirFoto(item.foto_recibo);
+    };
+
+    window.visualizarNotasDespesaResumo = function (chaveObra, chaveLoja) {
+        const mapKey = chaveObra + '||' + chaveLoja;
+        const lista = (window._mapDespesasResumoFornecedor && window._mapDespesasResumoFornecedor[mapKey]) || [];
+        if (!lista.length) {
+            return Swal.fire('Sem registos', 'Nenhuma despesa encontrada para este fornecedor nesta obra.', 'info');
+        }
+        const ordenada = lista.slice().sort((a, b) => {
+            const ta = dataVencimentoTsDespesa(a) || tsLancamentoDespesa(a) || 0;
+            const tb = dataVencimentoTsDespesa(b) || tsLancamentoDespesa(b) || 0;
+            return tb - ta;
+        });
+        window._notasResumoVisualizarAtual = ordenada;
+        const nomeObra = formatarNomeCanonicoDespesa(ordenada[0].obra_nome) || 'Obra';
+        const nomeLoja = formatarNomeCanonicoDespesa(ordenada[0].loja_nome) || 'Fornecedor';
+        let html = '<p style="font-size:12px;color:#666;margin:0 0 12px 0;text-align:left;"><b>' + escapeHtmlBasico(nomeObra) + '</b> — <b>' + escapeHtmlBasico(nomeLoja) + '</b><br>Clique na miniatura para ampliar a nota / recibo.</p>';
+        ordenada.forEach((d, idx) => {
+            const st = d.status === 'pago' ? 'Pago' : (despesaEstaVencida(d) ? 'Vencida' : 'Pendente');
+            const corSt = d.status === 'pago' ? '#28a745' : (despesaEstaVencida(d) ? '#dc3545' : '#856404');
+            const venc = formatarVencimentoDespesaExibir(d);
+            const fotoHtml = d.foto_recibo
+                ? '<img src="' + d.foto_recibo + '" onclick="abrirNotaResumoPorIndice(' + idx + ')" alt="Nota" style="max-width:140px;max-height:100px;object-fit:cover;border-radius:8px;border:2px solid #4285F4;cursor:pointer;margin-top:8px;" title="Clique para ampliar">'
+                : '<span style="display:inline-block;margin-top:8px;font-size:11px;color:#888;background:#f5f5f5;padding:6px 10px;border-radius:6px;">Sem foto da nota</span>';
+            html += '<div style="text-align:left;border:1px solid #e0e6ed;border-radius:10px;padding:12px;margin-bottom:10px;background:#fafcff;">'
+                + '<div style="display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap;">'
+                + '<div><b style="color:#1a2a43;">R$ ' + escapeHtmlBasico(String(d.valor_string || '0')) + '</b>'
+                + ' <span style="font-size:11px;font-weight:700;color:' + corSt + ';">' + st + '</span></div>'
+                + '<span style="font-size:11px;color:#666;">Venc.: ' + escapeHtmlBasico(venc) + '</span></div>'
+                + (d.nota_fiscal ? '<div style="font-size:11px;color:#555;margin-top:4px;">NF: ' + escapeHtmlBasico(String(d.nota_fiscal)) + '</div>' : '')
+                + (d.descricao ? '<div style="font-size:11px;color:#444;margin-top:4px;">' + escapeHtmlBasico(String(d.descricao).slice(0, 120)) + '</div>' : '')
+                + fotoHtml + '</div>';
+        });
+        Swal.fire({
+            title: '📄 Notas / Recibos',
+            html: html,
+            width: 680,
+            confirmButtonText: 'Fechar',
+            confirmButtonColor: '#1a2a43'
+        });
+    };
+
         window.gerarResumoFornecedores = async function() {
         const empresaLogada = localStorage.getItem('empresaGestor');
         const divTabela = document.getElementById('tabela-resumo-fornecedores');
@@ -4793,14 +5276,18 @@ window.carregarFiltrosDespesas = async function() {
             
             // Variáveis para Tabela e Gráfico
             let resumo = {}; 
-            let grafFornecedores = {}; 
+            let grafFornecedores = {};
+            window._mapDespesasResumoFornecedor = {};
             
             querySnapshot.forEach(doc => {
-                const d = doc.data();
+                const d = { id: doc.id, ...doc.data() };
                 const obra = formatarNomeCanonicoDespesa(d.obra_nome) || 'NÃO INFORMADA';
                 const loja = formatarNomeCanonicoDespesa(d.loja_nome) || 'NÃO INFORMADO';
                 const chaveObra = normalizarChaveNomeDespesa(d.obra_nome) || '__obra_vazia__';
                 const chaveLoja = normalizarChaveNomeDespesa(d.loja_nome) || '__loja_vazia__';
+                const mapKey = chaveObra + '||' + chaveLoja;
+                if (!window._mapDespesasResumoFornecedor[mapKey]) window._mapDespesasResumoFornecedor[mapKey] = [];
+                window._mapDespesasResumoFornecedor[mapKey].push(d);
                 const valor = d.valor_numero || 0;
                 const status = d.status || 'pendente';
                 
@@ -4830,7 +5317,7 @@ window.carregarFiltrosDespesas = async function() {
                 <thead>
                     <tr style="background: var(--dark-navy); color: white; text-align: left;">
                         <th style="padding: 12px; border: 1px solid #121e30;">🏢 Obra</th>
-                        <th style="padding: 12px; border: 1px solid #121e30;">🏪 Fornecedor</th>
+                        <th style="padding: 12px; border: 1px solid #121e30;">🏪 Fornecedor <span style="font-size:10px;font-weight:400;opacity:0.85;">(clique p/ ver nota)</span></th>
                         <th style="padding: 12px; border: 1px solid #121e30; text-align: right;">⚠️ A Pagar</th>
                         <th style="padding: 12px; border: 1px solid #121e30; text-align: right;">✅ Já Pago</th>
                     </tr>
@@ -4859,7 +5346,9 @@ window.carregarFiltrosDespesas = async function() {
                     html += `
                     <tr style="border-bottom: 1px solid #e0e6ed;">
                         <td style="padding: 12px; border: 1px solid #e0e6ed; color: var(--dark-navy); font-weight: 600;">${escapeHtmlBasico(nomeObra)}</td>
-                        <td style="padding: 12px; border: 1px solid #e0e6ed;">${escapeHtmlBasico(nomeLoja)}</td>
+                        <td style="padding: 12px; border: 1px solid #e0e6ed;">
+                            <button type="button" class="btn-link-nota-resumo" data-chave-obra="${escapeAttrBasico(chaveObra)}" data-chave-loja="${escapeAttrBasico(chaveLoja)}" style="background:none;border:none;padding:0;margin:0;color:#1565c0 !important;text-decoration:underline;cursor:pointer;font-weight:700;font-size:12px;font-family:inherit;">📄 ${escapeHtmlBasico(nomeLoja)}</button>
+                        </td>
                         <td style="padding: 12px; border: 1px solid #e0e6ed; text-align: right; ${corPendente}">${formatarMoeda(valPendente)}</td>
                         <td style="padding: 12px; border: 1px solid #e0e6ed; text-align: right; ${corPago}">${formatarMoeda(valPago)}</td>
                     </tr>
@@ -4879,6 +5368,11 @@ window.carregarFiltrosDespesas = async function() {
             </table>`;
             
             divTabela.innerHTML = html;
+            divTabela.querySelectorAll('.btn-link-nota-resumo').forEach((btn) => {
+                btn.addEventListener('click', () => {
+                    visualizarNotasDespesaResumo(btn.getAttribute('data-chave-obra') || '', btn.getAttribute('data-chave-loja') || '');
+                });
+            });
             
             // Renderizar o Gráfico após o HTML ser inserido
             setTimeout(() => {
@@ -5915,8 +6409,10 @@ window.exportarPDF = function(tipo) {
 
         if (aba === 'despesas') {
             carregarFiltrosDespesas();
-            if (typeof window.carregarRelatorioDespesasTabular === 'function') {
-                window.carregarRelatorioDespesasTabular();
+        }
+        if (aba === 'relatorio-despesas') {
+            if (typeof window.carregarNomesRelatorioDespesas === 'function') {
+                window.carregarNomesRelatorioDespesas();
             }
         }
         if (aba === 'pedidos') {
