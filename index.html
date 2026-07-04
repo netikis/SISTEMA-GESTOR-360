@@ -893,6 +893,139 @@
             padding: 12px; 
         }
 
+        .secao-despesas-busca {
+            background: transparent;
+            border: none;
+            border-radius: 0;
+            margin-bottom: 0;
+            overflow: visible;
+        }
+
+        .secao-despesas-busca summary {
+            background: transparent;
+            padding: 8px 0;
+            font-size: 14px;
+            font-weight: 700;
+            border-bottom: 2px solid;
+            margin-bottom: 8px;
+            user-select: none;
+        }
+
+        .secao-despesas-busca summary::before {
+            content: none !important;
+        }
+
+        .secao-despesas-busca.secao-vencidas summary {
+            color: #dc3545;
+            border-bottom-color: #dc3545;
+        }
+
+        .secao-despesas-busca.secao-avencer summary {
+            color: #856404;
+            border-bottom-color: #ffc107;
+        }
+
+        .secao-despesas-busca.secao-pagas summary {
+            color: #28a745;
+            border-bottom-color: #28a745;
+        }
+
+        .secao-despesas-busca .secao-seta {
+            margin-left: auto;
+            font-size: 12px;
+            transition: transform 0.2s;
+        }
+
+        .secao-despesas-busca:not([open]) .secao-seta {
+            transform: rotate(180deg);
+        }
+
+        .secao-despesas-busca .secao-despesas-conteudo {
+            padding: 0;
+            border-top: none;
+        }
+
+        .bolinha-resumo {
+            display: inline-block;
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            margin-right: 5px;
+            vertical-align: middle;
+        }
+
+        .quadro-controles-despesas {
+            margin-top: 15px;
+        }
+
+        .quadro-controles-desp-panel {
+            border: 2px solid var(--dark-navy);
+            border-radius: 12px;
+            overflow: hidden;
+            background: #f8fafc;
+            margin-bottom: 0;
+        }
+
+        .quadro-controles-desp-panel > summary {
+            background: var(--dark-navy);
+            color: #fff !important;
+            padding: 12px 16px;
+            font-size: 13px;
+            font-weight: 800;
+            letter-spacing: 0.6px;
+            text-transform: uppercase;
+            border-bottom: none;
+        }
+
+        .quadro-controles-desp-panel > summary::before {
+            content: none !important;
+        }
+
+        .quadro-controles-desp-panel > summary .quadro-controles-seta {
+            margin-left: auto;
+            font-size: 11px;
+            opacity: 0.85;
+            transition: transform 0.2s;
+        }
+
+        .quadro-controles-desp-panel:not([open]) > summary .quadro-controles-seta {
+            transform: rotate(180deg);
+        }
+
+        .quadro-controles-desp-inner {
+            padding: 12px;
+        }
+
+        .quadro-controles-desp-inner .secao-despesas-busca {
+            background: #fff;
+            border: 1px solid #e0e6ed;
+            border-radius: 10px;
+            margin-bottom: 8px;
+            overflow: hidden;
+        }
+
+        .quadro-controles-desp-inner .secao-despesas-busca:last-child {
+            margin-bottom: 0;
+        }
+
+        .quadro-controles-desp-inner .secao-despesas-busca summary {
+            background: #fafcff;
+            padding: 12px 14px;
+            margin-bottom: 0;
+            border-bottom: none;
+        }
+
+        .quadro-controles-desp-inner .secao-despesas-busca[open] summary {
+            border-bottom: 2px solid;
+        }
+
+        .quadro-controles-desp-inner .secao-despesas-busca .secao-despesas-conteudo {
+            padding: 10px 12px 12px;
+            border-top: 1px solid #e0e6ed;
+            max-height: 420px;
+            overflow-y: auto;
+        }
+
         #video-selfie { 
             width: 100%; 
             max-height: 260px;
@@ -1148,6 +1281,76 @@
             background: #fafcff;
         }
 
+        .painel-fornecedores-geral .desp-cadastro-lista,
+        .painel-fornecedores-obra .desp-cadastro-lista {
+            max-height: 320px;
+            padding: 8px;
+        }
+
+        .fornec-geral-linha {
+            margin-bottom: 4px;
+        }
+
+        .fornec-geral-linha .cadastro-desp-item-nome {
+            flex-direction: column;
+            align-items: flex-start;
+            height: auto;
+            min-height: 38px;
+            white-space: normal;
+            gap: 6px;
+        }
+
+        .fornec-geral-nome-texto {
+            display: block;
+            width: 100%;
+            color: #1a2a43 !important;
+            font-size: 13px !important;
+            font-weight: 700 !important;
+            line-height: 1.35;
+        }
+
+        .fornec-geral-detalhe-obras {
+            margin: 0 0 4px 8px;
+            border: 1px solid #e0e6ed;
+            border-radius: 8px;
+            background: #fff;
+            overflow: hidden;
+        }
+
+        .fornec-geral-detalhe-obras > summary {
+            padding: 8px 12px !important;
+            font-size: 11px !important;
+            font-weight: 600 !important;
+            background: #f5f7fa !important;
+            color: #555 !important;
+        }
+
+        .fornec-geral-detalhe-obras > summary::before {
+            content: none !important;
+        }
+
+        #tela-patrao .painel-cadastros-desp .cadastro-desp-item-nome,
+        #tela-patrao .painel-cadastros-desp .fornec-geral-nome-texto,
+        #tela-patrao .painel-cadastros-desp .fornec-geral-obra-btn {
+            color: #1a2a43 !important;
+            -webkit-text-fill-color: #1a2a43 !important;
+        }
+
+        #tela-patrao .painel-cadastros-desp .fornec-geral-tag.vencido {
+            color: #dc3545 !important;
+            -webkit-text-fill-color: #dc3545 !important;
+        }
+
+        #tela-patrao .painel-cadastros-desp .fornec-geral-tag.avencer {
+            color: #856404 !important;
+            -webkit-text-fill-color: #856404 !important;
+        }
+
+        #tela-patrao .painel-cadastros-desp .fornec-geral-tag.total {
+            color: #1a2a43 !important;
+            -webkit-text-fill-color: #1a2a43 !important;
+        }
+
         .cadastro-desp-item {
             display: grid;
             grid-template-columns: 1fr 42px;
@@ -1179,6 +1382,185 @@
         .cadastro-desp-item-nome:hover {
             background: #fff8e6;
             color: #1a2a43 !important;
+        }
+
+        .cadastro-desp-item-nome.selecionado {
+            background: #fff8e6;
+            border-left: 3px solid var(--gold);
+        }
+
+        .painel-fornecedores-obra {
+            border-top: 1px solid #e0e6ed;
+            background: #f8fafc;
+        }
+
+        .painel-fornec-obra-titulo {
+            padding: 10px 12px;
+            font-size: 12px;
+            font-weight: 700;
+            color: var(--dark-navy);
+            background: #eef2f5;
+            border-bottom: 1px solid #e0e6ed;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .btn-fornec-geral-desp {
+            width: 100%;
+            padding: 10px 12px;
+            border: 1px dashed #856404;
+            border-radius: 8px;
+            background: #fff8e6;
+            color: #856404;
+            font-size: 12px;
+            font-weight: 700;
+            cursor: pointer;
+            font-family: 'Poppins', sans-serif;
+            transition: 0.2s;
+        }
+
+        .btn-fornec-geral-desp:hover,
+        .btn-fornec-geral-desp.ativo {
+            background: #856404;
+            color: #fff;
+            border-style: solid;
+        }
+
+        .painel-fornecedores-geral {
+            border-top: 1px solid #e0e6ed;
+            background: #fffdf5;
+        }
+
+        .painel-fornec-geral-titulo {
+            padding: 10px 12px;
+            font-size: 12px;
+            font-weight: 700;
+            color: #856404;
+            background: #fff3cd;
+            border-bottom: 1px solid #ffeeba;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .fornec-geral-lista {
+            max-height: 280px;
+        }
+
+        .fornec-geral-item {
+            border: 1px solid #e0e6ed;
+            border-radius: 8px;
+            margin-bottom: 6px;
+            background: #fff;
+            overflow: hidden;
+        }
+
+        .fornec-geral-item summary {
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            gap: 6px 10px;
+            padding: 10px 12px;
+            font-size: 12px;
+            font-weight: 700;
+            cursor: pointer;
+            list-style: none;
+            background: #fff;
+        }
+
+        .fornec-geral-item summary::-webkit-details-marker {
+            display: none;
+        }
+
+        .fornec-geral-item summary::before {
+            content: none !important;
+        }
+
+        .fornec-geral-nome-btn {
+            flex: 1;
+            min-width: 120px;
+            text-align: left;
+            background: none;
+            border: none;
+            padding: 0;
+            margin: 0;
+            color: #1a2a43 !important;
+            font-weight: 700;
+            font-size: 12px;
+            cursor: pointer;
+            font-family: 'Poppins', sans-serif;
+        }
+
+        .fornec-geral-nome-btn:hover {
+            color: #856404 !important;
+            text-decoration: underline;
+        }
+
+        .fornec-geral-valores {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 6px;
+            font-size: 11px;
+            font-weight: 700;
+        }
+
+        .fornec-geral-tag {
+            padding: 2px 8px;
+            border-radius: 6px;
+            white-space: nowrap;
+        }
+
+        .fornec-geral-tag.vencido {
+            background: #f8d7da;
+            color: #dc3545;
+        }
+
+        .fornec-geral-tag.avencer {
+            background: #fff3cd;
+            color: #856404;
+        }
+
+        .fornec-geral-tag.total {
+            background: #eef2f5;
+            color: var(--dark-navy);
+        }
+
+        .fornec-geral-obras {
+            padding: 6px 10px 10px;
+            background: #fafcff;
+            border-top: 1px solid #e0e6ed;
+        }
+
+        .fornec-geral-obra-linha {
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            justify-content: space-between;
+            gap: 6px;
+            padding: 8px;
+            margin-bottom: 4px;
+            border: 1px solid #e0e6ed;
+            border-radius: 6px;
+            background: #fff;
+            font-size: 11px;
+        }
+
+        .fornec-geral-obra-btn {
+            background: none;
+            border: none;
+            padding: 0;
+            margin: 0;
+            color: #1565c0 !important;
+            font-weight: 700;
+            font-size: 11px;
+            cursor: pointer;
+            text-align: left;
+            font-family: 'Poppins', sans-serif;
+        }
+
+        .fornec-geral-obra-btn:hover {
+            text-decoration: underline;
         }
 
         #tela-patrao .gestor-sections-wrap .cadastro-desp-item-nome {
@@ -2228,6 +2610,16 @@
                     <p class="cadastro-desp-vazio">A carregar cadastros...</p>
                 </div>
 
+                <div id="quadro-controles-despesas" class="quadro-controles-despesas" style="display: none;">
+                    <details class="quadro-controles-desp-panel" open>
+                        <summary>🎛️ Quadro de Controles <span class="quadro-controles-seta">▲</span></summary>
+                        <div class="quadro-controles-desp-inner">
+                            <div id="quadro-controles-aviso"></div>
+                            <div id="quadro-controles-secoes"></div>
+                        </div>
+                    </details>
+                </div>
+
                 <div id="resumo-total-despesas" style="display: none; margin-top: 20px; background: #fff3cd; padding: 15px; border-radius: 10px; text-align: center; border: 1px solid #ffeeba;">
                     <h4 style="margin: 0; color: #856404;">Total Gasto (Pesquisa Atual):</h4>
                     <h2 style="margin: 5px 0 0 0; color: #d9534f;" id="total-gasto-display">R$ 0,00</h2>
@@ -2239,8 +2631,9 @@
                 </div>
 
                 <p class="texto-explicacao" style="margin: 10px 0 0 0;">Contas <b>vencidas</b> e <b>a vencer</b> aparecem por ordem de <b>vencimento</b> (data com ano, do mais antigo ao mais recente). O PDF da busca usa a mesma ordem.</p>
+
                 <div id="lista-despesas-resultados" style="margin-top: 15px;">
-                    <p style="text-align: center; color: #888; font-size: 13px;">Selecione uma etiqueta acima ou digite para procurar.</p>
+                    <p style="text-align: center; color: #888; font-size: 13px;">Selecione uma obra acima para ver os fornecedores e despesas.</p>
                 </div>
             </div>
 <details>
@@ -2315,6 +2708,13 @@
                     <button type="button" class="btn-pdf-relatorio" style="margin:0; background-color: var(--dark-navy);" onclick="exportarPDFRelatorioDespesasTabelaAtual()">📥 Exportar PDF (resultado da tabela)</button>
                     <button type="button" class="btn-pdf-relatorio" style="margin:0; background-color:#217346;" onclick="exportarExcelRelatorioDespesasTabelaAtual()">📊 Exportar Excel (resultado da tabela)</button>
                 </div>
+
+                <div id="resumo-total-rel-despesas" style="display: none; margin-top: 15px; background: #fff3cd; padding: 15px; border-radius: 10px; text-align: center; border: 1px solid #ffeeba;">
+                    <h4 style="margin: 0; color: #856404;">Total Gasto (Pesquisa Atual):</h4>
+                    <p id="resumo-rel-desp-subtitulo" style="margin: 4px 0 0 0; font-size: 12px; color: #666; display: none;"></p>
+                    <div id="total-gasto-display-rel-desp" style="margin-top: 8px;"></div>
+                </div>
+
                 <div id="tabela-relatorio-despesas-wrap" style="margin-top: 15px; overflow-x: auto;"></div>
             </div>
         </details>
@@ -2641,6 +3041,9 @@
     function limparCachesEmpresaGestor() {
         window._cacheNomesDespesas = null;
         window._cacheNomesRelDespesas = null;
+        window._obraSelecionadaCadastros = null;
+        window._filtroCadastroDespesa = null;
+        window._mostrarFornecedoresGeralDespesas = false;
         window._mapDespesasResumoFornecedor = {};
         window._despesasRelatorioExport = [];
         window._mapRelatorioDespesasParaEdicao = {};
@@ -3615,6 +4018,86 @@ function separarDataSegura(dataString) {
         }
     };
 
+    function calcularTotaisResumoDespesas(arr) {
+        let somaVencidas = 0;
+        let somaAVencer = 0;
+        let somaPagas = 0;
+        (arr || []).forEach((d) => {
+            const valor = Number(d.valor_numero != null ? d.valor_numero : parseMoedaLocal(d.valor_string || 0)) || 0;
+            if (d.status === 'pago') {
+                somaPagas += valor;
+            } else if (despesaEstaVencida(d)) {
+                somaVencidas += valor;
+            } else {
+                somaAVencer += valor;
+            }
+        });
+        return { somaVencidas, somaAVencer, somaPagas };
+    }
+
+    function montarHtmlPainelResumoDespesas(somaVencidas, somaAVencer, somaPagas, rotuloTotal) {
+        const label = rotuloTotal || 'Total Global da Obra/Loja:';
+        return ''
+            + '<div style="display:flex; justify-content:space-around; text-align:center; flex-wrap:wrap; gap:10px;">'
+            + '<div><span style="font-size:12px; color:#d9534f; font-weight:bold;"><span class="bolinha-resumo" style="background:#dc3545;"></span>Vencido</span><br><b style="color:#d9534f; font-size: 16px;">' + formatarMoeda(somaVencidas) + '</b></div>'
+            + '<div><span style="font-size:12px; color:#856404; font-weight:bold;"><span class="bolinha-resumo" style="background:#ffc107;"></span>A Vencer</span><br><b style="color:#856404; font-size: 16px;">' + formatarMoeda(somaAVencer) + '</b></div>'
+            + '<div><span style="font-size:12px; color:#155724; font-weight:bold;"><span class="bolinha-resumo" style="background:#28a745;"></span>Já Pago</span><br><b style="color:#28a745; font-size: 16px;">' + formatarMoeda(somaPagas) + '</b></div>'
+            + '</div>'
+            + '<div style="margin-top:15px; border-top:1px dashed #ccc; padding-top:10px; text-align:center;">'
+            + '<span style="font-size:13px; color:#555;">' + escapeHtmlBasico(label) + '</span> <b style="font-size: 16px; color: var(--dark-navy);">' + formatarMoeda(somaVencidas + somaAVencer + somaPagas) + '</b>'
+            + '</div>';
+    }
+
+    function rotuloResumoRelDespesas(arr, termo) {
+        if (!termo) {
+            return { rotuloTotal: 'Total Global (resultado da tabela):', subtitulo: '' };
+        }
+        const termoNorm = normalizarChaveNomeDespesa(termo);
+        const fornecedores = [...new Set(arr.map((d) => formatarNomeCanonicoDespesa(d.loja_nome)).filter(Boolean))];
+        const obras = [...new Set(arr.map((d) => formatarNomeCanonicoDespesa(d.obra_nome)).filter(Boolean))];
+        const fornMatch = fornecedores.filter((f) => normalizarChaveNomeDespesa(f).includes(termoNorm));
+        const obraMatch = obras.filter((o) => normalizarChaveNomeDespesa(o).includes(termoNorm));
+        if (fornMatch.length === 1 && obraMatch.length <= 1) {
+            let sub = '🏪 ' + fornMatch[0];
+            if (obraMatch.length === 1) sub += ' — 🏢 ' + obraMatch[0];
+            return { rotuloTotal: 'Total Global do Fornecedor:', subtitulo: sub };
+        }
+        if (obraMatch.length === 1 && fornMatch.length <= 1) {
+            return { rotuloTotal: 'Total Global da Obra:', subtitulo: '🏢 ' + obraMatch[0] };
+        }
+        return { rotuloTotal: 'Total Global (filtro actual):', subtitulo: 'Filtro: ' + formatarNomeCanonicoDespesa(termo) };
+    }
+
+    function atualizarPainelResumoRelDespesas(arr) {
+        const panel = document.getElementById('resumo-total-rel-despesas');
+        const display = document.getElementById('total-gasto-display-rel-desp');
+        const subEl = document.getElementById('resumo-rel-desp-subtitulo');
+        if (!panel || !display) return;
+        if (!arr || !arr.length) {
+            panel.style.display = 'none';
+            return;
+        }
+        const termo = document.getElementById('rel-desp-filtro') ? document.getElementById('rel-desp-filtro').value.trim() : '';
+        const { rotuloTotal, subtitulo } = rotuloResumoRelDespesas(arr, termo);
+        const totais = calcularTotaisResumoDespesas(arr);
+        display.innerHTML = montarHtmlPainelResumoDespesas(totais.somaVencidas, totais.somaAVencer, totais.somaPagas, rotuloTotal);
+        panel.style.display = 'block';
+        if (subEl) {
+            if (subtitulo) {
+                subEl.textContent = subtitulo;
+                subEl.style.display = 'block';
+            } else {
+                subEl.textContent = '';
+                subEl.style.display = 'none';
+            }
+        }
+    }
+
+    function ocultarPainelResumoRelDespesas() {
+        const panel = document.getElementById('resumo-total-rel-despesas');
+        if (panel) panel.style.display = 'none';
+    }
+
     function renderizarTabelaRelatorioDespesas(arrOrigem) {
         const wrap = document.getElementById('tabela-relatorio-despesas-wrap');
         if (!wrap) return;
@@ -3626,6 +4109,7 @@ function separarDataSegura(dataString) {
         if (!arr.length) {
             wrap.innerHTML = '<p style="text-align:center;color:#888;">Nenhum registo com os filtros actuais.</p>';
             wrap.setAttribute('data-rel-desp-carregado', '1');
+            ocultarPainelResumoRelDespesas();
             return;
         }
 
@@ -3682,6 +4166,7 @@ function separarDataSegura(dataString) {
         html += '</tbody></table>';
         wrap.innerHTML = html;
         wrap.setAttribute('data-rel-desp-carregado', '1');
+        atualizarPainelResumoRelDespesas(arr);
     }
 
     function relatorioDespesasTemVariosAnosVencimento(arr) {
@@ -4413,13 +4898,59 @@ function separarDataSegura(dataString) {
         }
     }
 
+    function registrarFornecedorGeralNoMapa(mapa, d) {
+        if (!d.loja_nome) return;
+        const chLoja = normalizarChaveNomeDespesa(d.loja_nome);
+        const chObra = normalizarChaveNomeDespesa(d.obra_nome || '') || '__sem_obra__';
+        const canonLoja = formatarNomeCanonicoDespesa(d.loja_nome);
+        const canonObra = formatarNomeCanonicoDespesa(d.obra_nome) || 'SEM OBRA';
+        const valor = d.valor_numero || 0;
+        const status = d.status || 'pendente';
+
+        if (!mapa.has(chLoja)) {
+            mapa.set(chLoja, { chave: chLoja, canonico: canonLoja, vencido: 0, aVencer: 0, pago: 0, obras: new Map() });
+        }
+        const forn = mapa.get(chLoja);
+        if (!forn.obras.has(chObra)) {
+            forn.obras.set(chObra, { chave: chObra, canonico: canonObra, vencido: 0, aVencer: 0, pago: 0 });
+        }
+        const obra = forn.obras.get(chObra);
+
+        if (status === 'pago') {
+            forn.pago += valor;
+            obra.pago += valor;
+        } else if (despesaEstaVencida(d)) {
+            forn.vencido += valor;
+            obra.vencido += valor;
+        } else {
+            forn.aVencer += valor;
+            obra.aVencer += valor;
+        }
+    }
+
     function montarCacheNomesDespesas(querySnapshot) {
         const mapaObras = new Map();
         const mapaLojas = new Map();
+        const mapaObraLojas = new Map();
+        const mapaFornecedorGeral = new Map();
         querySnapshot.forEach((docSnap) => {
             const d = docSnap.data();
+            registrarFornecedorGeralNoMapa(mapaFornecedorGeral, d);
             if (d.obra_nome) registrarNomeUnicoNoMapa(mapaObras, d.obra_nome);
             if (d.loja_nome) registrarNomeUnicoNoMapa(mapaLojas, d.loja_nome);
+            if (d.obra_nome && d.loja_nome) {
+                const chObra = normalizarChaveNomeDespesa(d.obra_nome);
+                const chLoja = normalizarChaveNomeDespesa(d.loja_nome);
+                if (!mapaObraLojas.has(chObra)) mapaObraLojas.set(chObra, new Map());
+                const lojasDaObra = mapaObraLojas.get(chObra);
+                const canonLoja = formatarNomeCanonicoDespesa(d.loja_nome);
+                const existenteLoja = lojasDaObra.get(chLoja);
+                if (!existenteLoja) {
+                    lojasDaObra.set(chLoja, { canonico: canonLoja, count: 1 });
+                } else {
+                    existenteLoja.count += 1;
+                }
+            }
         });
         const obras = Array.from(mapaObras.values()).map((x) => x.canonico).sort((a, b) => a.localeCompare(b, 'pt-BR'));
         const lojas = Array.from(mapaLojas.values()).map((x) => x.canonico).sort((a, b) => a.localeCompare(b, 'pt-BR'));
@@ -4440,8 +4971,22 @@ function separarDataSegura(dataString) {
             tipo: info.tipo,
             count: info.count
         })).sort((a, b) => a.nome.localeCompare(b.nome, 'pt-BR'));
-        window._cacheNomesDespesas = { mapaObras, mapaLojas, mapaTodos, obras, lojas, todos, sugestoes };
+        const listaFornecedoresGeral = Array.from(mapaFornecedorGeral.values()).sort((a, b) => {
+            const pa = a.vencido + a.aVencer;
+            const pb = b.vencido + b.aVencer;
+            if (pb !== pa) return pb - pa;
+            return a.canonico.localeCompare(b.canonico, 'pt-BR');
+        });
+        window._cacheNomesDespesas = { mapaObras, mapaLojas, mapaObraLojas, mapaFornecedorGeral, listaFornecedoresGeral, mapaTodos, obras, lojas, todos, sugestoes };
         return window._cacheNomesDespesas;
+    }
+
+    function getFornecedoresDaObra(cache, nomeObra) {
+        if (!cache || !cache.mapaObraLojas || !nomeObra) return [];
+        const chObra = normalizarChaveNomeDespesa(nomeObra);
+        const mapa = cache.mapaObraLojas.get(chObra);
+        if (!mapa) return [];
+        return Array.from(mapa.values()).map((x) => x.canonico).sort((a, b) => a.localeCompare(b, 'pt-BR'));
     }
 
     function resolverNomeCanonicoDespesa(valorDigitado, tipo) {
@@ -4466,65 +5011,187 @@ function separarDataSegura(dataString) {
         }
     }
 
-    function htmlItemCadastroDespesa(nome, tipo) {
+    function htmlItemCadastroDespesa(nome, tipo, obraPai) {
         const n = escapeHtmlBasico(nome);
         const t = tipo === 'obra' ? 'obra' : 'loja';
+        const obraAttr = obraPai ? ' data-obra="' + escapeHtmlBasico(obraPai) + '"' : '';
+        const filtro = window._filtroCadastroDespesa || {};
+        let selClass = '';
+        if (t === 'obra' && window._obraSelecionadaCadastros && formatarNomeCanonicoDespesa(nome) === formatarNomeCanonicoDespesa(window._obraSelecionadaCadastros)) {
+            selClass = ' selecionado';
+        } else if (t === 'loja' && filtro.fornecedor && formatarNomeCanonicoDespesa(nome) === formatarNomeCanonicoDespesa(filtro.fornecedor)) {
+            selClass = ' selecionado';
+        }
+        const delObraAttr = obraPai ? ' data-obra="' + escapeHtmlBasico(obraPai) + '"' : '';
         return '<div class="cadastro-desp-item">'
-            + '<div role="button" tabindex="0" class="cadastro-desp-item-nome badge-tag-desp" data-nome="' + n + '" data-tipo="' + t + '" title="Buscar: ' + n + '" style="color:#1a2a43 !important;font-size:13px;font-weight:700;">' + n + '</div>'
-            + '<button type="button" class="cadastro-desp-item-del badge-tag-excluir" data-nome="' + n + '" data-tipo="' + t + '" title="Excluir cadastro" style="color:#d9534f !important;">×</button>'
+            + '<div role="button" tabindex="0" class="cadastro-desp-item-nome badge-tag-desp' + selClass + '" data-nome="' + n + '" data-tipo="' + t + '"' + obraAttr + ' title="Buscar: ' + n + '" style="color:#1a2a43 !important;font-size:13px;font-weight:700;">' + n + '</div>'
+            + '<button type="button" class="cadastro-desp-item-del badge-tag-excluir" data-nome="' + n + '" data-tipo="' + t + '"' + delObraAttr + ' title="Excluir cadastro" style="color:#d9534f !important;">×</button>'
             + '</div>';
+    }
+
+    function htmlFornecedorGeralItem(forn) {
+        const pendente = forn.vencido + forn.aVencer;
+        const nome = escapeHtmlBasico(forn.canonico);
+        const obrasComDivida = Array.from(forn.obras.values())
+            .filter((o) => (o.vencido + o.aVencer) > 0)
+            .sort((a, b) => (b.vencido + b.aVencer) - (a.vencido + a.aVencer) || a.canonico.localeCompare(b.canonico, 'pt-BR'));
+
+        const tagsHtml = '<span class="fornec-geral-valores">'
+            + (forn.vencido > 0 ? '<span class="fornec-geral-tag vencido">Vencido: ' + formatarMoeda(forn.vencido) + '</span>' : '')
+            + (forn.aVencer > 0 ? '<span class="fornec-geral-tag avencer">A vencer: ' + formatarMoeda(forn.aVencer) + '</span>' : '')
+            + '<span class="fornec-geral-tag total">Deve: ' + formatarMoeda(pendente) + '</span>'
+            + '</span>';
+
+        let obrasHtml = obrasComDivida.map((o) => {
+            const totObra = o.vencido + o.aVencer;
+            return '<div class="fornec-geral-obra-linha">'
+                + '<button type="button" class="fornec-geral-obra-btn badge-fornec-geral-obra" data-nome="' + escapeHtmlBasico(o.canonico) + '" data-fornecedor="' + nome + '" title="Ver despesas deste fornecedor nesta obra">🏢 ' + escapeHtmlBasico(o.canonico) + '</button>'
+                + '<span class="fornec-geral-valores">'
+                + (o.vencido > 0 ? '<span class="fornec-geral-tag vencido">Venc.: ' + formatarMoeda(o.vencido) + '</span>' : '')
+                + (o.aVencer > 0 ? '<span class="fornec-geral-tag avencer">A vencer: ' + formatarMoeda(o.aVencer) + '</span>' : '')
+                + '<span class="fornec-geral-tag total">' + formatarMoeda(totObra) + '</span>'
+                + '</span></div>';
+        }).join('');
+
+        const detalheObras = obrasComDivida.length
+            ? '<details class="fornec-geral-detalhe-obras"><summary>📍 Onde está devendo (' + obrasComDivida.length + ' obra(s))</summary><div class="fornec-geral-obras">' + obrasHtml + '</div></details>'
+            : '';
+
+        return '<div class="fornec-geral-linha">'
+            + '<div class="cadastro-desp-item">'
+            + '<div role="button" tabindex="0" class="cadastro-desp-item-nome badge-fornec-geral-nome badge-tag-desp" data-nome="' + nome + '" data-tipo="loja" title="Buscar: ' + nome + '" style="color:#1a2a43 !important;font-size:13px;font-weight:700;">'
+            + '<span class="fornec-geral-nome-texto">🏪 ' + nome + '</span>'
+            + tagsHtml
+            + '</div></div>'
+            + detalheObras
+            + '</div>';
+    }
+
+    function termoFiltroListaCadastrosDesp(termo, obraSelecionada) {
+        if (!termo) return '';
+        if (obraSelecionada && termo === normalizarChaveNomeDespesa(obraSelecionada)) return '';
+        return termo;
     }
 
     function montarPainelCadastrosDespesasHtml() {
         return ''
             + '<div class="painel-cadastros-desp-header">'
             + '<span style="font-size:12px;font-weight:700;color:var(--dark-navy);">📁 Cadastros salvos</span>'
-            + '<input type="text" id="filtro-lista-cadastros-desp" placeholder="Filtrar obras e lojas..." autocomplete="off" oninput="filtrarListaCadastrosDespesas()">'
+            + '<input type="text" id="filtro-lista-cadastros-desp" placeholder="Filtrar obras ou fornecedores..." autocomplete="off" oninput="filtrarListaCadastrosDespesas()">'
             + '</div>'
             + '<details class="desp-cadastro-secao" open>'
             + '<summary>🏢 Obras <span id="contagem-obras-desp" class="desp-cadastro-contagem">0</span></summary>'
             + '<div id="lista-cadastros-obras-desp" class="desp-cadastro-lista"></div>'
             + '</details>'
-            + '<details class="desp-cadastro-secao">'
-            + '<summary>🏪 Lojas / Fornecedores <span id="contagem-lojas-desp" class="desp-cadastro-contagem">0</span></summary>'
+            + '<div style="padding:8px 12px;border-top:1px solid #e0e6ed;background:#fff;">'
+            + '<button type="button" id="btn-fornec-geral-desp" class="btn-fornec-geral-desp" onclick="togglePainelFornecedoresGeralDespesas()">📋 Ver fornecedores geral (quanto está devendo)</button>'
+            + '</div>'
+            + '<div id="painel-fornecedores-geral-desp" class="painel-fornecedores-geral" style="display:none;">'
+            + '<div class="painel-fornec-geral-titulo">📋 Fornecedores — visão geral <span id="contagem-fornec-geral-desp" class="desp-cadastro-contagem">0</span></div>'
+            + '<div id="lista-fornecedores-geral-desp" class="desp-cadastro-lista fornec-geral-lista"></div>'
+            + '</div>'
+            + '<div id="painel-fornecedores-obra-desp" class="painel-fornecedores-obra" style="display:none;">'
+            + '<div class="painel-fornec-obra-titulo">🏪 Fornecedores de <span id="nome-obra-selecionada-desp"></span> <span id="contagem-lojas-desp" class="desp-cadastro-contagem">0</span></div>'
             + '<div id="lista-cadastros-lojas-desp" class="desp-cadastro-lista"></div>'
-            + '</details>'
-            + '<p class="texto-explicacao" style="margin:0;padding:8px 12px;font-size:11px;">Clique no nome para buscar. Use <b>×</b> para excluir o cadastro e todas as despesas daquele nome.</p>';
+            + '</div>'
+            + '<p class="texto-explicacao" style="margin:0;padding:8px 12px;font-size:11px;">Clique numa <b>obra</b> para ver os fornecedores dela. Use <b>Ver fornecedores geral</b> para saber quanto deve em todas as obras. Use <b>×</b> para excluir.</p>';
     }
+
+    window.togglePainelFornecedoresGeralDespesas = function () {
+        window._mostrarFornecedoresGeralDespesas = !window._mostrarFornecedoresGeralDespesas;
+        const btn = document.getElementById('btn-fornec-geral-desp');
+        if (btn) {
+            btn.textContent = window._mostrarFornecedoresGeralDespesas
+                ? '✕ Ocultar fornecedores geral'
+                : '📋 Ver fornecedores geral (quanto está devendo)';
+            btn.classList.toggle('ativo', window._mostrarFornecedoresGeralDespesas);
+        }
+        renderizarPainelCadastrosDespesas();
+    };
 
     window.renderizarPainelCadastrosDespesas = function (filtroDigitado) {
         const cache = window._cacheNomesDespesas;
         const divObras = document.getElementById('lista-cadastros-obras-desp');
         const divLojas = document.getElementById('lista-cadastros-lojas-desp');
+        const divFornGeral = document.getElementById('lista-fornecedores-geral-desp');
+        const painelForn = document.getElementById('painel-fornecedores-obra-desp');
+        const painelFornGeral = document.getElementById('painel-fornecedores-geral-desp');
         const lblObras = document.getElementById('contagem-obras-desp');
         const lblLojas = document.getElementById('contagem-lojas-desp');
-        if (!cache || !divObras || !divLojas) return;
+        const lblFornGeral = document.getElementById('contagem-fornec-geral-desp');
+        const lblObraSel = document.getElementById('nome-obra-selecionada-desp');
+        const btnFornGeral = document.getElementById('btn-fornec-geral-desp');
+        if (!cache || !divObras) return;
+
+        if (btnFornGeral) {
+            btnFornGeral.classList.toggle('ativo', !!window._mostrarFornecedoresGeralDespesas);
+            btnFornGeral.textContent = window._mostrarFornecedoresGeralDespesas
+                ? '✕ Ocultar fornecedores geral'
+                : '📋 Ver fornecedores geral (quanto está devendo)';
+        }
 
         const filtroEl = document.getElementById('filtro-lista-cadastros-desp');
-        const termo = normalizarChaveNomeDespesa(
+        const termoBruto = normalizarChaveNomeDespesa(
             filtroDigitado != null ? filtroDigitado : (filtroEl ? filtroEl.value : '')
         );
-        const passaFiltro = (nome) => !termo || normalizarChaveNomeDespesa(nome).includes(termo);
+        const termoFornObra = termoFiltroListaCadastrosDesp(termoBruto, window._obraSelecionadaCadastros);
+        const passaFiltro = (nome) => !termoBruto || normalizarChaveNomeDespesa(nome).includes(termoBruto);
+        const passaFiltroFornObra = (nome) => !termoFornObra || normalizarChaveNomeDespesa(nome).includes(termoFornObra);
         const obrasF = cache.obras.filter(passaFiltro);
-        const lojasF = cache.lojas.filter(passaFiltro);
+
+        if (window._obraSelecionadaCadastros) {
+            const chSel = normalizarChaveNomeDespesa(window._obraSelecionadaCadastros);
+            const aindaExiste = cache.obras.some((o) => normalizarChaveNomeDespesa(o) === chSel);
+            if (!aindaExiste) {
+                window._obraSelecionadaCadastros = null;
+                window._filtroCadastroDespesa = null;
+            }
+        }
 
         if (lblObras) {
-            lblObras.textContent = termo ? (obrasF.length + ' / ' + cache.obras.length) : String(cache.obras.length);
-        }
-        if (lblLojas) {
-            lblLojas.textContent = termo ? (lojasF.length + ' / ' + cache.lojas.length) : String(cache.lojas.length);
+            lblObras.textContent = termoBruto ? (obrasF.length + ' / ' + cache.obras.length) : String(cache.obras.length);
         }
 
         divObras.innerHTML = obrasF.length
             ? obrasF.map((o) => htmlItemCadastroDespesa(o, 'obra')).join('')
-            : '<p class="cadastro-desp-vazio">Nenhuma obra' + (termo ? ' com este filtro' : '') + '.</p>';
-        divLojas.innerHTML = lojasF.length
-            ? lojasF.map((l) => htmlItemCadastroDespesa(l, 'loja')).join('')
-            : '<p class="cadastro-desp-vazio">Nenhuma loja' + (termo ? ' com este filtro' : '') + '.</p>';
+            : '<p class="cadastro-desp-vazio">Nenhuma obra' + (termoBruto ? ' com este filtro' : '') + '.</p>';
 
-        const detLojas = divLojas.closest('details');
-        if (detLojas && termo && lojasF.length && !obrasF.length) {
-            detLojas.open = true;
+        if (window._mostrarFornecedoresGeralDespesas && painelFornGeral && divFornGeral) {
+            const listaGeral = (cache.listaFornecedoresGeral || []).filter((f) => {
+                const pendente = f.vencido + f.aVencer;
+                if (pendente <= 0) return false;
+                if (!termoBruto) return true;
+                if (passaFiltro(f.canonico)) return true;
+                return Array.from(f.obras.values()).some((o) => passaFiltro(o.canonico));
+            });
+            painelFornGeral.style.display = 'block';
+            if (lblFornGeral) {
+                lblFornGeral.textContent = termoBruto
+                    ? (listaGeral.length + ' c/ dívida')
+                    : (listaGeral.length + ' c/ dívida');
+            }
+            divFornGeral.innerHTML = listaGeral.length
+                ? listaGeral.map((f) => htmlFornecedorGeralItem(f)).join('')
+                : '<p class="cadastro-desp-vazio">Nenhum fornecedor com pendências' + (termoBruto ? ' com este filtro' : '') + '.</p>';
+        } else if (painelFornGeral) {
+            painelFornGeral.style.display = 'none';
+            if (divFornGeral) divFornGeral.innerHTML = '';
+        }
+
+        if (window._obraSelecionadaCadastros && painelForn && divLojas) {
+            const lojasObra = getFornecedoresDaObra(cache, window._obraSelecionadaCadastros);
+            const lojasF = lojasObra.filter(passaFiltroFornObra);
+            painelForn.style.display = 'block';
+            if (lblObraSel) lblObraSel.textContent = window._obraSelecionadaCadastros;
+            if (lblLojas) {
+                lblLojas.textContent = termoFornObra ? (lojasF.length + ' / ' + lojasObra.length) : String(lojasObra.length);
+            }
+            divLojas.innerHTML = lojasF.length
+                ? lojasF.map((l) => htmlItemCadastroDespesa(l, 'loja', window._obraSelecionadaCadastros)).join('')
+                : '<p class="cadastro-desp-vazio">Nenhum fornecedor nesta obra' + (termoFornObra ? ' com este filtro' : '') + '.</p>';
+        } else if (painelForn) {
+            painelForn.style.display = 'none';
+            if (divLojas) divLojas.innerHTML = '';
         }
     };
 
@@ -4543,12 +5210,13 @@ function separarDataSegura(dataString) {
         return normalizarChaveNomeDespesa(d.loja_nome || d.loja_lower || '') === chaveAlvo;
     }
 
-    window.excluirCadastroNomeDespesa = async function (nome, tipo) {
+    window.excluirCadastroNomeDespesa = async function (nome, tipo, obraContexto) {
         const chaveAlvo = normalizarChaveNomeDespesa(nome);
         if (!chaveAlvo) return;
         const empresaLogada = getEmpresaGestor();
         const tipoLabel = tipo === 'obra' ? 'Obra' : 'Loja';
         const nomeExibir = formatarNomeCanonicoDespesa(nome);
+        const chObraCtx = obraContexto ? normalizarChaveNomeDespesa(obraContexto) : '';
 
         Swal.fire({ title: 'A verificar despesas...', allowOutsideClick: false });
         Swal.showLoading();
@@ -4558,7 +5226,13 @@ function separarDataSegura(dataString) {
             const snap = await getDocs(q);
             const paraApagar = [];
             snap.forEach((docSnap) => {
-                if (despesaCombinaNomeCadastro(docSnap.data(), chaveAlvo, tipo)) {
+                const data = docSnap.data();
+                if (tipo === 'loja' && chObraCtx) {
+                    if (despesaCombinaNomeCadastro(data, chaveAlvo, 'loja')
+                        && normalizarChaveNomeDespesa(data.obra_nome || data.obra_lower || '') === chObraCtx) {
+                        paraApagar.push(docSnap.id);
+                    }
+                } else if (despesaCombinaNomeCadastro(data, chaveAlvo, tipo)) {
                     paraApagar.push(docSnap.id);
                 }
             });
@@ -4568,9 +5242,12 @@ function separarDataSegura(dataString) {
                 return Swal.fire('Nada a apagar', 'Nenhuma despesa encontrada com este nome.', 'info');
             }
 
+            const escopoHtml = (tipo === 'loja' && obraContexto)
+                ? `<br>Escopo: fornecedor <b>${escapeHtmlBasico(nomeExibir)}</b> na obra <b>${escapeHtmlBasico(formatarNomeCanonicoDespesa(obraContexto))}</b>.`
+                : '';
             const confirmacao = await Swal.fire({
                 title: 'Excluir cadastro?',
-                html: `Excluir o cadastro <b>${escapeHtmlBasico(nomeExibir)}</b> (${tipoLabel})?<br><br>Serão apagadas <b>${paraApagar.length}</b> despesa(s) vinculadas a este nome.<br><span style="color:#d9534f;font-weight:bold;">Esta ação não pode ser desfeita.</span><br><br>Digite <b>APAGAR</b> para confirmar.`,
+                html: `Excluir o cadastro <b>${escapeHtmlBasico(nomeExibir)}</b> (${tipoLabel})?${escopoHtml}<br><br>Serão apagadas <b>${paraApagar.length}</b> despesa(s) vinculadas.<br><span style="color:#d9534f;font-weight:bold;">Esta ação não pode ser desfeita.</span><br><br>Digite <b>APAGAR</b> para confirmar.`,
                 icon: 'warning',
                 input: 'text',
                 inputPlaceholder: 'APAGAR',
@@ -4597,12 +5274,18 @@ function separarDataSegura(dataString) {
             }
 
             const busca = document.getElementById('busca-obra');
-            if (busca && normalizarChaveNomeDespesa(busca.value) === chaveAlvo) {
-                busca.value = '';
+            const limparBusca = (busca && normalizarChaveNomeDespesa(busca.value) === chaveAlvo)
+                || (tipo === 'obra' && window._obraSelecionadaCadastros && normalizarChaveNomeDespesa(window._obraSelecionadaCadastros) === chaveAlvo)
+                || (tipo === 'loja' && window._filtroCadastroDespesa && window._filtroCadastroDespesa.fornecedor && normalizarChaveNomeDespesa(window._filtroCadastroDespesa.fornecedor) === chaveAlvo);
+            if (limparBusca) {
+                if (busca) busca.value = '';
+                window._obraSelecionadaCadastros = null;
+                window._filtroCadastroDespesa = null;
                 const divLista = document.getElementById('lista-despesas-resultados');
                 if (divLista) {
-                    divLista.innerHTML = '<p style="text-align: center; color: #888; font-size: 13px;">Selecione uma etiqueta acima ou digite para procurar.</p>';
+                    divLista.innerHTML = '<p style="text-align: center; color: #888; font-size: 13px;">Selecione uma obra acima para ver os fornecedores e despesas.</p>';
                 }
+                ocultarQuadroControlesDespesas();
                 const divTotal = document.getElementById('resumo-total-despesas');
                 if (divTotal) divTotal.style.display = 'none';
                 const btnPdf = document.getElementById('btnExportarDespesas');
@@ -4623,9 +5306,49 @@ function separarDataSegura(dataString) {
         if (box) box.style.display = 'none';
     };
 
-    window.selecionarBuscaDespesa = function (nome) {
+    window.selecionarObraDespesa = function (nome) {
+        window._obraSelecionadaCadastros = formatarNomeCanonicoDespesa(nome);
+        window._filtroCadastroDespesa = { obra: window._obraSelecionadaCadastros, fornecedor: null };
+        const inp = document.getElementById('busca-obra');
+        if (inp) inp.value = window._obraSelecionadaCadastros;
+        fecharSugestoesBuscaDespesas();
+        renderizarPainelCadastrosDespesas(document.getElementById('filtro-lista-cadastros-desp') ? document.getElementById('filtro-lista-cadastros-desp').value : '');
+        buscarDespesasObra();
+    };
+
+    window.selecionarFornecedorDespesa = function (fornecedor, obra) {
+        const obraNome = formatarNomeCanonicoDespesa(obra || window._obraSelecionadaCadastros || '');
+        const fornNome = formatarNomeCanonicoDespesa(fornecedor);
+        if (!obraNome) return selecionarBuscaDespesa(fornNome, 'loja');
+        window._obraSelecionadaCadastros = obraNome;
+        window._filtroCadastroDespesa = { obra: obraNome, fornecedor: fornNome };
+        const inp = document.getElementById('busca-obra');
+        if (inp) inp.value = fornNome;
+        fecharSugestoesBuscaDespesas();
+        renderizarPainelCadastrosDespesas(document.getElementById('filtro-lista-cadastros-desp') ? document.getElementById('filtro-lista-cadastros-desp').value : '');
+        buscarDespesasObra();
+    };
+
+    window.selecionarBuscaDespesa = function (nome, tipo) {
+        const t = tipo || '';
+        if (t === 'obra') {
+            selecionarObraDespesa(nome);
+            return;
+        }
+        if (t === 'loja') {
+            window._obraSelecionadaCadastros = null;
+            window._filtroCadastroDespesa = { obra: null, fornecedor: formatarNomeCanonicoDespesa(nome) };
+            const inp = document.getElementById('busca-obra');
+            if (inp) inp.value = formatarNomeCanonicoDespesa(nome);
+            fecharSugestoesBuscaDespesas();
+            renderizarPainelCadastrosDespesas(document.getElementById('filtro-lista-cadastros-desp') ? document.getElementById('filtro-lista-cadastros-desp').value : '');
+            buscarDespesasObra();
+            return;
+        }
         const inp = document.getElementById('busca-obra');
         if (inp) inp.value = nome;
+        window._obraSelecionadaCadastros = null;
+        window._filtroCadastroDespesa = null;
         fecharSugestoesBuscaDespesas();
         buscarDespesasObra();
     };
@@ -4637,9 +5360,7 @@ function separarDataSegura(dataString) {
         if (!input || !box || !cache) return;
         const termo = normalizarChaveNomeDespesa(input.value);
         if (document.getElementById('lista-cadastros-obras-desp')) {
-            const filtroLista = document.getElementById('filtro-lista-cadastros-desp');
-            if (filtroLista) filtroLista.value = input.value;
-            renderizarPainelCadastrosDespesas(input.value);
+            renderizarPainelCadastrosDespesas(document.getElementById('filtro-lista-cadastros-desp') ? document.getElementById('filtro-lista-cadastros-desp').value : '');
         }
         if (!termo || termo.length < 1) {
             box.style.display = 'none';
@@ -4654,7 +5375,7 @@ function separarDataSegura(dataString) {
         }
         box.innerHTML = matches.map((s) => {
             const tipoLabel = s.tipo === 'obra' ? '🏢 Obra' : '🏪 Loja';
-            return `<button type="button" class="busca-desp-sugestao" data-nome="${escapeHtmlBasico(s.nome)}"><span class="busca-desp-sug-tipo">${tipoLabel}</span>${escapeHtmlBasico(s.nome)}</button>`;
+            return `<button type="button" class="busca-desp-sugestao" data-nome="${escapeHtmlBasico(s.nome)}" data-tipo="${s.tipo}"><span class="busca-desp-sug-tipo">${tipoLabel}</span>${escapeHtmlBasico(s.nome)}</button>`;
         }).join('');
         box.style.display = 'block';
     };
@@ -4679,23 +5400,53 @@ function separarDataSegura(dataString) {
                 const alvo = ev.target.closest('.busca-desp-sugestao');
                 if (!alvo) return;
                 ev.preventDefault();
-                selecionarBuscaDespesa(alvo.getAttribute('data-nome') || '');
+                selecionarBuscaDespesa(alvo.getAttribute('data-nome') || '', alvo.getAttribute('data-tipo') || '');
             });
         }
         const divTags = document.getElementById('tags-filtros-despesas');
         if (divTags && !divTags._delegacaoOk) {
             divTags._delegacaoOk = true;
             divTags.addEventListener('click', (ev) => {
+                const btnNomeGeral = ev.target.closest('.badge-fornec-geral-nome');
+                if (btnNomeGeral) {
+                    ev.preventDefault();
+                    ev.stopPropagation();
+                    selecionarBuscaDespesa(btnNomeGeral.getAttribute('data-nome') || '', 'loja');
+                    return;
+                }
+                const btnObraGeral = ev.target.closest('.badge-fornec-geral-obra');
+                if (btnObraGeral) {
+                    ev.preventDefault();
+                    ev.stopPropagation();
+                    selecionarFornecedorDespesa(
+                        btnObraGeral.getAttribute('data-fornecedor') || '',
+                        btnObraGeral.getAttribute('data-nome') || ''
+                    );
+                    return;
+                }
                 const btnDel = ev.target.closest('.badge-tag-excluir');
                 if (btnDel) {
                     ev.preventDefault();
                     ev.stopPropagation();
-                    excluirCadastroNomeDespesa(btnDel.getAttribute('data-nome') || '', btnDel.getAttribute('data-tipo') || 'loja');
+                    excluirCadastroNomeDespesa(
+                        btnDel.getAttribute('data-nome') || '',
+                        btnDel.getAttribute('data-tipo') || 'loja',
+                        btnDel.getAttribute('data-obra') || ''
+                    );
                     return;
                 }
                 const badge = ev.target.closest('.badge-tag-desp, .cadastro-desp-item-nome');
                 if (badge) {
-                    selecionarBuscaDespesa(badge.getAttribute('data-nome') || '');
+                    const nome = badge.getAttribute('data-nome') || '';
+                    const tipo = badge.getAttribute('data-tipo') || 'obra';
+                    const obra = badge.getAttribute('data-obra') || '';
+                    if (tipo === 'loja' && obra) {
+                        selecionarFornecedorDespesa(nome, obra);
+                    } else if (tipo === 'obra') {
+                        selecionarObraDespesa(nome);
+                    } else {
+                        selecionarBuscaDespesa(nome, tipo);
+                    }
                 }
             });
         }
@@ -5281,6 +6032,7 @@ window.carregarFiltrosDespesas = async function() {
         if (!empresaLogada) return Swal.fire('Atenção', 'Empresa não definida.', 'warning');
         if (!wrap) return;
         wrap.removeAttribute('data-rel-desp-carregado');
+        ocultarPainelResumoRelDespesas();
         window._despesasRelatorioExport = [];
         window._mapRelatorioDespesasParaEdicao = {};
         wrap.innerHTML = '<p style="text-align:center;color:#888;">A carregar...</p>';
@@ -5311,6 +6063,7 @@ window.carregarFiltrosDespesas = async function() {
             renderizarTabelaRelatorioDespesas(arr);
         } catch (e) {
             console.error(e);
+            ocultarPainelResumoRelDespesas();
             wrap.innerHTML = '<p style="text-align:center;color:#d9534f;">Erro ao carregar despesas.</p>';
         }
     };
@@ -5445,11 +6198,64 @@ window.carregarFiltrosDespesas = async function() {
         );
     };
 
+    function ocultarQuadroControlesDespesas() {
+        const quadro = document.getElementById('quadro-controles-despesas');
+        const divSecoes = document.getElementById('quadro-controles-secoes');
+        const divAviso = document.getElementById('quadro-controles-aviso');
+        if (quadro) quadro.style.display = 'none';
+        if (divSecoes) divSecoes.innerHTML = '';
+        if (divAviso) divAviso.innerHTML = '';
+    }
+
+    function renderizarQuadroControlesDespesas(htmlVencidas, htmlAVencer, htmlPagas, avisoAnosHtml) {
+        const quadro = document.getElementById('quadro-controles-despesas');
+        const divSecoes = document.getElementById('quadro-controles-secoes');
+        const divAviso = document.getElementById('quadro-controles-aviso');
+        if (!quadro || !divSecoes) return;
+
+        let html = '';
+        if (htmlVencidas) {
+            html += `<details class="secao-despesas-busca secao-vencidas"><summary>🔴 Contas Vencidas — por vencimento <span class="secao-seta">▲</span></summary><div class="secao-despesas-conteudo">${htmlVencidas}</div></details>`;
+        }
+        if (htmlAVencer) {
+            html += `<details class="secao-despesas-busca secao-avencer"><summary>🟡 Contas a Vencer (No Prazo) — por vencimento <span class="secao-seta">▲</span></summary><div class="secao-despesas-conteudo">${htmlAVencer}</div></details>`;
+        }
+        if (htmlPagas) {
+            html += `<details class="secao-despesas-busca secao-pagas"><summary>🟢 Histórico de Contas Pagas <span class="secao-seta">▲</span></summary><div class="secao-despesas-conteudo">${htmlPagas}</div></details>`;
+        }
+
+        if (!html) {
+            ocultarQuadroControlesDespesas();
+            return;
+        }
+
+        quadro.style.display = 'block';
+        if (divAviso) divAviso.innerHTML = avisoAnosHtml || '';
+        divSecoes.innerHTML = html;
+    }
+
  window.buscarDespesasObra = async function() {
-        const termoBusca = normalizarChaveNomeDespesa(document.getElementById('busca-obra').value);
+        const inputEl = document.getElementById('busca-obra');
+        const termoBusca = normalizarChaveNomeDespesa(inputEl ? inputEl.value : '');
         const empresaLogada = getEmpresaGestor();
-        
-        if (!termoBusca) return Swal.fire('Atenção', 'Digite o nome da obra ou da loja para procurar.', 'warning');
+
+        let filtroAtual = window._filtroCadastroDespesa;
+        if (filtroAtual) {
+            if (filtroAtual.fornecedor && termoBusca !== normalizarChaveNomeDespesa(filtroAtual.fornecedor)) {
+                if (!filtroAtual.obra || termoBusca !== normalizarChaveNomeDespesa(filtroAtual.obra)) {
+                    window._filtroCadastroDespesa = null;
+                    filtroAtual = null;
+                }
+            } else if (filtroAtual.obra && !filtroAtual.fornecedor && termoBusca !== normalizarChaveNomeDespesa(filtroAtual.obra)) {
+                window._filtroCadastroDespesa = null;
+                filtroAtual = null;
+            }
+        }
+        filtroAtual = window._filtroCadastroDespesa;
+
+        if (!termoBusca && !(filtroAtual && filtroAtual.obra)) {
+            return Swal.fire('Atenção', 'Digite o nome da obra ou selecione uma obra acima.', 'warning');
+        }
 
         fecharSugestoesBuscaDespesas();
 
@@ -5458,7 +6264,9 @@ window.carregarFiltrosDespesas = async function() {
         const btnExportar = document.getElementById('btnExportarDespesas');
         const btnExportarExcel = document.getElementById('btnExportarDespesasExcel');
         
-        divLista.innerHTML = "A procurar relatórios..."; divTotal.style.display = 'none';
+        divLista.innerHTML = "A procurar relatórios...";
+        ocultarQuadroControlesDespesas();
+        divTotal.style.display = 'none';
         if (btnExportar) btnExportar.style.display = 'none';
         if (btnExportarExcel) btnExportarExcel.style.display = 'none';
 
@@ -5477,12 +6285,25 @@ window.carregarFiltrosDespesas = async function() {
                 const d = { id: doc.id, ...doc.data() };
                 const nomeDaObraParaBusca = normalizarChaveNomeDespesa(d.obra_nome || d.obra_lower || '');
                 const nomeDaLojaParaBusca = normalizarChaveNomeDespesa(d.loja_nome || d.loja_lower || '');
-                if (nomeDaObraParaBusca.includes(termoBusca) || nomeDaLojaParaBusca.includes(termoBusca)) {
-                    matching.push(d);
+                let match = false;
+                if (filtroAtual && filtroAtual.obra && filtroAtual.fornecedor) {
+                    match = nomeDaObraParaBusca === normalizarChaveNomeDespesa(filtroAtual.obra)
+                        && nomeDaLojaParaBusca === normalizarChaveNomeDespesa(filtroAtual.fornecedor);
+                } else if (filtroAtual && filtroAtual.obra) {
+                    match = nomeDaObraParaBusca === normalizarChaveNomeDespesa(filtroAtual.obra);
+                } else if (filtroAtual && filtroAtual.fornecedor) {
+                    match = nomeDaLojaParaBusca === normalizarChaveNomeDespesa(filtroAtual.fornecedor);
+                } else {
+                    match = nomeDaObraParaBusca.includes(termoBusca) || nomeDaLojaParaBusca.includes(termoBusca);
                 }
+                if (match) matching.push(d);
             });
 
-            if (!matching.length) { divLista.innerHTML = `<p style="color:#d9534f; text-align:center;">Nenhuma despesa encontrada.</p>`; return; }
+            if (!matching.length) {
+                ocultarQuadroControlesDespesas();
+                divLista.innerHTML = `<p style="color:#d9534f; text-align:center;">Nenhuma despesa encontrada.</p>`;
+                return;
+            }
 
             encontrou = true;
             ordenarRelatorioDespesasPorVencimento(matching);
@@ -5572,28 +6393,18 @@ window.carregarFiltrosDespesas = async function() {
             });
 
             // Atualiza o painel amarelo de resumo dividindo Vencido, a Vencer e Pago
-            document.getElementById('total-gasto-display').innerHTML = `
-                <div style="display:flex; justify-content:space-around; text-align:center;">
-                    <div><span style="font-size:12px; color:#d9534f; font-weight:bold;">Atrasado</span><br><b style="color:#d9534f; font-size: 16px;">${formatarMoeda(somaVencidas)}</b></div>
-                    <div><span style="font-size:12px; color:#856404; font-weight:bold;">A Vencer</span><br><b style="color:#856404; font-size: 16px;">${formatarMoeda(somaAVencer)}</b></div>
-                    <div><span style="font-size:12px; color:#155724; font-weight:bold;">Já Pago</span><br><b style="color:#28a745; font-size: 16px;">${formatarMoeda(somaPagas)}</b></div>
-                </div>
-                <div style="margin-top:15px; border-top:1px dashed #ccc; padding-top:10px; text-align:center;">
-                    <span style="font-size:13px; color:#555;">Total Global da Obra/Loja:</span> <b style="font-size: 16px; color: var(--dark-navy);">${formatarMoeda(somaVencidas + somaAVencer + somaPagas)}</b>
-                </div>
-            `;
+            document.getElementById('total-gasto-display').innerHTML = montarHtmlPainelResumoDespesas(somaVencidas, somaAVencer, somaPagas, 'Total Global da Obra/Loja:');
             
             divTotal.style.display = 'block';
             if (btnExportar) btnExportar.style.display = 'inline-block';
             if (btnExportarExcel) btnExportarExcel.style.display = 'inline-block';
-            divLista.innerHTML = avisoAnosHtml;
-            
-            // Renderiza na tela em três seções diferentes (pendentes já em ordem de vencimento)
-            if (htmlVencidas !== "") divLista.innerHTML += `<h4 style="margin: 10px 0 5px 0; color: #dc3545; border-bottom: 2px solid #dc3545; padding-bottom: 5px;">🔴 Contas Vencidas (Atrasadas) — por vencimento ▲</h4>` + htmlVencidas;
-            if (htmlAVencer !== "") divLista.innerHTML += `<h4 style="margin: 30px 0 5px 0; color: #ffc107; border-bottom: 2px solid #ffc107; padding-bottom: 5px;">🟡 Contas a Vencer (No Prazo) — por vencimento ▲</h4>` + htmlAVencer;
-            if (htmlPagas !== "") divLista.innerHTML += `<h4 style="margin: 30px 0 5px 0; color: #28a745; border-bottom: 2px solid #28a745; padding-bottom: 5px;">✅ Histórico de Contas Pagas</h4>` + htmlPagas;
+            divLista.innerHTML = '';
+            renderizarQuadroControlesDespesas(htmlVencidas, htmlAVencer, htmlPagas, avisoAnosHtml);
 
-        } catch (e) { divLista.innerHTML = `<p style="color:red; text-align:center;">Erro ao buscar despesas.</p>`; }
+        } catch (e) {
+            ocultarQuadroControlesDespesas();
+            divLista.innerHTML = `<p style="color:red; text-align:center;">Erro ao buscar despesas.</p>`;
+        }
     };
 
         window.excluirDespesa = async function(id) {
