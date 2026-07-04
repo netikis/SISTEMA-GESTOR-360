@@ -328,7 +328,7 @@
             border-top: none;
             box-shadow: none;
             display: none;
-            flex-direction: row;
+            flex-direction: column;
             overflow: hidden;
             background: #3a3f48;
         }
@@ -337,9 +337,69 @@
             display: flex;
         }
 
+        .gestor-sessao-topbar {
+            flex-shrink: 0;
+            width: 100%;
+            box-sizing: border-box;
+            background: linear-gradient(90deg, #0f1929 0%, #1a2a43 50%, #0f1929 100%);
+            color: #ecf0f1;
+            padding: 9px 18px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-wrap: wrap;
+            gap: 8px 14px;
+            border-bottom: 2px solid #d4a017;
+            box-shadow: 0 3px 12px rgba(0, 0, 0, 0.35);
+            z-index: 120;
+            position: sticky;
+            top: 0;
+        }
+
+        .gestor-sessao-topbar-icone {
+            font-size: 15px;
+            line-height: 1;
+        }
+
+        .gestor-sessao-topbar-texto {
+            display: inline-flex;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 6px;
+            font-size: 13px;
+        }
+
+        .gestor-sessao-topbar-label {
+            color: #bdc3c7;
+            font-weight: 600;
+        }
+
+        .gestor-sessao-topbar-nome {
+            color: #f1c40f;
+            font-weight: 800;
+            font-size: 14px;
+            letter-spacing: 0.3px;
+            text-transform: uppercase;
+        }
+
+        .gestor-sessao-topbar[data-empresa*="MANUTEN"] .gestor-sessao-topbar-nome {
+            color: #ffb347;
+        }
+
+        .gestor-sessao-topbar[data-empresa*="FH CONSTR"] .gestor-sessao-topbar-nome {
+            color: #7ec8ff;
+        }
+
+        .gestor-corpo-painel {
+            display: flex;
+            flex: 1;
+            min-height: 0;
+            overflow: hidden;
+        }
+
         .gestor-sidebar {
-            width: 240px;
-            min-width: 240px;
+            width: 268px;
+            min-width: 268px;
             background: #1a252f;
             color: #ecf0f1;
             display: flex;
@@ -389,7 +449,7 @@
             background: transparent;
             color: #bdc3c7;
             border: 1px solid transparent;
-            padding: 11px 12px;
+            padding: 11px 10px;
             text-align: left;
             font-size: 12px;
             font-weight: 700;
@@ -399,6 +459,9 @@
             text-transform: uppercase;
             font-family: 'Poppins', sans-serif;
             width: 100%;
+            white-space: nowrap;
+            line-height: 1.25;
+            letter-spacing: -0.1px;
         }
 
         .gestor-menu-btn:hover {
@@ -545,8 +608,17 @@
         }
 
         @media (max-width: 900px) {
-            #tela-patrao.painel-gestor.gestor-visivel {
+            .gestor-corpo-painel {
                 flex-direction: column;
+            }
+
+            .gestor-sessao-topbar {
+                padding: 8px 12px;
+                gap: 6px;
+            }
+
+            .gestor-sessao-topbar-nome {
+                font-size: 12px;
             }
 
             .gestor-sidebar {
@@ -563,7 +635,7 @@
 
             .gestor-empresa-bar {
                 margin: 8px 10px;
-                font-size: 11px;
+                font-size: 12px;
                 padding: 6px;
             }
 
@@ -579,7 +651,7 @@
                 white-space: nowrap;
                 flex: 0 0 auto;
                 padding: 8px 12px;
-                font-size: 11px;
+                font-size: 12px;
             }
 
             .gestor-sidebar-footer {
@@ -1269,6 +1341,7 @@
         <p style="font-size: 12px; color: #666; margin: 6px 0 0 0;">Despesas, holerite e ponto integrados</p>
     </div>
     <p style="text-align: center; font-size: 14px; color: #555; margin-bottom: 20px;">Selecione a empresa para aceder ao painel:</p>
+    <p style="text-align: center; font-size: 11px; color: #888; margin: -12px 0 16px 0; line-height: 1.4;">💡 Pode abrir <b>várias janelas</b> do sistema (ex.: FH numa aba e Manutenção noutra). Cada janela fica <b>independente</b>.</p>
 
     <button class="btn-empresa-select" onclick="entrarEmpresa('FH CONSTRUÇÕES CIVIS')">🏢 FH CONSTRUÇÕES CIVIS</button>
     <button class="btn-empresa-select" onclick="entrarEmpresa('OLIVEIRA DANTAS')">🏢 OLIVEIRA DANTAS</button>
@@ -1294,13 +1367,22 @@
 </div>
 
 <div class="main-card painel-gestor" id="tela-patrao" style="display: none;">
+    <div class="gestor-sessao-topbar" id="gestor-sessao-topbar" role="status" aria-live="polite" data-empresa="">
+        <span class="gestor-sessao-topbar-icone" aria-hidden="true">🪟</span>
+        <span class="gestor-sessao-topbar-texto">
+            <span class="gestor-sessao-topbar-label">Sessão desta janela:</span>
+            <strong class="gestor-sessao-topbar-nome" id="gestor-sessao-fixa-nome">—</strong>
+        </span>
+    </div>
+    <div class="gestor-corpo-painel">
     <aside class="gestor-sidebar">
         <div class="gestor-sidebar-logo">
             <img src="https://i.postimg.cc/zDRJMSTn/69420f5a-5b80-457e-8146-00485162d7f2.jpg" crossorigin="anonymous" class="logo-img" alt="Logo">
         </div>
         <div class="gestor-empresa-bar" id="nome-empresa-painel">Empresa...</div>
         <nav class="gestor-nav">
-            <button type="button" class="gestor-menu-btn active" data-titulo="Equipe" onclick="mudarAba('cadastrar', this)">👥 Equipe</button>
+            <button type="button" class="gestor-menu-btn active" data-titulo="Cadastrar Funcionário" onclick="mudarAba('cadastrar', this)">➕ Cadastrar Funcionário</button>
+            <button type="button" class="gestor-menu-btn" data-titulo="Equipe Cadastrada" onclick="mudarAba('equipe-cadastrada', this)">👥 Equipe Cadastrada</button>
             <button type="button" class="gestor-menu-btn" data-titulo="Vales" onclick="mudarAba('criar', this)">💰 Vales</button>
             <button type="button" class="gestor-menu-btn" data-titulo="Arquivo" onclick="mudarAba('buscar', this)">📁 Arquivo</button>
             <button type="button" class="gestor-menu-btn" data-titulo="Ponto" onclick="mudarAba('ponto', this)">📍 Ponto</button>
@@ -1321,7 +1403,7 @@
 
     <div class="gestor-main-content">
         <div class="gestor-content-header">
-            <h2 class="gestor-titulo-aba" id="gestor-titulo-aba">Equipe</h2>
+            <h2 class="gestor-titulo-aba" id="gestor-titulo-aba">Cadastrar Funcionário</h2>
             <p class="gestor-subtitulo-painel">Gestor 360 — Despesas · Holerite · Ponto</p>
         </div>
         <div class="gestor-sections-wrap">
@@ -1412,10 +1494,11 @@
         <p class="texto-explicacao" style="margin: 6px 0 0 0;">Na folha: entrada/saída limitam os dias no mês; início das férias ativa o cálculo CLT (férias + 1/3 constitucional sobre os dias de gozo no mês).</p>
         
         <button class="btn-gold" id="btnCadastrarFunc">SALVAR FUNCIONÁRIO</button>
+    </div>
 
-        <hr style="border: 0; border-top: 1px solid #eee; margin: 25px 0;">
-        <label>Equipe Cadastrada:</label>
-        <div id="lista-funcionarios-gerencial" style="margin-top: 15px;">
+    <div id="aba-equipe-cadastrada" class="view-section">
+        <p class="texto-explicacao" style="margin-top: 0;">Funcionários já registados nesta empresa. Use <b>Editar</b>, <b>Resetar senha</b> ou <b>Excluir</b> conforme necessário.</p>
+        <div id="lista-funcionarios-gerencial" style="margin-top: 10px;">
             <p style="text-align: center; color: #888; font-size: 13px;">A carregar...</p>
         </div>
     </div>
@@ -2085,6 +2168,7 @@
 
     </div><!-- gestor-sections-wrap -->
     </div><!-- gestor-main-content -->
+    </div><!-- gestor-corpo-painel -->
 </div>
 
 <div class="main-card login-card" id="tela-login" style="display: none;">
@@ -2277,6 +2361,101 @@
         }
     }
 
+    // Sessão independente por aba/janela (sessionStorage não é compartilhado entre tabs)
+    const SESSAO_GESTOR_KEY = 'empresaGestor';
+    const SESSAO_FUNC_KEYS = ['funcLogadoId', 'funcLogadoNome', 'funcLogadoEmpresa', 'empresaTemporariaFuncionario'];
+
+    function limparChaveSessaoLegadoLocalStorage(chave) {
+        try { localStorage.removeItem(chave); } catch (_) {}
+    }
+
+    function getEmpresaGestor() {
+        try {
+            let v = sessionStorage.getItem(SESSAO_GESTOR_KEY);
+            if (!v) {
+                const legado = localStorage.getItem(SESSAO_GESTOR_KEY);
+                if (legado) {
+                    sessionStorage.setItem(SESSAO_GESTOR_KEY, legado);
+                    limparChaveSessaoLegadoLocalStorage(SESSAO_GESTOR_KEY);
+                    v = legado;
+                }
+            }
+            return v || null;
+        } catch (_) {
+            return localStorage.getItem(SESSAO_GESTOR_KEY);
+        }
+    }
+
+    function setEmpresaGestor(nomeEmpresa) {
+        try {
+            sessionStorage.setItem(SESSAO_GESTOR_KEY, nomeEmpresa);
+            limparChaveSessaoLegadoLocalStorage(SESSAO_GESTOR_KEY);
+        } catch (_) {
+            localStorage.setItem(SESSAO_GESTOR_KEY, nomeEmpresa);
+        }
+    }
+
+    function clearEmpresaGestor() {
+        try { sessionStorage.removeItem(SESSAO_GESTOR_KEY); } catch (_) {}
+        limparChaveSessaoLegadoLocalStorage(SESSAO_GESTOR_KEY);
+    }
+
+    function getSessaoFunc(chave) {
+        try {
+            let v = sessionStorage.getItem(chave);
+            if (!v && SESSAO_FUNC_KEYS.includes(chave)) {
+                const legado = localStorage.getItem(chave);
+                if (legado) {
+                    sessionStorage.setItem(chave, legado);
+                    limparChaveSessaoLegadoLocalStorage(chave);
+                    v = legado;
+                }
+            }
+            return v;
+        } catch (_) {
+            return localStorage.getItem(chave);
+        }
+    }
+
+    function setSessaoFunc(chave, valor) {
+        try {
+            sessionStorage.setItem(chave, valor);
+            if (SESSAO_FUNC_KEYS.includes(chave)) limparChaveSessaoLegadoLocalStorage(chave);
+        } catch (_) {
+            localStorage.setItem(chave, valor);
+        }
+    }
+
+    function clearSessaoFuncionario() {
+        SESSAO_FUNC_KEYS.forEach((chave) => {
+            try { sessionStorage.removeItem(chave); } catch (_) {}
+            limparChaveSessaoLegadoLocalStorage(chave);
+        });
+    }
+
+    function limparCachesEmpresaGestor() {
+        window._cacheNomesDespesas = null;
+        window._cacheNomesRelDespesas = null;
+        window._mapDespesasResumoFornecedor = {};
+        window._despesasRelatorioExport = [];
+        window._mapRelatorioDespesasParaEdicao = {};
+        window._relDespDadosFiltrados = null;
+        window._mapAjudaCustoEdicao = {};
+        window._mapDescontoFolhaEdicao = {};
+        window.dadosExportacaoDespesas = [];
+        window.dadosExportacaoVales = [];
+        window.dadosExportacaoPonto = [];
+    }
+
+    window.getEmpresaGestor = getEmpresaGestor;
+
+    function chaveAlertaSilenciado(idDoc, dataStr) {
+        const emp = getEmpresaGestor() || 'global';
+        return `novo_aviso_${emp}_${idDoc}_${dataStr}`;
+    }
+
+    window.chaveAlertaSilenciado = chaveAlertaSilenciado;
+
     // CHECAGEM DO STATUS (KILL SWITCH)
     async function verificarStatusSistema() {
         try {
@@ -2345,7 +2524,7 @@
     };
    
     window.entrarEmpresaFuncionario = function(nomeEmpresa) {
-        localStorage.setItem('empresaTemporariaFuncionario', nomeEmpresa);
+        setSessaoFunc('empresaTemporariaFuncionario', nomeEmpresa);
         atualizarLogoInterface(nomeEmpresa);
         
         document.getElementById('tela-selecao-empresa-funcionario').style.display = 'none';
@@ -2357,8 +2536,8 @@
     const urlParams = new URLSearchParams(window.location.search);
     const valeId = urlParams.get('id');
 
-    const idLogado = localStorage.getItem('funcLogadoId');
-    const temSessaoGestor = localStorage.getItem('empresaGestor');
+    const idLogado = getSessaoFunc('funcLogadoId');
+    const temSessaoGestor = getEmpresaGestor();
 
     if (valeId) {
         document.title = "ASSINATURA"; 
@@ -2367,9 +2546,9 @@
     } else if (idLogado) {
         document.title = "PONTO DIGITAL"; 
         document.getElementById('tela-relogio').style.display = 'block';
-        document.getElementById('nome-logado').innerText = localStorage.getItem('funcLogadoNome');
+        document.getElementById('nome-logado').innerText = getSessaoFunc('funcLogadoNome');
         
-        const empFunc = localStorage.getItem('funcLogadoEmpresa');
+        const empFunc = getSessaoFunc('funcLogadoEmpresa');
         if (empFunc) {
             document.getElementById('relogio-nome-empresa').innerText = empFunc;
             atualizarLogoInterface(empFunc);
@@ -2380,7 +2559,7 @@
         }
         sincronizarPontoOffline();
     } else if (temSessaoGestor) {
-        document.title = "Gestor 360"; 
+        document.title = "Gestor 360 — " + temSessaoGestor; 
         iniciarPainelGestor();
     } else {
         document.title = "FH Construções"; 
@@ -2440,7 +2619,8 @@
 
             if (acessoLiberado) {
                 Swal.close();
-                localStorage.setItem('empresaGestor', nomeEmpresa);
+                setEmpresaGestor(nomeEmpresa);
+                limparCachesEmpresaGestor();
                 iniciarPainelGestor();
             } else {
                 Swal.fire('Acesso Negado', 'A senha está incorreta.', 'error');
@@ -2453,7 +2633,7 @@
     };
 
     window.sairPainelGestor = function() {
-        localStorage.removeItem('empresaGestor');
+        clearEmpresaGestor();
         location.reload();
     };
 
@@ -2480,12 +2660,24 @@
         }
     }
 
+    function atualizarBadgeSessaoGestor(nomeEmpresa) {
+        const nome = nomeEmpresa || '—';
+        const sidebar = document.getElementById('nome-empresa-painel');
+        const fixa = document.getElementById('gestor-sessao-fixa-nome');
+        const topbar = document.getElementById('gestor-sessao-topbar');
+        if (sidebar) sidebar.innerText = '🏢 ' + nome;
+        if (fixa) fixa.textContent = nome;
+        if (topbar) topbar.setAttribute('data-empresa', nome);
+        document.title = 'Gestor 360 — ' + nome;
+    }
+
     function iniciarPainelGestor() {
-        const empresaLogada = localStorage.getItem('empresaGestor');
+        const empresaLogada = getEmpresaGestor();
+        limparCachesEmpresaGestor();
         atualizarLogoInterface(empresaLogada);
         document.querySelectorAll('.main-card').forEach(card => card.style.display = 'none');
         mostrarPainelGestor();
-        document.getElementById('nome-empresa-painel').innerText = "🏢 " + empresaLogada;
+        atualizarBadgeSessaoGestor(empresaLogada);
         
         carregarListaDeFuncionarios();
         const mesAtual = String(new Date().getMonth() + 1).padStart(2, '0');
@@ -3414,7 +3606,7 @@ function separarDataSegura(dataString) {
         const ano = document.getElementById('ac-ano') && document.getElementById('ac-ano').value;
         const valor = document.getElementById('ac-valor') && document.getElementById('ac-valor').value;
         const discriminacao = document.getElementById('ac-discriminacao') ? document.getElementById('ac-discriminacao').value.trim() : '';
-        const empresaLogada = localStorage.getItem('empresaGestor');
+        const empresaLogada = getEmpresaGestor();
 
         if (!funcId) return Swal.fire('Atenção', 'Selecione o funcionário.', 'warning');
         if (!valor) return Swal.fire('Atenção', 'Informe o valor.', 'warning');
@@ -3460,7 +3652,7 @@ function separarDataSegura(dataString) {
 
     window.carregarAjudaCustoLista = async function () {
         const wrap = document.getElementById('lista-ajuda-custo');
-        const empresaLogada = localStorage.getItem('empresaGestor');
+        const empresaLogada = getEmpresaGestor();
         if (!wrap) return;
         if (!empresaLogada) return Swal.fire('Atenção', 'Empresa não definida.', 'warning');
 
@@ -3629,7 +3821,7 @@ function separarDataSegura(dataString) {
         const tipo = document.getElementById('df-tipo') && document.getElementById('df-tipo').value;
         const valor = document.getElementById('df-valor') && document.getElementById('df-valor').value;
         const observacao = document.getElementById('df-observacao') ? document.getElementById('df-observacao').value.trim() : '';
-        const empresaLogada = localStorage.getItem('empresaGestor');
+        const empresaLogada = getEmpresaGestor();
 
         if (!funcId) return Swal.fire('Atenção', 'Selecione o funcionário.', 'warning');
         if (!mesRef || !anoRef) return Swal.fire('Atenção', 'Informe mês e ano de referência da folha.', 'warning');
@@ -3671,7 +3863,7 @@ function separarDataSegura(dataString) {
 
     window.carregarDescontosFolhaLista = async function () {
         const wrap = document.getElementById('lista-descontos-folha');
-        const empresaLogada = localStorage.getItem('empresaGestor');
+        const empresaLogada = getEmpresaGestor();
         if (!wrap) return;
         if (!empresaLogada) return Swal.fire('Atenção', 'Empresa não definida.', 'warning');
 
@@ -4149,7 +4341,7 @@ function separarDataSegura(dataString) {
     window.excluirCadastroNomeDespesa = async function (nome, tipo) {
         const chaveAlvo = normalizarChaveNomeDespesa(nome);
         if (!chaveAlvo) return;
-        const empresaLogada = localStorage.getItem('empresaGestor');
+        const empresaLogada = getEmpresaGestor();
         const tipoLabel = tipo === 'obra' ? 'Obra' : 'Loja';
         const nomeExibir = formatarNomeCanonicoDespesa(nome);
 
@@ -4308,7 +4500,7 @@ window.carregarFiltrosDespesas = async function() {
         const divTags = document.getElementById('tags-filtros-despesas');
         if(!divTags) return;
         
-        const empresaLogada = localStorage.getItem('empresaGestor');
+        const empresaLogada = getEmpresaGestor();
         try {
             const q = query(collection(db, "despesas_obras"), where("empresa_id", "==", empresaLogada));
             const querySnapshot = await getDocs(q);
@@ -4328,7 +4520,7 @@ window.carregarFiltrosDespesas = async function() {
     };
 
   window.salvarDespesaObra = async function() {
-        const empresaLogada = localStorage.getItem('empresaGestor');
+        const empresaLogada = getEmpresaGestor();
         if (!window._cacheNomesDespesas) {
             try {
                 const qCache = query(collection(db, "despesas_obras"), where("empresa_id", "==", empresaLogada));
@@ -4381,7 +4573,7 @@ window.carregarFiltrosDespesas = async function() {
     };
 
     window.salvarDespesaLinhaRelatorio = async function () {
-        const empresaLogada = localStorage.getItem('empresaGestor');
+        const empresaLogada = getEmpresaGestor();
         if (!window._cacheNomesRelDespesas && !window._cacheNomesDespesas) {
             if (typeof window.carregarNomesRelatorioDespesas === 'function') {
                 await window.carregarNomesRelatorioDespesas();
@@ -4793,7 +4985,7 @@ window.carregarFiltrosDespesas = async function() {
     }
 
     window.carregarNomesRelatorioDespesas = async function () {
-        const empresaLogada = localStorage.getItem('empresaGestor');
+        const empresaLogada = getEmpresaGestor();
         if (!empresaLogada) return;
         try {
             const qRel = query(collection(db, COLECAO_RELATORIO_DESPESAS), where('empresa_id', '==', empresaLogada));
@@ -4880,7 +5072,7 @@ window.carregarFiltrosDespesas = async function() {
 
     window.carregarRelatorioDespesasTabular = async function () {
         const wrap = document.getElementById('tabela-relatorio-despesas-wrap');
-        const empresaLogada = localStorage.getItem('empresaGestor');
+        const empresaLogada = getEmpresaGestor();
         if (!empresaLogada) return Swal.fire('Atenção', 'Empresa não definida.', 'warning');
         if (!wrap) return;
         wrap.removeAttribute('data-rel-desp-carregado');
@@ -5028,7 +5220,7 @@ window.carregarFiltrosDespesas = async function() {
 
     window.exportarExcelDespesasBusca = function () {
         const dados = window.dadosExportacaoDespesas;
-        const empresa = localStorage.getItem('empresaGestor') || 'Empresa';
+        const empresa = getEmpresaGestor() || 'Empresa';
         const termo = (document.getElementById('busca-obra') && document.getElementById('busca-obra').value || 'despesas').trim();
         exportarArquivoExcelDespesas(
             montarDadosExcelDespesas(dados),
@@ -5041,7 +5233,7 @@ window.carregarFiltrosDespesas = async function() {
         if (!arr || !arr.length) {
             return Swal.fire('Atenção', 'Carregue a tabela primeiro (botão «Carregar tabela»).', 'warning');
         }
-        const empresa = localStorage.getItem('empresaGestor') || 'Empresa';
+        const empresa = getEmpresaGestor() || 'Empresa';
         exportarArquivoExcelDespesas(
             montarDadosExcelDespesas(arr, { manterOrdem: true }),
             `relatorio_despesas_${empresa}`
@@ -5050,7 +5242,7 @@ window.carregarFiltrosDespesas = async function() {
 
  window.buscarDespesasObra = async function() {
         const termoBusca = normalizarChaveNomeDespesa(document.getElementById('busca-obra').value);
-        const empresaLogada = localStorage.getItem('empresaGestor');
+        const empresaLogada = getEmpresaGestor();
         
         if (!termoBusca) return Swal.fire('Atenção', 'Digite o nome da obra ou da loja para procurar.', 'warning');
 
@@ -5260,7 +5452,7 @@ window.carregarFiltrosDespesas = async function() {
     };
 
         window.gerarResumoFornecedores = async function() {
-        const empresaLogada = localStorage.getItem('empresaGestor');
+        const empresaLogada = getEmpresaGestor();
         const divTabela = document.getElementById('tabela-resumo-fornecedores');
         
         divTabela.innerHTML = '<p style="text-align: center; color: #888; font-size: 13px;">⏳ A calcular saldos e gerar gráficos...</p>';
@@ -5417,7 +5609,7 @@ window.carregarFiltrosDespesas = async function() {
         const obra = document.getElementById('t-obra').value.trim();
         const valor = document.getElementById('t-valor').value;
         const desc = document.getElementById('t-desc').value.trim();
-        const empresaLogada = localStorage.getItem('empresaGestor'); 
+        const empresaLogada = getEmpresaGestor(); 
         
         if (!nome || !obra || !valor) return Swal.fire('Atenção', 'Preencha Nome, Obra e Valor!', 'warning');
         
@@ -5448,7 +5640,7 @@ window.carregarFiltrosDespesas = async function() {
 
     window.buscarTerceiros = async function() {
         const termoBusca = document.getElementById('busca-terceiro').value.trim().toLowerCase(); 
-        const empresaLogada = localStorage.getItem('empresaGestor');
+        const empresaLogada = getEmpresaGestor();
         
         if (!termoBusca) return Swal.fire('Atenção', 'Digite o nome da obra ou do terceiro.', 'warning');
 
@@ -5507,7 +5699,7 @@ window.exportarPDF = function(tipo) {
         
         let title = '';
         let dados = [];
-        let empresaAtualNome = localStorage.getItem('empresaGestor') || "Empresa";
+        let empresaAtualNome = getEmpresaGestor() || "Empresa";
 
         if (tipo === 'vales') {
             title = `${empresaAtualNome} - Relatório de Vales`;
@@ -6007,7 +6199,7 @@ window.exportarPDF = function(tipo) {
     window.fazerBackupMes = async function() {
         const mesSelected = document.getElementById('backup-mes').value;
         const anoSelected = document.getElementById('backup-ano').value;
-        const empresaLogada = localStorage.getItem('empresaGestor');
+        const empresaLogada = getEmpresaGestor();
 
         Swal.fire({ title: 'Gerando Backup Offline...', text: 'Isto pode demorar alguns segundos.', allowOutsideClick: false });
         Swal.showLoading();
@@ -6119,7 +6311,7 @@ window.exportarPDF = function(tipo) {
     window.limparDadosMes = async function() {
         const mesSelected = document.getElementById('backup-mes').value;
         const anoSelected = document.getElementById('backup-ano').value;
-        const empresaLogada = localStorage.getItem('empresaGestor');
+        const empresaLogada = getEmpresaGestor();
 
         Swal.fire({
             title: '⚠️ CUIDADO: ZERAR NUVEM?',
@@ -6326,7 +6518,7 @@ window.exportarPDF = function(tipo) {
     window.fazerLogin = async function() {
         const cpf = normalizarCpfSomenteDigitos(document.getElementById('login-cpf').value);
         const senha = normalizarSenhaFuncionario(document.getElementById('login-senha').value);
-        const empresaEscolhida = localStorage.getItem('empresaTemporariaFuncionario');
+        const empresaEscolhida = getSessaoFunc('empresaTemporariaFuncionario');
         
         if (!cpf || !senha) {
             return Swal.fire('Atenção', 'Preencha o CPF e a Senha!', 'warning');
@@ -6363,9 +6555,9 @@ window.exportarPDF = function(tipo) {
 
             if (senhaFuncionarioEstaVazia(funcData.senha)) {
                 await updateDoc(doc(db, "funcionarios", funcId), { senha: senha });
-                localStorage.setItem('funcLogadoId', funcId);
-                localStorage.setItem('funcLogadoNome', funcData.nome);
-                localStorage.setItem('funcLogadoEmpresa', empresaEscolhida);
+                setSessaoFunc('funcLogadoId', funcId);
+                setSessaoFunc('funcLogadoNome', funcData.nome);
+                setSessaoFunc('funcLogadoEmpresa', empresaEscolhida);
                 
                 Swal.fire('Senha Criada!', 'O seu utilizador foi ativado com sucesso.', 'success').then(() => {
                     location.reload();
@@ -6373,9 +6565,9 @@ window.exportarPDF = function(tipo) {
             } else if (!senhasFuncionarioCoincidem(funcData.senha, senha)) {
                 Swal.fire('Erro', 'Senha incorreta! Se esqueceu, peça ao RH para clicar em «Resetar» no seu cadastro.', 'error');
             } else {
-                localStorage.setItem('funcLogadoId', funcId);
-                localStorage.setItem('funcLogadoNome', funcData.nome);
-                localStorage.setItem('funcLogadoEmpresa', empresaEscolhida);
+                setSessaoFunc('funcLogadoId', funcId);
+                setSessaoFunc('funcLogadoNome', funcData.nome);
+                setSessaoFunc('funcLogadoEmpresa', empresaEscolhida);
                 location.reload();
             }
         } catch(e) {
@@ -6384,9 +6576,7 @@ window.exportarPDF = function(tipo) {
     };
 
     window.fazerLogout = function() { 
-        localStorage.removeItem('funcLogadoId'); 
-        localStorage.removeItem('funcLogadoNome'); 
-        localStorage.removeItem('funcLogadoEmpresa');
+        clearSessaoFuncionario();
         location.reload(); 
     };
 
@@ -6407,6 +6597,9 @@ window.exportarPDF = function(tipo) {
         const mainGestor = document.querySelector('.gestor-main-content');
         if (mainGestor) mainGestor.scrollTop = 0;
 
+        if (aba === 'equipe-cadastrada') {
+            carregarListaDeFuncionarios();
+        }
         if (aba === 'despesas') {
             carregarFiltrosDespesas();
         }
@@ -6432,7 +6625,7 @@ window.exportarPDF = function(tipo) {
     };
 
     window.salvarFeriado = async function() {
-        const empresaLogada = localStorage.getItem('empresaGestor');
+        const empresaLogada = getEmpresaGestor();
         if (!empresaLogada) return Swal.fire('Atenção', 'Entre como gestor para cadastrar feriados.', 'warning');
 
         const data = document.getElementById('fer-data').value; // YYYY-MM-DD
@@ -6470,7 +6663,7 @@ window.exportarPDF = function(tipo) {
     };
 
     window.carregarFeriados = async function() {
-        const empresaLogada = localStorage.getItem('empresaGestor');
+        const empresaLogada = getEmpresaGestor();
         const div = document.getElementById('lista-feriados');
         if (!div) return;
         if (!empresaLogada) {
@@ -6507,7 +6700,7 @@ window.exportarPDF = function(tipo) {
     };
 
     window.excluirFeriado = async function(id) {
-        const empresaLogada = localStorage.getItem('empresaGestor');
+        const empresaLogada = getEmpresaGestor();
         if (!empresaLogada) return;
         const ok = await Swal.fire({
             title: 'Remover feriado?',
@@ -6529,7 +6722,7 @@ window.exportarPDF = function(tipo) {
     };
 
     async function carregarListaDeFuncionarios() {
-        const empresaLogada = localStorage.getItem('empresaGestor');
+        const empresaLogada = getEmpresaGestor();
         try {
             const q = query(collection(db, "funcionarios"), where("empresa_id", "==", empresaLogada));
             const querySnapshot = await getDocs(q);
@@ -6706,7 +6899,7 @@ window.gerarFolhaPagamento = async function() {
         }
 
         try {
-            const empresaLogada = localStorage.getItem('empresaGestor');
+            const empresaLogada = getEmpresaGestor();
 
             // 1. BUSCA DE VALES - Simplificada para evitar erro de índice ausente no Firebase
             const qVales = query(collection(db, "vales_sistema"), where("funcionario_id", "==", funcId));
@@ -6725,7 +6918,7 @@ window.gerarFolhaPagamento = async function() {
                 const statusVale = String(vale.status || "").toLowerCase();
                 
                 if (vale.empresa_id === empresaLogada && statusVale === 'assinado') {
-                    const dataVale = separarDataSegura(vale.data_criacao || vale.data);
+                    const dataVale = separarDataSegura(vale.data_assinatura || vale.data_criacao || vale.data);
                     
                     // ESPIÃO 2: Mostra como a data foi separada
                     console.log("📅 Data extraída do vale:", dataVale, " | Mês/Ano selecionado:", mesSelected, anoSelected);
@@ -7665,7 +7858,7 @@ window.gerarFolhaPagamento = async function() {
                     </table>
                 `;
                 window.folhaDiscriminacaoPDF = {
-                    empresaNome: localStorage.getItem('empresaGestor') || 'Empresa',
+                    empresaNome: getEmpresaGestor() || 'Empresa',
                     funcionarioNome: funcionario.nome,
                     mesRef: `${String(mesSelected).padStart(2, '0')}/${anoSelected}`,
                     emitidoEm: new Date().toLocaleString('pt-BR'),
@@ -7736,7 +7929,7 @@ window.gerarFolhaPagamento = async function() {
             });
 
             window.folhaHoleritePDF = {
-                empresaNome: localStorage.getItem('empresaGestor') || 'Empresa',
+                empresaNome: getEmpresaGestor() || 'Empresa',
                 funcionarioNome: funcionario.nome,
                 cpf: funcionario.cpf || '',
                 pix: funcionario.pix || '',
@@ -7784,7 +7977,7 @@ window.gerarFolhaPagamento = async function() {
         const saida = document.getElementById('c-saida').value;
         const intervaloMinutos = Number(document.getElementById('c-intervalo')?.value || 60);
         const sabadoHoras = Number(document.getElementById('c-sabado-horas')?.value || 0);
-        const empresaLogada = localStorage.getItem('empresaGestor');
+        const empresaLogada = getEmpresaGestor();
         const dataAdmissao = document.getElementById('c-data-admissao') ? document.getElementById('c-data-admissao').value : '';
         const dataDemissao = document.getElementById('c-data-demissao') ? document.getElementById('c-data-demissao').value : '';
         const dataInicioFerias = document.getElementById('c-data-inicio-ferias') ? document.getElementById('c-data-inicio-ferias').value : '';
@@ -8044,7 +8237,7 @@ window.gerarFolhaPagamento = async function() {
         }
         const obra = (document.getElementById('obra-atual').value || '').trim();
         const fotoBase64 = document.getElementById('foto-base64').value;
-        const empresaDoFuncionario = localStorage.getItem('funcLogadoEmpresa');
+        const empresaDoFuncionario = getSessaoFunc('funcLogadoEmpresa');
 
         function obterDataAtualStr() {
             const d = new Date();
@@ -8136,7 +8329,7 @@ window.gerarFolhaPagamento = async function() {
         }
 
         // Validação de sequência (evita batidas fora de ordem)
-        const funcIdPre = localStorage.getItem('funcLogadoId');
+        const funcIdPre = getSessaoFunc('funcLogadoId');
         if (funcIdPre) {
             const estadoAtual = lerEstadoPonto(funcIdPre);
             const valid = validarSequencia(tipo, estadoAtual);
@@ -8180,8 +8373,8 @@ window.gerarFolhaPagamento = async function() {
             } catch (_) {}
 
             const geo = normalizarCoordenadasGPS(lat, lng);
-            const funcId = localStorage.getItem('funcLogadoId');
-            const funcNome = localStorage.getItem('funcLogadoNome');
+            const funcId = getSessaoFunc('funcLogadoId');
+            const funcNome = getSessaoFunc('funcLogadoNome');
 
             const dataObj = new Date();
             const diaStr = String(dataObj.getDate()).padStart(2, '0');
@@ -8477,7 +8670,7 @@ window.gerarFolhaPagamento = async function() {
     };
 
     window.solicitarCancelamentoPonto = async function(pontoId, funcionarioId) {
-        const empresaLogada = localStorage.getItem('empresaGestor');
+        const empresaLogada = getEmpresaGestor();
         if (!empresaLogada) {
             return Swal.fire('Atenção', 'Apenas a gestão pode solicitar cancelamento/ajuste de ponto.', 'warning');
         }
@@ -8526,7 +8719,7 @@ window.gerarFolhaPagamento = async function() {
     };
 
     window.excluirPontoGestorRH = async function(pontoId) {
-        const empresaLogada = localStorage.getItem('empresaGestor');
+        const empresaLogada = getEmpresaGestor();
         if (!empresaLogada) {
             return Swal.fire('Atenção', 'Apenas o painel da gestão pode apagar registos de ponto.', 'warning');
         }
@@ -8568,7 +8761,7 @@ window.gerarFolhaPagamento = async function() {
     };
 
     window.abrirRegistoPontoManualRH = async function () {
-        const empresaLogada = localStorage.getItem('empresaGestor');
+        const empresaLogada = getEmpresaGestor();
         if (!empresaLogada) {
             return Swal.fire('Atenção', 'Entre como gestor para usar esta função.', 'warning');
         }
@@ -8682,7 +8875,7 @@ window.gerarFolhaPagamento = async function() {
     };
 
     window.editarPontoDataHoraRH = async function (pontoId) {
-        const empresaLogada = localStorage.getItem('empresaGestor');
+        const empresaLogada = getEmpresaGestor();
         if (!empresaLogada) {
             return Swal.fire('Atenção', 'Entre como gestor.', 'warning');
         }
@@ -8779,7 +8972,7 @@ window.gerarFolhaPagamento = async function() {
     };
 
     window.rhAjustarJornadaCompletaDia = async function (dataBrSugerida) {
-        const empresaLogada = localStorage.getItem('empresaGestor');
+        const empresaLogada = getEmpresaGestor();
         if (!empresaLogada) {
             return Swal.fire('Atenção', 'Entre como gestor.', 'warning');
         }
@@ -8964,7 +9157,7 @@ window.gerarFolhaPagamento = async function() {
     }
 
     window.rhGerirFaltaDia = async function (dataBrSugerida) {
-        const empresaLogada = localStorage.getItem('empresaGestor');
+        const empresaLogada = getEmpresaGestor();
         if (!empresaLogada) {
             return Swal.fire('Atenção', 'Entre como gestor (RH).', 'warning');
         }
@@ -9407,9 +9600,15 @@ window.gerarFolhaPagamento = async function() {
         
         try {
             const assinaturaImg = signaturePad.toDataURL('image/png');
+            const agoraAss = new Date();
+            const dataAssinatura = `${String(agoraAss.getDate()).padStart(2, '0')}/${String(agoraAss.getMonth() + 1).padStart(2, '0')}/${agoraAss.getFullYear()}`;
+            const horaAssinatura = String(agoraAss.getHours()).padStart(2, '0') + ':' + String(agoraAss.getMinutes()).padStart(2, '0');
             await updateDoc(doc(db, "vales_sistema", valeId), { 
                 assinatura: assinaturaImg, 
-                status: "assinado" 
+                status: "assinado",
+                data_assinatura: dataAssinatura,
+                hora_assinatura: horaAssinatura,
+                timestamp_assinatura: agoraAss.getTime()
             });
             
             Swal.fire({ 
@@ -9440,7 +9639,7 @@ window.gerarFolhaPagamento = async function() {
         const valor = document.getElementById('p-valor').value;
         const tipo = document.getElementById('p-tipo').value;
         const desc = document.getElementById('p-desc').value;
-        const empresaLogada = localStorage.getItem('empresaGestor');
+        const empresaLogada = getEmpresaGestor();
 
         if (!funcId || !valor || !desc) {
             return Swal.fire('Atenção', 'Selecione o funcionário, o valor e a descrição!', 'warning');
@@ -9510,9 +9709,132 @@ window.gerarFolhaPagamento = async function() {
         }
     };
 
+    function obterDataReferenciaValeArquivo(v) {
+        const isAssinado = String(v.status || '').toLowerCase() === 'assinado';
+        if (isAssinado) {
+            const dataStr = v.data_assinatura || v.data_assinado || v.data_criacao || v.data || '';
+            const horaStr = v.hora_assinatura || v.hora_assinado || v.hora_criacao || '';
+            const ts = v.timestamp_assinatura || v.timestamp || 0;
+            const partes = separarDataSegura(dataStr);
+            return {
+                ano: partes.ano,
+                mes: partes.mes,
+                dia: partes.dia,
+                dataStr,
+                horaStr,
+                ts,
+                rotuloData: 'Assinado em'
+            };
+        }
+        const dataStr = v.data_criacao || v.data || '';
+        const horaStr = v.hora_criacao || '';
+        const partes = separarDataSegura(dataStr);
+        return {
+            ano: partes.ano,
+            mes: partes.mes,
+            dia: partes.dia,
+            dataStr,
+            horaStr,
+            ts: v.timestamp || 0,
+            rotuloData: 'Gerado em'
+        };
+    }
+
+    function montarHtmlCardValeArquivo(v) {
+        const isAssinado = String(v.status || '').toLowerCase() === 'assinado';
+        const corBorda = isAssinado ? '#28a745' : '#f0ad4e';
+        const badge = isAssinado ? '✅ ASSINADO' : '⏳ PENDENTE';
+        const ref = obterDataReferenciaValeArquivo(v);
+        const horaHtml = ref.horaStr ? ' às ' + ref.horaStr : '';
+        return `
+            <div class="resultado-item" style="border-left-color: ${corBorda}; background: ${isAssinado ? '#f8fff9' : '#fff'};">
+                <div style="display:flex; justify-content: space-between; align-items:center;">
+                    <b style="color:var(--dark-navy); font-size:16px;">R$ ${v.valor}</b>
+                    <span style="font-size: 10px; font-weight:bold; background:#eef2f5; padding:4px 8px; border-radius:5px; color:${corBorda}">${badge}</span>
+                </div>
+                <span style="font-size: 12px; color: #555;"><b>Tipo:</b> ${v.tipo}</span><br>
+                <span style="font-size: 12px; color: #888;"><b>${ref.rotuloData}:</b> ${ref.dataStr}${horaHtml}</span><br>
+                <div style="margin-top: 5px; font-size: 12px; color: #444;"><i>${v.descricao}</i></div>
+                <div style="display: flex; gap: 8px; margin-top: 15px; flex-wrap: wrap;">
+                    ${isAssinado 
+                        ? `<button type="button" onclick="abrirReciboValeTela('${v.id}')" style="flex:1; min-width:120px; background:#4285F4; color:white; border:none; padding:10px; border-radius:8px; font-size:11px; font-weight:bold; cursor:pointer;">👁️ VER NA TELA</button>
+                           <button type="button" onclick="visualizarReciboValePdf('${v.id}')" style="flex:1; min-width:120px; background:#217346; color:white; border:none; padding:10px; border-radius:8px; font-size:11px; font-weight:bold; cursor:pointer;">📄 ABRIR PDF</button>
+                           <button type="button" onclick="baixarReciboValePdf('${v.id}')" style="flex:1; min-width:120px; background:#1a2a43; color:white; border:none; padding:10px; border-radius:8px; font-size:11px; font-weight:bold; cursor:pointer;">📥 BAIXAR PDF</button>
+                           <button type="button" onclick="compartilharReciboValeWhats('${v.id}')" style="flex:1; min-width:120px; background:#25D366; color:white; border:none; padding:10px; border-radius:8px; font-size:11px; font-weight:bold; cursor:pointer;">🟢 WHATSAPP</button>` 
+                        : `<button type="button" onclick="abrirReciboValeTela('${v.id}')" style="flex:1; min-width:120px; background:#4285F4; color:white; border:none; padding:10px; border-radius:8px; font-size:11px; font-weight:bold; cursor:pointer;">👁️ VER TEXTO</button>
+                           <button type="button" onclick="reenviarLinkVale('${v.id}')" style="flex:1; min-width:120px; background:#25D366; color:white; border:none; padding:10px; border-radius:8px; font-size:11px; font-weight:bold; cursor:pointer;">🟢 REENVIAR LINK</button>`}
+                    <button type="button" onclick="excluirVale('${v.id}')" style="flex:1; min-width:120px; background:#d9534f; color:white; border:none; padding:10px; border-radius:8px; font-size:11px; font-weight:bold; cursor:pointer;">🗑️ APAGAR</button>
+                </div>
+            </div>
+        `;
+    }
+
+    function montarHtmlPastasValesArquivo(arr) {
+        const pendentes = [];
+        const agrupado = {};
+        let totalVales = 0;
+
+        arr.forEach((v) => {
+            window.dadosExportacaoVales.push(v);
+            window.valesEncontrados[v.id] = v;
+            const isAssinado = String(v.status || '').toLowerCase() === 'assinado';
+            if (!isAssinado) {
+                pendentes.push(v);
+                return;
+            }
+            totalVales += parseMoedaLocal(v.valor);
+            const ref = obterDataReferenciaValeArquivo(v);
+            const ano = ref.ano || 'Outros';
+            const mes = ref.mes || 'Outros';
+            if (!agrupado[ano]) agrupado[ano] = {};
+            if (!agrupado[ano][mes]) agrupado[ano][mes] = [];
+            agrupado[ano][mes].push(v);
+        });
+
+        let html = '';
+
+        if (pendentes.length) {
+            pendentes.sort((a, b) => (b.timestamp || 0) - (a.timestamp || 0));
+            html += `<details class="pasta-ano" open><summary>⏳ Pendentes de assinatura (${pendentes.length})</summary><div class="folder-content">`;
+            pendentes.forEach((v) => { html += montarHtmlCardValeArquivo(v); });
+            html += `</div></details>`;
+        }
+
+        const chavesAno = Object.keys(agrupado).sort((a, b) => {
+            if (a === 'Outros') return 1;
+            if (b === 'Outros') return -1;
+            return Number(b) - Number(a);
+        });
+
+        chavesAno.forEach((ano) => {
+            html += `<details class="pasta-ano" open><summary>📅 Ano ${ano}</summary><div class="folder-content">`;
+            const chavesMes = Object.keys(agrupado[ano]).sort((a, b) => {
+                if (a === 'Outros') return 1;
+                if (b === 'Outros') return -1;
+                return Number(b) - Number(a);
+            });
+            chavesMes.forEach((mes) => {
+                const listaMes = agrupado[ano][mes].slice().sort((a, b) => {
+                    const ta = obterDataReferenciaValeArquivo(a).ts || 0;
+                    const tb = obterDataReferenciaValeArquivo(b).ts || 0;
+                    return tb - ta;
+                });
+                const nomeDoMes = nomeMeses[mes] || mes;
+                let subtotalMes = 0;
+                listaMes.forEach((v) => { subtotalMes += parseMoedaLocal(v.valor); });
+                html += `<details class="pasta-mes"><summary>${nomeDoMes} — ${listaMes.length} vale(s) · ${formatarMoeda(subtotalMes)}</summary><div class="folder-content">`;
+                listaMes.forEach((v) => { html += montarHtmlCardValeArquivo(v); });
+                html += `</div></details>`;
+            });
+            html += `</div></details>`;
+        });
+
+        return { html, totalVales };
+    }
+
     window.buscarVales = async function() {
         const funcId = document.getElementById('b-func-select').value;
-        const empresaLogada = localStorage.getItem('empresaGestor');
+        const empresaLogada = getEmpresaGestor();
 
         if (!funcId) {
             return Swal.fire('Atenção', 'Selecione um funcionário para buscar.', 'warning');
@@ -9542,47 +9864,16 @@ window.gerarFolhaPagamento = async function() {
                 arr.push(d);
             });
 
-            arr.sort((a, b) => (b.timestamp || 0) - (a.timestamp || 0));
-
-            let html = "";
-            let totalVales = 0;
-
-            arr.forEach(v => {
-                window.dadosExportacaoVales.push(v);
-                window.valesEncontrados[v.id] = v;
-
-                const isAssinado = v.status === 'assinado';
-                const corBorda = isAssinado ? '#28a745' : '#f0ad4e';
-                const badge = isAssinado ? '✅ ASSINADO' : '⏳ PENDENTE';
-                
-                if(isAssinado) totalVales += parseMoedaLocal(v.valor);
-
-                html += `
-                    <div class="resultado-item" style="border-left-color: ${corBorda}; background: ${isAssinado ? '#f8fff9' : '#fff'};">
-                        <div style="display:flex; justify-content: space-between; align-items:center;">
-                            <b style="color:var(--dark-navy); font-size:16px;">R$ ${v.valor}</b>
-                            <span style="font-size: 10px; font-weight:bold; background:#eef2f5; padding:4px 8px; border-radius:5px; color:${corBorda}">${badge}</span>
-                        </div>
-                        <span style="font-size: 12px; color: #555;"><b>Tipo:</b> ${v.tipo}</span><br>
-                        <span style="font-size: 12px; color: #888;"><b>Data:</b> ${v.data_criacao || v.data} ${v.hora_criacao ? 'às '+v.hora_criacao : ''}</span><br>
-                        <div style="margin-top: 5px; font-size: 12px; color: #444;"><i>${v.descricao}</i></div>
-                        
-                        <div style="display: flex; gap: 8px; margin-top: 15px; flex-wrap: wrap;">
-                            ${isAssinado 
-                                ? `<button type="button" onclick="abrirReciboValeTela('${v.id}')" style="flex:1; min-width:120px; background:#4285F4; color:white; border:none; padding:10px; border-radius:8px; font-size:11px; font-weight:bold; cursor:pointer;">👁️ VER NA TELA</button>
-                                   <button type="button" onclick="visualizarReciboValePdf('${v.id}')" style="flex:1; min-width:120px; background:#217346; color:white; border:none; padding:10px; border-radius:8px; font-size:11px; font-weight:bold; cursor:pointer;">📄 ABRIR PDF</button>
-                                   <button type="button" onclick="baixarReciboValePdf('${v.id}')" style="flex:1; min-width:120px; background:#1a2a43; color:white; border:none; padding:10px; border-radius:8px; font-size:11px; font-weight:bold; cursor:pointer;">📥 BAIXAR PDF</button>
-                                   <button type="button" onclick="compartilharReciboValeWhats('${v.id}')" style="flex:1; min-width:120px; background:#25D366; color:white; border:none; padding:10px; border-radius:8px; font-size:11px; font-weight:bold; cursor:pointer;">🟢 WHATSAPP</button>` 
-                                : `<button type="button" onclick="abrirReciboValeTela('${v.id}')" style="flex:1; min-width:120px; background:#4285F4; color:white; border:none; padding:10px; border-radius:8px; font-size:11px; font-weight:bold; cursor:pointer;">👁️ VER TEXTO</button>
-                                   <button type="button" onclick="reenviarLinkVale('${v.id}')" style="flex:1; min-width:120px; background:#25D366; color:white; border:none; padding:10px; border-radius:8px; font-size:11px; font-weight:bold; cursor:pointer;">🟢 REENVIAR LINK</button>`}
-                            <button type="button" onclick="excluirVale('${v.id}')" style="flex:1; min-width:120px; background:#d9534f; color:white; border:none; padding:10px; border-radius:8px; font-size:11px; font-weight:bold; cursor:pointer;">🗑️ APAGAR</button>
-                        </div>
-                    </div>
-                `;
+            arr.sort((a, b) => {
+                const ta = obterDataReferenciaValeArquivo(a).ts || 0;
+                const tb = obterDataReferenciaValeArquivo(b).ts || 0;
+                return tb - ta;
             });
 
+            const { html, totalVales } = montarHtmlPastasValesArquivo(arr);
+
             btnExportar.style.display = 'block';
-            divLista.innerHTML = `<div style="text-align:center; margin-bottom: 15px; padding: 10px; background: #eef2f5; border-radius: 10px;">Total em Vales Assinados: <b style="color:#d9534f; font-size:16px;">${formatarMoeda(totalVales)}</b></div>` + html;
+            divLista.innerHTML = `<div style="text-align:center; margin-bottom: 15px; padding: 10px; background: #eef2f5; border-radius: 10px;">Total em Vales Assinados: <b style="color:#d9534f; font-size:16px;">${formatarMoeda(totalVales)}</b><br><span style="font-size:11px;color:#666;">Organizados por mês/ano da <b>data de assinatura</b></span></div>` + html;
 
         } catch (e) {
             divLista.innerHTML = `<p style="text-align:center; color:#d9534f;">Erro ao buscar vales.</p>`;
@@ -9640,7 +9931,7 @@ window.gerarFolhaPagamento = async function() {
     };
 
     window.buscarMeusVales = async function() {
-        const funcId = localStorage.getItem('funcLogadoId');
+        const funcId = getSessaoFunc('funcLogadoId');
         const divLista = document.getElementById('lista-meus-vales');
         
         if (!funcId) return;
@@ -9902,7 +10193,7 @@ window.gerarFolhaPagamento = async function() {
         document.getElementById('tela-pedido-material').style.display = 'block';
 
         // Puxa o nome do funcionário logado automaticamente
-        const nomeLogado = localStorage.getItem('funcLogadoNome');
+        const nomeLogado = getSessaoFunc('funcLogadoNome');
         if (nomeLogado) {
             document.getElementById('pm-nome').value = nomeLogado;
         }
@@ -9918,7 +10209,7 @@ window.gerarFolhaPagamento = async function() {
         const nome = document.getElementById('pm-nome').value.trim();
         const equipe = document.getElementById('pm-equipe').value.trim();
         const desc = document.getElementById('pm-desc').value.trim();
-        const empresaLogada = localStorage.getItem('funcLogadoEmpresa') || 'MANUTENÇÃO';
+        const empresaLogada = getSessaoFunc('funcLogadoEmpresa') || 'MANUTENÇÃO';
 
         if (!nome || !equipe || !desc) {
             return Swal.fire('Atenção', 'Preencha todos os campos para pedir material!', 'warning');
@@ -9973,7 +10264,7 @@ window.gerarFolhaPagamento = async function() {
 
 // === INÍCIO DO SISTEMA DE ALERTAS ===
 async function monitorarVencimentosObras() {
-    const empresaGestor = localStorage.getItem('empresaGestor');
+    const empresaGestor = getEmpresaGestor();
     const telaPatraoAtiva = painelGestorEstaVisivel();
     
     // Captura a caixa de alertas (se ela já existir)
@@ -10015,7 +10306,7 @@ async function monitorarVencimentosObras() {
             if (statusAtual !== "Pago" && statusAtual !== "pago" && tsVenc != null) {
                 const diffMs = tsVenc - hojeMeioDia.getTime();
                 const diasRestantes = Math.round(diffMs / (1000 * 60 * 60 * 24));
-                const silenciadoHoje = localStorage.getItem(`novo_aviso_${idDoc}_${hojeFormatado}`);
+                const silenciadoHoje = localStorage.getItem(chaveAlertaSilenciado(idDoc, hojeFormatado));
 
                 if (!silenciadoHoje) {
                     let tituloAlerta = "";
@@ -10065,7 +10356,7 @@ async function monitorarVencimentosObras() {
 
 window.confirmarLeituraAlerta = function(id) {
     const hj = new Date().toISOString().substring(0, 10);
-    localStorage.setItem(`novo_aviso_${id}_${hj}`, "true");
+    localStorage.setItem(chaveAlertaSilenciado(id, hj), "true");
 
     const el = document.getElementById(`card-alerta-${id}`);
     if (el) {
@@ -10084,7 +10375,7 @@ window.confirmarLeituraTodosAlertas = function() {
     const hj = new Date().toISOString().substring(0, 10);
     cards.forEach((el) => {
         const id = el.id.replace('card-alerta-', '');
-        localStorage.setItem(`novo_aviso_${id}_${hj}`, "true");
+        localStorage.setItem(chaveAlertaSilenciado(id, hj), "true");
         el.style.opacity = "0";
         el.style.transform = "translateX(50px)";
     });
