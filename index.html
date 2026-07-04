@@ -481,6 +481,70 @@
         .gestor-menu-btn.menu-backup { color: #aed6f1; }
         .gestor-menu-btn.menu-backup.active { background: #1a2a43; border-color: #d4a017; }
 
+        .gestor-menu-grupo {
+            margin-bottom: 6px;
+        }
+
+        .gestor-menu-grupo-titulo {
+            width: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 8px;
+            background: rgba(255, 255, 255, 0.06);
+            color: #f1c40f;
+            border: 1px solid rgba(212, 160, 23, 0.4);
+            padding: 11px 10px;
+            font-size: 12px;
+            font-weight: 800;
+            cursor: pointer;
+            border-radius: 6px;
+            text-transform: uppercase;
+            font-family: 'Poppins', sans-serif;
+            white-space: nowrap;
+            letter-spacing: -0.1px;
+            transition: background-color 0.25s, border-color 0.25s;
+        }
+
+        .gestor-menu-grupo-titulo:hover {
+            background: rgba(44, 62, 80, 0.9);
+        }
+
+        .gestor-menu-grupo.has-active .gestor-menu-grupo-titulo {
+            background: rgba(0, 86, 179, 0.28);
+            border-color: #d4a017;
+            box-shadow: inset 3px 0 0 #d4a017;
+        }
+
+        .gestor-menu-grupo-seta {
+            font-size: 10px;
+            opacity: 0.85;
+            transition: transform 0.25s;
+            flex-shrink: 0;
+        }
+
+        .gestor-menu-grupo.open .gestor-menu-grupo-seta {
+            transform: rotate(180deg);
+        }
+
+        .gestor-menu-sub {
+            display: none;
+            flex-direction: column;
+            gap: 3px;
+            padding: 6px 0 2px 10px;
+            margin: 4px 0 2px 4px;
+            border-left: 2px solid rgba(212, 160, 23, 0.35);
+        }
+
+        .gestor-menu-grupo.open .gestor-menu-sub {
+            display: flex;
+        }
+
+        .gestor-menu-sub .gestor-menu-btn {
+            font-size: 12px;
+            padding: 10px 8px;
+        }
+
         .gestor-sidebar-footer {
             padding: 12px;
             border-top: 1px solid rgba(255, 255, 255, 0.08);
@@ -640,11 +704,18 @@
             }
 
             .gestor-nav {
-                flex-direction: row;
+                flex-direction: column;
                 flex-wrap: nowrap;
-                overflow-x: auto;
+                overflow-x: hidden;
+                overflow-y: auto;
                 padding-bottom: 8px;
-                gap: 6px;
+                gap: 4px;
+                max-height: 36vh;
+            }
+
+            .gestor-menu-grupo {
+                width: 100%;
+                flex-shrink: 0;
             }
 
             .gestor-menu-btn {
@@ -1126,6 +1197,123 @@
             text-decoration: underline !important;
         }
 
+        /* Painel flutuante de vencimentos */
+        #alerta-container-global {
+            --alerta-painel-largura: 380px;
+        }
+
+        #alerta-container-global .alerta-painel-wrapper {
+            width: var(--alerta-painel-largura);
+            max-width: calc(100vw - 32px);
+            box-sizing: border-box;
+        }
+
+        #alerta-container-global .alerta-barra-minimizada {
+            width: var(--alerta-painel-largura);
+            max-width: calc(100vw - 32px);
+            box-sizing: border-box;
+        }
+
+        #alerta-container-global .alerta-painel-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 8px;
+            background: #fff;
+            border: 1px solid #e0e0e0;
+            border-bottom: none;
+            border-radius: 10px 10px 0 0;
+            padding: 10px 14px;
+            margin: 0;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.06);
+            width: 100%;
+            box-sizing: border-box;
+        }
+
+        #alerta-container-global .alerta-painel-header-titulo {
+            font-weight: 800;
+            font-size: 13px;
+            color: #1a2a43;
+            white-space: nowrap;
+        }
+
+        #alerta-container-global .alerta-painel-header-acoes {
+            display: flex;
+            gap: 6px;
+            flex-shrink: 0;
+            align-items: center;
+        }
+
+        #alerta-container-global .alerta-painel-corpo {
+            width: 100%;
+            box-sizing: border-box;
+            max-height: 70vh;
+            overflow-y: auto;
+            overflow-x: hidden;
+            scrollbar-gutter: stable;
+            padding: 8px 14px 12px;
+            background: #f3f5f8;
+            border: 1px solid #e0e0e0;
+            border-top: 1px solid #ececec;
+            border-radius: 0 0 10px 10px;
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.08);
+        }
+
+        #alerta-container-global .card-alerta-venc {
+            background: #fff;
+            width: 100%;
+            box-sizing: border-box;
+            border-radius: 10px;
+            border: 1px solid #eee;
+            box-shadow: 0 4px 14px rgba(0, 0, 0, 0.06);
+            margin-bottom: 10px;
+            padding: 14px;
+            display: flex;
+            align-items: flex-start;
+            justify-content: space-between;
+            gap: 10px;
+            transition: opacity 0.4s, transform 0.4s;
+        }
+
+        #alerta-container-global .card-alerta-venc:last-child {
+            margin-bottom: 0;
+        }
+
+        #alerta-container-global .alerta-btn-fechar {
+            background: #d9534f;
+            color: #fff;
+            border: none;
+            border-radius: 6px;
+            padding: 5px 8px;
+            font-weight: 700;
+            font-size: 10px;
+            cursor: pointer;
+            white-space: nowrap;
+        }
+
+        #alerta-container-global .alerta-btn-imprimir {
+            background: #1a2a43;
+            color: #fff;
+            border: none;
+            border-radius: 6px;
+            padding: 5px 8px;
+            font-weight: 700;
+            font-size: 10px;
+            cursor: pointer;
+            white-space: nowrap;
+        }
+
+        #alerta-container-global .alerta-btn-minimizar {
+            background: #f8f9fa;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            padding: 5px 10px;
+            font-weight: 700;
+            font-size: 14px;
+            cursor: pointer;
+            line-height: 1;
+        }
+
         .cadastro-desp-item-del {
             background: #f8f9fa;
             color: #a94442 !important;
@@ -1381,17 +1569,25 @@
         </div>
         <div class="gestor-empresa-bar" id="nome-empresa-painel">Empresa...</div>
         <nav class="gestor-nav">
-            <button type="button" class="gestor-menu-btn active" data-titulo="Cadastrar Funcionário" onclick="mudarAba('cadastrar', this)">➕ Cadastrar Funcionário</button>
-            <button type="button" class="gestor-menu-btn" data-titulo="Equipe Cadastrada" onclick="mudarAba('equipe-cadastrada', this)">👥 Equipe Cadastrada</button>
-            <button type="button" class="gestor-menu-btn" data-titulo="Vales" onclick="mudarAba('criar', this)">💰 Vales</button>
-            <button type="button" class="gestor-menu-btn" data-titulo="Arquivo" onclick="mudarAba('buscar', this)">📁 Arquivo</button>
-            <button type="button" class="gestor-menu-btn" data-titulo="Ponto" onclick="mudarAba('ponto', this)">📍 Ponto</button>
-            <button type="button" class="gestor-menu-btn" data-titulo="Ajuda de Custo" onclick="mudarAba('ajuda-custo', this)">🧳 Ajuda de Custo</button>
-            <button type="button" class="gestor-menu-btn" data-titulo="Descontos Folha" onclick="mudarAba('descontos-folha', this)">📋 Descontos Folha</button>
-            <button type="button" class="gestor-menu-btn" data-titulo="Folha Pagamento" onclick="mudarAba('folha', this)">📄 Folha Pagamento</button>
+            <div class="gestor-menu-grupo open has-active" id="grupo-menu-equipe">
+                <button type="button" class="gestor-menu-grupo-titulo" id="btn-grupo-equipe" onclick="toggleGrupoMenuEquipe()" aria-expanded="true">
+                    <span>👥 Equipe</span>
+                    <span class="gestor-menu-grupo-seta" aria-hidden="true">▼</span>
+                </button>
+                <div class="gestor-menu-sub" id="submenu-equipe">
+                    <button type="button" class="gestor-menu-btn active" data-titulo="Cadastrar Funcionário" onclick="mudarAba('cadastrar', this)">➕ Cadastrar Funcionário</button>
+                    <button type="button" class="gestor-menu-btn" id="btn-menu-equipe-cadastrada" data-titulo="Equipe Cadastrada" onclick="mudarAba('equipe-cadastrada', this)">👥 Equipe Cadastrada</button>
+                    <button type="button" class="gestor-menu-btn" data-titulo="Vales" onclick="mudarAba('criar', this)">💰 Vales</button>
+                    <button type="button" class="gestor-menu-btn" data-titulo="Arquivo" onclick="mudarAba('buscar', this)">📁 Arquivo</button>
+                    <button type="button" class="gestor-menu-btn" data-titulo="Ponto" onclick="mudarAba('ponto', this)">📍 Ponto</button>
+                    <button type="button" class="gestor-menu-btn" data-titulo="Ajuda de Custo" onclick="mudarAba('ajuda-custo', this)">🧳 Ajuda de Custo</button>
+                    <button type="button" class="gestor-menu-btn" data-titulo="Descontos Folha" onclick="mudarAba('descontos-folha', this)">📋 Descontos Folha</button>
+                    <button type="button" class="gestor-menu-btn" data-titulo="Folha Pagamento" onclick="mudarAba('folha', this)">📄 Folha Pagamento</button>
+                </div>
+            </div>
             <button type="button" class="gestor-menu-btn" data-titulo="Calendário" onclick="mudarAba('calendario', this)">📅 Calendário</button>
             <button type="button" class="gestor-menu-btn" data-titulo="Terceiros" onclick="mudarAba('terceiros', this)">👷 Terceiros</button>
-            <button type="button" class="gestor-menu-btn menu-despesas" data-titulo="Despesas" onclick="mudarAba('despesas', this)">📉 Despesas</button>
+            <button type="button" class="gestor-menu-btn menu-despesas" data-titulo="Obras" onclick="mudarAba('despesas', this)">🏗️ Obras</button>
             <button type="button" class="gestor-menu-btn" data-titulo="Relatório Despesas" onclick="mudarAba('relatorio-despesas', this)">📋 Relatório Despesas</button>
             <button type="button" class="gestor-menu-btn menu-backup" data-titulo="Backup" onclick="mudarAba('backup', this)">💾 Backup</button>
             <button type="button" class="gestor-menu-btn" data-titulo="Pedidos Materiais" onclick="mudarAba('pedidos', this)">📦 Pedidos Materiais</button>
@@ -1404,7 +1600,7 @@
     <div class="gestor-main-content">
         <div class="gestor-content-header">
             <h2 class="gestor-titulo-aba" id="gestor-titulo-aba">Cadastrar Funcionário</h2>
-            <p class="gestor-subtitulo-painel">Gestor 360 — Despesas · Holerite · Ponto</p>
+            <p class="gestor-subtitulo-painel">Gestor 360 — Obras · Holerite · Ponto</p>
         </div>
         <div class="gestor-sections-wrap">
 
@@ -1494,10 +1690,19 @@
         <p class="texto-explicacao" style="margin: 6px 0 0 0;">Na folha: entrada/saída limitam os dias no mês; início das férias ativa o cálculo CLT (férias + 1/3 constitucional sobre os dias de gozo no mês).</p>
         
         <button class="btn-gold" id="btnCadastrarFunc">SALVAR FUNCIONÁRIO</button>
+
+        <div style="margin-top: 18px; padding: 12px 14px; background: #eef2f5; border-radius: 10px; border: 1px dashed #1a2a43;">
+            <p style="margin: 0 0 10px 0; font-size: 13px; color: #333; text-align: center;">Depois de salvar, o funcionário aparece em <b>Equipe Cadastrada</b> no menu lateral.</p>
+            <button type="button" class="btn-enviar" style="width: 100%; margin: 0;" onclick="irParaEquipeCadastrada()">👥 Ver Equipe Cadastrada</button>
+        </div>
     </div>
 
     <div id="aba-equipe-cadastrada" class="view-section">
-        <p class="texto-explicacao" style="margin-top: 0;">Funcionários já registados nesta empresa. Use <b>Editar</b>, <b>Resetar senha</b> ou <b>Excluir</b> conforme necessário.</p>
+        <div style="display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:12px;">
+            <p class="texto-explicacao" style="margin: 0; flex: 1;">Funcionários registados nesta empresa.</p>
+            <button type="button" class="btn-enviar" style="margin:0;padding:8px 14px;font-size:12px;" onclick="carregarListaDeFuncionarios()">🔄 Atualizar lista</button>
+        </div>
+        <div id="equipe-cadastrada-contagem" style="font-size:13px;font-weight:700;color:#1a2a43;margin-bottom:10px;"></div>
         <div id="lista-funcionarios-gerencial" style="margin-top: 10px;">
             <p style="text-align: center; color: #888; font-size: 13px;">A carregar...</p>
         </div>
@@ -6580,9 +6785,43 @@ window.exportarPDF = function(tipo) {
         location.reload(); 
     };
 
+    window.irParaEquipeCadastrada = function () {
+        abrirGrupoMenuEquipe();
+        const btn = document.getElementById('btn-menu-equipe-cadastrada');
+        if (btn) mudarAba('equipe-cadastrada', btn);
+    };
+
+    const ABAS_GRUPO_EQUIPE = ['cadastrar', 'equipe-cadastrada', 'criar', 'buscar', 'ponto', 'ajuda-custo', 'descontos-folha', 'folha'];
+
+    window.abrirGrupoMenuEquipe = function () {
+        const grupo = document.getElementById('grupo-menu-equipe');
+        const titulo = document.getElementById('btn-grupo-equipe');
+        if (grupo) grupo.classList.add('open');
+        if (titulo) titulo.setAttribute('aria-expanded', 'true');
+    };
+
+    window.toggleGrupoMenuEquipe = function () {
+        const grupo = document.getElementById('grupo-menu-equipe');
+        const titulo = document.getElementById('btn-grupo-equipe');
+        if (!grupo) return;
+        grupo.classList.toggle('open');
+        const aberto = grupo.classList.contains('open');
+        if (titulo) titulo.setAttribute('aria-expanded', aberto ? 'true' : 'false');
+    };
+
     window.mudarAba = function(aba, elementoAtivado) {
         document.querySelectorAll('.gestor-menu-btn').forEach(t => t.classList.remove('active'));
         document.querySelectorAll('.view-section').forEach(v => v.classList.remove('active'));
+
+        const grupoEquipe = document.getElementById('grupo-menu-equipe');
+        if (grupoEquipe) {
+            if (ABAS_GRUPO_EQUIPE.includes(aba)) {
+                grupoEquipe.classList.add('has-active');
+                abrirGrupoMenuEquipe();
+            } else {
+                grupoEquipe.classList.remove('has-active');
+            }
+        }
 
         if (elementoAtivado) {
             elementoAtivado.classList.add('active');
@@ -6733,7 +6972,7 @@ window.exportarPDF = function(tipo) {
             window.listaFuncionarios = {};
             
             if (querySnapshot.empty) {
-                gerenciaHTML = '<p style="text-align: center; color: #888; font-size: 13px;">Nenhum funcionário cadastrado ainda.</p>';
+                gerenciaHTML = '<p style="text-align: center; color: #888; font-size: 13px;">Nenhum funcionário cadastrado ainda.<br><span style="font-size:12px;">Use <b>Cadastrar Funcionário</b> no menu lateral para adicionar.</span></p>';
             }
 
             let funcsArray = [];
@@ -6772,6 +7011,18 @@ window.exportarPDF = function(tipo) {
             
             if (document.getElementById('lista-funcionarios-gerencial')) {
                 document.getElementById('lista-funcionarios-gerencial').innerHTML = gerenciaHTML;
+            }
+            const elContagem = document.getElementById('equipe-cadastrada-contagem');
+            if (elContagem) {
+                elContagem.textContent = funcsArray.length
+                    ? `${funcsArray.length} funcionário(s) cadastrado(s) nesta empresa`
+                    : 'Nenhum funcionário cadastrado nesta empresa';
+            }
+            const btnEquipe = document.getElementById('btn-menu-equipe-cadastrada');
+            if (btnEquipe) {
+                btnEquipe.textContent = funcsArray.length
+                    ? `👥 Equipe Cadastrada (${funcsArray.length})`
+                    : '👥 Equipe Cadastrada';
             }
         } catch(e) { 
             console.error("Erro ao carregar:", e); 
@@ -8029,7 +8280,8 @@ window.gerarFolhaPagamento = async function() {
             if (document.getElementById('c-tipo-remuneracao')) document.getElementById('c-tipo-remuneracao').value = 'mensal';
             
             // Recarrega a lista na hora
-            carregarListaDeFuncionarios();
+            await carregarListaDeFuncionarios();
+            irParaEquipeCadastrada();
             
         } catch (e) {
             console.error(e);
@@ -10285,6 +10537,7 @@ async function monitorarVencimentosObras() {
     }
 
      try {
+        window._mapAlertasDespesas = {};
         // CORREÇÃO 2: Busca no banco de dados APENAS as despesas referentes à empresa acessada (MANUTENÇÃO, WORKMAN, etc.)
         const q = query(collection(db, "despesas_obras"), where("empresa_id", "==", empresaGestor));
         const querySnapshot = await getDocs(q);
@@ -10321,7 +10574,7 @@ async function monitorarVencimentosObras() {
                         classeUrgencia = "aviso";
                         emitirSom = true;
                     } else if (diasRestantes < 0) {
-                        tituloAlerta = "🔴 VENCIDO";
+                        tituloAlerta = "VENCIDO";
                         classeUrgencia = "urgente";
                         emitirSom = true;
                     }
@@ -10330,10 +10583,13 @@ async function monitorarVencimentosObras() {
                         const nomeLoja = dados.loja_nome || dados.loja || "Fornecedor não informado";
                         const nomeObra = dados.obra_nome || dados.obra || "Obra não informada";
                         const nomeDespesa = dados.descricao || "Sem descrição";
-                        const linkVer = dados.foto_recibo || dados.arquivoUrl || dados.link || dados.arquivo || "#";
+                        const valorAlerta = dados.valor_string || formatarMoeda(dados.valor_numero || 0);
+                        const vencAlerta = formatarVencimentoDespesaExibir(dados);
+                        const temNota = Boolean(dados.foto_recibo);
+                        window._mapAlertasDespesas[idDoc] = dados;
                         filaAlertas.push({
                             ts: tsVenc,
-                            html: montarPainelAlerta(idDoc, nomeLoja, nomeObra, nomeDespesa, tituloAlerta, classeUrgencia, linkVer)
+                            html: montarPainelAlerta(idDoc, nomeLoja, nomeObra, nomeDespesa, tituloAlerta, classeUrgencia, temNota, valorAlerta, vencAlerta)
                         });
                     }
                 }
@@ -10353,6 +10609,180 @@ async function monitorarVencimentosObras() {
         console.warn("Aguardando carregamento...", err);
     }
 }
+
+window.imprimirRelatorioAlertasVencimento = function () {
+    function limparTextoParaPdf(s) {
+        if (s == null) return '';
+        return String(s)
+            .replace(/[\u{1F300}-\u{1FAFF}\u{2600}-\u{27BF}]/gu, '')
+            .replace(/[\u2014\u2013]/g, '-')
+            .trim();
+    }
+
+    function statusAlertaDespesaParaPdf(d) {
+        const tsVenc = dataVencimentoTsDespesa(d);
+        if (tsVenc == null) return 'PENDENTE';
+        const hojeMeioDia = new Date();
+        hojeMeioDia.setHours(12, 0, 0, 0);
+        const dias = Math.round((tsVenc - hojeMeioDia.getTime()) / (1000 * 60 * 60 * 24));
+        if (dias < 0) return 'VENCIDO';
+        if (dias === 0) return 'VENCE HOJE';
+        if (dias <= 3) return 'VENCE EM ' + dias + ' DIA(S)';
+        return 'PENDENTE';
+    }
+
+    const cards = document.querySelectorAll('#alerta-container-global [id^="card-alerta-"]');
+    if (!cards.length) {
+        return Swal.fire('Atenção', 'Não há boletos na lista de vencimentos para imprimir.', 'info');
+    }
+
+    const empresa = limparTextoParaPdf(getEmpresaGestor() || 'Empresa');
+    const linhas = [];
+    let totalPagar = 0;
+
+    cards.forEach((el) => {
+        const id = el.id.replace('card-alerta-', '');
+        const d = window._mapAlertasDespesas && window._mapAlertasDespesas[id];
+        if (!d) return;
+        const status = statusAlertaDespesaParaPdf(d);
+        const valorNum = parseMoedaLocal(d.valor_string) || Number(d.valor_numero) || 0;
+        totalPagar += valorNum;
+        const valorTxt = limparTextoParaPdf(d.valor_string || formatarMoeda(valorNum));
+        linhas.push([
+            status,
+            limparTextoParaPdf(formatarVencimentoDespesaExibir(d)),
+            limparTextoParaPdf(d.obra_nome || d.obra || ''),
+            limparTextoParaPdf(d.loja_nome || d.loja || ''),
+            valorTxt.startsWith('R$') ? valorTxt : 'R$ ' + valorTxt,
+            limparTextoParaPdf(d.nota_fiscal || '-'),
+            limparTextoParaPdf(String(d.descricao || '').slice(0, 100))
+        ]);
+    });
+
+    if (!linhas.length) {
+        return Swal.fire('Aviso', 'Não foi possível montar o relatório.', 'warning');
+    }
+
+    const { jsPDF } = window.jspdf;
+    const doc = new jsPDF('l', 'mm', 'a4');
+
+    doc.setFillColor(26, 42, 67);
+    doc.rect(0, 0, 297, 30, 'F');
+    doc.setTextColor(255, 255, 255);
+    doc.setFontSize(14);
+    doc.setFont('helvetica', 'bold');
+    doc.text('RELATORIO DE CONTAS A PAGAR - VENCIMENTOS', 14, 11);
+    doc.setFontSize(9);
+    doc.setFont('helvetica', 'normal');
+    doc.text(`${empresa}  |  Gerado em: ${new Date().toLocaleString('pt-BR')}  |  ${linhas.length} conta(s) na lista`, 14, 18);
+
+    doc.setTextColor(217, 83, 79);
+    doc.setFontSize(11);
+    doc.setFont('helvetica', 'bold');
+    doc.text(`TOTAL A PAGAR (itens desta lista): ${formatarMoeda(totalPagar)}`, 14, 25);
+
+    doc.autoTable({
+        startY: 34,
+        head: [['Situação', 'Vencimento', 'Obra', 'Fornecedor', 'Valor', 'NF', 'Descrição']],
+        body: linhas,
+        theme: 'striped',
+        styles: { fontSize: 8, cellPadding: 2.5, valign: 'middle', textColor: '#333333' },
+        headStyles: { fillColor: [26, 42, 67], textColor: '#ffffff', fontStyle: 'bold' },
+        alternateRowStyles: { fillColor: [245, 248, 250] },
+        columnStyles: {
+            0: { cellWidth: 32 },
+            1: { cellWidth: 22 },
+            2: { cellWidth: 36 },
+            3: { cellWidth: 36 },
+            4: { cellWidth: 22 },
+            5: { cellWidth: 16 },
+            6: { cellWidth: 50 }
+        },
+        didParseCell: function (data) {
+            if (data.column.index === 0 && data.section === 'body') {
+                const t = String(data.cell.raw || '');
+                if (t.includes('VENCIDO') || t.includes('HOJE')) {
+                    data.cell.styles.textColor = [217, 83, 79];
+                    data.cell.styles.fontStyle = 'bold';
+                } else if (t.includes('VENCE EM')) {
+                    data.cell.styles.textColor = [240, 173, 78];
+                    data.cell.styles.fontStyle = 'bold';
+                }
+            }
+        },
+        didDrawPage: function (data) {
+            doc.setFontSize(8);
+            doc.setTextColor(150);
+            doc.text('Página ' + doc.internal.getNumberOfPages() + ' — Gestor 360', data.settings.margin.left, doc.internal.pageSize.height - 8);
+        }
+    });
+
+    const nomeArq = `relatorio_vencimentos_${String(empresa).replace(/\s+/g, '_')}_${new Date().toISOString().slice(0, 10)}.pdf`;
+
+    try {
+        doc.autoPrint();
+        const url = doc.output('bloburl');
+        const janela = window.open(url, '_blank');
+        if (!janela) {
+            doc.save(nomeArq);
+            Swal.fire('PDF guardado', 'O navegador bloqueou a janela de impressão. O relatório foi transferido — abra o PDF para imprimir.', 'info');
+        }
+    } catch (e) {
+        console.error(e);
+        doc.save(nomeArq);
+        Swal.fire('PDF guardado', 'Abra o ficheiro transferido para imprimir o relatório.', 'success');
+    }
+};
+
+window.visualizarNotaAlertaVencimento = function (idDoc) {
+    const d = window._mapAlertasDespesas && window._mapAlertasDespesas[idDoc];
+    if (!d) return Swal.fire('Aviso', 'Despesa não encontrada.', 'warning');
+
+    const nomeObra = escapeHtmlBasico(d.obra_nome || d.obra || 'Obra');
+    const nomeLoja = escapeHtmlBasico(d.loja_nome || d.loja || 'Fornecedor');
+    const valor = escapeHtmlBasico(d.valor_string || formatarMoeda(d.valor_numero || 0));
+    const venc = escapeHtmlBasico(formatarVencimentoDespesaExibir(d));
+    const nf = d.nota_fiscal ? escapeHtmlBasico(String(d.nota_fiscal)) : '';
+    const desc = d.descricao ? escapeHtmlBasico(String(d.descricao).slice(0, 220)) : '';
+
+    let html = '<div style="text-align:left;font-size:13px;line-height:1.45;">'
+        + '<div style="margin-bottom:8px;"><span style="color:#666;font-size:11px;font-weight:700;">🏗️ OBRA</span><br><b style="color:#1a2a43;">' + nomeObra + '</b></div>'
+        + '<div style="margin-bottom:8px;"><span style="color:#666;font-size:11px;font-weight:700;">🏢 FORNECEDOR</span><br><b style="color:#1a2a43;">' + nomeLoja + '</b></div>'
+        + '<div style="display:flex;gap:16px;flex-wrap:wrap;margin-bottom:8px;">'
+        + '<span><span style="color:#666;font-size:11px;">Valor</span><br><b style="color:#d9534f;">' + (String(valor).trim().startsWith('R$') ? valor : 'R$ ' + valor) + '</b></span>'
+        + '<span><span style="color:#666;font-size:11px;">Vencimento</span><br><b style="color:#1a2a43;">' + venc + '</b></span>'
+        + '</div>'
+        + (nf ? '<div style="font-size:12px;color:#555;margin-bottom:6px;"><b>NF:</b> ' + nf + '</div>' : '')
+        + (desc ? '<div style="font-size:12px;color:#444;margin-bottom:6px;">' + desc + '</div>' : '');
+
+    if (d.foto_recibo) {
+        html += '<p style="font-size:11px;color:#666;margin:10px 0 6px 0;text-align:center;">Clique na miniatura para ampliar a nota / boleto</p>'
+            + '<img src="' + d.foto_recibo + '" id="alerta-nota-img-' + escapeAttrBasico(idDoc) + '" style="max-width:100%;max-height:240px;object-fit:contain;border-radius:8px;border:2px solid #4285F4;cursor:pointer;display:block;margin:0 auto;" title="Clique para ampliar" alt="Nota">';
+    } else {
+        html += '<p style="font-size:12px;color:#888;margin-top:12px;text-align:center;background:#f5f5f5;padding:12px;border-radius:8px;">Esta despesa não tem foto da nota/boleto anexada.</p>';
+    }
+    html += '</div>';
+
+    Swal.fire({
+        title: '📄 Nota / Boleto',
+        html: html,
+        width: 580,
+        confirmButtonText: 'Fechar',
+        confirmButtonColor: '#1a2a43',
+        showDenyButton: !!d.foto_recibo,
+        denyButtonText: '🔍 Ampliar nota',
+        denyButtonColor: '#4285F4'
+    }).then((r) => {
+        if (r.isDenied && d.foto_recibo) abrirFoto(d.foto_recibo);
+    });
+
+    if (d.foto_recibo) {
+        setTimeout(() => {
+            const img = document.getElementById('alerta-nota-img-' + idDoc);
+            if (img) img.onclick = () => abrirFoto(d.foto_recibo);
+        }, 150);
+    }
+};
 
 window.confirmarLeituraAlerta = function(id) {
     const hj = new Date().toISOString().substring(0, 10);
@@ -10418,21 +10848,30 @@ function atualizarContagemPainelAlertas() {
 }
 
 // Layout atualizado para exibir OBRA e LOJA
-function montarPainelAlerta(id, loja, obra, desc, titulo, tipo, link) {
+function montarPainelAlerta(id, loja, obra, desc, titulo, tipo, temNota, valor, vencimento) {
     const corTema = tipo === "urgente" ? "#d9534f" : "#f0ad4e";
-    const displayVer = (link && link !== "#") ? "block" : "none";
+    const lojaEsc = escapeHtmlBasico(loja);
+    const obraEsc = escapeHtmlBasico(obra);
+    const descEsc = escapeHtmlBasico(desc);
+    const valorEsc = escapeHtmlBasico(valor || '');
+    const vencEsc = escapeHtmlBasico(vencimento || '');
+    const btnNota = temNota
+        ? `<button type="button" onclick="visualizarNotaAlertaVencimento('${id}')" style="background:#4285F4;color:#fff;border:none;border-radius:6px;padding:7px 10px;font-size:11px;font-weight:700;cursor:pointer;width:100%;">📄 VER NOTA</button>`
+        : `<span style="display:block;font-size:10px;color:#999;text-align:center;padding:4px 0;">Sem nota anexada</span>`;
 
     return `
-        <div id="card-alerta-${id}" style="background:#fff; width:340px; border-radius:12px; border:1px solid #eee; border-left:8px solid ${corTema}; box-shadow:0 10px 25px rgba(0,0,0,0.1); margin-bottom:12px; padding:15px; display:flex; align-items:center; justify-content:space-between; transition:0.4s; z-index:999999;">
-            <div style="flex:1; padding-right:10px;">
+        <div id="card-alerta-${id}" class="card-alerta-venc" style="border-left:8px solid ${corTema};">
+            <div style="flex:1; min-width:0;">
                 <b style="color:${corTema}; font-size:14px; display:block; margin-bottom:6px;">${titulo}</b>
-                <span style="color:#666; font-size:11px; text-transform:uppercase; font-weight:800; display:block; margin-bottom:2px;">🏗️ OBRA: ${obra}</span>
-                <span style="color:#666; font-size:11px; text-transform:uppercase; font-weight:800; display:block; margin-bottom:4px;">🏢 LOJA: ${loja}</span>
-                <span style="color:#1a2a43; font-weight:600; font-size:14px; line-height:1.2; display:block;">${desc}</span>
+                <span style="color:#666; font-size:11px; text-transform:uppercase; font-weight:800; display:block; margin-bottom:2px;">🏗️ OBRA: ${obraEsc}</span>
+                <span style="color:#666; font-size:11px; text-transform:uppercase; font-weight:800; display:block; margin-bottom:4px;">🏢 LOJA: ${lojaEsc}</span>
+                <span style="color:#d9534f; font-weight:700; font-size:13px; display:block; margin-bottom:2px;">${valorEsc.startsWith('R$') ? valorEsc : 'R$ ' + valorEsc}</span>
+                <span style="color:#666; font-size:11px; display:block; margin-bottom:4px;">📅 Venc.: ${vencEsc}</span>
+                <span style="color:#1a2a43; font-weight:600; font-size:13px; line-height:1.2; display:block;">${descEsc}</span>
             </div>
-            <div style="display:flex; flex-direction:column; gap:8px;">
-                <button onclick="window.confirmarLeituraAlerta('${id}')" style="background:#f8f9fa; border:1px solid #ddd; border-radius:6px; padding:6px 12px; font-weight:700; cursor:pointer; color:#333;">OK</button>
-                <a href="${link}" target="_blank" style="display:${displayVer}; text-decoration:none; background:#1a2a43; color:#fff; text-align:center; border-radius:6px; padding:6px 12px; font-size:12px; font-weight:700;">VER</a>
+            <div style="display:flex; flex-direction:column; gap:8px; flex-shrink:0; min-width:88px;">
+                ${btnNota}
+                <button type="button" onclick="window.confirmarLeituraAlerta('${id}')" style="background:#f8f9fa; border:1px solid #ddd; border-radius:6px; padding:6px 12px; font-weight:700; cursor:pointer; color:#333;">OK</button>
             </div>
         </div>
     `;
@@ -10444,7 +10883,7 @@ function renderizarAlertasNoCanto(conteudo, som) {
     if (!container) {
         container = document.createElement("div");
         container.id = "alerta-container-global";
-        container.style.cssText = "position:fixed; bottom:20px; right:20px; z-index:999999; max-height:80vh; padding:5px;";
+        container.style.cssText = "position:fixed; bottom:20px; right:20px; z-index:999999; max-height:80vh; padding:0;";
 
         const telaPatrao = document.getElementById('tela-patrao');
         if (telaPatrao) {
@@ -10459,20 +10898,22 @@ function renderizarAlertasNoCanto(conteudo, som) {
 
     container.style.display = 'block';
     container.innerHTML = `
-        <div class="alerta-barra-minimizada" style="display:${minimizado ? 'flex' : 'none'}; align-items:center; gap:8px; background:#1a2a43; color:#fff; padding:10px 14px; border-radius:10px; box-shadow:0 6px 20px rgba(0,0,0,0.2); min-width:200px;">
+        <div class="alerta-barra-minimizada" style="display:${minimizado ? 'flex' : 'none'}; align-items:center; gap:8px; background:#1a2a43; color:#fff; padding:10px 14px; border-radius:10px; box-shadow:0 6px 20px rgba(0,0,0,0.2);">
             <span style="font-weight:700; font-size:13px; flex:1; cursor:pointer;" onclick="window.togglePainelAlertasMinimizado()" title="Clique para expandir">🔔 <span class="alerta-contagem-qtd">${qtd}</span> vencimento(s)</span>
-            <button type="button" onclick="window.confirmarLeituraTodosAlertas()" style="background:#d9534f; color:#fff; border:none; border-radius:6px; padding:4px 8px; font-weight:700; font-size:10px; cursor:pointer;" title="Silenciar todos">Fechar</button>
+            <button type="button" class="alerta-btn-imprimir" onclick="event.stopPropagation(); window.imprimirRelatorioAlertasVencimento()" title="Imprimir relatório">🖨️</button>
+            <button type="button" class="alerta-btn-fechar" onclick="window.confirmarLeituraTodosAlertas()" title="Silenciar todos">Fechar</button>
             <button type="button" onclick="window.togglePainelAlertasMinimizado()" style="background:#fff; color:#1a2a43; border:none; border-radius:6px; padding:4px 10px; font-weight:700; font-size:12px; cursor:pointer;">Expandir</button>
         </div>
         <div class="alerta-painel-wrapper" style="display:${minimizado ? 'none' : 'block'};">
-            <div class="alerta-painel-header" style="display:flex; align-items:center; justify-content:space-between; gap:8px; background:#fff; border:1px solid #e0e0e0; border-radius:10px 10px 0 0; padding:10px 12px; margin-bottom:0; box-shadow:0 4px 12px rgba(0,0,0,0.06); width:340px; box-sizing:border-box;">
-                <span style="font-weight:800; font-size:13px; color:#1a2a43;">⚠️ Vencimentos (<span class="alerta-contagem-qtd">${qtd}</span>)</span>
-                <div style="display:flex; gap:6px; flex-shrink:0;">
-                    <button type="button" onclick="window.confirmarLeituraTodosAlertas()" style="background:#d9534f; color:#fff; border:none; border-radius:6px; padding:5px 10px; font-weight:700; font-size:11px; cursor:pointer;" title="Silenciar todos os alertas de hoje">Fechar tudo</button>
-                    <button type="button" onclick="window.togglePainelAlertasMinimizado()" style="background:#f8f9fa; border:1px solid #ddd; border-radius:6px; padding:5px 10px; font-weight:700; font-size:14px; cursor:pointer; line-height:1;" title="Minimizar painel">−</button>
+            <div class="alerta-painel-header">
+                <span class="alerta-painel-header-titulo">⚠️ Vencimentos (<span class="alerta-contagem-qtd">${qtd}</span>)</span>
+                <div class="alerta-painel-header-acoes">
+                    <button type="button" class="alerta-btn-fechar" onclick="window.confirmarLeituraTodosAlertas()" title="Silenciar todos os alertas de hoje">Fechar tudo</button>
+                    <button type="button" class="alerta-btn-imprimir" onclick="window.imprimirRelatorioAlertasVencimento()" title="Imprimir relatório de tudo a pagar">🖨️ Imprimir</button>
+                    <button type="button" class="alerta-btn-minimizar" onclick="window.togglePainelAlertasMinimizado()" title="Minimizar painel">−</button>
                 </div>
             </div>
-            <div class="alerta-painel-corpo" style="max-height:70vh; overflow-y:auto; padding-top:4px;">
+            <div class="alerta-painel-corpo">
                 ${conteudo}
             </div>
         </div>
