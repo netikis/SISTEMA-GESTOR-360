@@ -2768,14 +2768,14 @@
         </div>
         <div id="equipe-cadastrada-contagem" style="font-size:13px;font-weight:700;color:#1a2a43;margin-bottom:10px;"></div>
         <div id="lista-funcionarios-gerencial" style="margin-top: 10px;">
-            <p style="text-align: center; color: #888; font-size: 13px;">A carregar...</p>
+            <p style="text-align: center; color: #888; font-size: 13px;">Carregando...</p>
         </div>
     </div>
 
     <div id="aba-criar" class="view-section">
         <label>Selecione o Funcionário</label>
         <select id="p-func-select" class="lista-funcs">
-            <option value="">A carregar...</option>
+            <option value="">Carregando...</option>
         </select>
 
         <div style="display: flex; gap: 10px; margin-top: 5px;">
@@ -2802,7 +2802,7 @@
         <label>Histórico do Funcionário (Vales):</label>
         <div style="display: flex; gap: 10px;">
             <select id="b-func-select" class="lista-funcs" style="margin: 0; flex: 2;">
-                <option value="">A carregar...</option>
+                <option value="">Carregando...</option>
             </select>
             <button onclick="buscarVales()" style="flex: 1; background: var(--dark-navy); color: white; border: none; border-radius: 10px; cursor: pointer; font-weight:bold;">Buscar</button>
         </div>
@@ -2824,7 +2824,7 @@
         <p class="texto-explicacao" style="margin:4px 0 10px 0;">Os batimentos ficam na lista abaixo (nuvem: coleção <b>ponto_registros</b>). Um <b>cancelamento</b> só cola o aviso amarelo: o documento continua no mesmo sítio até o RH apagar com <b>APAGAR BATIDA</b> se quiser retirá-lo da base.</p>
         <div style="display: flex; gap: 10px;">
             <select id="pt-func-select" class="lista-funcs" style="margin: 0; flex: 2;">
-                <option value="">A carregar...</option>
+                <option value="">Carregando...</option>
             </select>
             <button onclick="buscarPonto()" style="flex: 1; background: var(--dark-navy); color: white; border: none; border-radius: 10px; cursor: pointer; font-weight:bold;">Buscar</button>
         </div>
@@ -2849,7 +2849,7 @@
 
         <label>Funcionário</label>
         <select id="ac-func-select" class="lista-funcs" style="margin-bottom: 10px;">
-            <option value="">A carregar...</option>
+            <option value="">Carregando...</option>
         </select>
 
         <label style="margin-top: 12px;">Data do lançamento</label>
@@ -2931,7 +2931,7 @@
 
         <label>Funcionário</label>
         <select id="df-func-select" class="lista-funcs" style="margin-bottom: 10px;">
-            <option value="">A carregar...</option>
+            <option value="">Carregando...</option>
         </select>
 
         <label style="margin-top: 12px;">Mês de referência da folha</label>
@@ -3013,7 +3013,7 @@
     <div id="aba-folha" class="view-section">
         <label>Gerar Acerto Mensal (Folha/Holerite)</label>
         <select id="folha-func-select" class="lista-funcs" style="margin-bottom: 10px;">
-            <option value="">A carregar...</option>
+            <option value="">Carregando...</option>
         </select>
         
         <div style="display: flex; gap: 10px;">
@@ -3165,7 +3165,7 @@
                 <div class="folha-secao-titulo" style="margin-top:20px; color:#0d6efd;">Recebimentos (PLUS — à parte do líquido)</div>
                 <p class="folha-bloco-plus-aviso">
                     Valores abaixo são <b>pagamento adicional</b> ao colaborador.<br>
-                    <b>Não somam</b> nem <b>descontam</b> do líquido acima — aparecem só para registo e pagamento à parte.
+                    <b>Não somam</b> nem <b>descontam</b> do líquido acima — aparecem só para registro e pagamento à parte.
                 </p>
                 <div class="folha-linha recebimento-plus">
                     <span id="f-ajuda-custo-texto">🧳 Ajuda de custo — PLUS (0 lançamentos):</span>
@@ -3236,7 +3236,7 @@
         </div>
 
         <div id="rel-geral-obras-secoes" style="margin-top: 15px;">
-            <p style="text-align: center; color: #888; font-size: 13px;">Clique em «Atualizar Relatório Geral» ou abra esta opção no menu para carregar.</p>
+            <p style="text-align: center; color: #888; font-size: 13px;">Clique em "Atualizar Relatório Geral" ou abra esta opção no menu para carregar.</p>
         </div>
     </div>
 
@@ -3305,7 +3305,7 @@
         </div>
 
         <div id="tags-filtros-despesas" class="painel-cadastros-desp">
-            <p class="cadastro-desp-vazio">A carregar cadastros...</p>
+            <p class="cadastro-desp-vazio">Carregando cadastros...</p>
         </div>
 
         <div id="quadro-controles-despesas" class="quadro-controles-despesas" style="display: none;">
@@ -3337,7 +3337,7 @@
         <details style="margin-top: 20px;">
             <summary style="background: #eef2f5;">📊 Resumo de Gastos (Obra x Fornecedor)</summary>
             <div style="padding: 15px;">
-                <p class="texto-explicacao" style="text-align: justify;">Esta tabela cruza fornecedores da <b>obra selecionada</b> acima. Clique na etiqueta da obra e depois em «Gerar tabela de resumo».</p>
+                <p class="texto-explicacao" style="text-align: justify;">Esta tabela cruza fornecedores da <b>obra selecionada</b> acima. Clique na etiqueta da obra e depois em "Gerar tabela de resumo".</p>
                 <button class="btn-enviar" style="margin-top: 5px;" onclick="gerarResumoFornecedores()">GERAR TABELA DE RESUMO</button>
                 
                 <div id="tabela-resumo-fornecedores" style="margin-top: 20px; overflow-x: auto;"></div>
@@ -3515,7 +3515,7 @@
         <div class="card-alerta-backup">
             <h3 style="color: var(--dark-navy); margin-top: 0;">💾 Gestão de Armazenamento</h3>
             <p class="texto-explicacao" style="text-align: justify; margin-bottom: 20px;">
-                Para manter o seu sistema rápido e evitar cobranças de servidor do Google devido ao excesso de fotos pesadas, recomendamos que, ao fechar o mês, descarregue o Backup Completo Offline e, em seguida, faça a Limpeza da Nuvem.
+                Para manter o seu sistema rápido e evitar cobranças de servidor do Google devido ao excesso de fotos pesadas, recomendamos que, ao fechar o mês, baixe o Backup Completo Offline e, em seguida, faça a Limpeza da Nuvem.
             </p>
 
             <div style="display: flex; gap: 10px; text-align: left;">
@@ -3543,10 +3543,10 @@
             </div>
 
             <button class="btn-entrada" onclick="fazerBackupMes()" style="box-shadow: none;">⬇️ 1º PASSO: BAIXAR BACKUP (OFFLINE)</button>
-            <p class="texto-explicacao" style="margin-top: 5px;">* Guarda todas as fotos de pontos, vales e despesas num ficheiro seguro no seu computador.</p>
+            <p class="texto-explicacao" style="margin-top: 5px;">* Salva todas as fotos de pontos, vales e despesas em um arquivo seguro no seu computador.</p>
 
             <button class="btn-limpar-nuvem" onclick="limparDadosMes()">🗑️ 2º PASSO: APAGAR DADOS (LIMPAR NUVEM)</button>
-            <p class="texto-explicacao" style="margin-top: 5px;">* Atenção: Clique apenas após garantir que o ficheiro de Backup foi salvo com segurança!</p>
+            <p class="texto-explicacao" style="margin-top: 5px;">* Atenção: Clique apenas após garantir que o arquivo de Backup foi salvo com segurança!</p>
         </div>
     </div>
 
@@ -3580,7 +3580,7 @@
 
     <label>Sua Senha</label>
     <input type="password" id="login-senha" placeholder="Digite sua senha">
-    <p style="font-size: 11px; color: #888; margin-top: 5px;"><i>Se for o seu primeiro acesso, digite a senha que deseja criar para o seu utilizador.</i></p>
+    <p style="font-size: 11px; color: #888; margin-top: 5px;"><i>Se for o seu primeiro acesso, digite a senha que deseja criar para o seu usuário.</i></p>
 
     <button class="btn-enviar" onclick="fazerLogin()">ENTRAR NO SISTEMA</button>
     
@@ -3599,7 +3599,7 @@
     <p style="text-align: center; font-size: 12px; color: #666; margin-top: 0;" id="relogio-nome-empresa"></p>
     
     <div id="alerta-offline" style="display: none; background: #fff3cd; color: #856404; padding: 10px; border-radius: 8px; font-size: 12px; text-align: center; margin-bottom: 10px; border: 1px solid #ffeeba;">
-        ⚠️ Está offline. O ponto será guardado no telemóvel e enviado quando a internet voltar.
+        ⚠️ Está offline. O ponto será salvo no celular e enviado quando a internet voltar.
     </div>
 
     <label style="margin-top: 20px;">Em qual local ou obra está agora?</label>
@@ -3621,7 +3621,7 @@
     <input type="hidden" id="foto-base64" value="">
 
     <div style="text-align: center; margin-top: 15px; font-size: 12px; color: #666;">
-        ⚠️ O sistema aguardará o sinal do satélite para guardar a localização exata. Permaneça num local aberto.
+        ⚠️ O sistema aguardará o sinal do satélite para salvar a localização exata. Permaneça em um local aberto.
     </div>
 
     <button type="button" class="btn-entrada" onclick="baterPonto('Entrada')">🟢 REGISTAR ENTRADA</button>
@@ -3648,7 +3648,7 @@
     </div>
 
     <div id="lista-meus-vales">
-        <p style="text-align: center; color: #888; font-size: 13px;">A carregar...</p>
+        <p style="text-align: center; color: #888; font-size: 13px;">Carregando...</p>
     </div>
 
     <button class="btn-logout" onclick="voltarTelaRelogioDeVales()" style="margin-top: 25px; background: transparent; color: #d9534f; border: 1px solid #d9534f;">Voltar ao Início</button>
@@ -3663,7 +3663,7 @@
     <div id="area-recibo">
         <div class="recibo-header">RECIBO DE ASSINATURA</div>
         <div class="data-recibo" id="f-data">--/--/----</div>
-        <div id="f-texto">A carregar dados...</div>
+        <div id="f-texto">Carregando dados...</div>
         <label style="text-align: center; margin-top: 30px;">ASSINATURA DIGITAL AQUI:</label>
         <canvas id="signature-pad"></canvas>
         <button class="btn-limpar" onclick="limpar()">Corrigir Assinatura</button>
@@ -3905,7 +3905,7 @@
         if (!senhaDigitada) return;
 
         Swal.fire({
-            title: 'A verificar...',
+            title: 'Verificando...',
             text: 'Por favor, aguarde.',
             allowOutsideClick: false,
             didOpen: () => { Swal.showLoading(); }
@@ -4036,7 +4036,7 @@
         if (!senhaDigitada) return; 
 
         Swal.fire({
-            title: 'A verificar...',
+            title: 'Verificando...',
             text: 'Por favor, aguarde.',
             allowOutsideClick: false,
             didOpen: () => { Swal.showLoading() }
@@ -4273,7 +4273,7 @@ function separarDataSegura(dataString) {
     function textoCoordenadasParaExibicao(dados) {
         const g = normalizarCoordenadasGPS(dados.latitude, dados.longitude);
         if (g.ok) return g.lat + ', ' + g.lng;
-        return 'GPS indisponível neste registo';
+        return 'GPS indisponível neste registro';
     }
 
     /**
@@ -4558,7 +4558,7 @@ function separarDataSegura(dataString) {
         return workedD <= 0;
     }
 
-    /** Falta automática (sem RH) sempre desconta DSR; RH pode optar por não descontar DSR no registo. */
+    /** Falta automática (sem RH) sempre desconta DSR; RH pode optar por não descontar DSR no registro. */
     function faltaInjustDescontaDsr(evRh, marcadaRhInjust) {
         if (!marcadaRhInjust) return true;
         if (!evRh) return true;
@@ -4960,7 +4960,7 @@ function separarDataSegura(dataString) {
         if (obraMatch.length === 1 && fornMatch.length <= 1) {
             return { rotuloTotal: 'Total Global da Obra:', subtitulo: '🏢 ' + obraMatch[0] };
         }
-        return { rotuloTotal: 'Total Global (filtro actual):', subtitulo: 'Filtro: ' + formatarNomeCanonicoDespesa(termo) };
+        return { rotuloTotal: 'Total Global (filtro atual):', subtitulo: 'Filtro: ' + formatarNomeCanonicoDespesa(termo) };
     }
 
     function atualizarPainelResumoRelDespesas(arr) {
@@ -5002,7 +5002,7 @@ function separarDataSegura(dataString) {
         arr.forEach((d) => { window._mapRelatorioDespesasParaEdicao[d.id] = d; });
 
         if (!arr.length) {
-            wrap.innerHTML = '<p style="text-align:center;color:#888;">Nenhum registo com os filtros actuais.</p>';
+            wrap.innerHTML = '<p style="text-align:center;color:#888;">Nenhum registro com os filtros atuais.</p>';
             wrap.setAttribute('data-rel-desp-carregado', '1');
             ocultarPainelResumoRelDespesas();
             return;
@@ -5359,7 +5359,7 @@ function separarDataSegura(dataString) {
                     return;
                 }
                 try {
-                    Swal.fire({ title: 'A processar arquivo...', allowOutsideClick: false, showConfirmButton: false, didOpen: () => Swal.showLoading() });
+                    Swal.fire({ title: 'Processando arquivo...', allowOutsideClick: false, showConfirmButton: false, didOpen: () => Swal.showLoading() });
                     const payload = await lerArquivoDocumentoPessoal(file, pasta);
                     if (b64El) b64El.value = payload.data;
                     if (mimeEl) mimeEl.value = payload.mime;
@@ -5423,7 +5423,7 @@ function separarDataSegura(dataString) {
             if (wrap) wrap.innerHTML = '<p style="text-align:center;color:#d9534f;">Entre como gestor para ver os documentos.</p>';
             return;
         }
-        if (wrap) wrap.innerHTML = '<p style="text-align:center;color:#888;">A carregar documentos...</p>';
+        if (wrap) wrap.innerHTML = '<p style="text-align:center;color:#888;">Carregando documentos...</p>';
         try {
             await ensureAuth();
             const q = query(collection(db, COLECAO_DOCUMENTOS_PESSOAIS), where('empresa_id', '==', empresaLogada));
@@ -5592,7 +5592,7 @@ function separarDataSegura(dataString) {
         });
         if (!conf.isConfirmed) return;
         try {
-            Swal.fire({ title: 'A excluir...', allowOutsideClick: false, didOpen: () => Swal.showLoading() });
+            Swal.fire({ title: 'Excluindo...', allowOutsideClick: false, didOpen: () => Swal.showLoading() });
             await deleteDoc(doc(db, COLECAO_DOCUMENTOS_PESSOAIS, id));
             Swal.close();
             Swal.fire({ toast: true, position: 'top-end', icon: 'success', title: 'Documento excluído', showConfirmButton: false, timer: 2000 });
@@ -5706,7 +5706,7 @@ function separarDataSegura(dataString) {
             carregarAjudaCustoLista();
         } catch (e) {
             console.error(e);
-            Swal.fire('Erro', 'Não foi possível guardar a ajuda de custo.', 'error');
+            Swal.fire('Erro', 'Não foi possível salvar a ajuda de custo.', 'error');
         }
     };
 
@@ -5720,7 +5720,7 @@ function separarDataSegura(dataString) {
         const mesFiltro = document.getElementById('ac-lista-mes') && document.getElementById('ac-lista-mes').value;
         const anoFiltro = document.getElementById('ac-lista-ano') && document.getElementById('ac-lista-ano').value;
 
-        wrap.innerHTML = '<p style="text-align:center;color:#888;">A carregar...</p>';
+        wrap.innerHTML = '<p style="text-align:center;color:#888;">Carregando...</p>';
         window._mapAjudaCustoEdicao = {};
 
         try {
@@ -5746,7 +5746,7 @@ function separarDataSegura(dataString) {
             arr.forEach(a => { window._mapAjudaCustoEdicao[a.id] = a; });
 
             if (!arr.length) {
-                wrap.innerHTML = '<p style="text-align:center;color:#888;">Nenhum lançamento com os filtros actuais.</p>';
+                wrap.innerHTML = '<p style="text-align:center;color:#888;">Nenhum lançamento com os filtros atuais.</p>';
                 return;
             }
 
@@ -5848,7 +5848,7 @@ function separarDataSegura(dataString) {
                     Swal.fire('Atualizado!', 'Ajuda de custo corrigida.', 'success');
                     carregarAjudaCustoLista();
                 } catch (e) {
-                    Swal.fire('Erro', 'Não foi possível actualizar.', 'error');
+                    Swal.fire('Erro', 'Não foi possível atualizar.', 'error');
                 }
             }
         });
@@ -5917,7 +5917,7 @@ function separarDataSegura(dataString) {
             carregarDescontosFolhaLista();
         } catch (e) {
             console.error(e);
-            Swal.fire('Erro', 'Não foi possível guardar o desconto.', 'error');
+            Swal.fire('Erro', 'Não foi possível salvar o desconto.', 'error');
         }
     };
 
@@ -5931,7 +5931,7 @@ function separarDataSegura(dataString) {
         const mesFiltro = document.getElementById('df-lista-mes') && document.getElementById('df-lista-mes').value;
         const anoFiltro = document.getElementById('df-lista-ano') && document.getElementById('df-lista-ano').value;
 
-        wrap.innerHTML = '<p style="text-align:center;color:#888;">A carregar...</p>';
+        wrap.innerHTML = '<p style="text-align:center;color:#888;">Carregando...</p>';
         window._mapDescontoFolhaEdicao = {};
 
         try {
@@ -5951,7 +5951,7 @@ function separarDataSegura(dataString) {
             arr.forEach(d => { window._mapDescontoFolhaEdicao[d.id] = d; });
 
             if (!arr.length) {
-                wrap.innerHTML = '<p style="text-align:center;color:#888;">Nenhum desconto com os filtros actuais.</p>';
+                wrap.innerHTML = '<p style="text-align:center;color:#888;">Nenhum desconto com os filtros atuais.</p>';
                 return;
             }
 
@@ -6039,7 +6039,7 @@ function separarDataSegura(dataString) {
                     Swal.fire('Atualizado!', 'Desconto corrigido.', 'success');
                     carregarDescontosFolhaLista();
                 } catch (e) {
-                    Swal.fire('Erro', 'Não foi possível actualizar.', 'error');
+                    Swal.fire('Erro', 'Não foi possível atualizar.', 'error');
                 }
             }
         });
@@ -6531,7 +6531,7 @@ function separarDataSegura(dataString) {
         const nomeExibir = formatarNomeCanonicoDespesa(nome);
         const chObraCtx = obraContexto ? normalizarChaveNomeDespesa(obraContexto) : '';
 
-        Swal.fire({ title: 'A verificar despesas...', allowOutsideClick: false });
+        Swal.fire({ title: 'Verificando despesas...', allowOutsideClick: false });
         Swal.showLoading();
 
         try {
@@ -6952,7 +6952,7 @@ window.carregarFiltrosDespesas = async function() {
                     const busca = document.getElementById('busca-obra');
                     if (busca && busca.value.trim()) buscarDespesasObra();
                 } catch (e) {
-                    Swal.fire('Erro', 'Não foi possível actualizar.', 'error');
+                    Swal.fire('Erro', 'Não foi possível atualizar.', 'error');
                 }
             }
         });
@@ -7036,7 +7036,7 @@ window.carregarFiltrosDespesas = async function() {
                 despesa = { id: snap.id, ...snap.data() };
             } catch (e) {
                 console.error(e);
-                return Swal.fire('Erro', 'Não foi possível ler o registo.', 'error');
+                return Swal.fire('Erro', 'Não foi possível ler o registro.', 'error');
             }
         }
 
@@ -7179,14 +7179,14 @@ window.carregarFiltrosDespesas = async function() {
                     Swal.fire('Atualizado', 'Linha voltou ao estado pendente.', 'success');
                     recarregarRelatorioDespesasTabularSeCarregado();
                 } catch (e) {
-                    Swal.fire('Erro', 'Não foi possível actualizar.', 'error');
+                    Swal.fire('Erro', 'Não foi possível atualizar.', 'error');
                 }
             }
         });
     };
 
     window.excluirLinhaRelatorioDespesas = async function (id) {
-        Swal.fire({ title: 'Apagar linha do relatório?', text: 'Remove apenas este registo do relatório de despesas.', icon: 'warning', showCancelButton: true, confirmButtonColor: '#d9534f', confirmButtonText: 'Sim, apagar!' }).then(async (result) => {
+        Swal.fire({ title: 'Apagar linha do relatório?', text: 'Remove apenas este registro do relatório de despesas.', icon: 'warning', showCancelButton: true, confirmButtonColor: '#d9534f', confirmButtonText: 'Sim, apagar!' }).then(async (result) => {
             if (result.isConfirmed) {
                 try {
                     await deleteDoc(doc(db, COLECAO_RELATORIO_DESPESAS, id));
@@ -7331,7 +7331,7 @@ window.carregarFiltrosDespesas = async function() {
         ocultarPainelResumoRelDespesas();
         window._despesasRelatorioExport = [];
         window._mapRelatorioDespesasParaEdicao = {};
-        wrap.innerHTML = '<p style="text-align:center;color:#888;">A carregar...</p>';
+        wrap.innerHTML = '<p style="text-align:center;color:#888;">Carregando...</p>';
 
         fecharSugestoesRelDespesas();
         const termo = normalizarChaveNomeDespesa(document.getElementById('rel-desp-filtro') && document.getElementById('rel-desp-filtro').value);
@@ -7429,14 +7429,14 @@ window.carregarFiltrosDespesas = async function() {
 
     window.exportarPDFRelatorioDespesasTabelaAtual = async function () {
         const arr = window._despesasRelatorioExport;
-        if (!arr || !arr.length) return Swal.fire('Atenção', 'Carregue a tabela primeiro (botão «Carregar tabela»).', 'warning');
+        if (!arr || !arr.length) return Swal.fire('Atenção', 'Carregue a tabela primeiro (botão "Carregar tabela").', 'warning');
 
         const prazo = await perguntarPrazoExportRelatorioDespesas();
         if (!prazo) return;
 
         const filtrado = filtrarRelDespesasPorPrazoExportacao(arr, prazo);
         if (!filtrado.length) {
-            return Swal.fire('Sem registos', 'Nenhuma despesa encontrada para o período «' + rotuloPrazoExportRelDespesas(prazo) + '».', 'info');
+            return Swal.fire('Sem registros', 'Nenhuma despesa encontrada para o período "' + rotuloPrazoExportRelDespesas(prazo) + '".', 'info');
         }
 
         window.dadosExportacaoDespesas = filtrado.slice();
@@ -7561,7 +7561,7 @@ window.carregarFiltrosDespesas = async function() {
     window.exportarExcelRelatorioDespesasTabelaAtual = async function () {
         const arr = window._despesasRelatorioExport;
         if (!arr || !arr.length) {
-            return Swal.fire('Atenção', 'Carregue a tabela primeiro (botão «Carregar tabela»).', 'warning');
+            return Swal.fire('Atenção', 'Carregue a tabela primeiro (botão "Carregar tabela").', 'warning');
         }
 
         const prazo = await perguntarPrazoExportRelatorioDespesas();
@@ -7569,7 +7569,7 @@ window.carregarFiltrosDespesas = async function() {
 
         const filtrado = filtrarRelDespesasPorPrazoExportacao(arr, prazo);
         if (!filtrado.length) {
-            return Swal.fire('Sem registos', 'Nenhuma despesa encontrada para o período «' + rotuloPrazoExportRelDespesas(prazo) + '».', 'info');
+            return Swal.fire('Sem registros', 'Nenhuma despesa encontrada para o período "' + rotuloPrazoExportRelDespesas(prazo) + '".', 'info');
         }
 
         const empresa = getEmpresaGestor() || 'Empresa';
@@ -7863,7 +7863,7 @@ window.carregarFiltrosDespesas = async function() {
         }
 
         if (!incluiuAlgumaSecao) {
-            return Swal.fire('Aviso', 'Não há registos nas opções selecionadas para exportar.', 'info');
+            return Swal.fire('Aviso', 'Não há registros nas opções selecionadas para exportar.', 'info');
         }
 
         const sufixos = [];
@@ -7886,7 +7886,7 @@ window.carregarFiltrosDespesas = async function() {
         if (!empresaLogada) return Swal.fire('Atenção', 'Empresa não definida.', 'warning');
         if (!divSecoes) return;
 
-        divSecoes.innerHTML = '<p style="text-align:center;color:#888;">A carregar relatório geral...</p>';
+        divSecoes.innerHTML = '<p style="text-align:center;color:#888;">Carregando relatório geral...</p>';
         if (divResumo) divResumo.style.display = 'none';
         if (divAcoes) divAcoes.style.display = 'none';
         window._relGeralObrasExport = null;
@@ -8034,7 +8034,7 @@ window.carregarFiltrosDespesas = async function() {
             htmlSecoes += '</div></details></div>';
 
             if (!despesas.length && !terceiros.length) {
-                divSecoes.innerHTML = '<p style="text-align:center;color:#888;padding:20px;">Nenhum registo encontrado para esta empresa.</p>';
+                divSecoes.innerHTML = '<p style="text-align:center;color:#888;padding:20px;">Nenhum registro encontrado para esta empresa.</p>';
             } else {
                 divSecoes.innerHTML = htmlSecoes;
             }
@@ -8074,7 +8074,7 @@ window.carregarFiltrosDespesas = async function() {
         const btnExportar = document.getElementById('btnExportarDespesas');
         const btnExportarExcel = document.getElementById('btnExportarDespesasExcel');
         
-        divLista.innerHTML = "A procurar relatórios...";
+        divLista.innerHTML = "Buscando relatórios...";
         ocultarQuadroControlesDespesas();
         divTotal.style.display = 'none';
         if (btnExportar) btnExportar.style.display = 'none';
@@ -8241,7 +8241,7 @@ window.carregarFiltrosDespesas = async function() {
         const mapKey = chaveObra + '||' + chaveLoja;
         const lista = (window._mapDespesasResumoFornecedor && window._mapDespesasResumoFornecedor[mapKey]) || [];
         if (!lista.length) {
-            return Swal.fire('Sem registos', 'Nenhuma despesa encontrada para este fornecedor nesta obra.', 'info');
+            return Swal.fire('Sem registros', 'Nenhuma despesa encontrada para este fornecedor nesta obra.', 'info');
         }
         const ordenada = lista.slice().sort((a, b) => {
             const ta = dataVencimentoTsDespesa(a) || tsLancamentoDespesa(a) || 0;
@@ -8488,7 +8488,7 @@ window.carregarFiltrosDespesas = async function() {
         
         if (!termoBusca) return Swal.fire('Atenção', 'Digite o nome da obra ou do terceiro.', 'warning');
 
-        const divLista = document.getElementById('lista-terceiros-resultados'); divLista.innerHTML = "A procurar..."; 
+        const divLista = document.getElementById('lista-terceiros-resultados'); divLista.innerHTML = "Buscando..."; 
 
         try {
             const q = query(collection(db, "pagamentos_terceiros"), where("empresa_id", "==", empresaLogada)); 
@@ -8522,14 +8522,14 @@ window.carregarFiltrosDespesas = async function() {
                 }
             });
 
-            if (!encontrou) { divLista.innerHTML = `<p style="color:#d9534f; text-align:center;">Nenhum registo encontrado.</p>`; return; }
+            if (!encontrou) { divLista.innerHTML = `<p style="color:#d9534f; text-align:center;">Nenhum registro encontrado.</p>`; return; }
             divLista.innerHTML = `<div style="text-align:center; margin-bottom: 15px; padding: 10px; background: #eef2f5; border-radius: 10px;">Total Gasto nesta busca: <b style="color:#1a2a43; font-size:16px;">${formatarMoeda(total)}</b></div>` + htmlResultados;
 
         } catch (e) { divLista.innerHTML = `<p style="color:red; text-align:center;">Erro ao buscar dados.</p>`; }
     };
 
     window.excluirTerceiro = async function(id) {
-        Swal.fire({ title: 'Apagar?', text: "Remover permanentemente este registo?", icon: 'warning', showCancelButton: true, confirmButtonColor: '#d9534f', confirmButtonText: 'Sim, apagar!' }).then(async (result) => {
+        Swal.fire({ title: 'Apagar?', text: "Remover permanentemente este registro?", icon: 'warning', showCancelButton: true, confirmButtonColor: '#d9534f', confirmButtonText: 'Sim, apagar!' }).then(async (result) => {
             if (result.isConfirmed) { 
                 try { await deleteDoc(doc(db, "pagamentos_terceiros", id)); Swal.fire('Apagado!', 'Removido.', 'success'); buscarTerceiros(); 
                 } catch (e) { Swal.fire('Erro', 'Não foi possível apagar.', 'error'); } 
@@ -8879,7 +8879,7 @@ window.exportarPDF = function(tipo) {
     window.exportarPDFHoleriteFolha = function () {
         const pack = window.folhaHoleritePDF;
         if (!pack) {
-            return Swal.fire('Atenção', 'Calcule a folha primeiro (botão «Calcular fechamento»).', 'warning');
+            return Swal.fire('Atenção', 'Calcule a folha primeiro (botão "Calcular fechamento").', 'warning');
         }
         const { jsPDF } = window.jspdf;
         const doc = new jsPDF('p', 'mm', 'a4');
@@ -9407,11 +9407,11 @@ window.exportarPDF = function(tipo) {
                 setSessaoFunc('funcLogadoNome', funcData.nome);
                 setSessaoFunc('funcLogadoEmpresa', empresaEscolhida);
                 
-                Swal.fire('Senha Criada!', 'O seu utilizador foi ativado com sucesso.', 'success').then(() => {
+                Swal.fire('Senha Criada!', 'O seu usuário foi ativado com sucesso.', 'success').then(() => {
                     location.reload();
                 });
             } else if (!senhasFuncionarioCoincidem(funcData.senha, senha)) {
-                Swal.fire('Erro', 'Senha incorreta! Se esqueceu, peça ao RH para clicar em «Resetar» no seu cadastro.', 'error');
+                Swal.fire('Erro', 'Senha incorreta! Se esqueceu, peça ao RH para clicar em "Resetar" no seu cadastro.', 'error');
             } else {
                 setSessaoFunc('funcLogadoId', funcId);
                 setSessaoFunc('funcLogadoNome', funcData.nome);
@@ -9622,7 +9622,7 @@ window.exportarPDF = function(tipo) {
             return;
         }
 
-        div.innerHTML = `<p style="text-align:center; color:#888; font-size:13px;">A carregar...</p>`;
+        div.innerHTML = `<p style="text-align:center; color:#888; font-size:13px;">Carregando...</p>`;
         try {
             const q = query(collection(db, "feriados"), where("empresa_id", "==", empresaLogada));
             const snap = await getDocs(q);
@@ -10747,7 +10747,7 @@ window.gerarFolhaPagamento = async function() {
                 if (nDescLanc > 0) {
                     detDescLanc.innerHTML = `<b>Descontos lançados pelo RH</b> (aba Descontos Folha) para ${mesSelected}/${anoSelected}: total <b>${formatarMoeda(totalDescontosLancados)}</b>. INSS, IRRF e demais tipos entram no líquido.`;
                 } else {
-                    detDescLanc.innerHTML = '<span style="color:#888;">Nenhum desconto lançado (INSS, etc.) neste mês. Use a aba «Descontos Folha» para incluir.</span>';
+                    detDescLanc.innerHTML = '<span style="color:#888;">Nenhum desconto lançado (INSS, etc.) neste mês. Use a aba "Descontos Folha" para incluir.</span>';
                 }
             }
             
@@ -11052,7 +11052,7 @@ window.gerarFolhaPagamento = async function() {
                             <input id="edit-f-saida" type="time" class="swal2-input" style="margin: 0; width: 100%; height: 40px; font-size: 14px;" value="${saidaEdit}">
                         </div>
                     </div>
-                    <p style="font-size:11px;color:#666;margin:6px 0 0 0;">Altere aqui (ex.: 07:30) para atualizar o registo no sistema e o cálculo da jornada esperada na folha.</p>
+                    <p style="font-size:11px;color:#666;margin:6px 0 0 0;">Altere aqui (ex.: 07:30) para atualizar o registro no sistema e o cálculo da jornada esperada na folha.</p>
 
                     <label style="margin-top: 10px;">Almoço / pausa não remunerada (minutos):</label>
                     <input id="edit-f-intervalo" type="number" class="swal2-input" style="margin: 0; width: 100%; height: 40px; font-size: 14px;" value="${(func.intervalo_minutos ?? 60)}" min="0" max="300" title="Descontado da faixa entrada–saída na jornada esperada.">
@@ -11197,7 +11197,7 @@ window.gerarFolhaPagamento = async function() {
 
     window.baterPonto = async function(tipo) {
         if (window.__pontoProcessando) {
-            return Swal.fire({ icon: 'info', title: 'Aguarde', text: 'O registo anterior ainda está a ser processado.', timer: 2200, showConfirmButton: false });
+            return Swal.fire({ icon: 'info', title: 'Aguarde', text: 'O registro anterior ainda está sendo processado.', timer: 2200, showConfirmButton: false });
         }
         const obra = (document.getElementById('obra-atual').value || '').trim();
         const fotoBase64 = document.getElementById('foto-base64').value;
@@ -11368,7 +11368,7 @@ window.gerarFolhaPagamento = async function() {
                 try {
                     const docRef = await addDoc(collection(db, "ponto_registros"), payloadPonto);
                     atualizarEstadoAposMarcacao(funcId, tipo, payloadPonto.timestamp);
-                    const avisoGps = geo.ok ? '' : '<br><small style="color:#666;">GPS não obtido nesta batida; o registo foi gravado sem coordenadas.</small>';
+                    const avisoGps = geo.ok ? '' : '<br><small style="color:#666;">GPS não obtido nesta batida; o registro foi gravado sem coordenadas.</small>';
                     Swal.fire(
                         'Sucesso!',
                         `Ponto de ${tipo} registrado às ${horaAtual}.<br><br><b>Protocolo:</b> ${docRef.id}${avisoGps}`,
@@ -11410,7 +11410,7 @@ window.gerarFolhaPagamento = async function() {
         } catch (e) {
             console.error('baterPonto', e);
             try { Swal.close(); } catch (_) {}
-            Swal.fire('Erro', 'Não foi possível concluir o registo.', 'error');
+            Swal.fire('Erro', 'Não foi possível concluir o registro.', 'error');
         } finally {
             try { Swal.close(); } catch (_) {}
             liberaProcessamento();
@@ -11437,7 +11437,7 @@ window.gerarFolhaPagamento = async function() {
         const divLista = document.getElementById('lista-ponto-resultados'); 
         const btnExportar = document.getElementById('btnExportarPonto');
         
-        divLista.innerHTML = "A procurar..."; 
+        divLista.innerHTML = "Buscando..."; 
         btnExportar.style.display = 'none'; 
         window.dadosExportacaoPonto = [];
 
@@ -11494,7 +11494,7 @@ window.gerarFolhaPagamento = async function() {
             });
 
             if (querySnapshot.empty && totalFaltasRh === 0) {
-                divLista.innerHTML = `<p style="color:#d9534f; text-align:center;">Nenhum registo.</p>`;
+                divLista.innerHTML = `<p style="color:#d9534f; text-align:center;">Nenhum registro.</p>`;
                 return;
             }
 
@@ -11597,7 +11597,7 @@ window.gerarFolhaPagamento = async function() {
                         const coordsTxt = textoCoordenadasParaExibicao(dados);
                         const btnMaps = dados.linkMaps
                             ? `<button type="button" class="btn-maps" onclick="window.open('${dados.linkMaps}', '_blank')">📍 VER NO MAPA</button>`
-                            : `<span style="font-size:12px;color:#888;">📍 Mapa indisponível (sem coordenadas GPS neste registo)</span>`;
+                            : `<span style="font-size:12px;color:#888;">📍 Mapa indisponível (sem coordenadas GPS neste registro)</span>`;
                         const btnAcao = (dados.cancelado_em_evento ? `` : `<button type="button" onclick="solicitarCancelamentoPonto('${dados.id}','${(dados.funcionario_id || funcId).replace(/'/g, "\\'")}')" style="background: #6c757d; color: white; border: none; padding: 8px; border-radius: 5px; cursor: pointer; width: 100%; margin-top: 5px; font-weight: bold; font-size: 12px;">⚠️ SOLICITAR CANCELAMENTO</button>`);
                         const btnApagarRH = `<button type="button" onclick="excluirPontoGestorRH('${dados.id}')" style="background: #b02a37; color: white; border: none; padding: 8px; border-radius: 5px; cursor: pointer; width: 100%; margin-top: 5px; font-weight: bold; font-size: 12px;">🗑️ APAGAR BATIDA (RH)</button>`;
                         const btnEditarHoraRH = (dados.cancelado_em_evento ? `` : `<button type="button" onclick="editarPontoDataHoraRH('${dados.id}')" style="background: #17a2b8; color: white; border: none; padding: 8px; border-radius: 5px; cursor: pointer; width: 100%; margin-top: 5px; font-weight: bold; font-size: 12px;">🕐 Ajustar data / hora (RH)</button>`);
@@ -11610,7 +11610,7 @@ window.gerarFolhaPagamento = async function() {
                                 <b style="color: ${cor}">${dados.tipo}</b> - Dia ${dados.data} às ${dados.hora || '??'} <br>
                                 ${badgeManualRH}
                                <span style="font-size: 13px; color: #555;"><b>Local:</b> ${dados.obra}</span><br>
-                                ${dados.cancelado_em_evento ? `<span style="font-size:12px;color:#555;"><b>ID do registo (nuvem / Firestore):</b> ${dados.id}</span><br>` : ''}
+                                ${dados.cancelado_em_evento ? `<span style="font-size:12px;color:#555;"><b>ID do registro (nuvem / Firestore):</b> ${dados.id}</span><br>` : ''}
                                 <span style="font-size:12px;color:#555;"><b>GPS:</b> ${coordsTxt}</span><br>
                                 ${btnMaps}
                                 ${btnAcao}
@@ -11685,11 +11685,11 @@ window.gerarFolhaPagamento = async function() {
     window.excluirPontoGestorRH = async function(pontoId) {
         const empresaLogada = getEmpresaGestor();
         if (!empresaLogada) {
-            return Swal.fire('Atenção', 'Apenas o painel da gestão pode apagar registos de ponto.', 'warning');
+            return Swal.fire('Atenção', 'Apenas o painel da gestão pode apagar registros de ponto.', 'warning');
         }
         const r = await Swal.fire({
             title: 'Apagar batida na base de dados?',
-            html: 'Remove <b>definitivamente</b> este registo de ponto (use em batida errada).<br><br>Digite <b>APAGAR</b> para confirmar.',
+            html: 'Remove <b>definitivamente</b> este registro de ponto (use em batida errada).<br><br>Digite <b>APAGAR</b> para confirmar.',
             input: 'text',
             inputPlaceholder: 'APAGAR',
             showCancelButton: true,
@@ -11716,7 +11716,7 @@ window.gerarFolhaPagamento = async function() {
                 }
             }
             await deleteDoc(doc(db, 'ponto_registros', pontoId));
-            Swal.fire('Removido', 'O registo de batida e os eventos ligados (ex.: cancelamento) foram apagados.', 'success');
+            Swal.fire('Removido', 'O registro de batida e os eventos ligados (ex.: cancelamento) foram apagados.', 'success');
             buscarPonto();
         } catch (e) {
             console.error(e);
@@ -11843,7 +11843,7 @@ window.gerarFolhaPagamento = async function() {
         if (!empresaLogada) {
             return Swal.fire('Atenção', 'Entre como gestor.', 'warning');
         }
-        Swal.fire({ title: 'A carregar...', allowOutsideClick: false, didOpen: function () { Swal.showLoading(); } });
+        Swal.fire({ title: 'Carregando...', allowOutsideClick: false, didOpen: function () { Swal.showLoading(); } });
         let atual = null;
         try {
             const snap = await getDoc(doc(db, 'ponto_registros', pontoId));
@@ -11859,7 +11859,7 @@ window.gerarFolhaPagamento = async function() {
         } catch (e) {
             console.error(e);
             Swal.close();
-            return Swal.fire('Erro', 'Não foi possível ler o registo.', 'error');
+            return Swal.fire('Erro', 'Não foi possível ler o registro.', 'error');
         }
         Swal.close();
 
@@ -11869,7 +11869,7 @@ window.gerarFolhaPagamento = async function() {
         const result = await Swal.fire({
             title: 'Ajustar data e hora do batimento',
             html:
-                '<p style="font-size:12px;text-align:left;margin:0 0 10px;">Altera a <b>data</b> e a <b>hora</b> deste registo (ex.: erro de digitação ou hora do caderno). O <b>tipo</b> (Entrada, etc.) mantém-se; use cancelar + novo registo se precisar mudar o tipo.</p>' +
+                '<p style="font-size:12px;text-align:left;margin:0 0 10px;">Altere a <b>data</b> e a <b>hora</b> deste registro (ex.: erro de digitação ou hora do caderno). O <b>tipo</b> (Entrada, etc.) permanece; use cancelar + novo registro se precisar mudar o tipo.</p>' +
                 '<label style="display:block;text-align:left;font-size:12px;margin-top:8px;">Nova data</label>' +
                 '<input id="pt-edit-data" type="date" class="swal2-input" style="margin-top:4px;" value="' + dataIsoIni + '">' +
                 '<label style="display:block;text-align:left;font-size:12px;margin-top:10px;">Nova hora</label>' +
@@ -12095,7 +12095,7 @@ window.gerarFolhaPagamento = async function() {
         } catch (e) {
             console.error(e);
             Swal.close();
-            Swal.fire('Erro', 'Não foi possível guardar a jornada. Verifique permissões do Firestore.', 'error');
+            Swal.fire('Erro', 'Não foi possível salvar a jornada. Verifique permissões do Firestore.', 'error');
         }
     };
 
@@ -12258,7 +12258,7 @@ window.gerarFolhaPagamento = async function() {
         if (!result.isConfirmed || !result.value) return;
 
         const val = result.value;
-        Swal.fire({ title: 'A guardar...', allowOutsideClick: false, didOpen: function () { Swal.showLoading(); } });
+        Swal.fire({ title: 'Salvando...', allowOutsideClick: false, didOpen: function () { Swal.showLoading(); } });
 
         try {
             const user = await ensureAuth();
@@ -12309,7 +12309,7 @@ window.gerarFolhaPagamento = async function() {
         } catch (e) {
             console.error(e);
             Swal.close();
-            Swal.fire('Erro', 'Não foi possível guardar. Verifique permissões do Firestore (ponto_eventos).', 'error');
+            Swal.fire('Erro', 'Não foi possível salvar. Verifique permissões do Firestore (ponto_eventos).', 'error');
         }
     };
 
@@ -12422,7 +12422,7 @@ window.gerarFolhaPagamento = async function() {
             Swal.close();
             const novaAba = window.open(pdf.url, '_blank');
             if (!novaAba) {
-                return Swal.fire('Atenção', 'O navegador bloqueou a nova aba. Use «Baixar PDF».', 'warning');
+                return Swal.fire('Atenção', 'O navegador bloqueou a nova aba. Use "Baixar PDF".', 'warning');
             }
             setTimeout(() => URL.revokeObjectURL(pdf.url), 120000);
         } catch (e) {
@@ -12444,7 +12444,7 @@ window.gerarFolhaPagamento = async function() {
             link.click();
             link.remove();
             setTimeout(() => URL.revokeObjectURL(pdf.url), 5000);
-            Swal.fire('Baixado!', 'O recibo foi guardado no seu dispositivo.', 'success');
+            Swal.fire('Baixado!', 'O recibo foi salvo no seu dispositivo.', 'success');
         } catch (e) {
             Swal.fire('Erro', 'Falha ao gerar o PDF.', 'error');
         }
@@ -12807,7 +12807,7 @@ window.gerarFolhaPagamento = async function() {
         const divLista = document.getElementById('lista-resultados');
         const btnExportar = document.getElementById('btnExportarVales');
         
-        divLista.innerHTML = "A procurar...";
+        divLista.innerHTML = "Buscando...";
         btnExportar.style.display = 'none';
         window.dadosExportacaoVales = [];
         window.valesEncontrados = {};
@@ -12900,7 +12900,7 @@ window.gerarFolhaPagamento = async function() {
         
         if (!funcId) return;
         
-        divLista.innerHTML = "A procurar os seus vales...";
+        divLista.innerHTML = "Buscando os seus vales...";
         window.valesEncontrados = {}; 
 
         try {
@@ -12992,7 +12992,7 @@ window.gerarFolhaPagamento = async function() {
         }
 
         const divLista = document.getElementById('lista-pedidos-resultados');
-        divLista.innerHTML = "A carregar...";
+        divLista.innerHTML = "Carregando...";
 
         try {
             // Busca apenas os pedidos atrelados à MANUTENÇÃO
@@ -13473,12 +13473,12 @@ window.imprimirRelatorioAlertasVencimento = function () {
         const janela = window.open(url, '_blank');
         if (!janela) {
             doc.save(nomeArq);
-            Swal.fire('PDF guardado', 'O navegador bloqueou a janela de impressão. O relatório foi transferido — abra o PDF para imprimir.', 'info');
+            Swal.fire('PDF salvo', 'O navegador bloqueou a janela de impressão. O relatório foi baixado — abra o PDF para imprimir.', 'info');
         }
     } catch (e) {
         console.error(e);
         doc.save(nomeArq);
-        Swal.fire('PDF guardado', 'Abra o ficheiro transferido para imprimir o relatório.', 'success');
+        Swal.fire('PDF salvo', 'Abra o arquivo baixado para imprimir o relatório.', 'success');
     }
 };
 
@@ -13840,7 +13840,7 @@ window.imprimirRelatorioAlertasDocumentos = function () {
         const janela = window.open(url, '_blank');
         if (!janela) {
             docPdf.save(nomeArq);
-            Swal.fire('PDF guardado', 'O navegador bloqueou a janela de impressão. Abra o PDF transferido para imprimir.', 'info');
+            Swal.fire('PDF salvo', 'O navegador bloqueou a janela de impressão. Abra o PDF baixado para imprimir.', 'info');
         }
     } catch (e) {
         console.error(e);
