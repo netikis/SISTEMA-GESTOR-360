@@ -1258,6 +1258,69 @@
             border-top: none;
         }
 
+        .rel-geral-obras-toolbar {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .rel-geral-obras-toolbar .btn-enviar,
+        .rel-geral-obras-toolbar .btn-pdf-relatorio {
+            margin: 0;
+            flex: 1;
+            min-width: 140px;
+        }
+
+        #rel-geral-obras-quadro {
+            margin-top: 12px;
+            border: 2px solid var(--dark-navy);
+            border-radius: 12px;
+            overflow: hidden;
+            background: #f8fafc;
+            padding: 12px;
+        }
+
+        #rel-geral-obras-quadro .secao-despesas-busca {
+            background: #fff;
+            border: 1px solid #e0e6ed;
+            border-radius: 10px;
+            margin-bottom: 10px;
+            overflow: hidden;
+        }
+
+        #rel-geral-obras-quadro .secao-despesas-busca:last-child {
+            margin-bottom: 0;
+        }
+
+        #rel-geral-obras-quadro .secao-despesas-busca summary {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 12px 14px;
+            margin-bottom: 0;
+            cursor: pointer;
+            background: #fafcff;
+            border-bottom: none;
+        }
+
+        #rel-geral-obras-quadro .secao-despesas-busca[open] summary {
+            border-bottom: 2px solid;
+        }
+
+        #rel-geral-obras-quadro .secao-despesas-busca .secao-despesas-conteudo {
+            padding: 10px 12px 12px;
+            border-top: 1px solid #e0e6ed;
+            max-height: 420px;
+            overflow-y: auto;
+            -webkit-overflow-scrolling: touch;
+        }
+
+        #rel-geral-obras-quadro .secao-despesas-busca .secao-seta {
+            margin-left: auto;
+        }
+
         .bolinha-resumo {
             display: inline-block;
             width: 10px;
@@ -2347,13 +2410,14 @@
                     <span class="gestor-menu-grupo-seta" aria-hidden="true">▼</span>
                 </button>
                 <div class="gestor-menu-sub" id="submenu-obras">
-                    <button type="button" class="gestor-menu-btn menu-despesas" data-titulo="Cadastrar Obra" onclick="mudarAba('despesas-cadastrar', this)">➕ Cadastrar Obra</button>
+                    <button type="button" class="gestor-menu-btn menu-despesas" data-titulo="Adicionar Despesas" onclick="mudarAba('despesas-cadastrar', this)">➕ Adicionar Despesas</button>
                     <button type="button" class="gestor-menu-btn menu-despesas" id="btn-menu-despesas-relatorio" data-titulo="Relatório de Gastos por Obra" onclick="mudarAba('despesas-relatorio', this)">🔍 Relatório de Gastos por Obra</button>
-                    <button type="button" class="gestor-menu-btn menu-despesas" id="btn-menu-relatorio-despesas" data-titulo="Relatório Despesas" onclick="mudarAba('relatorio-despesas', this)">📋 Relatório Despesas</button>
+                    <button type="button" class="gestor-menu-btn menu-despesas" id="btn-menu-relatorio-despesas" data-titulo="Exportar Relatórios" onclick="mudarAba('relatorio-despesas', this)">📋 Exportar Relatórios</button>
+                    <button type="button" class="gestor-menu-btn menu-despesas" id="btn-menu-obras-relatorio-geral" data-titulo="Relatório Geral de Obras" onclick="mudarAba('obras-relatorio-geral', this)">📊 Relatório Geral de Obras</button>
+                    <button type="button" class="gestor-menu-btn menu-despesas" id="btn-menu-terceiros" data-titulo="Terceiros" onclick="mudarAba('terceiros', this)">👷 Terceiros</button>
                 </div>
             </div>
             <button type="button" class="gestor-menu-btn" data-titulo="Calendário" onclick="mudarAba('calendario', this)">📅 Calendário</button>
-            <button type="button" class="gestor-menu-btn" data-titulo="Terceiros" onclick="mudarAba('terceiros', this)">👷 Terceiros</button>
             <button type="button" class="gestor-menu-btn menu-backup" data-titulo="Backup" onclick="mudarAba('backup', this)">💾 Backup</button>
         </nav>
         <div class="gestor-sidebar-footer">
@@ -2930,6 +2994,27 @@
         </div>
     </div>
 
+    <div id="aba-obras-relatorio-geral" class="view-section">
+        <p class="texto-explicacao" style="margin-top: 0;">Consolidado de <b>todas as obras</b>: despesas com fornecedores (materiais/obras) + pagamentos a terceiros. Mostra o que está <b>vencido</b>, <b>a vencer</b> e <b>já pago</b>.</p>
+        <button type="button" class="btn-enviar" style="margin-top: 8px;" onclick="carregarRelatorioGeralObras()">🔄 ATUALIZAR RELATÓRIO GERAL</button>
+
+        <div id="rel-geral-obras-acoes" class="rel-geral-obras-toolbar" style="display: none; margin-top: 12px;">
+            <button type="button" class="btn-enviar" onclick="toggleSecoesRelGeralObras(true)">▼ Expandir tudo</button>
+            <button type="button" class="btn-enviar" onclick="toggleSecoesRelGeralObras(false)">▲ Recolher tudo</button>
+            <button type="button" id="btnExportarRelGeralObrasPdf" class="btn-pdf-relatorio" onclick="exportarPDFRelatorioGeralObras()">🖨️ EXPORTAR ESPELHO PDF (IMPRIMIR)</button>
+        </div>
+
+        <div id="rel-geral-obras-resumo" style="display: none; margin-top: 20px; background: #fff3cd; padding: 15px; border-radius: 10px; text-align: center; border: 1px solid #ffeeba;">
+            <h4 style="margin: 0; color: #856404;">Resumo Geral — Obras</h4>
+            <div id="rel-geral-obras-resumo-totais" style="margin-top: 8px;"></div>
+            <p id="rel-geral-obras-resumo-detalhe" class="texto-explicacao" style="margin: 12px 0 0 0; font-size: 12px; text-align: center;"></p>
+        </div>
+
+        <div id="rel-geral-obras-secoes" style="margin-top: 15px;">
+            <p style="text-align: center; color: #888; font-size: 13px;">Clique em «Atualizar Relatório Geral» ou abra esta opção no menu para carregar.</p>
+        </div>
+    </div>
+
 <div id="aba-terceiros" class="view-section">
         <details open style="margin-bottom: 20px;">
             <summary style="background: #eef2f5;">➕ Cadastrar Pagamento de Terceiro</summary>
@@ -3027,7 +3112,7 @@
         <details style="margin-top: 20px;">
             <summary style="background: #eef2f5;">📊 Resumo de Gastos (Obra x Fornecedor)</summary>
             <div style="padding: 15px;">
-                <p class="texto-explicacao" style="text-align: justify;">Esta tabela cruza os dados das Obras e Lojas. Ela soma tudo o que está pendente e o que já foi pago para cada fornecedor.</p>
+                <p class="texto-explicacao" style="text-align: justify;">Esta tabela cruza fornecedores da <b>obra selecionada</b> acima. Clique na etiqueta da obra e depois em «Gerar tabela de resumo».</p>
                 <button class="btn-enviar" style="margin-top: 5px;" onclick="gerarResumoFornecedores()">GERAR TABELA DE RESUMO</button>
                 
                 <div id="tabela-resumo-fornecedores" style="margin-top: 20px; overflow-x: auto;"></div>
@@ -3437,7 +3522,6 @@
         window._cacheNomesRelDespesas = null;
         window._obraSelecionadaCadastros = null;
         window._filtroCadastroDespesa = null;
-        window._mostrarFornecedoresGeralDespesas = false;
         window._mapDespesasResumoFornecedor = {};
         window._despesasRelatorioExport = [];
         window._mapRelatorioDespesasParaEdicao = {};
@@ -5513,15 +5597,6 @@ function separarDataSegura(dataString) {
             + '</span>';
     }
 
-    function htmlBalaoFornecedorGeral(forn) {
-        const pendente = forn.vencido + forn.aVencer;
-        const nome = escapeHtmlBasico(forn.canonico);
-        const extra = pendente > 0 ? ' <small style="opacity:0.85;font-weight:600;">(' + formatarMoeda(pendente) + ')</small>' : '';
-        return '<span class="badge-tag-wrap badge-tag-wrap-fornec-geral">'
-            + '<span role="button" tabindex="0" class="badge-tag badge-tag-desp badge-fornec-geral-nome" data-nome="' + nome + '" data-tipo="loja" title="Ver despesas: ' + nome + '">🏪 ' + nome + extra + '</span>'
-            + '</span>';
-    }
-
     function termoFiltroListaCadastrosDesp(termo, obraSelecionada) {
         if (!termo) return '';
         if (obraSelecionada && termo === normalizarChaveNomeDespesa(obraSelecionada)) return '';
@@ -5537,13 +5612,6 @@ function separarDataSegura(dataString) {
             + '<p class="desp-baloes-titulo">Obras: <span id="contagem-obras-desp" class="desp-cadastro-contagem">0</span></p>'
             + '<div id="lista-cadastros-obras-desp" class="desp-baloes-lista"></div>'
             + '</div>'
-            + '<div style="padding:8px 12px;border-top:1px solid #e0e6ed;background:#fff;">'
-            + '<button type="button" id="btn-fornec-geral-desp" class="btn-fornec-geral-desp" onclick="togglePainelFornecedoresGeralDespesas()">📋 Ver fornecedores geral (quanto está devendo)</button>'
-            + '</div>'
-            + '<div id="painel-fornecedores-geral-desp" class="painel-fornecedores-geral" style="display:none;">'
-            + '<p class="desp-baloes-titulo">Fornecedores (visão geral): <span id="contagem-fornec-geral-desp" class="desp-cadastro-contagem">0</span></p>'
-            + '<div id="lista-fornecedores-geral-desp" class="desp-baloes-lista"></div>'
-            + '</div>'
             + '<div id="painel-fornecedores-obra-desp" class="painel-fornecedores-obra" style="display:none;">'
             + '<p class="desp-baloes-titulo">Fornecedores com pendências em <span id="nome-obra-selecionada-desp"></span>: <span id="contagem-lojas-desp" class="desp-cadastro-contagem">0</span></p>'
             + '<div id="lista-cadastros-lojas-desp" class="desp-baloes-lista"></div>'
@@ -5551,38 +5619,15 @@ function separarDataSegura(dataString) {
             + '<p class="texto-explicacao" style="margin:0;padding:8px 12px;font-size:11px;">Clique na etiqueta para buscar. Use <b>×</b> para excluir o cadastro e todas as despesas daquele nome (confirme digitando <b>APAGAR</b>).</p>';
     }
 
-    window.togglePainelFornecedoresGeralDespesas = function () {
-        window._mostrarFornecedoresGeralDespesas = !window._mostrarFornecedoresGeralDespesas;
-        const btn = document.getElementById('btn-fornec-geral-desp');
-        if (btn) {
-            btn.textContent = window._mostrarFornecedoresGeralDespesas
-                ? '✕ Ocultar fornecedores geral'
-                : '📋 Ver fornecedores geral (quanto está devendo)';
-            btn.classList.toggle('ativo', window._mostrarFornecedoresGeralDespesas);
-        }
-        renderizarPainelCadastrosDespesas();
-    };
-
     window.renderizarPainelCadastrosDespesas = function (filtroDigitado) {
         const cache = window._cacheNomesDespesas;
         const divObras = document.getElementById('lista-cadastros-obras-desp');
         const divLojas = document.getElementById('lista-cadastros-lojas-desp');
-        const divFornGeral = document.getElementById('lista-fornecedores-geral-desp');
         const painelForn = document.getElementById('painel-fornecedores-obra-desp');
-        const painelFornGeral = document.getElementById('painel-fornecedores-geral-desp');
         const lblObras = document.getElementById('contagem-obras-desp');
         const lblLojas = document.getElementById('contagem-lojas-desp');
-        const lblFornGeral = document.getElementById('contagem-fornec-geral-desp');
         const lblObraSel = document.getElementById('nome-obra-selecionada-desp');
-        const btnFornGeral = document.getElementById('btn-fornec-geral-desp');
         if (!cache || !divObras) return;
-
-        if (btnFornGeral) {
-            btnFornGeral.classList.toggle('ativo', !!window._mostrarFornecedoresGeralDespesas);
-            btnFornGeral.textContent = window._mostrarFornecedoresGeralDespesas
-                ? '✕ Ocultar fornecedores geral'
-                : '📋 Ver fornecedores geral (quanto está devendo)';
-        }
 
         const filtroEl = document.getElementById('filtro-lista-cadastros-desp');
         const termoBruto = normalizarChaveNomeDespesa(
@@ -5609,28 +5654,6 @@ function separarDataSegura(dataString) {
         divObras.innerHTML = obrasF.length
             ? obrasF.map((o) => htmlItemCadastroDespesa(o, 'obra')).join('')
             : '<p class="cadastro-desp-vazio">Nenhuma obra' + (termoBruto ? ' com este filtro' : '') + '.</p>';
-
-        if (window._mostrarFornecedoresGeralDespesas && painelFornGeral && divFornGeral) {
-            const listaGeral = (cache.listaFornecedoresGeral || []).filter((f) => {
-                const pendente = f.vencido + f.aVencer;
-                if (pendente <= 0) return false;
-                if (!termoBruto) return true;
-                if (passaFiltro(f.canonico)) return true;
-                return Array.from(f.obras.values()).some((o) => passaFiltro(o.canonico));
-            });
-            painelFornGeral.style.display = 'block';
-            if (lblFornGeral) {
-                lblFornGeral.textContent = termoBruto
-                    ? (listaGeral.length + ' c/ dívida')
-                    : (listaGeral.length + ' c/ dívida');
-            }
-            divFornGeral.innerHTML = listaGeral.length
-                ? listaGeral.map((f) => htmlBalaoFornecedorGeral(f)).join('')
-                : '<p class="cadastro-desp-vazio">Nenhum fornecedor com pendências' + (termoBruto ? ' com este filtro' : '') + '.</p>';
-        } else if (painelFornGeral) {
-            painelFornGeral.style.display = 'none';
-            if (divFornGeral) divFornGeral.innerHTML = '';
-        }
 
         if (window._obraSelecionadaCadastros && painelForn && divLojas) {
             const lojasObra = getFornecedoresDaObra(cache, window._obraSelecionadaCadastros, true);
@@ -5870,13 +5893,6 @@ function separarDataSegura(dataString) {
                         btnDel.getAttribute('data-tipo') || 'loja',
                         btnDel.getAttribute('data-obra') || ''
                     );
-                    return;
-                }
-                const btnNomeGeral = ev.target.closest('.badge-fornec-geral-nome');
-                if (btnNomeGeral) {
-                    ev.preventDefault();
-                    ev.stopPropagation();
-                    selecionarBuscaDespesa(btnNomeGeral.getAttribute('data-nome') || '', 'loja');
                     return;
                 }
                 const badge = ev.target.closest('.badge-tag-desp');
@@ -6512,11 +6528,87 @@ window.carregarFiltrosDespesas = async function() {
         }
     };
 
-    window.exportarPDFRelatorioDespesasTabelaAtual = function () {
+    function filtrarRelDespesasPorPrazoExportacao(arr, prazo) {
+        const lista = (arr || []).slice();
+        if (!prazo || prazo === 'total') return lista;
+
+        const dias = prazo === '10' ? 10 : 30;
+        const hoje = new Date();
+        hoje.setHours(12, 0, 0, 0);
+        const limite = new Date(hoje.getTime());
+        limite.setDate(limite.getDate() + dias);
+        const tsLimite = limite.getTime();
+
+        return lista.filter((d) => {
+            if (d.status === 'pago') return false;
+            const ts = dataVencimentoTsDespesa(d);
+            if (ts == null) return false;
+            return ts <= tsLimite;
+        });
+    }
+
+    async function perguntarPrazoExportRelatorioDespesas() {
+        const result = await Swal.fire({
+            title: '📅 Período para exportar',
+            html: ''
+                + '<p style="font-size:13px;margin:0 0 14px 0;color:#555;text-align:left;">Escolha quais vencimentos incluir no PDF/Excel (com base na data de vencimento):</p>'
+                + '<label style="display:block;text-align:left;margin:8px 0;padding:10px;border:1px solid #e0e6ed;border-radius:8px;cursor:pointer;">'
+                + '<input type="radio" name="prazo-export-rel" value="10" checked style="margin-right:8px;">'
+                + '<b>Próximos 10 dias</b> <span style="font-size:12px;color:#666;">— pendentes/vencidas com vencimento até 10 dias</span></label>'
+                + '<label style="display:block;text-align:left;margin:8px 0;padding:10px;border:1px solid #e0e6ed;border-radius:8px;cursor:pointer;">'
+                + '<input type="radio" name="prazo-export-rel" value="30" style="margin-right:8px;">'
+                + '<b>Próximos 30 dias</b> <span style="font-size:12px;color:#666;">— pendentes/vencidas com vencimento até 30 dias</span></label>'
+                + '<label style="display:block;text-align:left;margin:8px 0;padding:10px;border:1px solid #e0e6ed;border-radius:8px;cursor:pointer;">'
+                + '<input type="radio" name="prazo-export-rel" value="total" style="margin-right:8px;">'
+                + '<b>Total</b> <span style="font-size:12px;color:#666;">— tudo que está na tabela carregada</span></label>',
+            showCancelButton: true,
+            confirmButtonText: 'Exportar',
+            cancelButtonText: 'Cancelar',
+            confirmButtonColor: '#1a2a43',
+            focusConfirm: false,
+            preConfirm: () => {
+                const sel = document.querySelector('input[name="prazo-export-rel"]:checked');
+                if (!sel) {
+                    Swal.showValidationMessage('Selecione um período.');
+                    return false;
+                }
+                return sel.value;
+            }
+        });
+        if (!result.isConfirmed || !result.value) return null;
+        return result.value;
+    }
+
+    function rotuloSufixoPrazoExportRelDespesas(prazo) {
+        if (prazo === '10') return '_prox_10_dias';
+        if (prazo === '30') return '_prox_30_dias';
+        return '_total';
+    }
+
+    function rotuloPrazoExportRelDespesas(prazo) {
+        if (prazo === '10') return 'Próximos 10 dias';
+        if (prazo === '30') return 'Próximos 30 dias';
+        return 'Total';
+    }
+
+    window.exportarPDFRelatorioDespesasTabelaAtual = async function () {
         const arr = window._despesasRelatorioExport;
         if (!arr || !arr.length) return Swal.fire('Atenção', 'Carregue a tabela primeiro (botão «Carregar tabela»).', 'warning');
-        window.dadosExportacaoDespesas = arr.slice();
+
+        const prazo = await perguntarPrazoExportRelatorioDespesas();
+        if (!prazo) return;
+
+        const filtrado = filtrarRelDespesasPorPrazoExportacao(arr, prazo);
+        if (!filtrado.length) {
+            return Swal.fire('Sem registos', 'Nenhuma despesa encontrada para o período «' + rotuloPrazoExportRelDespesas(prazo) + '».', 'info');
+        }
+
+        window.dadosExportacaoDespesas = filtrado.slice();
+        window._sufixoExportDespesas = rotuloSufixoPrazoExportRelDespesas(prazo);
+        window._tituloExtraExportDespesas = rotuloPrazoExportRelDespesas(prazo);
         exportarPDF('despesas');
+        window._sufixoExportDespesas = '';
+        window._tituloExtraExportDespesas = '';
     };
 
     function nomeArquivoExcelSeguro(nome) {
@@ -6630,15 +6722,24 @@ window.carregarFiltrosDespesas = async function() {
         );
     };
 
-    window.exportarExcelRelatorioDespesasTabelaAtual = function () {
+    window.exportarExcelRelatorioDespesasTabelaAtual = async function () {
         const arr = window._despesasRelatorioExport;
         if (!arr || !arr.length) {
             return Swal.fire('Atenção', 'Carregue a tabela primeiro (botão «Carregar tabela»).', 'warning');
         }
+
+        const prazo = await perguntarPrazoExportRelatorioDespesas();
+        if (!prazo) return;
+
+        const filtrado = filtrarRelDespesasPorPrazoExportacao(arr, prazo);
+        if (!filtrado.length) {
+            return Swal.fire('Sem registos', 'Nenhuma despesa encontrada para o período «' + rotuloPrazoExportRelDespesas(prazo) + '».', 'info');
+        }
+
         const empresa = getEmpresaGestor() || 'Empresa';
         exportarArquivoExcelDespesas(
-            montarDadosExcelDespesas(arr, { manterOrdem: true }),
-            `relatorio_despesas_${empresa}`
+            montarDadosExcelDespesas(filtrado, { manterOrdem: true }),
+            `relatorio_despesas_${empresa}${rotuloSufixoPrazoExportRelDespesas(prazo)}`
         );
     };
 
@@ -6677,6 +6778,435 @@ window.carregarFiltrosDespesas = async function() {
         if (divAviso) divAviso.innerHTML = avisoAnosHtml || '';
         divSecoes.innerHTML = html;
     }
+
+    function htmlCardDespesaRelGeralObra(d, isVencida) {
+        const corBorda = isVencida ? '#dc3545' : '#ffc107';
+        const corTexto = isVencida ? '#dc3545' : '#856404';
+        const badgeFundo = isVencida ? '#f8d7da' : '#fff3cd';
+        const textoBadge = isVencida ? '⚠️ VENCIDA' : '⏳ A VENCER';
+        const vencTexto = formatarVencimentoDespesaExibirHtml(d);
+        const fotoHtml = d.foto_recibo
+            ? '<img src="' + escapeAttrBasico(d.foto_recibo) + '" onclick="abrirFoto(\'' + String(d.foto_recibo).replace(/'/g, "\\'") + '\')" style="width:60px;height:60px;object-fit:cover;border-radius:8px;border:2px solid #e0e6ed;float:right;cursor:pointer;">'
+            : '';
+        return ''
+            + '<div class="resultado-item" style="border-left-color:' + corBorda + ';">'
+            + fotoHtml
+            + '<span style="font-size:10px;background:#e8edf2;color:#1a2a43;padding:2px 6px;border-radius:4px;font-weight:bold;">🏪 FORNECEDOR</span> '
+            + '<b style="color:' + corBorda + ';font-size:16px;">R$ ' + escapeHtmlBasico(String(d.valor_string || '0')) + '</b> '
+            + '<span style="font-size:10px;background:' + badgeFundo + ';color:' + corTexto + ';padding:2px 6px;border-radius:4px;margin-left:5px;font-weight:bold;">' + textoBadge + '</span><br>'
+            + '<span style="font-size:13px;color:#555;"><b>Obra:</b> ' + escapeHtmlBasico(d.obra_nome || '—') + '</span><br>'
+            + '<span style="font-size:13px;color:#555;"><b>Fornecedor:</b> ' + escapeHtmlBasico(d.loja_nome || '—') + '</span><br>'
+            + '<span style="font-size:13px;color:#555;"><b>Nota Fiscal:</b> ' + escapeHtmlBasico(d.nota_fiscal || 'Sem NF') + '</span><br>'
+            + '<span style="font-size:13px;color:' + corTexto + ';"><b>Vencimento:</b> ' + vencTexto + '</span><br>'
+            + '<span style="font-size:12px;color:#888;">Inserido em: ' + escapeHtmlBasico(d.data || '—') + '</span>'
+            + (d.descricao ? '<div style="font-size:12px;margin-top:5px;padding-top:5px;border-top:1px solid #eee;">' + escapeHtmlBasico(String(d.descricao)) + '</div>' : '')
+            + '</div>';
+    }
+
+    function htmlCardDespesaPagaRelGeralObra(d) {
+        const compPgtoHtml = typeof montarHtmlComprovantePagamento === 'function' ? montarHtmlComprovantePagamento(d) : '';
+        const fotoHtml = d.foto_recibo
+            ? '<img src="' + escapeAttrBasico(d.foto_recibo) + '" onclick="abrirFoto(\'' + String(d.foto_recibo).replace(/'/g, "\\'") + '\')" style="width:60px;height:60px;object-fit:cover;border-radius:8px;border:2px solid #e0e6ed;float:right;cursor:pointer;">'
+            : '';
+        return ''
+            + '<div class="resultado-item" style="border-left-color:#28a745;opacity:0.9;background:#f4fdf6;">'
+            + fotoHtml + compPgtoHtml
+            + '<span style="font-size:10px;background:#d4edda;color:#155724;padding:2px 6px;border-radius:4px;font-weight:bold;">🏪 FORNECEDOR</span> '
+            + '<b style="color:#28a745;font-size:16px;">R$ ' + escapeHtmlBasico(String(d.valor_string || '0')) + '</b> '
+            + '<span style="font-size:10px;background:#d4edda;color:#155724;padding:2px 6px;border-radius:4px;margin-left:5px;font-weight:bold;">PAGO EM: ' + escapeHtmlBasico(d.data_pagamento || 'N/A') + '</span><br>'
+            + '<span style="font-size:13px;color:#555;"><b>Obra:</b> ' + escapeHtmlBasico(d.obra_nome || '—') + '</span><br>'
+            + '<span style="font-size:13px;color:#555;"><b>Fornecedor:</b> ' + escapeHtmlBasico(d.loja_nome || '—') + '</span><br>'
+            + '<span style="font-size:13px;color:#555;"><b>Nota Fiscal:</b> ' + escapeHtmlBasico(d.nota_fiscal || 'Sem NF') + '</span><br>'
+            + '<span style="font-size:12px;color:#888;">Data Fatura: ' + escapeHtmlBasico(d.data || '—') + '</span>'
+            + (d.descricao ? '<div style="font-size:12px;margin-top:5px;padding-top:5px;border-top:1px solid #eee;color:#666;">' + escapeHtmlBasico(String(d.descricao)) + '</div>' : '')
+            + '</div>';
+    }
+
+    function htmlCardTerceiroRelGeralObra(d) {
+        return ''
+            + '<div class="resultado-item" style="border-left-color:#1a2a43;background:#f8f9fb;">'
+            + '<span style="font-size:10px;background:#1a2a43;color:#fff;padding:2px 6px;border-radius:4px;font-weight:bold;">👷 TERCEIRO — PAGO</span> '
+            + '<b style="color:#28a745;font-size:16px;">R$ ' + escapeHtmlBasico(String(d.valor_string || '0')) + '</b><br>'
+            + '<span style="font-size:13px;color:#555;"><b>Profissional:</b> ' + escapeHtmlBasico(d.nome || '—') + '</span><br>'
+            + '<span style="font-size:13px;color:#555;"><b>Obra:</b> ' + escapeHtmlBasico(d.obra || '—') + '</span><br>'
+            + '<span style="font-size:13px;color:#555;"><b>CPF:</b> ' + escapeHtmlBasico(d.cpf || 'N/A') + ' · <b>Tel:</b> ' + escapeHtmlBasico(d.tel || 'N/A') + '</span><br>'
+            + '<span style="font-size:12px;color:#888;">Pago em: ' + escapeHtmlBasico(d.data || '—') + '</span>'
+            + (d.descricao ? '<div style="font-size:12px;margin-top:5px;padding-top:5px;border-top:1px solid #eee;">' + escapeHtmlBasico(String(d.descricao)) + '</div>' : '')
+            + '</div>';
+    }
+
+    window.toggleSecoesRelGeralObras = function (abrir) {
+        const quadro = document.getElementById('rel-geral-obras-quadro');
+        if (!quadro) return;
+        quadro.querySelectorAll('details').forEach((det) => {
+            if (abrir) det.setAttribute('open', '');
+            else det.removeAttribute('open');
+        });
+    };
+
+    window.exportarPDFRelatorioGeralObras = async function () {
+        const pack = window._relGeralObrasExport;
+        if (!pack) {
+            return Swal.fire('Atenção', 'Carregue o relatório geral primeiro (Atualizar Relatório Geral).', 'warning');
+        }
+
+        const cntVenc = (pack.vencidas || []).length;
+        const cntAvencer = (pack.aVencer || []).length;
+        const cntPagos = (pack.pagasForn || []).length + (pack.terceiros || []).length;
+
+        const result = await Swal.fire({
+            title: '🖨️ Exportar espelho PDF',
+            html: ''
+                + '<p style="font-size:13px;margin:0 0 14px 0;color:#555;text-align:left;">Marque o que deseja incluir no PDF para imprimir:</p>'
+                + '<label style="display:flex;align-items:flex-start;gap:10px;margin:10px 0;padding:10px;border:1px solid #f5c6cb;border-radius:8px;background:#fff5f5;cursor:pointer;text-align:left;">'
+                + '<input type="checkbox" id="pdf-rel-vencido" checked style="width:18px;height:18px;margin-top:2px;flex-shrink:0;">'
+                + '<span><b style="color:#dc3545;">🔴 VENCIDO</b><br><span style="font-size:12px;color:#666;">' + cntVenc + ' item(ns) · ' + formatarMoeda(pack.somaVencidas) + '</span></span>'
+                + '</label>'
+                + '<label style="display:flex;align-items:flex-start;gap:10px;margin:10px 0;padding:10px;border:1px solid #ffeeba;border-radius:8px;background:#fffdf5;cursor:pointer;text-align:left;">'
+                + '<input type="checkbox" id="pdf-rel-avencer" checked style="width:18px;height:18px;margin-top:2px;flex-shrink:0;">'
+                + '<span><b style="color:#856404;">🟡 A VENCER</b><br><span style="font-size:12px;color:#666;">' + cntAvencer + ' item(ns) · ' + formatarMoeda(pack.somaAVencer) + '</span></span>'
+                + '</label>'
+                + '<label style="display:flex;align-items:flex-start;gap:10px;margin:10px 0;padding:10px;border:1px solid #c3e6cb;border-radius:8px;background:#f4fdf6;cursor:pointer;text-align:left;">'
+                + '<input type="checkbox" id="pdf-rel-pagos" checked style="width:18px;height:18px;margin-top:2px;flex-shrink:0;">'
+                + '<span><b style="color:#28a745;">🟢 PAGOS</b> <span style="font-size:11px;color:#888;">(fornecedores + terceiros)</span><br>'
+                + '<span style="font-size:12px;color:#666;">' + cntPagos + ' item(ns) · ' + formatarMoeda(pack.somaPagas) + '</span></span>'
+                + '</label>',
+            showCancelButton: true,
+            confirmButtonText: 'Gerar PDF',
+            cancelButtonText: 'Cancelar',
+            confirmButtonColor: '#1a2a43',
+            cancelButtonColor: '#6c757d',
+            focusConfirm: false,
+            preConfirm: () => {
+                const opcoes = {
+                    vencido: !!document.getElementById('pdf-rel-vencido')?.checked,
+                    aVencer: !!document.getElementById('pdf-rel-avencer')?.checked,
+                    pagos: !!document.getElementById('pdf-rel-pagos')?.checked
+                };
+                if (!opcoes.vencido && !opcoes.aVencer && !opcoes.pagos) {
+                    Swal.showValidationMessage('Selecione pelo menos uma opção (Vencido, A vencer ou Pagos).');
+                    return false;
+                }
+                return opcoes;
+            }
+        });
+
+        if (!result.isConfirmed || !result.value) return;
+        gerarPdfRelGeralObrasEspelho(pack, result.value);
+    };
+
+    function gerarPdfRelGeralObrasEspelho(pack, opcoes) {
+        const { jsPDF } = window.jspdf;
+        const doc = new jsPDF('l', 'mm', 'a4');
+        const emp = String(pack.empresa || getEmpresaGestor() || 'Empresa').trim();
+
+        const totalSelecionado = (opcoes.vencido ? pack.somaVencidas : 0)
+            + (opcoes.aVencer ? pack.somaAVencer : 0)
+            + (opcoes.pagos ? pack.somaPagas : 0);
+
+        doc.setFillColor(26, 42, 67);
+        doc.rect(0, 0, 297, 30, 'F');
+        doc.setTextColor(255, 255, 255);
+        doc.setFontSize(14);
+        doc.setFont('helvetica', 'bold');
+        doc.text('ESPELHO — RELATÓRIO GERAL DE OBRAS', 14, 12);
+        doc.setFontSize(9);
+        doc.setFont('helvetica', 'normal');
+        doc.setTextColor(220, 220, 220);
+        doc.text(emp + '  |  Gerado em: ' + new Date().toLocaleString('pt-BR') + '  |  Gestor 360', 14, 20);
+
+        let xResumo = 14;
+        doc.setFontSize(10);
+        doc.setFont('helvetica', 'bold');
+        if (opcoes.vencido) {
+            doc.setTextColor(220, 53, 69);
+            doc.text('Vencido: ' + formatarMoeda(pack.somaVencidas), xResumo, 28);
+            xResumo += 64;
+        }
+        if (opcoes.aVencer) {
+            doc.setTextColor(133, 100, 4);
+            doc.text('A vencer: ' + formatarMoeda(pack.somaAVencer), xResumo, 28);
+            xResumo += 64;
+        }
+        if (opcoes.pagos) {
+            doc.setTextColor(40, 167, 69);
+            doc.text('Pagos: ' + formatarMoeda(pack.somaPagas), xResumo, 28);
+            xResumo += 64;
+        }
+        doc.setTextColor(26, 42, 67);
+        doc.text('Total exportado: ' + formatarMoeda(totalSelecionado), Math.min(xResumo, 206), 28);
+
+        const headDesp = [['Estado', 'Vencimento', 'Obra', 'Fornecedor', 'NF', 'Valor (R$)', 'Descrição']];
+        const headTerc = [['Tipo', 'Obra', 'Profissional', 'Valor (R$)', 'Data pagamento', 'Descrição']];
+        const estiloTabela = {
+            theme: 'striped',
+            styles: { fontSize: 7, cellPadding: 2.5, valign: 'middle', textColor: '#333333' },
+            headStyles: { fillColor: '#1a2a43', textColor: '#ffffff', fontStyle: 'bold' },
+            alternateRowStyles: { fillColor: '#f5f8fa' },
+            margin: { left: 14, right: 14 },
+            didDrawPage: function (data) {
+                doc.setFontSize(8);
+                doc.setTextColor(150);
+                doc.text('Página ' + doc.internal.getNumberOfPages(), data.settings.margin.left, doc.internal.pageSize.height - 8);
+            }
+        };
+
+        function linhaDespesaPdf(d, estado) {
+            return [
+                estado,
+                formatarVencimentoDespesaExibir(d),
+                String(d.obra_nome || '').slice(0, 40),
+                String(d.loja_nome || '').slice(0, 35),
+                String(d.nota_fiscal || '—').slice(0, 20),
+                'R$ ' + String(d.valor_string || '0,00'),
+                String(d.descricao || '').slice(0, 60)
+            ];
+        }
+
+        function corEstado(data) {
+            if (data.column.index !== 0 || data.cell.section !== 'body') return;
+            const raw = String(data.cell.raw || '');
+            if (raw.indexOf('VENCID') >= 0) data.cell.styles.textColor = '#dc3545';
+            else if (raw.indexOf('A VENCER') >= 0) data.cell.styles.textColor = '#856404';
+            else if (raw.indexOf('PAGO') >= 0) data.cell.styles.textColor = '#28a745';
+            data.cell.styles.fontStyle = 'bold';
+        }
+
+        let startY = 36;
+        let incluiuAlgumaSecao = false;
+
+        function blocoSecao(titulo, corRgb, linhas, head, corCell) {
+            if (!linhas || !linhas.length) return startY;
+            incluiuAlgumaSecao = true;
+            if (startY > 175) {
+                doc.addPage();
+                startY = 18;
+            }
+            doc.setFontSize(11);
+            doc.setFont('helvetica', 'bold');
+            doc.setTextColor(corRgb[0], corRgb[1], corRgb[2]);
+            doc.text(titulo + ' (' + linhas.length + ')', 14, startY);
+            doc.autoTable(Object.assign({}, estiloTabela, {
+                startY: startY + 3,
+                head: head,
+                body: linhas,
+                didParseCell: corCell || undefined
+            }));
+            startY = doc.lastAutoTable.finalY + 10;
+            return startY;
+        }
+
+        if (opcoes.vencido) {
+            const bodyVenc = (pack.vencidas || []).map((d) => linhaDespesaPdf(d, 'VENCIDO'));
+            startY = blocoSecao('EM ABERTO — VENCIDO', [220, 53, 69], bodyVenc, headDesp, corEstado);
+        }
+
+        if (opcoes.aVencer) {
+            const bodyAvencer = (pack.aVencer || []).map((d) => linhaDespesaPdf(d, 'A VENCER'));
+            startY = blocoSecao('A VENCER — NO PRAZO', [133, 100, 4], bodyAvencer, headDesp, corEstado);
+        }
+
+        if (opcoes.pagos) {
+            const bodyPagasForn = (pack.pagasForn || []).map((d) => linhaDespesaPdf(d, 'PAGO ' + (d.data_pagamento || '')));
+            startY = blocoSecao('JÁ PAGO — DESPESAS DE FORNECEDORES', [40, 167, 69], bodyPagasForn, headDesp, corEstado);
+
+            const bodyTerc = (pack.terceiros || []).map((d) => [
+                'TERCEIRO',
+                String(d.obra || '').slice(0, 40),
+                String(d.nome || '').slice(0, 35),
+                'R$ ' + String(d.valor_string || '0,00'),
+                String(d.data || '—'),
+                String(d.descricao || '').slice(0, 60)
+            ]);
+            blocoSecao('JÁ PAGO — PAGAMENTOS A TERCEIROS', [26, 42, 67], bodyTerc, headTerc, function (data) {
+                if (data.column.index === 0 && data.cell.section === 'body') {
+                    data.cell.styles.textColor = '#1a2a43';
+                    data.cell.styles.fontStyle = 'bold';
+                }
+            });
+        }
+
+        if (!incluiuAlgumaSecao) {
+            return Swal.fire('Aviso', 'Não há registos nas opções selecionadas para exportar.', 'info');
+        }
+
+        const sufixos = [];
+        if (opcoes.vencido) sufixos.push('vencido');
+        if (opcoes.aVencer) sufixos.push('a_vencer');
+        if (opcoes.pagos) sufixos.push('pagos');
+        const sufixoArquivo = sufixos.length ? '_' + sufixos.join('_') : '';
+
+        doc.save('espelho_relatorio_geral_obras' + sufixoArquivo + '_' + emp.replace(/\s+/g, '_') + '.pdf');
+    };
+
+    window.carregarRelatorioGeralObras = async function () {
+        const empresaLogada = getEmpresaGestor();
+        const divSecoes = document.getElementById('rel-geral-obras-secoes');
+        const divResumo = document.getElementById('rel-geral-obras-resumo');
+        const divTotais = document.getElementById('rel-geral-obras-resumo-totais');
+        const divDetalhe = document.getElementById('rel-geral-obras-resumo-detalhe');
+        const divAcoes = document.getElementById('rel-geral-obras-acoes');
+
+        if (!empresaLogada) return Swal.fire('Atenção', 'Empresa não definida.', 'warning');
+        if (!divSecoes) return;
+
+        divSecoes.innerHTML = '<p style="text-align:center;color:#888;">A carregar relatório geral...</p>';
+        if (divResumo) divResumo.style.display = 'none';
+        if (divAcoes) divAcoes.style.display = 'none';
+        window._relGeralObrasExport = null;
+
+        try {
+            const qDesp = query(collection(db, 'despesas_obras'), where('empresa_id', '==', empresaLogada));
+            const qTer = query(collection(db, 'pagamentos_terceiros'), where('empresa_id', '==', empresaLogada));
+            const [snapDesp, snapTer] = await Promise.all([getDocs(qDesp), getDocs(qTer)]);
+
+            const despesas = [];
+            snapDesp.forEach((docSnap) => despesas.push({ id: docSnap.id, ...docSnap.data() }));
+
+            const terceiros = [];
+            snapTer.forEach((docSnap) => terceiros.push({ id: docSnap.id, ...docSnap.data() }));
+            terceiros.sort((a, b) => (b.timestamp || 0) - (a.timestamp || 0));
+
+            let htmlVencidas = '';
+            let htmlAVencer = '';
+            let htmlPagasForn = '';
+            let htmlPagasTerc = '';
+            let somaVencidas = 0;
+            let somaAVencer = 0;
+            let somaPagasForn = 0;
+            let somaPagasTerc = 0;
+
+            const pendentes = despesas.filter((d) => d.status !== 'pago');
+            const pagas = despesas.filter((d) => d.status === 'pago');
+            const listaVencidas = pendentes.filter((d) => despesaEstaVencida(d));
+            const listaAVencer = pendentes.filter((d) => !despesaEstaVencida(d));
+            ordenarRelatorioDespesasPorVencimento(listaVencidas);
+            ordenarRelatorioDespesasPorVencimento(listaAVencer);
+
+            listaVencidas.forEach((d) => {
+                const valor = d.valor_numero || 0;
+                somaVencidas += valor;
+                htmlVencidas += htmlCardDespesaRelGeralObra(d, true);
+            });
+
+            listaAVencer.forEach((d) => {
+                const valor = d.valor_numero || 0;
+                somaAVencer += valor;
+                htmlAVencer += htmlCardDespesaRelGeralObra(d, false);
+            });
+
+            const agrupadoPagas = {};
+            pagas.forEach((d) => {
+                somaPagasForn += (d.valor_numero || 0);
+                const ref = separarDataSegura(d.data_pagamento || d.data);
+                if (!agrupadoPagas[ref.ano]) agrupadoPagas[ref.ano] = {};
+                if (!agrupadoPagas[ref.ano][ref.mes]) agrupadoPagas[ref.ano][ref.mes] = [];
+                d.diaFormatado = ref.dia;
+                agrupadoPagas[ref.ano][ref.mes].push(d);
+            });
+
+            const chavesAno = Object.keys(agrupadoPagas).sort((a, b) => {
+                if (a === 'Outros') return 1;
+                if (b === 'Outros') return -1;
+                return Number(b) - Number(a);
+            });
+            chavesAno.forEach((ano) => {
+                htmlPagasForn += '<details class="pasta-ano"><summary>Ano ' + escapeHtmlBasico(ano) + '</summary><div class="folder-content">';
+                const chavesMes = Object.keys(agrupadoPagas[ano]).sort((a, b) => {
+                    if (a === 'Outros') return 1;
+                    if (b === 'Outros') return -1;
+                    return Number(b) - Number(a);
+                });
+                chavesMes.forEach((mes) => {
+                    const nomeDoMes = nomeMeses[mes] || mes;
+                    htmlPagasForn += '<details class="pasta-mes"><summary>' + escapeHtmlBasico(String(nomeDoMes)) + '</summary><div class="folder-content">';
+                    ordenarRelatorioDespesasPorVencimento(agrupadoPagas[ano][mes]);
+                    agrupadoPagas[ano][mes].forEach((d) => {
+                        htmlPagasForn += htmlCardDespesaPagaRelGeralObra(d);
+                    });
+                    htmlPagasForn += '</div></details>';
+                });
+                htmlPagasForn += '</div></details>';
+            });
+
+            terceiros.forEach((d) => {
+                somaPagasTerc += (d.valor_numero || 0);
+                htmlPagasTerc += htmlCardTerceiroRelGeralObra(d);
+            });
+
+            const somaPagas = somaPagasForn + somaPagasTerc;
+            const emAberto = somaVencidas + somaAVencer;
+            const totalGeral = emAberto + somaPagas;
+
+            if (divTotais) {
+                divTotais.innerHTML = montarHtmlPainelResumoDespesas(somaVencidas, somaAVencer, somaPagas, 'Total Geral (Obras):');
+            }
+            if (divDetalhe) {
+                divDetalhe.innerHTML = 'Em aberto (vencido + a vencer): <b>' + formatarMoeda(emAberto) + '</b>'
+                    + ' · Fornecedores pagos: <b>' + formatarMoeda(somaPagasForn) + '</b>'
+                    + ' · Terceiros pagos: <b>' + formatarMoeda(somaPagasTerc) + '</b>'
+                    + ' · <b>' + despesas.length + '</b> despesa(s) · <b>' + terceiros.length + '</b> terceiro(s) · Total geral: <b>' + formatarMoeda(totalGeral) + '</b>';
+            }
+            if (divResumo) divResumo.style.display = 'block';
+            if (divAcoes) divAcoes.style.display = 'flex';
+
+            window._relGeralObrasExport = {
+                empresa: empresaLogada,
+                somaVencidas,
+                somaAVencer,
+                somaPagas,
+                somaPagasForn,
+                somaPagasTerc,
+                emAberto,
+                totalGeral,
+                vencidas: listaVencidas.slice(),
+                aVencer: listaAVencer.slice(),
+                pagasForn: pagas.slice(),
+                terceiros: terceiros.slice()
+            };
+
+            let htmlSecoes = '';
+            const cntVenc = listaVencidas.length;
+            const cntAvencer = listaAVencer.length;
+
+            htmlSecoes += '<div id="rel-geral-obras-quadro">';
+
+            htmlSecoes += '<details class="secao-despesas-busca secao-vencidas">'
+                + '<summary>🔴 Em aberto — Vencido (' + cntVenc + ') — ' + formatarMoeda(somaVencidas) + ' <span class="secao-seta">▲</span></summary>'
+                + '<div class="secao-despesas-conteudo">'
+                + (htmlVencidas || '<p style="text-align:center;color:#888;padding:12px;">Nenhuma despesa vencida.</p>')
+                + '</div></details>';
+
+            htmlSecoes += '<details class="secao-despesas-busca secao-avencer">'
+                + '<summary>🟡 A vencer — No prazo (' + cntAvencer + ') — ' + formatarMoeda(somaAVencer) + ' <span class="secao-seta">▲</span></summary>'
+                + '<div class="secao-despesas-conteudo">'
+                + (htmlAVencer || '<p style="text-align:center;color:#888;padding:12px;">Nenhuma despesa a vencer.</p>')
+                + '</div></details>';
+
+            htmlSecoes += '<details class="secao-despesas-busca secao-pagas">'
+                + '<summary>🟢 Já pago (' + (pagas.length + terceiros.length) + ') — ' + formatarMoeda(somaPagas) + ' <span class="secao-seta">▲</span></summary>'
+                + '<div class="secao-despesas-conteudo">';
+
+            htmlSecoes += '<details class="pasta-ano"><summary>🏪 Despesas de fornecedores (' + pagas.length + ') — ' + formatarMoeda(somaPagasForn) + '</summary><div class="folder-content">'
+                + (htmlPagasForn || '<p style="text-align:center;color:#888;padding:12px;">Nenhuma despesa de fornecedor paga.</p>')
+                + '</div></details>';
+
+            htmlSecoes += '<details class="pasta-ano"><summary>👷 Pagamentos a terceiros (' + terceiros.length + ') — ' + formatarMoeda(somaPagasTerc) + '</summary><div class="folder-content">'
+                + (htmlPagasTerc || '<p style="text-align:center;color:#888;padding:12px;">Nenhum pagamento a terceiro registado.</p>')
+                + '</div></details>';
+
+            htmlSecoes += '</div></details></div>';
+
+            if (!despesas.length && !terceiros.length) {
+                divSecoes.innerHTML = '<p style="text-align:center;color:#888;padding:20px;">Nenhum registo encontrado para esta empresa.</p>';
+            } else {
+                divSecoes.innerHTML = htmlSecoes;
+            }
+        } catch (e) {
+            console.error(e);
+            divSecoes.innerHTML = '<p style="text-align:center;color:#d9534f;">Erro ao carregar o relatório geral. Tente novamente.</p>';
+        }
+    };
 
  window.buscarDespesasObra = async function() {
         const inputEl = document.getElementById('busca-obra');
@@ -6914,28 +7444,42 @@ window.carregarFiltrosDespesas = async function() {
         window.gerarResumoFornecedores = async function() {
         const empresaLogada = getEmpresaGestor();
         const divTabela = document.getElementById('tabela-resumo-fornecedores');
+
+        const obraSelecionada = (window._filtroCadastroDespesa && window._filtroCadastroDespesa.obra)
+            ? formatarNomeCanonicoDespesa(window._filtroCadastroDespesa.obra)
+            : (window._obraSelecionadaCadastros ? formatarNomeCanonicoDespesa(window._obraSelecionadaCadastros) : null);
+
+        if (!obraSelecionada) {
+            return Swal.fire(
+                'Selecione uma obra',
+                'Clique na etiqueta da obra acima (ex.: SANTO BROWNIE) antes de gerar o resumo. A tabela mostra só o local selecionado.',
+                'info'
+            );
+        }
+
+        const chaveObraFiltro = normalizarChaveNomeDespesa(obraSelecionada);
+        const nomeObraTitulo = escapeHtmlBasico(obraSelecionada);
         
-        divTabela.innerHTML = '<p style="text-align: center; color: #888; font-size: 13px;">⏳ A calcular saldos e gerar gráficos...</p>';
+        divTabela.innerHTML = '<p style="text-align: center; color: #888; font-size: 13px;">⏳ A calcular saldos de <b>' + nomeObraTitulo + '</b>...</p>';
         
         try {
             const q = query(collection(db, "despesas_obras"), where("empresa_id", "==", empresaLogada));
             const querySnapshot = await getDocs(q);
             
-            if (querySnapshot.empty) {
-                divTabela.innerHTML = '<p style="text-align: center; color: #d9534f; font-weight: bold;">Nenhuma despesa registada no sistema.</p>';
-                return;
-            }
-            
-            // Variáveis para Tabela e Gráfico
             let resumo = {}; 
             let grafFornecedores = {};
             window._mapDespesasResumoFornecedor = {};
+            let encontrouNaObra = false;
             
             querySnapshot.forEach(doc => {
                 const d = { id: doc.id, ...doc.data() };
-                const obra = formatarNomeCanonicoDespesa(d.obra_nome) || 'NÃO INFORMADA';
+                const chObraDoc = normalizarChaveNomeDespesa(d.obra_nome || d.obra_lower || '');
+                if (chObraDoc !== chaveObraFiltro) return;
+
+                encontrouNaObra = true;
+                const obra = formatarNomeCanonicoDespesa(d.obra_nome) || obraSelecionada;
                 const loja = formatarNomeCanonicoDespesa(d.loja_nome) || 'NÃO INFORMADO';
-                const chaveObra = normalizarChaveNomeDespesa(d.obra_nome) || '__obra_vazia__';
+                const chaveObra = chObraDoc || chaveObraFiltro;
                 const chaveLoja = normalizarChaveNomeDespesa(d.loja_nome) || '__loja_vazia__';
                 const mapKey = chaveObra + '||' + chaveLoja;
                 if (!window._mapDespesasResumoFornecedor[mapKey]) window._mapDespesasResumoFornecedor[mapKey] = [];
@@ -6955,11 +7499,15 @@ window.carregarFiltrosDespesas = async function() {
                     grafFornecedores[chaveLoja].pendente += valor;
                 }
             });
+
+            if (!encontrouNaObra) {
+                divTabela.innerHTML = '<p style="text-align: center; color: #d9534f; font-weight: bold;">Nenhuma despesa registada para a obra <b>' + nomeObraTitulo + '</b>.</p>';
+                return;
+            }
             
-            // Montar o Gráfico (Canvas) e a Tabela
             let html = `
             <div style="background: white; padding: 15px; border-radius: 8px; border: 1px solid #e0e6ed; margin-bottom: 20px;">
-                <h4 style="text-align: center; color: var(--dark-navy); margin-top: 0; margin-bottom: 15px;">📊 Dívida por Fornecedor (Todas as Obras)</h4>
+                <h4 style="text-align: center; color: var(--dark-navy); margin-top: 0; margin-bottom: 15px;">📊 Dívida por Fornecedor — ${nomeObraTitulo}</h4>
                 <div style="position: relative; height: 250px; width: 100%;">
                     <canvas id="graficoFornecedores"></canvas>
                 </div>
@@ -7012,7 +7560,7 @@ window.carregarFiltrosDespesas = async function() {
                 </tbody>
                 <tfoot style="background: #eef2f5; font-weight: bold;">
                     <tr>
-                        <td colspan="2" style="padding: 12px; border: 1px solid #ccc; text-align: right;">TOTAL GERAL DE TODAS OBRAS:</td>
+                        <td colspan="2" style="padding: 12px; border: 1px solid #ccc; text-align: right;">TOTAL DA OBRA ${nomeObraTitulo}:</td>
                         <td style="padding: 12px; border: 1px solid #ccc; text-align: right; color: #d9534f;">${formatarMoeda(totalGeralPendente)}</td>
                         <td style="padding: 12px; border: 1px solid #ccc; text-align: right; color: #28a745;">${formatarMoeda(totalGeralPago)}</td>
                     </tr>
@@ -7169,6 +7717,9 @@ window.exportarPDF = function(tipo) {
             dados = window.dadosExportacaoPonto;
         } else if (tipo === 'despesas') {
             title = `${empresaAtualNome} - Relatório de Despesas`;
+            if (window._tituloExtraExportDespesas) {
+                title += ` (${window._tituloExtraExportDespesas})`;
+            }
             dados = window.dadosExportacaoDespesas;
         }
         
@@ -7329,7 +7880,8 @@ window.exportarPDF = function(tipo) {
             });
         }
 
-        doc.save(`relatorio_${tipo}_${empresaAtualNome}.pdf`.replace(/\s+/g, '_'));
+        const sufixoArq = (tipo === 'despesas' && window._sufixoExportDespesas) ? window._sufixoExportDespesas : '';
+        doc.save(`relatorio_${tipo}_${empresaAtualNome}${sufixoArq}.pdf`.replace(/\s+/g, '_'));
     };
 
     window.exportarPDFDiscriminacaoFolha = function () {
@@ -8047,7 +8599,7 @@ window.exportarPDF = function(tipo) {
     };
 
     const ABAS_GRUPO_EQUIPE = ['cadastrar', 'equipe-cadastrada', 'criar', 'buscar', 'ponto', 'ajuda-custo', 'descontos-folha', 'folha', 'pedidos'];
-    const ABAS_GRUPO_OBRAS = ['despesas-cadastrar', 'despesas-relatorio', 'relatorio-despesas'];
+    const ABAS_GRUPO_OBRAS = ['despesas-cadastrar', 'despesas-relatorio', 'relatorio-despesas', 'obras-relatorio-geral', 'terceiros'];
 
     window.abrirGrupoMenuObras = function () {
         const grupo = document.getElementById('grupo-menu-obras');
@@ -8131,6 +8683,11 @@ window.exportarPDF = function(tipo) {
         if (aba === 'relatorio-despesas') {
             if (typeof window.carregarNomesRelatorioDespesas === 'function') {
                 window.carregarNomesRelatorioDespesas();
+            }
+        }
+        if (aba === 'obras-relatorio-geral') {
+            if (typeof window.carregarRelatorioGeralObras === 'function') {
+                window.carregarRelatorioGeralObras();
             }
         }
         if (aba === 'pedidos') {
