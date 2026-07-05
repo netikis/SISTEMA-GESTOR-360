@@ -2,7 +2,7 @@
 <html lang="pt-BR">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, viewport-fit=cover">
     <title>FH Construções</title>
     <meta name="description" content="Ponto digital, vales e gestão — FH Construções / Gestor 360 (painel RH).">
     
@@ -39,7 +39,13 @@
             background: var(--light-bg); 
             margin: 0; 
             padding: 20px 15px; 
-            color: var(--text-color); 
+            color: var(--text-color);
+            -webkit-text-size-adjust: 100%;
+        }
+
+        button, .btn-enviar, .btn-gold, .btn-entrada, .btn-saida, .btn-empresa-select, .btn-logout, .gestor-menu-btn, .gestor-menu-grupo-titulo {
+            touch-action: manipulation;
+            -webkit-tap-highlight-color: transparent;
         }
         
         .main-card { 
@@ -476,6 +482,15 @@
             box-shadow: inset 3px 0 0 #d4a017;
         }
 
+        .gestor-menu-grupo.grupo-obras .gestor-menu-grupo-titulo {
+            color: #f5b7b1;
+        }
+
+        .gestor-menu-grupo.grupo-obras.has-active .gestor-menu-grupo-titulo {
+            background: rgba(192, 57, 43, 0.35);
+            border-color: #f1c40f;
+        }
+
         .gestor-menu-btn.menu-despesas { color: #f5b7b1; }
         .gestor-menu-btn.menu-despesas.active { background: #c0392b; border-color: #f1c40f; }
         .gestor-menu-btn.menu-backup { color: #aed6f1; }
@@ -582,6 +597,44 @@
             margin-bottom: 18px;
             padding-bottom: 12px;
             border-bottom: 2px solid rgba(212, 160, 23, 0.35);
+            display: flex;
+            align-items: flex-start;
+            gap: 12px;
+        }
+
+        .gestor-content-header-texto {
+            flex: 1;
+            min-width: 0;
+        }
+
+        .gestor-btn-menu-mobile {
+            display: none;
+            flex-shrink: 0;
+            align-items: center;
+            justify-content: center;
+            width: 46px;
+            height: 46px;
+            min-width: 46px;
+            padding: 0;
+            border: 2px solid rgba(212, 160, 23, 0.55);
+            border-radius: 10px;
+            background: rgba(26, 42, 67, 0.85);
+            color: #f1c40f;
+            font-size: 22px;
+            line-height: 1;
+            cursor: pointer;
+            font-family: 'Poppins', sans-serif;
+            -webkit-tap-highlight-color: transparent;
+            touch-action: manipulation;
+        }
+
+        .gestor-btn-menu-mobile:active {
+            background: #0056b3;
+            color: #fff;
+        }
+
+        .gestor-menu-overlay {
+            display: none;
         }
 
         .gestor-titulo-aba {
@@ -653,6 +706,85 @@
             border-color: #e0e6ed;
         }
 
+        .gestor-sections-wrap.gestor-wrap-inicio {
+            background: transparent;
+            border: none;
+            box-shadow: none;
+            padding: 0;
+            min-height: 0;
+        }
+
+        #aba-inicio.gestor-tela-inicio {
+            position: relative;
+            min-height: calc(100vh - 160px);
+            border-radius: 12px;
+            overflow: hidden;
+            background-color: #2c313a;
+            background-size: cover;
+            background-position: center;
+            background-repeat: no-repeat;
+        }
+
+        #aba-inicio.gestor-tela-inicio.active {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        #aba-inicio.gestor-tela-inicio::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: inherit;
+            background-size: cover;
+            background-position: center;
+            filter: blur(14px) brightness(0.35);
+            transform: scale(1.08);
+        }
+
+        #aba-inicio.gestor-tela-inicio::after {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(180deg, rgba(15, 25, 41, 0.55) 0%, rgba(44, 49, 58, 0.85) 100%);
+        }
+
+        .gestor-tela-inicio-conteudo {
+            position: relative;
+            z-index: 1;
+            text-align: center;
+            padding: 40px 24px;
+            max-width: 420px;
+        }
+
+        .gestor-tela-inicio-logo {
+            width: min(280px, 70vw);
+            height: auto;
+            max-height: 280px;
+            object-fit: contain;
+            border-radius: 16px;
+            background: #fff;
+            padding: 12px;
+            box-shadow: 0 16px 48px rgba(0, 0, 0, 0.45);
+        }
+
+        .gestor-tela-inicio-nome {
+            margin: 22px 0 8px;
+            color: #f1c40f;
+            font-size: 22px;
+            font-weight: 800;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .gestor-tela-inicio-hint {
+            margin: 0;
+            color: #d5dbe3;
+            font-size: 14px;
+            font-weight: 500;
+            line-height: 1.5;
+        }
+
         #tela-patrao .func-item {
             background: #ffffff;
             border: 1px solid #e8edf2;
@@ -672,35 +804,83 @@
         }
 
         @media (max-width: 900px) {
-            .gestor-corpo-painel {
-                flex-direction: column;
+            body.gestor-ativo {
+                padding: 0;
             }
 
             .gestor-sessao-topbar {
-                padding: 8px 12px;
+                padding: max(8px, env(safe-area-inset-top)) 12px 8px;
                 gap: 6px;
             }
 
-            .gestor-sessao-topbar-nome {
-                font-size: 12px;
+            .gestor-sessao-topbar-texto {
+                font-size: 11px;
             }
 
-            .gestor-sidebar {
-                width: 100%;
-                min-width: 0;
-                max-height: 42vh;
-                border-right: none;
-                border-bottom: 2px solid rgba(212, 160, 23, 0.25);
-            }
-
-            .gestor-sidebar-logo {
+            .gestor-sessao-topbar-label {
                 display: none;
             }
 
+            .gestor-sessao-topbar-nome {
+                font-size: 13px;
+            }
+
+            .gestor-corpo-painel {
+                flex-direction: row;
+                position: relative;
+            }
+
+            .gestor-menu-overlay {
+                display: none;
+                position: fixed;
+                inset: 0;
+                background: rgba(0, 0, 0, 0.55);
+                z-index: 190;
+                -webkit-tap-highlight-color: transparent;
+            }
+
+            body.gestor-menu-aberto .gestor-menu-overlay {
+                display: block;
+            }
+
+            body.gestor-menu-aberto {
+                overflow: hidden;
+            }
+
+            .gestor-sidebar {
+                position: fixed;
+                top: 0;
+                left: 0;
+                bottom: 0;
+                width: min(300px, 88vw);
+                min-width: 0;
+                max-height: none;
+                z-index: 200;
+                transform: translateX(-105%);
+                transition: transform 0.28s ease;
+                border-right: 2px solid rgba(212, 160, 23, 0.35);
+                box-shadow: 8px 0 32px rgba(0, 0, 0, 0.45);
+                padding-top: max(8px, env(safe-area-inset-top));
+                padding-bottom: max(8px, env(safe-area-inset-bottom));
+            }
+
+            body.gestor-menu-aberto .gestor-sidebar {
+                transform: translateX(0);
+            }
+
+            .gestor-sidebar-logo {
+                display: block;
+                padding: 10px 12px 6px;
+            }
+
+            .gestor-sidebar-logo img {
+                max-height: 72px;
+            }
+
             .gestor-empresa-bar {
-                margin: 8px 10px;
-                font-size: 12px;
-                padding: 6px;
+                margin: 6px 10px 10px;
+                font-size: 11px;
+                padding: 8px 6px;
             }
 
             .gestor-nav {
@@ -708,9 +888,11 @@
                 flex-wrap: nowrap;
                 overflow-x: hidden;
                 overflow-y: auto;
+                -webkit-overflow-scrolling: touch;
                 padding-bottom: 8px;
                 gap: 4px;
-                max-height: 36vh;
+                max-height: none;
+                flex: 1;
             }
 
             .gestor-menu-grupo {
@@ -718,23 +900,154 @@
                 flex-shrink: 0;
             }
 
-            .gestor-menu-btn {
-                white-space: nowrap;
+            .gestor-menu-btn,
+            .gestor-menu-grupo-titulo {
+                white-space: normal;
                 flex: 0 0 auto;
-                padding: 8px 12px;
+                padding: 12px 10px;
+                font-size: 13px;
+                min-height: 44px;
+                line-height: 1.3;
+            }
+
+            .gestor-menu-sub .gestor-menu-btn {
                 font-size: 12px;
+                padding: 11px 8px;
             }
 
             .gestor-sidebar-footer {
-                display: none;
+                display: block;
+                padding-bottom: max(12px, env(safe-area-inset-bottom));
+            }
+
+            .gestor-btn-sair {
+                min-height: 44px;
+                font-size: 13px;
+            }
+
+            .gestor-btn-menu-mobile {
+                display: inline-flex;
             }
 
             .gestor-main-content {
-                padding: 12px;
+                width: 100%;
+                flex: 1;
+                min-width: 0;
+                padding: 10px 12px max(14px, env(safe-area-inset-bottom));
+                -webkit-overflow-scrolling: touch;
+            }
+
+            .gestor-content-header {
+                margin-bottom: 12px;
+                padding-bottom: 10px;
+                gap: 10px;
+            }
+
+            .gestor-titulo-aba {
+                font-size: 16px;
+                line-height: 1.25;
+                word-break: break-word;
+            }
+
+            .gestor-subtitulo-painel {
+                font-size: 11px;
             }
 
             .gestor-sections-wrap {
-                padding: 14px;
+                padding: 14px 12px;
+                border-radius: 10px;
+                overflow-x: auto;
+                -webkit-overflow-scrolling: touch;
+            }
+
+            #tela-patrao .gestor-sections-wrap input,
+            #tela-patrao .gestor-sections-wrap select,
+            #tela-patrao .gestor-sections-wrap textarea {
+                font-size: 16px;
+                min-height: 44px;
+            }
+
+            #tela-patrao .gestor-sections-wrap .view-section > div[style*="display: flex"],
+            #tela-patrao .gestor-sections-wrap .view-section div[style*="display:flex"] {
+                flex-direction: column !important;
+                gap: 0 !important;
+            }
+
+            #tela-patrao .gestor-sections-wrap .view-section div[style*="flex: 1"],
+            #tela-patrao .gestor-sections-wrap .view-section div[style*="flex:1"] {
+                flex: none !important;
+                width: 100% !important;
+                min-width: 0 !important;
+            }
+
+            #tela-patrao .gestor-sections-wrap .btn-enviar,
+            #tela-patrao .gestor-sections-wrap .btn-gold,
+            #tela-patrao .gestor-sections-wrap button[type="button"]:not(.gestor-menu-btn):not(.cadastro-desp-item-del):not(.btn-link-nota-resumo) {
+                min-height: 44px;
+                font-size: 14px;
+            }
+
+            #aba-inicio.gestor-tela-inicio {
+                min-height: calc(100dvh - 140px);
+            }
+
+            .gestor-tela-inicio-conteudo {
+                padding: 28px 16px;
+            }
+
+            .gestor-tela-inicio-nome {
+                font-size: 18px;
+            }
+
+            .gestor-tela-inicio-hint {
+                font-size: 13px;
+            }
+
+            #alerta-container-global {
+                --alerta-painel-largura: min(380px, calc(100vw - 16px));
+                left: 8px !important;
+                right: 8px !important;
+                bottom: max(8px, env(safe-area-inset-bottom)) !important;
+            }
+
+            #alerta-container-global .alerta-painel-wrapper,
+            #alerta-container-global .alerta-barra-minimizada {
+                width: 100%;
+                max-width: 100%;
+            }
+        }
+
+        @media (max-width: 600px) {
+            body {
+                padding: max(10px, env(safe-area-inset-top)) 10px max(10px, env(safe-area-inset-bottom));
+            }
+
+            .main-card {
+                padding: 22px 16px;
+                border-radius: 14px;
+            }
+
+            .logo-img {
+                max-width: 110px;
+            }
+
+            input, select, textarea {
+                font-size: 16px;
+                min-height: 44px;
+            }
+
+            .btn-enviar, .btn-gold, .btn-entrada, .btn-saida, .btn-empresa-select, .btn-logout {
+                min-height: 48px;
+                font-size: 15px;
+                padding: 14px 16px;
+            }
+
+            label {
+                font-size: 12px;
+            }
+
+            .title-top {
+                font-size: 14px;
             }
         }
 
@@ -1191,20 +1504,21 @@
         }
 
         .badge-tag-excluir {
-            background: #f1f3f5;
-            color: #a94442;
+            background: #d9534f;
+            color: #fff;
             border: none;
-            border-left: 1px solid #ccc;
-            padding: 0 9px;
-            font-size: 16px;
+            border-left: 1px solid #c9302c;
+            padding: 0 10px;
+            font-size: 15px;
             font-weight: bold;
             cursor: pointer;
             line-height: 1;
             min-width: 28px;
+            border-radius: 0 15px 15px 0;
         }
 
         .badge-tag-excluir:hover {
-            background: #d9534f;
+            background: #c9302c;
             color: #fff;
         }
 
@@ -1271,20 +1585,78 @@
             border-radius: 10px;
         }
 
-        .desp-cadastro-lista {
-            max-height: 180px;
-            overflow-y: auto;
-            padding: 6px 8px 10px;
+        .desp-cadastro-lista,
+        .desp-baloes-lista {
             display: flex;
-            flex-direction: column;
-            gap: 4px;
+            flex-wrap: wrap;
+            align-content: flex-start;
+            gap: 6px;
+            max-height: 200px;
+            overflow-y: auto;
+            padding: 8px 12px 12px;
             background: #fafcff;
         }
 
+        .desp-baloes-secao {
+            border-bottom: 1px solid #e0e6ed;
+        }
+
+        .desp-baloes-secao:last-of-type {
+            border-bottom: none;
+        }
+
+        .desp-baloes-titulo {
+            margin: 0;
+            padding: 10px 12px 4px;
+            font-size: 12px;
+            font-weight: 700;
+            color: var(--dark-navy);
+        }
+
+        .painel-fornecedores-geral .desp-baloes-lista,
+        .painel-fornecedores-obra .desp-baloes-lista,
         .painel-fornecedores-geral .desp-cadastro-lista,
         .painel-fornecedores-obra .desp-cadastro-lista {
-            max-height: 320px;
-            padding: 8px;
+            max-height: 280px;
+        }
+
+        .badge-tag-wrap.badge-tag-selecionado {
+            border-color: var(--gold);
+            box-shadow: 0 0 0 2px rgba(212, 160, 23, 0.35);
+        }
+
+        .badge-tag-wrap.badge-tag-selecionado .badge-tag-desp {
+            background: #fff8e6;
+            color: #1a2a43 !important;
+        }
+
+        .badge-tag-wrap .badge-tag-desp {
+            border: none;
+            border-radius: 15px 0 0 15px;
+            max-width: 220px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+            color: #1a2a43 !important;
+            font-size: 11px;
+            font-weight: 700;
+            padding: 7px 12px;
+        }
+
+        #tela-patrao .painel-cadastros-desp .badge-tag-wrap .badge-tag-desp {
+            color: #1a2a43 !important;
+            -webkit-text-fill-color: #1a2a43 !important;
+            background: #e0e6ed !important;
+        }
+
+        #tela-patrao .painel-cadastros-desp .badge-tag-wrap.badge-tag-selecionado .badge-tag-desp {
+            background: #fff8e6 !important;
+        }
+
+        #tela-patrao .painel-cadastros-desp .badge-tag-excluir {
+            color: #fff !important;
+            background: #d9534f !important;
+            -webkit-text-fill-color: #fff !important;
         }
 
         .fornec-geral-linha {
@@ -1944,6 +2316,7 @@
             <strong class="gestor-sessao-topbar-nome" id="gestor-sessao-fixa-nome">—</strong>
         </span>
     </div>
+    <div class="gestor-menu-overlay" id="gestor-menu-overlay" onclick="fecharMenuMobileGestor()" aria-hidden="true"></div>
     <div class="gestor-corpo-painel">
     <aside class="gestor-sidebar">
         <div class="gestor-sidebar-logo">
@@ -1951,13 +2324,13 @@
         </div>
         <div class="gestor-empresa-bar" id="nome-empresa-painel">Empresa...</div>
         <nav class="gestor-nav">
-            <div class="gestor-menu-grupo open has-active" id="grupo-menu-equipe">
-                <button type="button" class="gestor-menu-grupo-titulo" id="btn-grupo-equipe" onclick="toggleGrupoMenuEquipe()" aria-expanded="true">
+            <div class="gestor-menu-grupo" id="grupo-menu-equipe">
+                <button type="button" class="gestor-menu-grupo-titulo" id="btn-grupo-equipe" onclick="toggleGrupoMenuEquipe()" aria-expanded="false">
                     <span>👥 Equipe</span>
                     <span class="gestor-menu-grupo-seta" aria-hidden="true">▼</span>
                 </button>
                 <div class="gestor-menu-sub" id="submenu-equipe">
-                    <button type="button" class="gestor-menu-btn active" data-titulo="Cadastrar Funcionário" onclick="mudarAba('cadastrar', this)">➕ Cadastrar Funcionário</button>
+                    <button type="button" class="gestor-menu-btn" data-titulo="Cadastrar Funcionário" onclick="mudarAba('cadastrar', this)">➕ Cadastrar Funcionário</button>
                     <button type="button" class="gestor-menu-btn" id="btn-menu-equipe-cadastrada" data-titulo="Equipe Cadastrada" onclick="mudarAba('equipe-cadastrada', this)">👥 Equipe Cadastrada</button>
                     <button type="button" class="gestor-menu-btn" data-titulo="Vales" onclick="mudarAba('criar', this)">💰 Vales</button>
                     <button type="button" class="gestor-menu-btn" data-titulo="Arquivo" onclick="mudarAba('buscar', this)">📁 Arquivo</button>
@@ -1965,14 +2338,23 @@
                     <button type="button" class="gestor-menu-btn" data-titulo="Ajuda de Custo" onclick="mudarAba('ajuda-custo', this)">🧳 Ajuda de Custo</button>
                     <button type="button" class="gestor-menu-btn" data-titulo="Descontos Folha" onclick="mudarAba('descontos-folha', this)">📋 Descontos Folha</button>
                     <button type="button" class="gestor-menu-btn" data-titulo="Folha Pagamento" onclick="mudarAba('folha', this)">📄 Folha Pagamento</button>
+                    <button type="button" class="gestor-menu-btn" id="btn-menu-pedidos" data-titulo="Pedidos Materiais" onclick="mudarAba('pedidos', this)">📦 Pedidos Materiais</button>
+                </div>
+            </div>
+            <div class="gestor-menu-grupo grupo-obras" id="grupo-menu-obras">
+                <button type="button" class="gestor-menu-grupo-titulo" id="btn-grupo-obras" onclick="toggleGrupoMenuObras()" aria-expanded="false">
+                    <span>🏗️ Obras</span>
+                    <span class="gestor-menu-grupo-seta" aria-hidden="true">▼</span>
+                </button>
+                <div class="gestor-menu-sub" id="submenu-obras">
+                    <button type="button" class="gestor-menu-btn menu-despesas" data-titulo="Cadastrar Obra" onclick="mudarAba('despesas-cadastrar', this)">➕ Cadastrar Obra</button>
+                    <button type="button" class="gestor-menu-btn menu-despesas" id="btn-menu-despesas-relatorio" data-titulo="Relatório de Gastos por Obra" onclick="mudarAba('despesas-relatorio', this)">🔍 Relatório de Gastos por Obra</button>
+                    <button type="button" class="gestor-menu-btn menu-despesas" id="btn-menu-relatorio-despesas" data-titulo="Relatório Despesas" onclick="mudarAba('relatorio-despesas', this)">📋 Relatório Despesas</button>
                 </div>
             </div>
             <button type="button" class="gestor-menu-btn" data-titulo="Calendário" onclick="mudarAba('calendario', this)">📅 Calendário</button>
             <button type="button" class="gestor-menu-btn" data-titulo="Terceiros" onclick="mudarAba('terceiros', this)">👷 Terceiros</button>
-            <button type="button" class="gestor-menu-btn menu-despesas" data-titulo="Obras" onclick="mudarAba('despesas', this)">🏗️ Obras</button>
-            <button type="button" class="gestor-menu-btn" data-titulo="Relatório Despesas" onclick="mudarAba('relatorio-despesas', this)">📋 Relatório Despesas</button>
             <button type="button" class="gestor-menu-btn menu-backup" data-titulo="Backup" onclick="mudarAba('backup', this)">💾 Backup</button>
-            <button type="button" class="gestor-menu-btn" data-titulo="Pedidos Materiais" onclick="mudarAba('pedidos', this)">📦 Pedidos Materiais</button>
         </nav>
         <div class="gestor-sidebar-footer">
             <button type="button" class="gestor-btn-sair" onclick="sairPainelGestor()">⬅️ Trocar de Empresa (Sair)</button>
@@ -1981,12 +2363,23 @@
 
     <div class="gestor-main-content">
         <div class="gestor-content-header">
-            <h2 class="gestor-titulo-aba" id="gestor-titulo-aba">Cadastrar Funcionário</h2>
-            <p class="gestor-subtitulo-painel">Gestor 360 — Obras · Holerite · Ponto</p>
+            <button type="button" class="gestor-btn-menu-mobile" id="btn-menu-mobile-gestor" onclick="toggleMenuMobileGestor()" aria-label="Abrir menu de navegação" aria-expanded="false">☰</button>
+            <div class="gestor-content-header-texto">
+                <h2 class="gestor-titulo-aba" id="gestor-titulo-aba">Painel Gestor</h2>
+                <p class="gestor-subtitulo-painel">Gestor 360 — Obras · Holerite · Ponto</p>
+            </div>
         </div>
-        <div class="gestor-sections-wrap">
+        <div class="gestor-sections-wrap gestor-wrap-inicio" id="gestor-sections-wrap">
 
-    <div id="aba-cadastrar" class="view-section active">
+    <div id="aba-inicio" class="view-section gestor-tela-inicio active">
+        <div class="gestor-tela-inicio-conteudo">
+            <img src="https://i.postimg.cc/zDRJMSTn/69420f5a-5b80-457e-8146-00485162d7f2.jpg" crossorigin="anonymous" class="gestor-tela-inicio-logo" id="gestor-inicio-logo" alt="Logo da empresa">
+            <h3 class="gestor-tela-inicio-nome" id="gestor-inicio-nome">Empresa</h3>
+            <p class="gestor-tela-inicio-hint">Toque no menu ☰ e escolha uma opção para começar.</p>
+        </div>
+    </div>
+
+    <div id="aba-cadastrar" class="view-section">
         <label>Nome Completo</label>
         <input type="text" id="c-nome" placeholder="Digite o nome completo">
         
@@ -2564,88 +2957,81 @@
         </details>
     </div>
 
-    <div id="aba-despesas" class="view-section">
-        <details open style="margin-bottom: 20px;">
-            <summary style="background: #eef2f5;">➕ Lançar Nova Despesa</summary>
-            <div style="padding: 15px;">
-                <label>Nome da Obra ou Local</label>
-                <input type="text" id="d-obra" list="datalist-obras-desp" autocomplete="off" placeholder="Onde o material foi usado?">
+    <div id="aba-despesas-cadastrar" class="view-section">
+        <label>Nome da Obra ou Local</label>
+        <input type="text" id="d-obra" list="datalist-obras-desp" autocomplete="off" placeholder="Onde o material foi usado?">
 
-                <label>Nome da Loja ou Fornecedor</label>
-                <input type="text" id="d-loja" list="datalist-lojas-desp" autocomplete="off" placeholder="Onde foi comprado?">
-                <label>Número da Nota Fiscal / Recibo</label>
-                <input type="text" id="d-nf" placeholder="Ex: 123456 (Opcional)">
+        <label>Nome da Loja ou Fornecedor</label>
+        <input type="text" id="d-loja" list="datalist-lojas-desp" autocomplete="off" placeholder="Onde foi comprado?">
+        <label>Número da Nota Fiscal / Recibo</label>
+        <input type="text" id="d-nf" placeholder="Ex: 123456 (Opcional)">
 
-                <label>Valor da Fatura (R$)</label>
-                <input type="text" id="d-valor" placeholder="0,00" oninput="mascaraMoeda(this)">
-                <label>Data de Vencimento</label><input type="date" id="d-vencimento">
+        <label>Valor da Fatura (R$)</label>
+        <input type="text" id="d-valor" placeholder="0,00" oninput="mascaraMoeda(this)">
+        <label>Data de Vencimento</label><input type="date" id="d-vencimento">
 
-                <label>Descrição / Materiais</label>
-                <textarea id="d-desc" rows="2" placeholder="Descreva os materiais adquiridos"></textarea>
+        <label>Descrição / Materiais</label>
+        <textarea id="d-desc" rows="2" placeholder="Descreva os materiais adquiridos"></textarea>
 
-                <label>Foto do Recibo / Fatura</label>
-                <input type="file" id="d-anexo" accept="image/*" capture="environment" style="background: #fff; padding: 10px; border-radius: 8px;">
-                <input type="hidden" id="d-anexo-base64">
-                <p class="texto-explicacao" style="margin-top: 5px;">* Tire uma foto clara do recibo impresso.</p>
+        <label>Foto do Recibo / Fatura</label>
+        <input type="file" id="d-anexo" accept="image/*" capture="environment" style="background: #fff; padding: 10px; border-radius: 8px;">
+        <input type="hidden" id="d-anexo-base64">
+        <p class="texto-explicacao" style="margin-top: 5px;">* Tire uma foto clara do recibo impresso.</p>
 
-                <button class="btn-gold" id="btnSalvarDespesa" onclick="salvarDespesaObra()">SALVAR DESPESA</button>
+        <button class="btn-gold" id="btnSalvarDespesa" onclick="salvarDespesaObra()">SALVAR DESPESA</button>
+
+        <datalist id="datalist-obras-desp"></datalist>
+        <datalist id="datalist-lojas-desp"></datalist>
+    </div>
+
+    <div id="aba-despesas-relatorio" class="view-section">
+        <label>Procurar despesas da Obra ou Loja:</label>
+        <div style="display: flex; gap: 10px;">
+            <div class="busca-despesas-wrap">
+                <input type="text" id="busca-obra" placeholder="Nome da obra ou fornecedor" autocomplete="off" style="width: 100%; margin: 0;" oninput="filtrarAutocompleteBuscaDespesas()" onfocus="filtrarAutocompleteBuscaDespesas()" onkeydown="teclaAutocompleteBuscaDespesas(event)">
+                <div id="busca-obra-sugestoes" role="listbox" aria-label="Sugestões de busca"></div>
             </div>
-        </details>
+            <button onclick="buscarDespesasObra()" style="flex: 1; background: var(--dark-navy); color: white; border: none; border-radius: 10px; cursor: pointer; font-weight:bold;">Buscar</button>
+        </div>
 
-        <details open>
-            <summary style="background: #eef2f5;">🔍 Relatório de Gastos por Obra</summary>
-            <div style="padding: 15px;">
-                <label>Procurar despesas da Obra ou Loja:</label>
-                <div style="display: flex; gap: 10px;">
-                    <div class="busca-despesas-wrap">
-                        <input type="text" id="busca-obra" placeholder="Nome da obra ou fornecedor" autocomplete="off" style="width: 100%; margin: 0;" oninput="filtrarAutocompleteBuscaDespesas()" onfocus="filtrarAutocompleteBuscaDespesas()" onkeydown="teclaAutocompleteBuscaDespesas(event)">
-                        <div id="busca-obra-sugestoes" role="listbox" aria-label="Sugestões de busca"></div>
-                    </div>
-                    <button onclick="buscarDespesasObra()" style="flex: 1; background: var(--dark-navy); color: white; border: none; border-radius: 10px; cursor: pointer; font-weight:bold;">Buscar</button>
+        <div id="tags-filtros-despesas" class="painel-cadastros-desp">
+            <p class="cadastro-desp-vazio">A carregar cadastros...</p>
+        </div>
+
+        <div id="quadro-controles-despesas" class="quadro-controles-despesas" style="display: none;">
+            <details class="quadro-controles-desp-panel" open>
+                <summary>🎛️ Quadro de Controles <span class="quadro-controles-seta">▲</span></summary>
+                <div class="quadro-controles-desp-inner">
+                    <div id="quadro-controles-aviso"></div>
+                    <div id="quadro-controles-secoes"></div>
                 </div>
-                <datalist id="datalist-obras-desp"></datalist>
-                <datalist id="datalist-lojas-desp"></datalist>
+            </details>
+        </div>
 
-                <div id="tags-filtros-despesas" class="painel-cadastros-desp">
-                    <p class="cadastro-desp-vazio">A carregar cadastros...</p>
-                </div>
-
-                <div id="quadro-controles-despesas" class="quadro-controles-despesas" style="display: none;">
-                    <details class="quadro-controles-desp-panel" open>
-                        <summary>🎛️ Quadro de Controles <span class="quadro-controles-seta">▲</span></summary>
-                        <div class="quadro-controles-desp-inner">
-                            <div id="quadro-controles-aviso"></div>
-                            <div id="quadro-controles-secoes"></div>
-                        </div>
-                    </details>
-                </div>
-
-                <div id="resumo-total-despesas" style="display: none; margin-top: 20px; background: #fff3cd; padding: 15px; border-radius: 10px; text-align: center; border: 1px solid #ffeeba;">
-                    <h4 style="margin: 0; color: #856404;">Total Gasto (Pesquisa Atual):</h4>
-                    <h2 style="margin: 5px 0 0 0; color: #d9534f;" id="total-gasto-display">R$ 0,00</h2>
-                    
-                    <div style="display:flex; flex-wrap:wrap; gap:10px; justify-content:center; margin-top:15px;">
-                        <button id="btnExportarDespesas" class="btn-pdf-relatorio" style="display:none; margin:0; background-color: var(--dark-navy);" onclick="exportarPDF('despesas')">📥 EXPORTAR PDF</button>
-                        <button id="btnExportarDespesasExcel" class="btn-pdf-relatorio" style="display:none; margin:0; background-color:#217346;" onclick="exportarExcelDespesasBusca()">📊 EXPORTAR EXCEL</button>
-                    </div>
-                </div>
-
-                <p class="texto-explicacao" style="margin: 10px 0 0 0;">Contas <b>vencidas</b> e <b>a vencer</b> aparecem por ordem de <b>vencimento</b> (data com ano, do mais antigo ao mais recente). O PDF da busca usa a mesma ordem.</p>
-
-                <div id="lista-despesas-resultados" style="margin-top: 15px;">
-                    <p style="text-align: center; color: #888; font-size: 13px;">Selecione uma obra acima para ver os fornecedores e despesas.</p>
-                </div>
+        <div id="resumo-total-despesas" style="display: none; margin-top: 20px; background: #fff3cd; padding: 15px; border-radius: 10px; text-align: center; border: 1px solid #ffeeba;">
+            <h4 style="margin: 0; color: #856404;">Total Gasto (Pesquisa Atual):</h4>
+            <h2 style="margin: 5px 0 0 0; color: #d9534f;" id="total-gasto-display">R$ 0,00</h2>
+            
+            <div style="display:flex; flex-wrap:wrap; gap:10px; justify-content:center; margin-top:15px;">
+                <button id="btnExportarDespesas" class="btn-pdf-relatorio" style="display:none; margin:0; background-color: var(--dark-navy);" onclick="exportarPDF('despesas')">📥 EXPORTAR PDF</button>
+                <button id="btnExportarDespesasExcel" class="btn-pdf-relatorio" style="display:none; margin:0; background-color:#217346;" onclick="exportarExcelDespesasBusca()">📊 EXPORTAR EXCEL</button>
             </div>
-<details>
+        </div>
+
+        <p class="texto-explicacao" style="margin: 10px 0 0 0;">Contas <b>vencidas</b> e <b>a vencer</b> aparecem por ordem de <b>vencimento</b> (data com ano, do mais antigo ao mais recente). O PDF da busca usa a mesma ordem.</p>
+
+        <div id="lista-despesas-resultados" style="margin-top: 15px;">
+            <p style="text-align: center; color: #888; font-size: 13px;">Selecione uma obra acima para ver os fornecedores e despesas.</p>
+        </div>
+
+        <details style="margin-top: 20px;">
             <summary style="background: #eef2f5;">📊 Resumo de Gastos (Obra x Fornecedor)</summary>
             <div style="padding: 15px;">
                 <p class="texto-explicacao" style="text-align: justify;">Esta tabela cruza os dados das Obras e Lojas. Ela soma tudo o que está pendente e o que já foi pago para cada fornecedor.</p>
                 <button class="btn-enviar" style="margin-top: 5px;" onclick="gerarResumoFornecedores()">GERAR TABELA DE RESUMO</button>
                 
-                <div id="tabela-resumo-fornecedores" style="margin-top: 20px; overflow-x: auto;">
-                    </div>
+                <div id="tabela-resumo-fornecedores" style="margin-top: 20px; overflow-x: auto;"></div>
             </div>
-        </details>
         </details>
     </div>
 
@@ -2921,6 +3307,14 @@
                 img.src = urlLogo;
             });
         }
+        const telaInicio = document.getElementById('aba-inicio');
+        const logoGrande = document.getElementById('gestor-inicio-logo');
+        const nomeEl = document.getElementById('gestor-inicio-nome');
+        if (telaInicio && urlLogo) {
+            telaInicio.style.backgroundImage = "url('" + urlLogo + "')";
+        }
+        if (logoGrande && urlLogo) logoGrande.src = urlLogo;
+        if (nomeEl && nomeEmpresa) nomeEl.textContent = nomeEmpresa;
     };
 
     const firebaseConfig = {
@@ -3174,6 +3568,10 @@
         document.getElementById('tela-escolha-inicial').style.display = 'block';
     }
 
+    window.addEventListener('resize', function () {
+        if (window.innerWidth > 900) fecharMenuMobileGestor();
+    });
+
     // --- EVENTOS OFFLINE/ONLINE ---
     window.addEventListener('offline', () => { 
         document.getElementById('alerta-offline').style.display = 'block'; 
@@ -3241,6 +3639,7 @@
     };
 
     window.sairPainelGestor = function() {
+        fecharMenuMobileGestor();
         clearEmpresaGestor();
         location.reload();
     };
@@ -3279,6 +3678,56 @@
         document.title = 'Gestor 360 — ' + nome;
     }
 
+    function mostrarTelaInicioGestor() {
+        document.querySelectorAll('.gestor-menu-btn').forEach(t => t.classList.remove('active'));
+        document.querySelectorAll('.view-section').forEach(v => v.classList.remove('active'));
+        const inicio = document.getElementById('aba-inicio');
+        if (inicio) inicio.classList.add('active');
+
+        const wrap = document.getElementById('gestor-sections-wrap');
+        if (wrap) wrap.classList.add('gestor-wrap-inicio');
+
+        const grupoEquipe = document.getElementById('grupo-menu-equipe');
+        if (grupoEquipe) {
+            grupoEquipe.classList.remove('has-active', 'open');
+        }
+        const btnEquipe = document.getElementById('btn-grupo-equipe');
+        if (btnEquipe) btnEquipe.setAttribute('aria-expanded', 'false');
+
+        const grupoObras = document.getElementById('grupo-menu-obras');
+        if (grupoObras) {
+            grupoObras.classList.remove('has-active', 'open');
+        }
+        const btnObras = document.getElementById('btn-grupo-obras');
+        if (btnObras) btnObras.setAttribute('aria-expanded', 'false');
+
+        const tituloEl = document.getElementById('gestor-titulo-aba');
+        const empresa = getEmpresaGestor();
+        if (tituloEl) tituloEl.textContent = empresa || 'Painel Gestor';
+
+        const mainGestor = document.querySelector('.gestor-main-content');
+        if (mainGestor) mainGestor.scrollTop = 0;
+    }
+    window.mostrarTelaInicioGestor = mostrarTelaInicioGestor;
+
+    function fecharMenuMobileGestor() {
+        document.body.classList.remove('gestor-menu-aberto');
+        const btn = document.getElementById('btn-menu-mobile-gestor');
+        const overlay = document.getElementById('gestor-menu-overlay');
+        if (btn) btn.setAttribute('aria-expanded', 'false');
+        if (overlay) overlay.setAttribute('aria-hidden', 'true');
+    }
+    window.fecharMenuMobileGestor = fecharMenuMobileGestor;
+
+    function toggleMenuMobileGestor() {
+        const aberto = document.body.classList.toggle('gestor-menu-aberto');
+        const btn = document.getElementById('btn-menu-mobile-gestor');
+        const overlay = document.getElementById('gestor-menu-overlay');
+        if (btn) btn.setAttribute('aria-expanded', aberto ? 'true' : 'false');
+        if (overlay) overlay.setAttribute('aria-hidden', aberto ? 'false' : 'true');
+    }
+    window.toggleMenuMobileGestor = toggleMenuMobileGestor;
+
     function iniciarPainelGestor() {
         const empresaLogada = getEmpresaGestor();
         limparCachesEmpresaGestor();
@@ -3286,6 +3735,7 @@
         document.querySelectorAll('.main-card').forEach(card => card.style.display = 'none');
         mostrarPainelGestor();
         atualizarBadgeSessaoGestor(empresaLogada);
+        mostrarTelaInicioGestor();
         
         carregarListaDeFuncionarios();
         const mesAtual = String(new Date().getMonth() + 1).padStart(2, '0');
@@ -4944,11 +5394,20 @@ function separarDataSegura(dataString) {
                 if (!mapaObraLojas.has(chObra)) mapaObraLojas.set(chObra, new Map());
                 const lojasDaObra = mapaObraLojas.get(chObra);
                 const canonLoja = formatarNomeCanonicoDespesa(d.loja_nome);
-                const existenteLoja = lojasDaObra.get(chLoja);
-                if (!existenteLoja) {
-                    lojasDaObra.set(chLoja, { canonico: canonLoja, count: 1 });
+                const valor = d.valor_numero || 0;
+                const status = d.status || 'pendente';
+                if (!lojasDaObra.has(chLoja)) {
+                    lojasDaObra.set(chLoja, { canonico: canonLoja, count: 1, vencido: 0, aVencer: 0, pago: 0 });
                 } else {
-                    existenteLoja.count += 1;
+                    lojasDaObra.get(chLoja).count += 1;
+                }
+                const lojaObra = lojasDaObra.get(chLoja);
+                if (status === 'pago') {
+                    lojaObra.pago += valor;
+                } else if (despesaEstaVencida(d)) {
+                    lojaObra.vencido += valor;
+                } else {
+                    lojaObra.aVencer += valor;
                 }
             }
         });
@@ -4981,12 +5440,21 @@ function separarDataSegura(dataString) {
         return window._cacheNomesDespesas;
     }
 
-    function getFornecedoresDaObra(cache, nomeObra) {
+    function getFornecedoresDaObra(cache, nomeObra, apenasComDivida) {
         if (!cache || !cache.mapaObraLojas || !nomeObra) return [];
         const chObra = normalizarChaveNomeDespesa(nomeObra);
         const mapa = cache.mapaObraLojas.get(chObra);
         if (!mapa) return [];
-        return Array.from(mapa.values()).map((x) => x.canonico).sort((a, b) => a.localeCompare(b, 'pt-BR'));
+        let lista = Array.from(mapa.values());
+        if (apenasComDivida !== false) {
+            lista = lista.filter((x) => (x.vencido + x.aVencer) > 0);
+        }
+        return lista.sort((a, b) => {
+            const pa = a.vencido + a.aVencer;
+            const pb = b.vencido + b.aVencer;
+            if (pb !== pa) return pb - pa;
+            return a.canonico.localeCompare(b.canonico, 'pt-BR');
+        });
     }
 
     function resolverNomeCanonicoDespesa(valorDigitado, tipo) {
@@ -5015,56 +5483,43 @@ function separarDataSegura(dataString) {
         const n = escapeHtmlBasico(nome);
         const t = tipo === 'obra' ? 'obra' : 'loja';
         const obraAttr = obraPai ? ' data-obra="' + escapeHtmlBasico(obraPai) + '"' : '';
+        const delObraAttr = obraPai ? ' data-obra="' + escapeHtmlBasico(obraPai) + '"' : '';
         const filtro = window._filtroCadastroDespesa || {};
         let selClass = '';
         if (t === 'obra' && window._obraSelecionadaCadastros && formatarNomeCanonicoDespesa(nome) === formatarNomeCanonicoDespesa(window._obraSelecionadaCadastros)) {
-            selClass = ' selecionado';
+            selClass = ' badge-tag-selecionado';
         } else if (t === 'loja' && filtro.fornecedor && formatarNomeCanonicoDespesa(nome) === formatarNomeCanonicoDespesa(filtro.fornecedor)) {
-            selClass = ' selecionado';
+            selClass = ' badge-tag-selecionado';
         }
-        const delObraAttr = obraPai ? ' data-obra="' + escapeHtmlBasico(obraPai) + '"' : '';
-        return '<div class="cadastro-desp-item">'
-            + '<div role="button" tabindex="0" class="cadastro-desp-item-nome badge-tag-desp' + selClass + '" data-nome="' + n + '" data-tipo="' + t + '"' + obraAttr + ' title="Buscar: ' + n + '" style="color:#1a2a43 !important;font-size:13px;font-weight:700;">' + n + '</div>'
-            + '<button type="button" class="cadastro-desp-item-del badge-tag-excluir" data-nome="' + n + '" data-tipo="' + t + '"' + delObraAttr + ' title="Excluir cadastro" style="color:#d9534f !important;">×</button>'
-            + '</div>';
+        return '<span class="badge-tag-wrap' + selClass + '">'
+            + '<span role="button" tabindex="0" class="badge-tag badge-tag-desp" data-nome="' + n + '" data-tipo="' + t + '"' + obraAttr + ' title="Buscar: ' + n + '">' + n + '</span>'
+            + '<button type="button" class="badge-tag-excluir" data-nome="' + n + '" data-tipo="' + t + '"' + delObraAttr + ' title="Excluir cadastro">×</button>'
+            + '</span>';
     }
 
-    function htmlFornecedorGeralItem(forn) {
+    function htmlBalaoFornecedorObra(forn, obraPai) {
         const pendente = forn.vencido + forn.aVencer;
         const nome = escapeHtmlBasico(forn.canonico);
-        const obrasComDivida = Array.from(forn.obras.values())
-            .filter((o) => (o.vencido + o.aVencer) > 0)
-            .sort((a, b) => (b.vencido + b.aVencer) - (a.vencido + a.aVencer) || a.canonico.localeCompare(b.canonico, 'pt-BR'));
-
-        const tagsHtml = '<span class="fornec-geral-valores">'
-            + (forn.vencido > 0 ? '<span class="fornec-geral-tag vencido">Vencido: ' + formatarMoeda(forn.vencido) + '</span>' : '')
-            + (forn.aVencer > 0 ? '<span class="fornec-geral-tag avencer">A vencer: ' + formatarMoeda(forn.aVencer) + '</span>' : '')
-            + '<span class="fornec-geral-tag total">Deve: ' + formatarMoeda(pendente) + '</span>'
+        const obra = escapeHtmlBasico(obraPai || '');
+        const extra = pendente > 0 ? ' <small style="opacity:0.85;font-weight:600;">(' + formatarMoeda(pendente) + ')</small>' : '';
+        const filtro = window._filtroCadastroDespesa || {};
+        let selClass = '';
+        if (filtro.fornecedor && formatarNomeCanonicoDespesa(forn.canonico) === formatarNomeCanonicoDespesa(filtro.fornecedor)) {
+            selClass = ' badge-tag-selecionado';
+        }
+        return '<span class="badge-tag-wrap' + selClass + '">'
+            + '<span role="button" tabindex="0" class="badge-tag badge-tag-desp" data-nome="' + nome + '" data-tipo="loja" data-obra="' + obra + '" title="Buscar: ' + nome + '">' + nome + extra + '</span>'
+            + '<button type="button" class="badge-tag-excluir" data-nome="' + nome + '" data-tipo="loja" data-obra="' + obra + '" title="Excluir cadastro">×</button>'
             + '</span>';
+    }
 
-        let obrasHtml = obrasComDivida.map((o) => {
-            const totObra = o.vencido + o.aVencer;
-            return '<div class="fornec-geral-obra-linha">'
-                + '<button type="button" class="fornec-geral-obra-btn badge-fornec-geral-obra" data-nome="' + escapeHtmlBasico(o.canonico) + '" data-fornecedor="' + nome + '" title="Ver despesas deste fornecedor nesta obra">🏢 ' + escapeHtmlBasico(o.canonico) + '</button>'
-                + '<span class="fornec-geral-valores">'
-                + (o.vencido > 0 ? '<span class="fornec-geral-tag vencido">Venc.: ' + formatarMoeda(o.vencido) + '</span>' : '')
-                + (o.aVencer > 0 ? '<span class="fornec-geral-tag avencer">A vencer: ' + formatarMoeda(o.aVencer) + '</span>' : '')
-                + '<span class="fornec-geral-tag total">' + formatarMoeda(totObra) + '</span>'
-                + '</span></div>';
-        }).join('');
-
-        const detalheObras = obrasComDivida.length
-            ? '<details class="fornec-geral-detalhe-obras"><summary>📍 Onde está devendo (' + obrasComDivida.length + ' obra(s))</summary><div class="fornec-geral-obras">' + obrasHtml + '</div></details>'
-            : '';
-
-        return '<div class="fornec-geral-linha">'
-            + '<div class="cadastro-desp-item">'
-            + '<div role="button" tabindex="0" class="cadastro-desp-item-nome badge-fornec-geral-nome badge-tag-desp" data-nome="' + nome + '" data-tipo="loja" title="Buscar: ' + nome + '" style="color:#1a2a43 !important;font-size:13px;font-weight:700;">'
-            + '<span class="fornec-geral-nome-texto">🏪 ' + nome + '</span>'
-            + tagsHtml
-            + '</div></div>'
-            + detalheObras
-            + '</div>';
+    function htmlBalaoFornecedorGeral(forn) {
+        const pendente = forn.vencido + forn.aVencer;
+        const nome = escapeHtmlBasico(forn.canonico);
+        const extra = pendente > 0 ? ' <small style="opacity:0.85;font-weight:600;">(' + formatarMoeda(pendente) + ')</small>' : '';
+        return '<span class="badge-tag-wrap badge-tag-wrap-fornec-geral">'
+            + '<span role="button" tabindex="0" class="badge-tag badge-tag-desp badge-fornec-geral-nome" data-nome="' + nome + '" data-tipo="loja" title="Ver despesas: ' + nome + '">🏪 ' + nome + extra + '</span>'
+            + '</span>';
     }
 
     function termoFiltroListaCadastrosDesp(termo, obraSelecionada) {
@@ -5076,25 +5531,24 @@ function separarDataSegura(dataString) {
     function montarPainelCadastrosDespesasHtml() {
         return ''
             + '<div class="painel-cadastros-desp-header">'
-            + '<span style="font-size:12px;font-weight:700;color:var(--dark-navy);">📁 Cadastros salvos</span>'
             + '<input type="text" id="filtro-lista-cadastros-desp" placeholder="Filtrar obras ou fornecedores..." autocomplete="off" oninput="filtrarListaCadastrosDespesas()">'
             + '</div>'
-            + '<details class="desp-cadastro-secao" open>'
-            + '<summary>🏢 Obras <span id="contagem-obras-desp" class="desp-cadastro-contagem">0</span></summary>'
-            + '<div id="lista-cadastros-obras-desp" class="desp-cadastro-lista"></div>'
-            + '</details>'
+            + '<div class="desp-baloes-secao">'
+            + '<p class="desp-baloes-titulo">Obras: <span id="contagem-obras-desp" class="desp-cadastro-contagem">0</span></p>'
+            + '<div id="lista-cadastros-obras-desp" class="desp-baloes-lista"></div>'
+            + '</div>'
             + '<div style="padding:8px 12px;border-top:1px solid #e0e6ed;background:#fff;">'
             + '<button type="button" id="btn-fornec-geral-desp" class="btn-fornec-geral-desp" onclick="togglePainelFornecedoresGeralDespesas()">📋 Ver fornecedores geral (quanto está devendo)</button>'
             + '</div>'
             + '<div id="painel-fornecedores-geral-desp" class="painel-fornecedores-geral" style="display:none;">'
-            + '<div class="painel-fornec-geral-titulo">📋 Fornecedores — visão geral <span id="contagem-fornec-geral-desp" class="desp-cadastro-contagem">0</span></div>'
-            + '<div id="lista-fornecedores-geral-desp" class="desp-cadastro-lista fornec-geral-lista"></div>'
+            + '<p class="desp-baloes-titulo">Fornecedores (visão geral): <span id="contagem-fornec-geral-desp" class="desp-cadastro-contagem">0</span></p>'
+            + '<div id="lista-fornecedores-geral-desp" class="desp-baloes-lista"></div>'
             + '</div>'
             + '<div id="painel-fornecedores-obra-desp" class="painel-fornecedores-obra" style="display:none;">'
-            + '<div class="painel-fornec-obra-titulo">🏪 Fornecedores de <span id="nome-obra-selecionada-desp"></span> <span id="contagem-lojas-desp" class="desp-cadastro-contagem">0</span></div>'
-            + '<div id="lista-cadastros-lojas-desp" class="desp-cadastro-lista"></div>'
+            + '<p class="desp-baloes-titulo">Fornecedores com pendências em <span id="nome-obra-selecionada-desp"></span>: <span id="contagem-lojas-desp" class="desp-cadastro-contagem">0</span></p>'
+            + '<div id="lista-cadastros-lojas-desp" class="desp-baloes-lista"></div>'
             + '</div>'
-            + '<p class="texto-explicacao" style="margin:0;padding:8px 12px;font-size:11px;">Clique numa <b>obra</b> para ver os fornecedores dela. Use <b>Ver fornecedores geral</b> para saber quanto deve em todas as obras. Use <b>×</b> para excluir.</p>';
+            + '<p class="texto-explicacao" style="margin:0;padding:8px 12px;font-size:11px;">Clique na etiqueta para buscar. Use <b>×</b> para excluir o cadastro e todas as despesas daquele nome (confirme digitando <b>APAGAR</b>).</p>';
     }
 
     window.togglePainelFornecedoresGeralDespesas = function () {
@@ -5171,7 +5625,7 @@ function separarDataSegura(dataString) {
                     : (listaGeral.length + ' c/ dívida');
             }
             divFornGeral.innerHTML = listaGeral.length
-                ? listaGeral.map((f) => htmlFornecedorGeralItem(f)).join('')
+                ? listaGeral.map((f) => htmlBalaoFornecedorGeral(f)).join('')
                 : '<p class="cadastro-desp-vazio">Nenhum fornecedor com pendências' + (termoBruto ? ' com este filtro' : '') + '.</p>';
         } else if (painelFornGeral) {
             painelFornGeral.style.display = 'none';
@@ -5179,16 +5633,16 @@ function separarDataSegura(dataString) {
         }
 
         if (window._obraSelecionadaCadastros && painelForn && divLojas) {
-            const lojasObra = getFornecedoresDaObra(cache, window._obraSelecionadaCadastros);
-            const lojasF = lojasObra.filter(passaFiltroFornObra);
+            const lojasObra = getFornecedoresDaObra(cache, window._obraSelecionadaCadastros, true);
+            const lojasF = lojasObra.filter((f) => passaFiltroFornObra(f.canonico));
             painelForn.style.display = 'block';
             if (lblObraSel) lblObraSel.textContent = window._obraSelecionadaCadastros;
             if (lblLojas) {
                 lblLojas.textContent = termoFornObra ? (lojasF.length + ' / ' + lojasObra.length) : String(lojasObra.length);
             }
             divLojas.innerHTML = lojasF.length
-                ? lojasF.map((l) => htmlItemCadastroDespesa(l, 'loja', window._obraSelecionadaCadastros)).join('')
-                : '<p class="cadastro-desp-vazio">Nenhum fornecedor nesta obra' + (termoFornObra ? ' com este filtro' : '') + '.</p>';
+                ? lojasF.map((f) => htmlBalaoFornecedorObra(f, window._obraSelecionadaCadastros)).join('')
+                : '<p class="cadastro-desp-vazio">Nenhum fornecedor com pendências nesta obra' + (termoFornObra ? ' com este filtro' : '') + '.</p>';
         } else if (painelForn) {
             painelForn.style.display = 'none';
             if (divLojas) divLojas.innerHTML = '';
@@ -5407,23 +5861,6 @@ function separarDataSegura(dataString) {
         if (divTags && !divTags._delegacaoOk) {
             divTags._delegacaoOk = true;
             divTags.addEventListener('click', (ev) => {
-                const btnNomeGeral = ev.target.closest('.badge-fornec-geral-nome');
-                if (btnNomeGeral) {
-                    ev.preventDefault();
-                    ev.stopPropagation();
-                    selecionarBuscaDespesa(btnNomeGeral.getAttribute('data-nome') || '', 'loja');
-                    return;
-                }
-                const btnObraGeral = ev.target.closest('.badge-fornec-geral-obra');
-                if (btnObraGeral) {
-                    ev.preventDefault();
-                    ev.stopPropagation();
-                    selecionarFornecedorDespesa(
-                        btnObraGeral.getAttribute('data-fornecedor') || '',
-                        btnObraGeral.getAttribute('data-nome') || ''
-                    );
-                    return;
-                }
                 const btnDel = ev.target.closest('.badge-tag-excluir');
                 if (btnDel) {
                     ev.preventDefault();
@@ -5435,7 +5872,14 @@ function separarDataSegura(dataString) {
                     );
                     return;
                 }
-                const badge = ev.target.closest('.badge-tag-desp, .cadastro-desp-item-nome');
+                const btnNomeGeral = ev.target.closest('.badge-fornec-geral-nome');
+                if (btnNomeGeral) {
+                    ev.preventDefault();
+                    ev.stopPropagation();
+                    selecionarBuscaDespesa(btnNomeGeral.getAttribute('data-nome') || '', 'loja');
+                    return;
+                }
+                const badge = ev.target.closest('.badge-tag-desp');
                 if (badge) {
                     const nome = badge.getAttribute('data-nome') || '';
                     const tipo = badge.getAttribute('data-tipo') || 'obra';
@@ -7602,7 +8046,24 @@ window.exportarPDF = function(tipo) {
         if (btn) mudarAba('equipe-cadastrada', btn);
     };
 
-    const ABAS_GRUPO_EQUIPE = ['cadastrar', 'equipe-cadastrada', 'criar', 'buscar', 'ponto', 'ajuda-custo', 'descontos-folha', 'folha'];
+    const ABAS_GRUPO_EQUIPE = ['cadastrar', 'equipe-cadastrada', 'criar', 'buscar', 'ponto', 'ajuda-custo', 'descontos-folha', 'folha', 'pedidos'];
+    const ABAS_GRUPO_OBRAS = ['despesas-cadastrar', 'despesas-relatorio', 'relatorio-despesas'];
+
+    window.abrirGrupoMenuObras = function () {
+        const grupo = document.getElementById('grupo-menu-obras');
+        const titulo = document.getElementById('btn-grupo-obras');
+        if (grupo) grupo.classList.add('open');
+        if (titulo) titulo.setAttribute('aria-expanded', 'true');
+    };
+
+    window.toggleGrupoMenuObras = function () {
+        const grupo = document.getElementById('grupo-menu-obras');
+        const titulo = document.getElementById('btn-grupo-obras');
+        if (!grupo) return;
+        grupo.classList.toggle('open');
+        const aberto = grupo.classList.contains('open');
+        if (titulo) titulo.setAttribute('aria-expanded', aberto ? 'true' : 'false');
+    };
 
     window.abrirGrupoMenuEquipe = function () {
         const grupo = document.getElementById('grupo-menu-equipe');
@@ -7621,8 +8082,12 @@ window.exportarPDF = function(tipo) {
     };
 
     window.mudarAba = function(aba, elementoAtivado) {
+        if (window.innerWidth <= 900) fecharMenuMobileGestor();
         document.querySelectorAll('.gestor-menu-btn').forEach(t => t.classList.remove('active'));
         document.querySelectorAll('.view-section').forEach(v => v.classList.remove('active'));
+
+        const wrap = document.getElementById('gestor-sections-wrap');
+        if (wrap) wrap.classList.remove('gestor-wrap-inicio');
 
         const grupoEquipe = document.getElementById('grupo-menu-equipe');
         if (grupoEquipe) {
@@ -7631,6 +8096,16 @@ window.exportarPDF = function(tipo) {
                 abrirGrupoMenuEquipe();
             } else {
                 grupoEquipe.classList.remove('has-active');
+            }
+        }
+
+        const grupoObras = document.getElementById('grupo-menu-obras');
+        if (grupoObras) {
+            if (ABAS_GRUPO_OBRAS.includes(aba)) {
+                grupoObras.classList.add('has-active');
+                abrirGrupoMenuObras();
+            } else {
+                grupoObras.classList.remove('has-active');
             }
         }
 
@@ -7650,7 +8125,7 @@ window.exportarPDF = function(tipo) {
         if (aba === 'equipe-cadastrada') {
             carregarListaDeFuncionarios();
         }
-        if (aba === 'despesas') {
+        if (aba === 'despesas-relatorio') {
             carregarFiltrosDespesas();
         }
         if (aba === 'relatorio-despesas') {
