@@ -491,8 +491,185 @@
             border-color: #f1c40f;
         }
 
+        .gestor-menu-grupo.grupo-documentos .gestor-menu-grupo-titulo {
+            color: #aed6f1;
+        }
+
+        .gestor-menu-grupo.grupo-documentos.has-active .gestor-menu-grupo-titulo {
+            background: rgba(52, 152, 219, 0.35);
+            border-color: #f1c40f;
+        }
+
         .gestor-menu-btn.menu-despesas { color: #f5b7b1; }
         .gestor-menu-btn.menu-despesas.active { background: #c0392b; border-color: #f1c40f; }
+        .gestor-menu-btn.menu-documentos { color: #aed6f1; }
+        .gestor-menu-btn.menu-documentos.active { background: #2980b9; border-color: #f1c40f; }
+
+        .doc-pasta-panel {
+            background: #fff;
+            padding: 20px;
+            border-radius: 10px;
+            border: 1px solid #e0e6ed;
+        }
+
+        .doc-pasta-panel h3 {
+            margin: 0 0 8px 0;
+            color: var(--dark-navy);
+        }
+
+        .doc-aviso-tamanho {
+            margin: 8px 0 0 0;
+            padding: 10px 12px;
+            background: #fff3cd;
+            border: 1px solid #ffc107;
+            border-radius: 8px;
+            color: #856404;
+            font-size: 12px;
+            line-height: 1.45;
+        }
+
+        .doc-aviso-tamanho b {
+            color: #664d03;
+        }
+
+        .doc-add-form {
+            background: #f8fafc;
+            border: 1px solid #e0e6ed;
+            border-radius: 10px;
+            padding: 16px;
+            margin: 16px 0 20px 0;
+        }
+
+        .doc-add-form label {
+            display: block;
+            margin-top: 10px;
+            font-weight: 700;
+            font-size: 12px;
+            color: var(--dark-navy);
+        }
+
+        .doc-add-form label:first-child {
+            margin-top: 0;
+        }
+
+        .doc-add-form input[type="text"],
+        .doc-add-form input[type="file"] {
+            width: 100%;
+            margin-top: 6px;
+            box-sizing: border-box;
+        }
+
+        .doc-preview-add {
+            display: none;
+            margin-top: 12px;
+            text-align: center;
+        }
+
+        .doc-preview-add img {
+            max-width: 100%;
+            max-height: 220px;
+            border-radius: 8px;
+            border: 2px solid #2980b9;
+            object-fit: contain;
+        }
+
+        .doc-preview-add-pdf {
+            display: inline-block;
+            padding: 24px 32px;
+            background: #eef5fb;
+            border: 2px dashed #2980b9;
+            border-radius: 10px;
+            font-weight: 700;
+            color: #1a2a43;
+        }
+
+        .doc-lista-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+            gap: 16px;
+            margin-top: 8px;
+        }
+
+        .doc-card {
+            background: #fff;
+            border: 1px solid #dce3eb;
+            border-radius: 10px;
+            overflow: hidden;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+            display: flex;
+            flex-direction: column;
+        }
+
+        .doc-card-thumb {
+            background: #f4f7fa;
+            min-height: 160px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            border-bottom: 1px solid #e8edf2;
+        }
+
+        .doc-card-thumb img {
+            width: 100%;
+            max-height: 200px;
+            object-fit: contain;
+            display: block;
+        }
+
+        .doc-card-thumb-pdf {
+            font-size: 42px;
+            color: #c0392b;
+        }
+
+        .doc-card-body {
+            padding: 12px 14px;
+            flex: 1;
+        }
+
+        .doc-card-nome {
+            margin: 0 0 6px 0;
+            font-size: 14px;
+            font-weight: 800;
+            color: var(--dark-navy);
+            word-break: break-word;
+        }
+
+        .doc-card-data {
+            margin: 0;
+            font-size: 11px;
+            color: #888;
+        }
+
+        .doc-card-acoes {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 6px;
+            padding: 0 14px 14px 14px;
+        }
+
+        .doc-card-acoes button {
+            flex: 1 1 calc(50% - 6px);
+            min-width: 110px;
+            padding: 8px 6px;
+            font-size: 11px;
+            font-weight: 700;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-family: 'Poppins', sans-serif;
+        }
+
+        .doc-btn-ver { background: #2980b9; color: #fff; }
+        .doc-btn-export { background: #217346; color: #fff; }
+        .doc-btn-print { background: var(--dark-navy); color: #fff; }
+        .doc-btn-del { background: #c0392b; color: #fff; flex: 1 1 100%; }
+
+        @media (max-width: 600px) {
+            .doc-lista-grid {
+                grid-template-columns: 1fr;
+            }
+        }
         .gestor-menu-btn.menu-backup { color: #aed6f1; }
         .gestor-menu-btn.menu-backup.active { background: #1a2a43; border-color: #d4a017; }
 
@@ -1003,15 +1180,22 @@
                 font-size: 13px;
             }
 
-            #alerta-container-global {
+            #alerta-container-global,
+            #alerta-container-docs {
                 --alerta-painel-largura: min(380px, calc(100vw - 16px));
+            }
+
+            #alerta-stack-global {
                 left: 8px !important;
                 right: 8px !important;
                 bottom: max(8px, env(safe-area-inset-bottom)) !important;
+                align-items: stretch !important;
             }
 
             #alerta-container-global .alerta-painel-wrapper,
-            #alerta-container-global .alerta-barra-minimizada {
+            #alerta-container-global .alerta-barra-minimizada,
+            #alerta-container-docs .alerta-painel-wrapper,
+            #alerta-container-docs .alerta-barra-minimizada {
                 width: 100%;
                 max-width: 100%;
             }
@@ -2015,23 +2199,44 @@
         }
 
         /* Painel flutuante de vencimentos */
-        #alerta-container-global {
+        #alerta-stack-global {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            z-index: 999999;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            align-items: flex-end;
+            max-height: 88vh;
+            pointer-events: none;
+        }
+
+        #alerta-stack-global > div {
+            pointer-events: auto;
+        }
+
+        #alerta-container-global,
+        #alerta-container-docs {
             --alerta-painel-largura: 380px;
         }
 
-        #alerta-container-global .alerta-painel-wrapper {
+        #alerta-container-global .alerta-painel-wrapper,
+        #alerta-container-docs .alerta-painel-wrapper {
             width: var(--alerta-painel-largura);
             max-width: calc(100vw - 32px);
             box-sizing: border-box;
         }
 
-        #alerta-container-global .alerta-barra-minimizada {
+        #alerta-container-global .alerta-barra-minimizada,
+        #alerta-container-docs .alerta-barra-minimizada {
             width: var(--alerta-painel-largura);
             max-width: calc(100vw - 32px);
             box-sizing: border-box;
         }
 
-        #alerta-container-global .alerta-painel-header {
+        #alerta-container-global .alerta-painel-header,
+        #alerta-container-docs .alerta-painel-header {
             display: flex;
             align-items: center;
             justify-content: space-between;
@@ -2047,21 +2252,24 @@
             box-sizing: border-box;
         }
 
-        #alerta-container-global .alerta-painel-header-titulo {
+        #alerta-container-global .alerta-painel-header-titulo,
+        #alerta-container-docs .alerta-painel-header-titulo {
             font-weight: 800;
             font-size: 13px;
             color: #1a2a43;
             white-space: nowrap;
         }
 
-        #alerta-container-global .alerta-painel-header-acoes {
+        #alerta-container-global .alerta-painel-header-acoes,
+        #alerta-container-docs .alerta-painel-header-acoes {
             display: flex;
             gap: 6px;
             flex-shrink: 0;
             align-items: center;
         }
 
-        #alerta-container-global .alerta-painel-corpo {
+        #alerta-container-global .alerta-painel-corpo,
+        #alerta-container-docs .alerta-painel-corpo {
             width: 100%;
             box-sizing: border-box;
             max-height: 70vh;
@@ -2076,7 +2284,8 @@
             box-shadow: 0 8px 20px rgba(0, 0, 0, 0.08);
         }
 
-        #alerta-container-global .card-alerta-venc {
+        #alerta-container-global .card-alerta-venc,
+        #alerta-container-docs .card-alerta-venc {
             background: #fff;
             width: 100%;
             box-sizing: border-box;
@@ -2092,11 +2301,13 @@
             transition: opacity 0.4s, transform 0.4s;
         }
 
-        #alerta-container-global .card-alerta-venc:last-child {
+        #alerta-container-global .card-alerta-venc:last-child,
+        #alerta-container-docs .card-alerta-venc:last-child {
             margin-bottom: 0;
         }
 
-        #alerta-container-global .alerta-btn-fechar {
+        #alerta-container-global .alerta-btn-fechar,
+        #alerta-container-docs .alerta-btn-fechar {
             background: #d9534f;
             color: #fff;
             border: none;
@@ -2108,7 +2319,8 @@
             white-space: nowrap;
         }
 
-        #alerta-container-global .alerta-btn-imprimir {
+        #alerta-container-global .alerta-btn-imprimir,
+        #alerta-container-docs .alerta-btn-imprimir {
             background: #1a2a43;
             color: #fff;
             border: none;
@@ -2120,7 +2332,8 @@
             white-space: nowrap;
         }
 
-        #alerta-container-global .alerta-btn-minimizar {
+        #alerta-container-global .alerta-btn-minimizar,
+        #alerta-container-docs .alerta-btn-minimizar {
             background: #f8f9fa;
             border: 1px solid #ddd;
             border-radius: 6px;
@@ -2415,6 +2628,18 @@
                     <button type="button" class="gestor-menu-btn menu-despesas" id="btn-menu-relatorio-despesas" data-titulo="Exportar Relatórios" onclick="mudarAba('relatorio-despesas', this)">📋 Exportar Relatórios</button>
                     <button type="button" class="gestor-menu-btn menu-despesas" id="btn-menu-obras-relatorio-geral" data-titulo="Relatório Geral de Obras" onclick="mudarAba('obras-relatorio-geral', this)">📊 Relatório Geral de Obras</button>
                     <button type="button" class="gestor-menu-btn menu-despesas" id="btn-menu-terceiros" data-titulo="Terceiros" onclick="mudarAba('terceiros', this)">👷 Terceiros</button>
+                </div>
+            </div>
+            <div class="gestor-menu-grupo grupo-documentos" id="grupo-menu-documentos">
+                <button type="button" class="gestor-menu-grupo-titulo" id="btn-grupo-documentos" onclick="toggleGrupoMenuDocumentos()" aria-expanded="false">
+                    <span>📁 Documentos</span>
+                    <span class="gestor-menu-grupo-seta" aria-hidden="true">▼</span>
+                </button>
+                <div class="gestor-menu-sub" id="submenu-documentos">
+                    <button type="button" class="gestor-menu-btn menu-documentos" data-titulo="FH" onclick="mudarAba('documentos-fh', this)">📄 FH</button>
+                    <button type="button" class="gestor-menu-btn menu-documentos" data-titulo="Hallana" onclick="mudarAba('documentos-hallana', this)">📄 HALLANA</button>
+                    <button type="button" class="gestor-menu-btn menu-documentos" data-titulo="Felipe" onclick="mudarAba('documentos-felipe', this)">📄 FELIPE</button>
+                    <button type="button" class="gestor-menu-btn menu-documentos" data-titulo="Wellington" onclick="mudarAba('documentos-wellington', this)">📄 WELLINGTON</button>
                 </div>
             </div>
             <button type="button" class="gestor-menu-btn" data-titulo="Calendário" onclick="mudarAba('calendario', this)">📅 Calendário</button>
@@ -3191,6 +3416,101 @@
         </details>
     </div>
 
+    <div id="aba-documentos-fh" class="view-section">
+        <div class="doc-pasta-panel">
+            <h3>📁 Documentos — FH</h3>
+            <p class="texto-explicacao" style="margin: 0 0 4px 0;">Anexe documentos com o nome que quiser. Informe a <b>data de vencimento</b> para alerta faltando até 5 dias. No plano gratuito: use <b>foto</b> ou PDF até <b>600 KB</b> (PDFs maiores: tire foto do documento).</p>
+            <div class="doc-add-form">
+                <label for="doc-add-nome-fh">Nome do documento</label>
+                <input type="text" id="doc-add-nome-fh" list="doc-sugestoes-nomes" placeholder="Ex: Documento identidade, Conta de luz..." maxlength="120">
+                <label for="doc-add-arquivo-fh">Arquivo (foto ou PDF)</label>
+                <input type="file" id="doc-add-arquivo-fh" accept="image/*,application/pdf" capture="environment">
+                <p class="doc-aviso-tamanho">⚠️ <b>Atenção:</b> o documento deve ser <b>menor que 600 KB</b>. Se o PDF ou a foto for maior, comprima o arquivo ou tire uma foto do documento com o celular.</p>
+                <label for="doc-add-vencimento-fh">Data de vencimento</label>
+                <input type="date" id="doc-add-vencimento-fh">
+                <input type="hidden" id="doc-add-base64-fh">
+                <input type="hidden" id="doc-add-mime-fh">
+                <div id="doc-add-preview-fh" class="doc-preview-add"></div>
+                <button type="button" class="btn-enviar" style="margin-top: 14px; width: 100%;" onclick="salvarDocumentoPessoal('fh')">💾 Adicionar documento</button>
+            </div>
+            <div id="doc-lista-fh"><p style="text-align:center;color:#888;">Carregue esta aba para ver os documentos.</p></div>
+        </div>
+    </div>
+
+    <div id="aba-documentos-hallana" class="view-section">
+        <div class="doc-pasta-panel">
+            <h3>📁 Documentos — Hallana</h3>
+            <p class="texto-explicacao" style="margin: 0 0 4px 0;">Anexe documentos com o nome que quiser. Informe a <b>data de vencimento</b> para alerta faltando até 5 dias. No plano gratuito: use <b>foto</b> ou PDF até <b>600 KB</b> (PDFs maiores: tire foto do documento).</p>
+            <div class="doc-add-form">
+                <label for="doc-add-nome-hallana">Nome do documento</label>
+                <input type="text" id="doc-add-nome-hallana" list="doc-sugestoes-nomes" placeholder="Ex: Documento identidade, Conta de luz..." maxlength="120">
+                <label for="doc-add-arquivo-hallana">Arquivo (foto ou PDF)</label>
+                <input type="file" id="doc-add-arquivo-hallana" accept="image/*,application/pdf" capture="environment">
+                <p class="doc-aviso-tamanho">⚠️ <b>Atenção:</b> o documento deve ser <b>menor que 600 KB</b>. Se o PDF ou a foto for maior, comprima o arquivo ou tire uma foto do documento com o celular.</p>
+                <label for="doc-add-vencimento-hallana">Data de vencimento</label>
+                <input type="date" id="doc-add-vencimento-hallana">
+                <input type="hidden" id="doc-add-base64-hallana">
+                <input type="hidden" id="doc-add-mime-hallana">
+                <div id="doc-add-preview-hallana" class="doc-preview-add"></div>
+                <button type="button" class="btn-enviar" style="margin-top: 14px; width: 100%;" onclick="salvarDocumentoPessoal('hallana')">💾 Adicionar documento</button>
+            </div>
+            <div id="doc-lista-hallana"><p style="text-align:center;color:#888;">Carregue esta aba para ver os documentos.</p></div>
+        </div>
+    </div>
+
+    <div id="aba-documentos-felipe" class="view-section">
+        <div class="doc-pasta-panel">
+            <h3>📁 Documentos — Felipe</h3>
+            <p class="texto-explicacao" style="margin: 0 0 4px 0;">Anexe documentos com o nome que quiser. Informe a <b>data de vencimento</b> para alerta faltando até 5 dias. No plano gratuito: use <b>foto</b> ou PDF até <b>600 KB</b> (PDFs maiores: tire foto do documento).</p>
+            <div class="doc-add-form">
+                <label for="doc-add-nome-felipe">Nome do documento</label>
+                <input type="text" id="doc-add-nome-felipe" list="doc-sugestoes-nomes" placeholder="Ex: Documento identidade, Conta de luz..." maxlength="120">
+                <label for="doc-add-arquivo-felipe">Arquivo (foto ou PDF)</label>
+                <input type="file" id="doc-add-arquivo-felipe" accept="image/*,application/pdf" capture="environment">
+                <p class="doc-aviso-tamanho">⚠️ <b>Atenção:</b> o documento deve ser <b>menor que 600 KB</b>. Se o PDF ou a foto for maior, comprima o arquivo ou tire uma foto do documento com o celular.</p>
+                <label for="doc-add-vencimento-felipe">Data de vencimento</label>
+                <input type="date" id="doc-add-vencimento-felipe">
+                <input type="hidden" id="doc-add-base64-felipe">
+                <input type="hidden" id="doc-add-mime-felipe">
+                <div id="doc-add-preview-felipe" class="doc-preview-add"></div>
+                <button type="button" class="btn-enviar" style="margin-top: 14px; width: 100%;" onclick="salvarDocumentoPessoal('felipe')">💾 Adicionar documento</button>
+            </div>
+            <div id="doc-lista-felipe"><p style="text-align:center;color:#888;">Carregue esta aba para ver os documentos.</p></div>
+        </div>
+    </div>
+
+    <div id="aba-documentos-wellington" class="view-section">
+        <div class="doc-pasta-panel">
+            <h3>📁 Documentos — Wellington</h3>
+            <p class="texto-explicacao" style="margin: 0 0 4px 0;">Anexe documentos com o nome que quiser. Informe a <b>data de vencimento</b> para alerta faltando até 5 dias. No plano gratuito: use <b>foto</b> ou PDF até <b>600 KB</b> (PDFs maiores: tire foto do documento).</p>
+            <div class="doc-add-form">
+                <label for="doc-add-nome-wellington">Nome do documento</label>
+                <input type="text" id="doc-add-nome-wellington" list="doc-sugestoes-nomes" placeholder="Ex: Documento identidade, Conta de luz..." maxlength="120">
+                <label for="doc-add-arquivo-wellington">Arquivo (foto ou PDF)</label>
+                <input type="file" id="doc-add-arquivo-wellington" accept="image/*,application/pdf" capture="environment">
+                <p class="doc-aviso-tamanho">⚠️ <b>Atenção:</b> o documento deve ser <b>menor que 600 KB</b>. Se o PDF ou a foto for maior, comprima o arquivo ou tire uma foto do documento com o celular.</p>
+                <label for="doc-add-vencimento-wellington">Data de vencimento</label>
+                <input type="date" id="doc-add-vencimento-wellington">
+                <input type="hidden" id="doc-add-base64-wellington">
+                <input type="hidden" id="doc-add-mime-wellington">
+                <div id="doc-add-preview-wellington" class="doc-preview-add"></div>
+                <button type="button" class="btn-enviar" style="margin-top: 14px; width: 100%;" onclick="salvarDocumentoPessoal('wellington')">💾 Adicionar documento</button>
+            </div>
+            <div id="doc-lista-wellington"><p style="text-align:center;color:#888;">Carregue esta aba para ver os documentos.</p></div>
+        </div>
+    </div>
+
+    <datalist id="doc-sugestoes-nomes">
+        <option value="Documento de identidade"></option>
+        <option value="Conta de luz"></option>
+        <option value="Conta de água"></option>
+        <option value="CNH"></option>
+        <option value="CPF"></option>
+        <option value="Comprovante de residência"></option>
+        <option value="Contrato"></option>
+        <option value="Holerite"></option>
+    </datalist>
+
     <div id="aba-backup" class="view-section">
         <div class="card-alerta-backup">
             <h3 style="color: var(--dark-navy); margin-top: 0;">💾 Gestão de Armazenamento</h3>
@@ -3540,6 +3860,11 @@
         return `novo_aviso_${emp}_${idDoc}_${dataStr}`;
     }
 
+    function chaveAlertaSilenciadoDoc(idDoc, dataStr) {
+        const emp = getEmpresaGestor() || 'global';
+        return `doc_cert_${emp}_${idDoc}_${dataStr}`;
+    }
+
     window.chaveAlertaSilenciado = chaveAlertaSilenciado;
 
     // CHECAGEM DO STATUS (KILL SWITCH)
@@ -3577,15 +3902,37 @@
             cancelButtonColor: '#d9534f'
         });
 
-        // Se o usuário clicar em cancelar, simplesmente fecha o alerta
         if (!senhaDigitada) return;
 
-        // Verifica se a senha digitada é igual a Deusefiel
-        if (senhaDigitada === 'Deusefiel') {
-            document.getElementById('tela-escolha-inicial').style.display = 'none';
-            document.getElementById('tela-selecao-empresa').style.display = 'block';
-        } else {
-            Swal.fire('Acesso Negado', 'A senha está incorreta!', 'error');
+        Swal.fire({
+            title: 'A verificar...',
+            text: 'Por favor, aguarde.',
+            allowOutsideClick: false,
+            didOpen: () => { Swal.showLoading(); }
+        });
+
+        try {
+            await ensureAuth();
+            const docSnap = await getDoc(doc(db, 'sistema', 'config'));
+            if (!docSnap.exists()) {
+                Swal.fire('Erro', 'Senha da gestão não configurada no Firebase. Crie o documento sistema/config com o campo senha_gestao_geral.', 'error');
+                return;
+            }
+            const senhaGestao = String(docSnap.data().senha_gestao_geral || '').trim();
+            if (!senhaGestao) {
+                Swal.fire('Erro', 'Campo senha_gestao_geral não encontrado em sistema/config. Configure no Firebase Console.', 'error');
+                return;
+            }
+            if (senhaDigitada === senhaGestao) {
+                Swal.close();
+                document.getElementById('tela-escolha-inicial').style.display = 'none';
+                document.getElementById('tela-selecao-empresa').style.display = 'block';
+            } else {
+                Swal.fire('Acesso Negado', 'A senha está incorreta!', 'error');
+            }
+        } catch (error) {
+            console.error('Erro ao verificar senha da gestão:', error);
+            Swal.fire('Erro de Conexão', 'Não foi possível verificar a senha. Verifique a internet e tente novamente.', 'error');
         }
     };
 
@@ -3606,6 +3953,12 @@
         atualizarLogoInterface("FH CONSTRUÇÕES CIVIS");
         if (document.getElementById('alerta-container-global')) {
             document.getElementById('alerta-container-global').style.display = 'none';
+        }
+        if (document.getElementById('alerta-container-docs')) {
+            document.getElementById('alerta-container-docs').style.display = 'none';
+        }
+        if (document.getElementById('alerta-stack-global')) {
+            document.getElementById('alerta-stack-global').style.display = 'none';
         }
     };
    
@@ -3785,6 +4138,13 @@
         const btnObras = document.getElementById('btn-grupo-obras');
         if (btnObras) btnObras.setAttribute('aria-expanded', 'false');
 
+        const grupoDocumentos = document.getElementById('grupo-menu-documentos');
+        if (grupoDocumentos) {
+            grupoDocumentos.classList.remove('has-active', 'open');
+        }
+        const btnDocumentos = document.getElementById('btn-grupo-documentos');
+        if (btnDocumentos) btnDocumentos.setAttribute('aria-expanded', 'false');
+
         const tituloEl = document.getElementById('gestor-titulo-aba');
         const empresa = getEmpresaGestor();
         if (tituloEl) tituloEl.textContent = empresa || 'Painel Gestor';
@@ -3834,6 +4194,7 @@
             if (typeof window.checarNovosPedidosManutencao === "function") {
                 window.checarNovosPedidosManutencao();
             }
+            monitorarVencimentosDocumentos();
             monitorarVencimentosObras();
         
          }, 800);
@@ -4769,6 +5130,481 @@ function separarDataSegura(dataString) {
     const COLECAO_RELATORIO_DESPESAS = 'relatorio_despesas';
     const COLECAO_AJUDA_CUSTO = 'ajuda_custo';
     const COLECAO_DESCONTOS_FOLHA = 'descontos_folha';
+    const COLECAO_DOCUMENTOS_PESSOAIS = 'documentos_pessoais';
+    const PASTAS_DOCUMENTOS = ['fh', 'hallana', 'felipe', 'wellington'];
+    const DOC_PDF_MAX_FIRESTORE_RAW = 600000;
+    const DOC_FIRESTORE_MAX_B64 = 850000;
+    const MSG_DOC_TAMANHO_MAX = 'O documento deve ser menor que 600 KB. Comprima o PDF ou tire uma foto do documento.';
+    const PASTA_LABEL_DOCUMENTOS = { fh: 'FH', hallana: 'HALLANA', felipe: 'FELIPE', wellington: 'WELLINGTON' };
+
+    function formatarVencimentoDocExibir(item) {
+        const iso = item && item.data_vencimento;
+        if (iso && /^\d{4}-\d{2}-\d{2}$/.test(String(iso))) {
+            const p = String(iso).split('-');
+            return p[2] + '/' + p[1] + '/' + p[0];
+        }
+        const ts = item && item.data_vencimento_ts;
+        if (ts != null && Number.isFinite(Number(ts))) {
+            const dt = new Date(Number(ts));
+            return String(dt.getDate()).padStart(2, '0') + '/' + String(dt.getMonth() + 1).padStart(2, '0') + '/' + dt.getFullYear();
+        }
+        return '—';
+    }
+
+    function tsVencimentoDocumentoPessoal(item) {
+        if (!item) return null;
+        if (item.data_vencimento_ts != null && Number.isFinite(Number(item.data_vencimento_ts))) {
+            return Number(item.data_vencimento_ts);
+        }
+        return parseDataVencimentoParaTimestamp(item.data_vencimento);
+    }
+
+    window._documentosPessoaisCache = window._documentosPessoaisCache || {};
+
+    function formatarTamanhoArquivo(bytes) {
+        const n = Number(bytes) || 0;
+        if (n < 1024) return n + ' B';
+        if (n < 1024 * 1024) return (n / 1024).toFixed(1) + ' KB';
+        return (n / (1024 * 1024)).toFixed(1) + ' MB';
+    }
+
+    function urlArquivoDocumentoPessoal(item) {
+        return String(item && item.arquivo || '').trim();
+    }
+
+    function nomeArquivoDocumentoSeguro(nome, ext) {
+        const base = String(nome || 'documento')
+            .normalize('NFD')
+            .replace(/[\u0300-\u036f]/g, '')
+            .replace(/[<>:"/\\|?*]+/g, '_')
+            .replace(/\s+/g, '_')
+            .slice(0, 80);
+        return base + ext;
+    }
+
+    function buscarDocumentoPessoalCache(id, pasta) {
+        const lista = window._documentosPessoaisCache[pasta] || [];
+        return lista.find((d) => d.id === id) || null;
+    }
+
+    function documentoPessoalEhPdf(item) {
+        const mime = String(item && item.mime || '').toLowerCase();
+        const arq = urlArquivoDocumentoPessoal(item);
+        return mime === 'application/pdf' || arq.startsWith('data:application/pdf') || /\.pdf(\?|$)/i.test(arq);
+    }
+
+    function limparFormDocumentoPessoal(pasta) {
+        const nomeEl = document.getElementById('doc-add-nome-' + pasta);
+        const arqEl = document.getElementById('doc-add-arquivo-' + pasta);
+        const b64El = document.getElementById('doc-add-base64-' + pasta);
+        const mimeEl = document.getElementById('doc-add-mime-' + pasta);
+        const vencEl = document.getElementById('doc-add-vencimento-' + pasta);
+        const prevEl = document.getElementById('doc-add-preview-' + pasta);
+        if (nomeEl) nomeEl.value = '';
+        if (arqEl) arqEl.value = '';
+        if (b64El) b64El.value = '';
+        if (mimeEl) mimeEl.value = '';
+        if (vencEl) vencEl.value = '';
+        if (prevEl) {
+            prevEl.style.display = 'none';
+            prevEl.innerHTML = '';
+        }
+    }
+
+    function promiseComTimeout(promise, ms, codigoErro) {
+        return new Promise((resolve, reject) => {
+            const timer = setTimeout(() => {
+                reject(new Error(codigoErro || 'timeout'));
+            }, ms);
+            Promise.resolve(promise).then(
+                (val) => { clearTimeout(timer); resolve(val); },
+                (err) => { clearTimeout(timer); reject(err); }
+            );
+        });
+    }
+
+    function fecharLoadingDocumentoPessoal() {
+        try {
+            if (typeof Swal !== 'undefined' && Swal.isVisible()) {
+                Swal.close();
+            }
+        } catch (_) {}
+    }
+
+    async function baixarArquivoDocumentoPessoal(item, nomeDownload) {
+        const url = urlArquivoDocumentoPessoal(item);
+        if (!url) throw new Error('sem_arquivo');
+        const ehPdf = documentoPessoalEhPdf(item);
+        const ext = ehPdf ? '.pdf' : '.jpg';
+        const link = document.createElement('a');
+        if (url.startsWith('data:')) {
+            link.href = url;
+        } else {
+            const resp = await fetch(url);
+            if (!resp.ok) throw new Error('download');
+            const blob = await resp.blob();
+            link.href = URL.createObjectURL(blob);
+            link.dataset.revokeUrl = '1';
+        }
+        link.download = nomeArquivoDocumentoSeguro(nomeDownload, ext);
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        if (link.dataset.revokeUrl === '1') {
+            setTimeout(() => URL.revokeObjectURL(link.href), 5000);
+        }
+    }
+
+    function comprimirImagemDocumentoPessoal(dataUrl) {
+        return new Promise((resolve, reject) => {
+            const img = new Image();
+            img.onload = function () {
+                const canvas = document.createElement('canvas');
+                const MAX_WIDTH = 1200;
+                let width = img.width;
+                let height = img.height;
+                if (width > MAX_WIDTH) {
+                    height = Math.round(height * (MAX_WIDTH / width));
+                    width = MAX_WIDTH;
+                }
+                canvas.width = width;
+                canvas.height = height;
+                const ctx = canvas.getContext('2d');
+                ctx.drawImage(img, 0, 0, width, height);
+                resolve(canvas.toDataURL('image/jpeg', 0.72));
+            };
+            img.onerror = () => reject(new Error('imagem'));
+            img.src = dataUrl;
+        });
+    }
+
+    function lerArquivoDocumentoPessoal(file, pasta) {
+        return new Promise((resolve, reject) => {
+            if (!file) return reject(new Error('vazio'));
+
+            if (file.type === 'application/pdf' || /\.pdf$/i.test(file.name || '')) {
+                if (file.size > DOC_PDF_MAX_FIRESTORE_RAW) {
+                    return reject(new Error('arquivo_grande'));
+                }
+                const reader = new FileReader();
+                reader.onload = function () {
+                    const b64 = String(reader.result || '');
+                    if (b64.length > DOC_FIRESTORE_MAX_B64) {
+                        return reject(new Error('arquivo_grande'));
+                    }
+                    resolve({
+                        data: b64,
+                        mime: 'application/pdf',
+                        nomeArquivo: file.name || 'documento.pdf',
+                        tamanho: file.size
+                    });
+                };
+                reader.onerror = () => reject(new Error('leitura'));
+                reader.readAsDataURL(file);
+                return;
+            }
+
+            const reader = new FileReader();
+            reader.onload = async function (event) {
+                try {
+                    if (file.size > DOC_PDF_MAX_FIRESTORE_RAW) {
+                        return reject(new Error('arquivo_grande'));
+                    }
+                    const comprimido = await comprimirImagemDocumentoPessoal(event.target.result);
+                    if (comprimido.length > DOC_FIRESTORE_MAX_B64) {
+                        return reject(new Error('arquivo_grande'));
+                    }
+                    resolve({ data: comprimido, mime: 'image/jpeg', tamanho: file.size });
+                } catch (e) {
+                    reject(e);
+                }
+            };
+            reader.onerror = () => reject(new Error('leitura'));
+            reader.readAsDataURL(file);
+        });
+    }
+
+    function mostrarPreviewDocumentoPessoal(pasta, payload) {
+        const prevEl = document.getElementById('doc-add-preview-' + pasta);
+        if (!prevEl) return;
+        if (!payload || !payload.data) {
+            prevEl.style.display = 'none';
+            prevEl.innerHTML = '';
+            return;
+        }
+        if (payload.mime === 'application/pdf') {
+            prevEl.innerHTML = '<div class="doc-preview-add-pdf">📄 PDF selecionado'
+                + (payload.nomeArquivo ? '<br><span style="font-size:12px;font-weight:600;">' + escapeHtmlBasico(payload.nomeArquivo) + '</span>' : '')
+                + (payload.tamanho ? '<br><span style="font-size:11px;color:#666;">' + formatarTamanhoArquivo(payload.tamanho) + '</span>' : '')
+                + '</div>';
+        } else {
+            prevEl.innerHTML = '<img src="' + escapeAttrBasico(payload.data) + '" alt="Pré-visualização">';
+        }
+        prevEl.style.display = 'block';
+    }
+
+    function initInputsDocumentosPessoais() {
+        PASTAS_DOCUMENTOS.forEach((pasta) => {
+            const input = document.getElementById('doc-add-arquivo-' + pasta);
+            if (!input || input.dataset.docInit === '1') return;
+            input.dataset.docInit = '1';
+            input.addEventListener('change', async function (e) {
+                const file = e.target.files && e.target.files[0];
+                const b64El = document.getElementById('doc-add-base64-' + pasta);
+                const mimeEl = document.getElementById('doc-add-mime-' + pasta);
+                if (!file) {
+                    if (b64El) b64El.value = '';
+                    if (mimeEl) mimeEl.value = '';
+                    mostrarPreviewDocumentoPessoal(pasta, null);
+                    return;
+                }
+                try {
+                    Swal.fire({ title: 'A processar arquivo...', allowOutsideClick: false, showConfirmButton: false, didOpen: () => Swal.showLoading() });
+                    const payload = await lerArquivoDocumentoPessoal(file, pasta);
+                    if (b64El) b64El.value = payload.data;
+                    if (mimeEl) mimeEl.value = payload.mime;
+                    mostrarPreviewDocumentoPessoal(pasta, payload);
+                } catch (err) {
+                    if (b64El) b64El.value = '';
+                    if (mimeEl) mimeEl.value = '';
+                    mostrarPreviewDocumentoPessoal(pasta, null);
+                    input.value = '';
+                    if (err && err.message === 'arquivo_grande') {
+                        Swal.fire('Documento grande demais', MSG_DOC_TAMANHO_MAX, 'warning');
+                    } else if (err && err.message === 'img_grande') {
+                        Swal.fire('Documento grande demais', MSG_DOC_TAMANHO_MAX, 'warning');
+                    } else {
+                        Swal.fire('Erro', 'Não foi possível ler o arquivo selecionado.', 'error');
+                    }
+                } finally {
+                    fecharLoadingDocumentoPessoal();
+                }
+            });
+        });
+    }
+
+    function renderizarListaDocumentosPessoais(pasta, itens) {
+        const wrap = document.getElementById('doc-lista-' + pasta);
+        if (!wrap) return;
+        if (!itens || !itens.length) {
+            wrap.innerHTML = '<p style="text-align:center;color:#888;margin:0;">Nenhum documento cadastrado ainda. Use o formulário acima para adicionar.</p>';
+            return;
+        }
+        let html = '<div class="doc-lista-grid">';
+        itens.forEach((doc) => {
+            const ehPdf = documentoPessoalEhPdf(doc);
+            const thumb = ehPdf
+                ? '<div class="doc-card-thumb-pdf">📄</div>'
+                : '<img src="' + escapeAttrBasico(doc.arquivo) + '" alt="' + escapeAttrBasico(doc.nome) + '">';
+            html += ''
+                + '<div class="doc-card">'
+                + '<div class="doc-card-thumb" onclick="visualizarDocumentoPessoal(\'' + doc.id + '\', \'' + pasta + '\')" title="Clique para ampliar">' + thumb + '</div>'
+                + '<div class="doc-card-body">'
+                + '<p class="doc-card-nome">' + escapeHtmlBasico(doc.nome || 'Documento') + '</p>'
+                + '<p class="doc-card-data">Vencimento: ' + escapeHtmlBasico(formatarVencimentoDocExibir(doc)) + '</p>'
+                + '<p class="doc-card-data">Cadastrado em: ' + escapeHtmlBasico(doc.data_cadastro || '—') + '</p>'
+                + '</div>'
+                + '<div class="doc-card-acoes">'
+                + '<button type="button" class="doc-btn-ver" onclick="visualizarDocumentoPessoal(\'' + doc.id + '\', \'' + pasta + '\')">👁️ Ver</button>'
+                + '<button type="button" class="doc-btn-export" onclick="exportarDocumentoPessoal(\'' + doc.id + '\', \'' + pasta + '\')">⬇️ Exportar</button>'
+                + '<button type="button" class="doc-btn-print" onclick="imprimirDocumentoPessoal(\'' + doc.id + '\', \'' + pasta + '\')">🖨️ Imprimir</button>'
+                + '<button type="button" class="doc-btn-del" onclick="excluirDocumentoPessoal(\'' + doc.id + '\', \'' + pasta + '\')">🗑️ Excluir</button>'
+                + '</div>'
+                + '</div>';
+        });
+        html += '</div>';
+        wrap.innerHTML = html;
+    }
+
+    window.carregarDocumentosPessoais = async function (pasta) {
+        const empresaLogada = getEmpresaGestor();
+        const wrap = document.getElementById('doc-lista-' + pasta);
+        if (!empresaLogada) {
+            if (wrap) wrap.innerHTML = '<p style="text-align:center;color:#d9534f;">Entre como gestor para ver os documentos.</p>';
+            return;
+        }
+        if (wrap) wrap.innerHTML = '<p style="text-align:center;color:#888;">A carregar documentos...</p>';
+        try {
+            await ensureAuth();
+            const q = query(collection(db, COLECAO_DOCUMENTOS_PESSOAIS), where('empresa_id', '==', empresaLogada));
+            const snap = await getDocs(q);
+            const itens = [];
+            snap.forEach((docSnap) => {
+                const d = docSnap.data();
+                if (String(d.pasta || '') !== pasta) return;
+                itens.push({
+                    id: docSnap.id,
+                    nome: d.nome || '',
+                    arquivo: d.arquivo || '',
+                    mime: d.mime || '',
+                    storage_path: d.storage_path || '',
+                    data_vencimento: d.data_vencimento || '',
+                    data_vencimento_ts: d.data_vencimento_ts != null ? d.data_vencimento_ts : null,
+                    data_cadastro: d.data_cadastro || '',
+                    pasta: d.pasta || pasta
+                });
+            });
+            itens.sort((a, b) => String(b.data_cadastro || '').localeCompare(String(a.data_cadastro || '')));
+            window._documentosPessoaisCache[pasta] = itens;
+            renderizarListaDocumentosPessoais(pasta, itens);
+        } catch (e) {
+            console.error(e);
+            if (wrap) wrap.innerHTML = '<p style="text-align:center;color:#d9534f;">Erro ao carregar documentos.</p>';
+        }
+    };
+
+    window.salvarDocumentoPessoal = async function (pasta) {
+        const empresaLogada = getEmpresaGestor();
+        if (!empresaLogada) return Swal.fire('Atenção', 'Entre como gestor para salvar documentos.', 'warning');
+
+        const nome = (document.getElementById('doc-add-nome-' + pasta) && document.getElementById('doc-add-nome-' + pasta).value || '').trim();
+        const arquivo = document.getElementById('doc-add-base64-' + pasta) ? document.getElementById('doc-add-base64-' + pasta).value : '';
+        const mime = document.getElementById('doc-add-mime-' + pasta) ? document.getElementById('doc-add-mime-' + pasta).value : '';
+        const vencimento = document.getElementById('doc-add-vencimento-' + pasta) ? document.getElementById('doc-add-vencimento-' + pasta).value : '';
+
+        if (!nome) return Swal.fire('Atenção', 'Informe o nome do documento (ex.: Documento identidade).', 'warning');
+        if (!arquivo) return Swal.fire('Atenção', 'Selecione uma foto ou PDF para anexar.', 'warning');
+        if (arquivo.length > DOC_FIRESTORE_MAX_B64) {
+            return Swal.fire('Documento grande demais', MSG_DOC_TAMANHO_MAX, 'warning');
+        }
+
+        let sucesso = false;
+        try {
+            Swal.fire({
+                title: 'Adicionando documento...',
+                allowOutsideClick: false,
+                showConfirmButton: false,
+                didOpen: () => Swal.showLoading()
+            });
+
+            await promiseComTimeout(ensureAuth(), 12000, 'timeout_auth');
+
+            const agora = new Date();
+            const dataBr = `${String(agora.getDate()).padStart(2, '0')}/${String(agora.getMonth() + 1).padStart(2, '0')}/${agora.getFullYear()} ${String(agora.getHours()).padStart(2, '0')}:${String(agora.getMinutes()).padStart(2, '0')}`;
+
+            const docPayload = {
+                empresa_id: empresaLogada,
+                pasta,
+                nome,
+                arquivo,
+                mime: mime || 'image/jpeg',
+                data_cadastro: dataBr,
+                criado_em: serverTimestamp()
+            };
+            if (vencimento) {
+                docPayload.data_vencimento = vencimento;
+                docPayload.data_vencimento_ts = parseDataVencimentoParaTimestamp(vencimento);
+            }
+
+            await promiseComTimeout(
+                addDoc(collection(db, COLECAO_DOCUMENTOS_PESSOAIS), docPayload),
+                30000,
+                'timeout_firestore'
+            );
+
+            sucesso = true;
+        } catch (e) {
+            console.error(e);
+            let msg = 'Não foi possível salvar o documento. Verifique a conexão e tente novamente.';
+            if (e && e.message === 'timeout_auth') {
+                msg = 'Não foi possível autenticar. Recarregue a página e tente novamente.';
+            } else if (e && e.message === 'timeout_firestore') {
+                msg = 'A gravação na nuvem demorou demais. Verifique a conexão e tente novamente.';
+            } else if (e && (e.code === 'invalid-argument' || String(e.message || '').includes('longer than'))) {
+                msg = MSG_DOC_TAMANHO_MAX;
+            }
+            Swal.fire('Erro', msg, 'error');
+        } finally {
+            fecharLoadingDocumentoPessoal();
+        }
+
+        if (!sucesso) return;
+
+        limparFormDocumentoPessoal(pasta);
+        Swal.fire({ toast: true, position: 'top-end', icon: 'success', title: 'Documento adicionado!', showConfirmButton: false, timer: 2200 });
+
+        try {
+            await carregarDocumentosPessoais(pasta);
+        } catch (e) {
+            console.error(e);
+        }
+        try {
+            if (typeof monitorarVencimentosDocumentos === 'function') {
+                monitorarVencimentosDocumentos();
+            }
+        } catch (e) {
+            console.error(e);
+        }
+    };
+
+    window.visualizarDocumentoPessoal = function (id, pasta) {
+        const item = buscarDocumentoPessoalCache(id, pasta);
+        const url = urlArquivoDocumentoPessoal(item);
+        if (!item || !url) return Swal.fire('Atenção', 'Documento não encontrado.', 'warning');
+        if (documentoPessoalEhPdf(item)) {
+            const w = window.open('', '_blank');
+            if (!w) return Swal.fire('Atenção', 'Permita pop-ups para visualizar o PDF.', 'warning');
+            w.document.write('<!DOCTYPE html><html><head><title>' + escapeHtmlBasico(item.nome) + '</title><style>html,body{margin:0;height:100%;}iframe{width:100%;height:100%;border:none;}</style></head><body><iframe src="' + escapeAttrBasico(url) + '"></iframe></body></html>');
+            w.document.close();
+            return;
+        }
+        abrirFoto(url);
+    };
+
+    window.exportarDocumentoPessoal = async function (id, pasta) {
+        const item = buscarDocumentoPessoalCache(id, pasta);
+        if (!item || !urlArquivoDocumentoPessoal(item)) return Swal.fire('Atenção', 'Documento não encontrado.', 'warning');
+        try {
+            await baixarArquivoDocumentoPessoal(item, item.nome);
+            Swal.fire({ toast: true, position: 'top-end', icon: 'success', title: 'Download iniciado', showConfirmButton: false, timer: 2000 });
+        } catch (e) {
+            console.error(e);
+            Swal.fire('Erro', 'Não foi possível exportar o documento.', 'error');
+        }
+    };
+
+    window.imprimirDocumentoPessoal = function (id, pasta) {
+        const item = buscarDocumentoPessoalCache(id, pasta);
+        const url = urlArquivoDocumentoPessoal(item);
+        if (!item || !url) return Swal.fire('Atenção', 'Documento não encontrado.', 'warning');
+        const ehPdf = documentoPessoalEhPdf(item);
+        const w = window.open('', '_blank');
+        if (!w) return Swal.fire('Atenção', 'Permita pop-ups para imprimir.', 'warning');
+        if (ehPdf) {
+            w.document.write('<!DOCTYPE html><html><head><title>' + escapeHtmlBasico(item.nome) + '</title><style>html,body{margin:0;height:100%;}iframe{width:100%;height:100%;border:none;}</style></head><body><iframe id="pdfFrame" src="' + escapeAttrBasico(url) + '"></iframe><script>window.onload=function(){setTimeout(function(){try{document.getElementById("pdfFrame").contentWindow.focus();document.getElementById("pdfFrame").contentWindow.print();}catch(e){window.print();}},600);};<\/script></body></html>');
+        } else {
+            w.document.write('<!DOCTYPE html><html><head><title>' + escapeHtmlBasico(item.nome) + '</title><style>body{margin:0;text-align:center;}img{max-width:100%;height:auto;}</style></head><body><img src="' + escapeAttrBasico(url) + '" onload="setTimeout(function(){window.focus();window.print();},300)"></body></html>');
+        }
+        w.document.close();
+    };
+
+    window.excluirDocumentoPessoal = async function (id, pasta) {
+        const item = buscarDocumentoPessoalCache(id, pasta);
+        if (!item) return Swal.fire('Atenção', 'Documento não encontrado.', 'warning');
+        const conf = await Swal.fire({
+            title: 'Excluir documento?',
+            html: 'Remover <b>' + escapeHtmlBasico(item.nome) + '</b> permanentemente?',
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonText: 'Sim, excluir',
+            cancelButtonText: 'Cancelar',
+            confirmButtonColor: '#c0392b'
+        });
+        if (!conf.isConfirmed) return;
+        try {
+            Swal.fire({ title: 'A excluir...', allowOutsideClick: false, didOpen: () => Swal.showLoading() });
+            await deleteDoc(doc(db, COLECAO_DOCUMENTOS_PESSOAIS, id));
+            Swal.close();
+            Swal.fire({ toast: true, position: 'top-end', icon: 'success', title: 'Documento excluído', showConfirmButton: false, timer: 2000 });
+            await carregarDocumentosPessoais(pasta);
+        } catch (e) {
+            console.error(e);
+            Swal.close();
+            Swal.fire('Erro', 'Não foi possível excluir o documento.', 'error');
+        }
+    };
+
+    initInputsDocumentosPessoais();
 
     const TIPOS_DESCONTO_FOLHA_OPTS = [
         'INSS', 'IRRF', 'Vale Transporte', 'Vale Refeição',
@@ -8600,6 +9436,7 @@ window.exportarPDF = function(tipo) {
 
     const ABAS_GRUPO_EQUIPE = ['cadastrar', 'equipe-cadastrada', 'criar', 'buscar', 'ponto', 'ajuda-custo', 'descontos-folha', 'folha', 'pedidos'];
     const ABAS_GRUPO_OBRAS = ['despesas-cadastrar', 'despesas-relatorio', 'relatorio-despesas', 'obras-relatorio-geral', 'terceiros'];
+    const ABAS_GRUPO_DOCUMENTOS = ['documentos-fh', 'documentos-hallana', 'documentos-felipe', 'documentos-wellington'];
 
     window.abrirGrupoMenuObras = function () {
         const grupo = document.getElementById('grupo-menu-obras');
@@ -8633,6 +9470,22 @@ window.exportarPDF = function(tipo) {
         if (titulo) titulo.setAttribute('aria-expanded', aberto ? 'true' : 'false');
     };
 
+    window.abrirGrupoMenuDocumentos = function () {
+        const grupo = document.getElementById('grupo-menu-documentos');
+        const titulo = document.getElementById('btn-grupo-documentos');
+        if (grupo) grupo.classList.add('open');
+        if (titulo) titulo.setAttribute('aria-expanded', 'true');
+    };
+
+    window.toggleGrupoMenuDocumentos = function () {
+        const grupo = document.getElementById('grupo-menu-documentos');
+        const titulo = document.getElementById('btn-grupo-documentos');
+        if (!grupo) return;
+        grupo.classList.toggle('open');
+        const aberto = grupo.classList.contains('open');
+        if (titulo) titulo.setAttribute('aria-expanded', aberto ? 'true' : 'false');
+    };
+
     window.mudarAba = function(aba, elementoAtivado) {
         if (window.innerWidth <= 900) fecharMenuMobileGestor();
         document.querySelectorAll('.gestor-menu-btn').forEach(t => t.classList.remove('active'));
@@ -8658,6 +9511,16 @@ window.exportarPDF = function(tipo) {
                 abrirGrupoMenuObras();
             } else {
                 grupoObras.classList.remove('has-active');
+            }
+        }
+
+        const grupoDocumentos = document.getElementById('grupo-menu-documentos');
+        if (grupoDocumentos) {
+            if (ABAS_GRUPO_DOCUMENTOS.includes(aba)) {
+                grupoDocumentos.classList.add('has-active');
+                abrirGrupoMenuDocumentos();
+            } else {
+                grupoDocumentos.classList.remove('has-active');
             }
         }
 
@@ -8703,6 +9566,12 @@ window.exportarPDF = function(tipo) {
         if (aba === 'descontos-folha') {
             initDescontosFolhaDatasPadrao();
             carregarDescontosFolhaLista();
+        }
+        if (ABAS_GRUPO_DOCUMENTOS.includes(aba)) {
+            const pasta = aba.replace('documentos-', '');
+            if (typeof window.carregarDocumentosPessoais === 'function') {
+                window.carregarDocumentosPessoais(pasta);
+            }
         }
     };
 
@@ -12358,6 +13227,39 @@ window.gerarFolhaPagamento = async function() {
     };
 
 // === INÍCIO DO SISTEMA DE ALERTAS ===
+function ensureAlertaStack() {
+    let stack = document.getElementById('alerta-stack-global');
+    if (!stack) {
+        stack = document.createElement('div');
+        stack.id = 'alerta-stack-global';
+        const telaPatrao = document.getElementById('tela-patrao');
+        (telaPatrao || document.body).appendChild(stack);
+    }
+    ['alerta-container-docs', 'alerta-container-global'].forEach((id) => {
+        let el = document.getElementById(id);
+        if (!el) {
+            el = document.createElement('div');
+            el.id = id;
+            el.style.cssText = 'padding:0; max-width:100%;';
+        }
+        if (el.parentElement !== stack) {
+            stack.appendChild(el);
+        }
+    });
+    const docs = document.getElementById('alerta-container-docs');
+    const global = document.getElementById('alerta-container-global');
+    if (docs && global && docs.nextElementSibling !== global) {
+        stack.insertBefore(docs, global);
+    }
+    stack.style.display = 'flex';
+    return stack;
+}
+
+function tocarSomAlertaVencimento() {
+    const audio = new Audio('https://actions.google.com/sounds/v1/alarms/beep_short.ogg');
+    audio.play().catch(() => {});
+}
+
 async function monitorarVencimentosObras() {
     const empresaGestor = getEmpresaGestor();
     const telaPatraoAtiva = painelGestorEstaVisivel();
@@ -12367,12 +13269,15 @@ async function monitorarVencimentosObras() {
 
     // TRAVA: Se não for gestor ou a tela de gestão não estiver aberta...
     if (!empresaGestor || !telaPatraoAtiva) {
-        // ...força a caixa de alertas a sumir e aborta a função!
-        if (containerAlerta) {
-            containerAlerta.style.display = 'none';
-        }
-        return; 
+        if (containerAlerta) containerAlerta.style.display = 'none';
+        const containerDocs = document.getElementById('alerta-container-docs');
+        if (containerDocs) containerDocs.style.display = 'none';
+        const stack = document.getElementById('alerta-stack-global');
+        if (stack) stack.style.display = 'none';
+        return;
     }
+
+    ensureAlertaStack();
 
     // Se passou da trava, garante que a caixa fique visível na área de Gestão
     if (containerAlerta) {
@@ -12721,19 +13626,13 @@ function montarPainelAlerta(id, loja, obra, desc, titulo, tipo, temNota, valor, 
 }
 
 function renderizarAlertasNoCanto(conteudo, som) {
+    ensureAlertaStack();
     let container = document.getElementById("alerta-container-global");
 
     if (!container) {
         container = document.createElement("div");
         container.id = "alerta-container-global";
-        container.style.cssText = "position:fixed; bottom:20px; right:20px; z-index:999999; max-height:80vh; padding:0;";
-
-        const telaPatrao = document.getElementById('tela-patrao');
-        if (telaPatrao) {
-            telaPatrao.appendChild(container);
-        } else {
-            document.body.appendChild(container);
-        }
+        ensureAlertaStack();
     }
 
     const qtd = (conteudo.match(/card-alerta-/g) || []).length;
@@ -12762,15 +13661,341 @@ function renderizarAlertasNoCanto(conteudo, som) {
         </div>
     `;
 
-    if (som && !minimizado) {
-        const audio = new Audio('https://actions.google.com/sounds/v1/alarms/beep_short.ogg');
-        audio.play().catch(() => {});
+    if (som && !minimizado) tocarSomAlertaVencimento();
+}
+
+async function monitorarVencimentosDocumentos() {
+    const empresaGestor = getEmpresaGestor();
+    const telaPatraoAtiva = painelGestorEstaVisivel();
+    let containerDocs = document.getElementById("alerta-container-docs");
+
+    if (!empresaGestor || !telaPatraoAtiva) {
+        if (containerDocs) containerDocs.style.display = 'none';
+        return;
+    }
+
+    ensureAlertaStack();
+
+    try {
+        window._mapAlertasDocumentos = {};
+        const q = query(collection(db, COLECAO_DOCUMENTOS_PESSOAIS), where("empresa_id", "==", empresaGestor));
+        const querySnapshot = await getDocs(q);
+
+        const dataHojeReal = new Date();
+        const hojeFormatado = dataHojeReal.toISOString().substring(0, 10);
+        const hojeMeioDia = new Date();
+        hojeMeioDia.setHours(12, 0, 0, 0);
+
+        const filaAlertas = [];
+        let emitirSom = false;
+
+        querySnapshot.forEach((docSnap) => {
+            const dados = docSnap.data();
+            const idDoc = docSnap.id;
+            const tsVenc = tsVencimentoDocumentoPessoal(dados);
+            if (tsVenc == null) return;
+
+            const diffMs = tsVenc - hojeMeioDia.getTime();
+            const diasRestantes = Math.round(diffMs / (1000 * 60 * 60 * 24));
+            const silenciadoHoje = localStorage.getItem(chaveAlertaSilenciadoDoc(idDoc, hojeFormatado));
+
+            if (!silenciadoHoje) {
+                let tituloAlerta = "";
+                let classeUrgencia = "";
+
+                if (diasRestantes < 0) {
+                    tituloAlerta = "VENCIDO";
+                    classeUrgencia = "urgente";
+                    emitirSom = true;
+                } else if (diasRestantes === 0) {
+                    tituloAlerta = "VENCE HOJE";
+                    classeUrgencia = "urgente";
+                    emitirSom = true;
+                } else if (diasRestantes > 0 && diasRestantes <= 5) {
+                    tituloAlerta = "VENCE EM " + diasRestantes + " DIA(S)";
+                    classeUrgencia = diasRestantes <= 2 ? "urgente" : "aviso";
+                    emitirSom = true;
+                }
+
+                if (tituloAlerta !== "") {
+                    const pasta = String(dados.pasta || "");
+                    const pastaLabel = PASTA_LABEL_DOCUMENTOS[pasta] || pasta.toUpperCase() || "—";
+                    const nomeDoc = dados.nome || "Documento";
+                    const vencAlerta = formatarVencimentoDocExibir(dados);
+                    const temArquivo = Boolean(dados.arquivo);
+                    window._mapAlertasDocumentos[idDoc] = Object.assign({ id: idDoc }, dados);
+                    filaAlertas.push({
+                        ts: tsVenc,
+                        html: montarPainelAlertaDoc(idDoc, pastaLabel, nomeDoc, tituloAlerta, classeUrgencia, vencAlerta, temArquivo)
+                    });
+                }
+            }
+        });
+
+        filaAlertas.sort((a, b) => a.ts - b.ts);
+        const htmlAlertas = filaAlertas.map((a) => a.html).join('');
+
+        if (htmlAlertas !== "") {
+            renderizarAlertasDocsNoCanto(htmlAlertas, emitirSom);
+        } else if (containerDocs) {
+            containerDocs.innerHTML = "";
+            containerDocs.style.display = "none";
+        }
+    } catch (err) {
+        console.warn("Aguardando alertas de documentos...", err);
     }
 }
 
+window.imprimirRelatorioAlertasDocumentos = function () {
+    function limparTextoParaPdf(s) {
+        if (s == null) return '';
+        return String(s)
+            .replace(/[\u{1F300}-\u{1FAFF}\u{2600}-\u{27BF}]/gu, '')
+            .replace(/[\u2014\u2013]/g, '-')
+            .trim();
+    }
+
+    function statusAlertaDocParaPdf(d) {
+        const tsVenc = tsVencimentoDocumentoPessoal(d);
+        if (tsVenc == null) return 'PENDENTE';
+        const hojeMeioDia = new Date();
+        hojeMeioDia.setHours(12, 0, 0, 0);
+        const dias = Math.round((tsVenc - hojeMeioDia.getTime()) / (1000 * 60 * 60 * 24));
+        if (dias < 0) return 'VENCIDO';
+        if (dias === 0) return 'VENCE HOJE';
+        if (dias <= 5) return 'VENCE EM ' + dias + ' DIA(S)';
+        return 'PENDENTE';
+    }
+
+    const cards = document.querySelectorAll('#alerta-container-docs [id^="card-alerta-doc-"]');
+    if (!cards.length) {
+        return Swal.fire('Atenção', 'Não há documentos/certidões na lista para imprimir.', 'info');
+    }
+
+    const empresa = limparTextoParaPdf(getEmpresaGestor() || 'Empresa');
+    const linhas = [];
+
+    cards.forEach((el) => {
+        const id = el.id.replace('card-alerta-doc-', '');
+        const d = window._mapAlertasDocumentos && window._mapAlertasDocumentos[id];
+        if (!d) return;
+        const pasta = PASTA_LABEL_DOCUMENTOS[d.pasta] || String(d.pasta || '').toUpperCase();
+        linhas.push([
+            statusAlertaDocParaPdf(d),
+            limparTextoParaPdf(formatarVencimentoDocExibir(d)),
+            limparTextoParaPdf(pasta),
+            limparTextoParaPdf(d.nome || 'Documento')
+        ]);
+    });
+
+    if (!linhas.length) {
+        return Swal.fire('Aviso', 'Não foi possível montar o relatório.', 'warning');
+    }
+
+    const { jsPDF } = window.jspdf;
+    const docPdf = new jsPDF('l', 'mm', 'a4');
+
+    docPdf.setFillColor(26, 42, 67);
+    docPdf.rect(0, 0, 297, 28, 'F');
+    docPdf.setTextColor(255, 255, 255);
+    docPdf.setFontSize(14);
+    docPdf.setFont('helvetica', 'bold');
+    docPdf.text('DOC / CERTIDOES - VENCIMENTOS', 14, 11);
+    docPdf.setFontSize(9);
+    docPdf.setFont('helvetica', 'normal');
+    docPdf.text(empresa + '  |  Gerado em: ' + new Date().toLocaleString('pt-BR') + '  |  ' + linhas.length + ' documento(s)', 14, 18);
+
+    docPdf.autoTable({
+        startY: 32,
+        head: [['Situação', 'Vencimento', 'Pasta', 'Documento']],
+        body: linhas,
+        theme: 'striped',
+        styles: { fontSize: 9, cellPadding: 3, valign: 'middle', textColor: '#333333' },
+        headStyles: { fillColor: [41, 128, 185], textColor: '#ffffff', fontStyle: 'bold' },
+        alternateRowStyles: { fillColor: [245, 248, 250] },
+        columnStyles: {
+            0: { cellWidth: 38 },
+            1: { cellWidth: 28 },
+            2: { cellWidth: 32 },
+            3: { cellWidth: 80 }
+        },
+        didParseCell: function (data) {
+            if (data.column.index === 0 && data.section === 'body') {
+                const t = String(data.cell.raw || '');
+                if (t.includes('VENCIDO') || t.includes('HOJE')) {
+                    data.cell.styles.textColor = [217, 83, 79];
+                    data.cell.styles.fontStyle = 'bold';
+                } else if (t.includes('VENCE EM')) {
+                    data.cell.styles.textColor = [240, 173, 78];
+                    data.cell.styles.fontStyle = 'bold';
+                }
+            }
+        }
+    });
+
+    const nomeArq = 'relatorio_doc_certidoes_' + String(empresa).replace(/\s+/g, '_') + '_' + new Date().toISOString().slice(0, 10) + '.pdf';
+    try {
+        docPdf.autoPrint();
+        const url = docPdf.output('bloburl');
+        const janela = window.open(url, '_blank');
+        if (!janela) {
+            docPdf.save(nomeArq);
+            Swal.fire('PDF guardado', 'O navegador bloqueou a janela de impressão. Abra o PDF transferido para imprimir.', 'info');
+        }
+    } catch (e) {
+        console.error(e);
+        docPdf.save(nomeArq);
+    }
+};
+
+window.visualizarDocumentoAlertaCertidao = function (idDoc) {
+    const d = window._mapAlertasDocumentos && window._mapAlertasDocumentos[idDoc];
+    if (!d || !d.arquivo) return Swal.fire('Aviso', 'Documento não encontrado.', 'warning');
+    const pasta = PASTA_LABEL_DOCUMENTOS[d.pasta] || String(d.pasta || '').toUpperCase();
+    if (documentoPessoalEhPdf(d)) {
+        const w = window.open('', '_blank');
+        if (!w) return Swal.fire('Atenção', 'Permita pop-ups para visualizar o PDF.', 'warning');
+        w.document.write('<!DOCTYPE html><html><head><title>' + escapeHtmlBasico(d.nome) + '</title><style>html,body{margin:0;height:100%;}iframe{width:100%;height:100%;border:none;}</style></head><body><iframe src="' + escapeAttrBasico(d.arquivo) + '"></iframe></body></html>');
+        w.document.close();
+        return;
+    }
+    abrirFoto(d.arquivo);
+};
+
+window.confirmarLeituraAlertaDoc = function (id) {
+    const hj = new Date().toISOString().substring(0, 10);
+    localStorage.setItem(chaveAlertaSilenciadoDoc(id, hj), "true");
+    const el = document.getElementById('card-alerta-doc-' + id);
+    if (el) {
+        el.style.opacity = "0";
+        el.style.transform = "translateX(50px)";
+        setTimeout(() => {
+            el.remove();
+            atualizarContagemPainelAlertasDocs();
+        }, 400);
+    }
+};
+
+window.confirmarLeituraTodosAlertasDocs = function () {
+    const cards = document.querySelectorAll('#alerta-container-docs [id^="card-alerta-doc-"]');
+    if (!cards.length) return;
+    const hj = new Date().toISOString().substring(0, 10);
+    cards.forEach((el) => {
+        const id = el.id.replace('card-alerta-doc-', '');
+        localStorage.setItem(chaveAlertaSilenciadoDoc(id, hj), "true");
+        el.style.opacity = "0";
+        el.style.transform = "translateX(50px)";
+    });
+    setTimeout(() => {
+        const container = document.getElementById("alerta-container-docs");
+        if (container) {
+            container.innerHTML = "";
+            container.style.display = "none";
+        }
+        sessionStorage.removeItem('alertas_docs_painel_minimizado');
+    }, 400);
+};
+
+window.togglePainelAlertasDocsMinimizado = function () {
+    const minimizado = sessionStorage.getItem('alertas_docs_painel_minimizado') === '1';
+    sessionStorage.setItem('alertas_docs_painel_minimizado', minimizado ? '0' : '1');
+    const container = document.getElementById("alerta-container-docs");
+    if (!container) return;
+    const barra = container.querySelector('.alerta-barra-minimizada');
+    const painel = container.querySelector('.alerta-painel-wrapper');
+    if (barra) barra.style.display = minimizado ? 'none' : 'flex';
+    if (painel) painel.style.display = minimizado ? 'block' : 'none';
+};
+
+function atualizarContagemPainelAlertasDocs() {
+    const cards = document.querySelectorAll('#alerta-container-docs [id^="card-alerta-doc-"]');
+    if (!cards.length) {
+        const container = document.getElementById("alerta-container-docs");
+        if (container) {
+            container.innerHTML = "";
+            container.style.display = "none";
+        }
+        sessionStorage.removeItem('alertas_docs_painel_minimizado');
+        return;
+    }
+    const qtd = cards.length;
+    document.querySelectorAll('.alerta-docs-contagem-qtd').forEach((el) => {
+        el.textContent = String(qtd);
+    });
+}
+
+function montarPainelAlertaDoc(id, pastaLabel, nomeDoc, titulo, tipo, vencimento, temArquivo) {
+    const corTema = tipo === "urgente" ? "#d9534f" : "#f0ad4e";
+    const pastaEsc = escapeHtmlBasico(pastaLabel);
+    const nomeEsc = escapeHtmlBasico(nomeDoc);
+    const vencEsc = escapeHtmlBasico(vencimento || '');
+    const btnDoc = temArquivo
+        ? '<button type="button" onclick="visualizarDocumentoAlertaCertidao(\'' + id + '\')" style="background:#2980b9;color:#fff;border:none;border-radius:6px;padding:7px 10px;font-size:11px;font-weight:700;cursor:pointer;width:100%;">📄 VER DOC</button>'
+        : '<span style="display:block;font-size:10px;color:#999;text-align:center;padding:4px 0;">Sem arquivo</span>';
+
+    return ''
+        + '<div id="card-alerta-doc-' + id + '" class="card-alerta-venc" style="border-left:8px solid ' + corTema + ';">'
+        + '<div style="flex:1; min-width:0;">'
+        + '<b style="color:' + corTema + '; font-size:14px; display:block; margin-bottom:6px;">' + escapeHtmlBasico(titulo) + '</b>'
+        + '<span style="color:#666; font-size:11px; text-transform:uppercase; font-weight:800; display:block; margin-bottom:2px;">📁 PASTA: ' + pastaEsc + '</span>'
+        + '<span style="color:#666; font-size:11px; display:block; margin-bottom:4px;">📅 Venc.: ' + vencEsc + '</span>'
+        + '<span style="color:#1a2a43; font-weight:600; font-size:13px; line-height:1.2; display:block;">' + nomeEsc + '</span>'
+        + '</div>'
+        + '<div style="display:flex; flex-direction:column; gap:8px; flex-shrink:0; min-width:88px;">'
+        + btnDoc
+        + '<button type="button" onclick="window.confirmarLeituraAlertaDoc(\'' + id + '\')" style="background:#f8f9fa; border:1px solid #ddd; border-radius:6px; padding:6px 12px; font-weight:700; cursor:pointer; color:#333;">OK</button>'
+        + '</div>'
+        + '</div>';
+}
+
+function renderizarAlertasDocsNoCanto(conteudo, som) {
+    ensureAlertaStack();
+    let container = document.getElementById("alerta-container-docs");
+
+    if (!container) {
+        container = document.createElement("div");
+        container.id = "alerta-container-docs";
+        ensureAlertaStack();
+    }
+
+    const qtd = (conteudo.match(/card-alerta-doc-/g) || []).length;
+    const minimizado = sessionStorage.getItem('alertas_docs_painel_minimizado') === '1';
+
+    container.style.display = 'block';
+    container.innerHTML = ''
+        + '<div style="text-align:right; margin-bottom:4px; width:100%;">'
+        + '<span style="display:inline-block; background:#2980b9; color:#fff; font-size:10px; font-weight:800; letter-spacing:0.6px; padding:4px 10px; border-radius:6px 6px 0 0;">DOC / CERTIDOES</span>'
+        + '</div>'
+        + '<div class="alerta-barra-minimizada" style="display:' + (minimizado ? 'flex' : 'none') + '; align-items:center; gap:8px; background:#2980b9; color:#fff; padding:10px 14px; border-radius:10px; box-shadow:0 6px 20px rgba(0,0,0,0.2);">'
+        + '<span style="font-weight:700; font-size:13px; flex:1; cursor:pointer;" onclick="window.togglePainelAlertasDocsMinimizado()" title="Clique para expandir">📋 <span class="alerta-docs-contagem-qtd">' + qtd + '</span> doc(s)</span>'
+        + '<button type="button" class="alerta-btn-imprimir" onclick="event.stopPropagation(); window.imprimirRelatorioAlertasDocumentos()" title="Imprimir relatório">🖨️</button>'
+        + '<button type="button" class="alerta-btn-fechar" onclick="window.confirmarLeituraTodosAlertasDocs()" title="Silenciar todos">Fechar</button>'
+        + '<button type="button" onclick="window.togglePainelAlertasDocsMinimizado()" style="background:#fff; color:#2980b9; border:none; border-radius:6px; padding:4px 10px; font-weight:700; font-size:12px; cursor:pointer;">Expandir</button>'
+        + '</div>'
+        + '<div class="alerta-painel-wrapper" style="display:' + (minimizado ? 'none' : 'block') + ';">'
+        + '<div class="alerta-painel-header" style="border-color:#2980b9;">'
+        + '<span class="alerta-painel-header-titulo">📋 DOC/CERTIDOES (<span class="alerta-docs-contagem-qtd">' + qtd + '</span>)</span>'
+        + '<div class="alerta-painel-header-acoes">'
+        + '<button type="button" class="alerta-btn-fechar" onclick="window.confirmarLeituraTodosAlertasDocs()" title="Silenciar todos os alertas de hoje">Fechar tudo</button>'
+        + '<button type="button" class="alerta-btn-imprimir" onclick="window.imprimirRelatorioAlertasDocumentos()" title="Imprimir relatório">🖨️ Imprimir</button>'
+        + '<button type="button" class="alerta-btn-minimizar" onclick="window.togglePainelAlertasDocsMinimizado()" title="Minimizar painel">−</button>'
+        + '</div>'
+        + '</div>'
+        + '<div class="alerta-painel-corpo">' + conteudo + '</div>'
+        + '</div>';
+
+    if (som && !minimizado) tocarSomAlertaVencimento();
+}
+
 // Inicia a monitorização 3 segundos após carregar a página
-setTimeout(monitorarVencimentosObras, 3000);
-setInterval(monitorarVencimentosObras, 3600000);
+setTimeout(function () {
+    monitorarVencimentosDocumentos();
+    monitorarVencimentosObras();
+}, 3000);
+setInterval(function () {
+    monitorarVencimentosDocumentos();
+    monitorarVencimentosObras();
+}, 3600000);
 // === FIM DO SISTEMA DE ALERTAS ===
 
 </script>
