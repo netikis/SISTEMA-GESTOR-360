@@ -1181,7 +1181,8 @@
             }
 
             #alerta-container-global,
-            #alerta-container-docs {
+            #alerta-container-docs,
+            #alerta-container-ponto {
                 --alerta-painel-largura: min(380px, calc(100vw - 16px));
             }
 
@@ -1195,7 +1196,9 @@
             #alerta-container-global .alerta-painel-wrapper,
             #alerta-container-global .alerta-barra-minimizada,
             #alerta-container-docs .alerta-painel-wrapper,
-            #alerta-container-docs .alerta-barra-minimizada {
+            #alerta-container-docs .alerta-barra-minimizada,
+            #alerta-container-ponto .alerta-painel-wrapper,
+            #alerta-container-ponto .alerta-barra-minimizada {
                 width: 100%;
                 max-width: 100%;
             }
@@ -2217,26 +2220,30 @@
         }
 
         #alerta-container-global,
-        #alerta-container-docs {
+        #alerta-container-docs,
+        #alerta-container-ponto {
             --alerta-painel-largura: 380px;
         }
 
         #alerta-container-global .alerta-painel-wrapper,
-        #alerta-container-docs .alerta-painel-wrapper {
+        #alerta-container-docs .alerta-painel-wrapper,
+        #alerta-container-ponto .alerta-painel-wrapper {
             width: var(--alerta-painel-largura);
             max-width: calc(100vw - 32px);
             box-sizing: border-box;
         }
 
         #alerta-container-global .alerta-barra-minimizada,
-        #alerta-container-docs .alerta-barra-minimizada {
+        #alerta-container-docs .alerta-barra-minimizada,
+        #alerta-container-ponto .alerta-barra-minimizada {
             width: var(--alerta-painel-largura);
             max-width: calc(100vw - 32px);
             box-sizing: border-box;
         }
 
         #alerta-container-global .alerta-painel-header,
-        #alerta-container-docs .alerta-painel-header {
+        #alerta-container-docs .alerta-painel-header,
+        #alerta-container-ponto .alerta-painel-header {
             display: flex;
             align-items: center;
             justify-content: space-between;
@@ -2253,7 +2260,8 @@
         }
 
         #alerta-container-global .alerta-painel-header-titulo,
-        #alerta-container-docs .alerta-painel-header-titulo {
+        #alerta-container-docs .alerta-painel-header-titulo,
+        #alerta-container-ponto .alerta-painel-header-titulo {
             font-weight: 800;
             font-size: 13px;
             color: #1a2a43;
@@ -2261,7 +2269,8 @@
         }
 
         #alerta-container-global .alerta-painel-header-acoes,
-        #alerta-container-docs .alerta-painel-header-acoes {
+        #alerta-container-docs .alerta-painel-header-acoes,
+        #alerta-container-ponto .alerta-painel-header-acoes {
             display: flex;
             gap: 6px;
             flex-shrink: 0;
@@ -2269,7 +2278,8 @@
         }
 
         #alerta-container-global .alerta-painel-corpo,
-        #alerta-container-docs .alerta-painel-corpo {
+        #alerta-container-docs .alerta-painel-corpo,
+        #alerta-container-ponto .alerta-painel-corpo {
             width: 100%;
             box-sizing: border-box;
             max-height: 70vh;
@@ -2285,7 +2295,8 @@
         }
 
         #alerta-container-global .card-alerta-venc,
-        #alerta-container-docs .card-alerta-venc {
+        #alerta-container-docs .card-alerta-venc,
+        #alerta-container-ponto .card-alerta-venc {
             background: #fff;
             width: 100%;
             box-sizing: border-box;
@@ -2302,12 +2313,14 @@
         }
 
         #alerta-container-global .card-alerta-venc:last-child,
-        #alerta-container-docs .card-alerta-venc:last-child {
+        #alerta-container-docs .card-alerta-venc:last-child,
+        #alerta-container-ponto .card-alerta-venc:last-child {
             margin-bottom: 0;
         }
 
         #alerta-container-global .alerta-btn-fechar,
-        #alerta-container-docs .alerta-btn-fechar {
+        #alerta-container-docs .alerta-btn-fechar,
+        #alerta-container-ponto .alerta-btn-fechar {
             background: #d9534f;
             color: #fff;
             border: none;
@@ -2320,7 +2333,8 @@
         }
 
         #alerta-container-global .alerta-btn-imprimir,
-        #alerta-container-docs .alerta-btn-imprimir {
+        #alerta-container-docs .alerta-btn-imprimir,
+        #alerta-container-ponto .alerta-btn-ver-ponto {
             background: #1a2a43;
             color: #fff;
             border: none;
@@ -2333,7 +2347,8 @@
         }
 
         #alerta-container-global .alerta-btn-minimizar,
-        #alerta-container-docs .alerta-btn-minimizar {
+        #alerta-container-docs .alerta-btn-minimizar,
+        #alerta-container-ponto .alerta-btn-minimizar {
             background: #f8f9fa;
             border: 1px solid #ddd;
             border-radius: 6px;
@@ -2822,6 +2837,12 @@
 
         <label>Consultar Ponto do Funcionário:</label>
         <p class="texto-explicacao" style="margin:4px 0 10px 0;">Os batimentos ficam na lista abaixo (nuvem: coleção <b>ponto_registros</b>). Um <b>cancelamento</b> só cola o aviso amarelo: o documento continua no mesmo sítio até o RH apagar com <b>APAGAR BATIDA</b> se quiser retirá-lo da base.</p>
+        <p class="texto-explicacao" style="margin:0 0 10px 0;background:#fff5f5;border:1px solid #f5c6cb;border-radius:8px;padding:8px 10px;">
+            <b>Sequência do ponto:</b> Entrada → Início intervalo → Fim intervalo → Saída. Batidas fora de ordem aparecem em <b style="color:#b02a37;">vermelho</b> e geram alerta no canto da tela.
+        </p>
+        <p class="texto-explicacao" style="margin:0 0 10px 0;background:#f8f9fa;border:1px solid #dee2e6;border-radius:8px;padding:8px 10px;">
+            <b>Duplicados:</b> se o funcionário bater o mesmo tipo no <b>mesmo horário</b> mais de uma vez, só <b>uma</b> batida conta na folha. As repetidas aparecem como <b>DUPLICADO</b> — pode apagar com <b>APAGAR BATIDA (RH)</b>.
+        </p>
         <div style="display: flex; gap: 10px;">
             <select id="pt-func-select" class="lista-funcs" style="margin: 0; flex: 2;">
                 <option value="">Carregando...</option>
@@ -3624,6 +3645,11 @@
     <div style="text-align: center; margin-top: 15px; font-size: 12px; color: #666;">
         ⚠️ O sistema aguardará o sinal do satélite para salvar a localização exata. Permaneça em um local aberto.
     </div>
+    <p style="text-align:center;font-size:12px;color:#856404;background:#fff8e6;border:1px solid #ffeeba;border-radius:8px;padding:10px;margin:12px 0 0 0;">
+        <b>Ordem correta do dia:</b> 🟢 Entrada → ⏸️ Início intervalo → ▶️ Fim intervalo → 🔴 Saída.<br>
+        Batidas fora dessa ordem são bloqueadas e a gestão é avisada automaticamente.<br>
+        <b>Não clique várias vezes:</b> o mesmo tipo no mesmo horário só conta uma vez.
+    </p>
 
     <button type="button" class="btn-entrada" onclick="baterPonto('Entrada')">🟢 REGISTAR ENTRADA</button>
     <button type="button" class="btn-logout" onclick="baterPonto('Início Intervalo')" style="margin-top: 12px; background: #6c757d; color: white; border: none; box-shadow: none; padding: 16px; border-radius: 12px; font-weight: 700; font-size: 15px;">⏸️ SAIR P/ ALMOÇO (INÍCIO INTERVALO)</button>
@@ -3866,7 +3892,13 @@
         return `doc_cert_${emp}_${idDoc}_${dataStr}`;
     }
 
+    function chaveAlertaSilenciadoPonto(chave, dataStr) {
+        const emp = getEmpresaGestor() || 'global';
+        return `ponto_seq_${emp}_${chave}_${dataStr}`;
+    }
+
     window.chaveAlertaSilenciado = chaveAlertaSilenciado;
+    window.chaveAlertaSilenciadoPonto = chaveAlertaSilenciadoPonto;
 
     // CHECAGEM DO STATUS (KILL SWITCH)
     async function verificarStatusSistema() {
@@ -3957,6 +3989,9 @@
         }
         if (document.getElementById('alerta-container-docs')) {
             document.getElementById('alerta-container-docs').style.display = 'none';
+        }
+        if (document.getElementById('alerta-container-ponto')) {
+            document.getElementById('alerta-container-ponto').style.display = 'none';
         }
         if (document.getElementById('alerta-stack-global')) {
             document.getElementById('alerta-stack-global').style.display = 'none';
@@ -4197,6 +4232,9 @@
             }
             monitorarVencimentosDocumentos();
             monitorarVencimentosObras();
+            if (typeof monitorarSequenciaPontoGestor === 'function') {
+                monitorarSequenciaPontoGestor();
+            }
         
          }, 800);
     }
@@ -4370,7 +4408,8 @@ function separarDataSegura(dataString) {
     }
 
     function resumoBatidasDiaParaFolha(batidasRaw) {
-        const batidas = (batidasRaw || [])
+        const dedup = deduplicarBatidasPonto(batidasRaw, null);
+        const batidas = (dedup.validas || [])
             .map(b => (b ? { ...b, tipo: normalizarTipoBatidaPonto(b.tipo) } : b))
             .filter(b => b && ['Entrada', 'Saída', 'Início Intervalo', 'Fim Intervalo'].includes(b.tipo))
             .sort((a, b) => (Number(a.timestamp) || 0) - (Number(b.timestamp) || 0));
@@ -10300,7 +10339,7 @@ window.gerarFolhaPagamento = async function() {
                 const dataPonto = separarDataSegura(pt.data);
                 
                 if (Number(dataPonto.mes) === Number(mesSelected) && Number(dataPonto.ano) === Number(anoSelected)) {
-                    pontosDoMes.push(pt);
+                    pontosDoMes.push({ id: doc.id, ...pt });
                 }
             });
                           
@@ -10314,6 +10353,10 @@ window.gerarFolhaPagamento = async function() {
                 }
                 if (!diasTrabalhados[keyDiaPt]) diasTrabalhados[keyDiaPt] = [];
                 diasTrabalhados[keyDiaPt].push(ptNorm);
+            });
+            Object.keys(diasTrabalhados).forEach((keyDiaPt) => {
+                const dedup = deduplicarBatidasPonto(diasTrabalhados[keyDiaPt], canceladosPonto);
+                diasTrabalhados[keyDiaPt] = dedup.validas;
             });
 
             let totalHorasExtras50Decimais = 0;
@@ -10344,7 +10387,8 @@ window.gerarFolhaPagamento = async function() {
             }
 
             function calcularHorasDoDia(batidasRaw) {
-                const batidas = (batidasRaw || [])
+                const dedupDia = deduplicarBatidasPonto(batidasRaw, null);
+                const batidas = (dedupDia.validas || [])
                     .map(b => (b ? { ...b, tipo: normalizarTipoBatidaPonto(b.tipo) } : b))
                     .filter(b => b && ['Entrada', 'Saída', 'Início Intervalo', 'Fim Intervalo'].includes(b.tipo) && Number.isFinite(b.timestamp))
                     .sort((a, b) => (a.timestamp || 0) - (b.timestamp || 0));
@@ -11470,24 +11514,277 @@ window.gerarFolhaPagamento = async function() {
         });
     };
 
+    function obterDataHojeBrPonto() {
+        const d = new Date();
+        return String(d.getDate()).padStart(2, '0') + '/' + String(d.getMonth() + 1).padStart(2, '0') + '/' + d.getFullYear();
+    }
+
+    function estadoPontoVazio() {
+        return { lastTipo: null, emIntervalo: false, encerrado: false };
+    }
+
+    function validarSequenciaPontoTipo(tipoMarcacao, estado) {
+        const last = estado && estado.lastTipo ? estado.lastTipo : null;
+        const emIntervalo = Boolean(estado && estado.emIntervalo);
+        const encerrado = Boolean(estado && estado.encerrado);
+
+        if (encerrado) {
+            return { ok: false, msg: 'Já foi registrada a SAÍDA hoje. Se precisar corrigir, fale com a gestão.' };
+        }
+        if (!last) {
+            if (tipoMarcacao !== 'Entrada') {
+                return { ok: false, msg: 'A primeira marcação do dia deve ser ENTRADA.' };
+            }
+            return { ok: true };
+        }
+        if (tipoMarcacao === 'Entrada') {
+            return { ok: false, msg: 'Já existe ENTRADA hoje. Use INÍCIO/FIM INTERVALO ou SAÍDA.' };
+        }
+        if (tipoMarcacao === 'Início Intervalo') {
+            if (emIntervalo) return { ok: false, msg: 'Já está em intervalo. Use FIM INTERVALO para voltar.' };
+            if (last !== 'Entrada' && last !== 'Fim Intervalo') {
+                return { ok: false, msg: 'Para iniciar intervalo, a última batida válida deve ser ENTRADA ou FIM INTERVALO.' };
+            }
+            return { ok: true };
+        }
+        if (tipoMarcacao === 'Fim Intervalo') {
+            if (!emIntervalo) return { ok: false, msg: 'Intervalo não iniciado. Clique primeiro em INÍCIO INTERVALO.' };
+            if (last !== 'Início Intervalo') {
+                return { ok: false, msg: 'Para finalizar o intervalo, a última batida deve ser INÍCIO INTERVALO.' };
+            }
+            return { ok: true };
+        }
+        if (tipoMarcacao === 'Saída') {
+            if (emIntervalo) return { ok: false, msg: 'Está em intervalo. Registre FIM INTERVALO antes da SAÍDA.' };
+            if (last !== 'Entrada' && last !== 'Fim Intervalo') {
+                return { ok: false, msg: 'Para SAÍDA, a última batida válida deve ser ENTRADA ou FIM INTERVALO.' };
+            }
+            return { ok: true };
+        }
+        return { ok: true };
+    }
+
+    function aplicarBatidaEstadoPonto(estado, tipoMarcacao) {
+        const novo = {
+            lastTipo: tipoMarcacao,
+            lastTs: estado && estado.lastTs != null ? estado.lastTs : null,
+            emIntervalo: Boolean(estado && estado.emIntervalo),
+            encerrado: Boolean(estado && estado.encerrado)
+        };
+        if (tipoMarcacao === 'Início Intervalo') novo.emIntervalo = true;
+        if (tipoMarcacao === 'Fim Intervalo') novo.emIntervalo = false;
+        if (tipoMarcacao === 'Entrada') novo.emIntervalo = false;
+        if (tipoMarcacao === 'Saída') {
+            novo.emIntervalo = false;
+            novo.encerrado = true;
+        }
+        return novo;
+    }
+
+    function derivarEstadoPontoDeBatidas(batidasAsc, canceladosSet) {
+        const ordenadas = (batidasAsc || []).slice().sort((a, b) => (a.timestamp || 0) - (b.timestamp || 0));
+        let estado = estadoPontoVazio();
+        ordenadas.forEach((b) => {
+            if (canceladosSet && canceladosSet.has(b.id)) return;
+            const valid = validarSequenciaPontoTipo(b.tipo, estado);
+            if (!valid.ok) return;
+            estado = aplicarBatidaEstadoPonto(estado, b.tipo);
+            if (b.timestamp != null) estado.lastTs = b.timestamp;
+        });
+        return estado;
+    }
+
+    function detectarErrosSequenciaPontoDia(batidas, canceladosSet) {
+        const ordenadas = (batidas || []).slice().sort((a, b) => (a.timestamp || 0) - (b.timestamp || 0));
+        let estado = estadoPontoVazio();
+        const erros = [];
+        ordenadas.forEach((b) => {
+            if (canceladosSet && canceladosSet.has(b.id)) return;
+            const valid = validarSequenciaPontoTipo(b.tipo, estado);
+            if (!valid.ok) {
+                erros.push({
+                    pontoId: b.id,
+                    funcionario_id: b.funcionario_id,
+                    nome: b.nome,
+                    tipo: b.tipo,
+                    data: b.data,
+                    hora: b.hora,
+                    obra: b.obra,
+                    msg: valid.msg,
+                    origem: 'registro'
+                });
+                return;
+            }
+            estado = aplicarBatidaEstadoPonto(estado, b.tipo);
+            if (b.timestamp != null) estado.lastTs = b.timestamp;
+        });
+        return erros;
+    }
+
+    function chaveDedupBatidaPonto(b) {
+        const data = formatarDataBrPadrao(b && b.data) || String(b && b.data || '').trim();
+        const tipo = normalizarTipoBatidaPonto(b && b.tipo);
+        const hora = normalizarHoraHHmm(b && b.hora || '00:00');
+        return data + '|' + tipo + '|' + hora;
+    }
+
+    function pontuacaoBatidaPontoParaManter(b) {
+        let score = 0;
+        if (b && b.foto) score += 4;
+        if (b && b.latitude != null && b.longitude != null) score += 2;
+        if (b && b.registo_manual_rh) score += 1;
+        if (b && b.id) score += 0.001;
+        return score;
+    }
+
+    function deduplicarBatidasPonto(batidas, canceladosSet) {
+        const mapa = new Map();
+        const duplicadosIds = new Set();
+
+        (batidas || []).forEach((b) => {
+            if (!b) return;
+            if (canceladosSet && b.id && canceladosSet.has(b.id)) return;
+            const chave = chaveDedupBatidaPonto(b);
+            const item = Object.assign({}, b, {
+                tipo: normalizarTipoBatidaPonto(b.tipo),
+                hora: normalizarHoraHHmm(b.hora)
+            });
+            const slot = mapa.get(chave);
+            if (!slot) {
+                mapa.set(chave, item);
+                return;
+            }
+            const manterNovo = pontuacaoBatidaPontoParaManter(item) > pontuacaoBatidaPontoParaManter(slot);
+            if (manterNovo) {
+                if (slot.id) duplicadosIds.add(slot.id);
+                mapa.set(chave, item);
+            } else if (item.id) {
+                duplicadosIds.add(item.id);
+            }
+        });
+
+        const validas = Array.from(mapa.values());
+        validas.sort((a, b) => (Number(a.timestamp) || 0) - (Number(b.timestamp) || 0));
+        return { validas, duplicadosIds };
+    }
+
+    function existeBatidaDuplicadaPonto(batidas, canceladosSet, tipo, dataBR, horaHM) {
+        const chaveNova = formatarDataBrPadrao(dataBR) + '|' + normalizarTipoBatidaPonto(tipo) + '|' + normalizarHoraHHmm(horaHM);
+        return (batidas || []).some((b) => {
+            if (!b) return false;
+            if (canceladosSet && b.id && canceladosSet.has(b.id)) return false;
+            return chaveDedupBatidaPonto(b) === chaveNova;
+        });
+    }
+
+    window.deduplicarBatidasPonto = deduplicarBatidasPonto;
+    window.chaveDedupBatidaPonto = chaveDedupBatidaPonto;
+
+    async function buscarIdsPontoCanceladosFuncionario(funcId) {
+        const ids = new Set();
+        try {
+            const qEvt = query(collection(db, 'ponto_eventos'), where('funcionario_id', '==', funcId));
+            const snapEvt = await getDocs(qEvt);
+            snapEvt.forEach((d) => {
+                const ev = d.data();
+                if (ev && ev.tipo === 'CANCELAMENTO' && ev.ponto_id) ids.add(ev.ponto_id);
+            });
+        } catch (e) {
+            console.warn('cancelamentos ponto', e);
+        }
+        return ids;
+    }
+
+    async function buscarBatidasPontoDiaFuncionario(funcId, dataBR) {
+        const arr = [];
+        try {
+            const q = query(collection(db, 'ponto_registros'), where('funcionario_id', '==', funcId));
+            const snap = await getDocs(q);
+            snap.forEach((docSnap) => {
+                const d = docSnap.data();
+                if (String(d.data || '') === String(dataBR)) {
+                    arr.push(Object.assign({ id: docSnap.id }, d));
+                }
+            });
+        } catch (e) {
+            console.warn('batidas ponto dia', e);
+        }
+        return arr;
+    }
+
+    async function obterEstadoPontoDiaFromFirestore(funcId, dataBR) {
+        const cancelados = await buscarIdsPontoCanceladosFuncionario(funcId);
+        const batidas = await buscarBatidasPontoDiaFuncionario(funcId, dataBR);
+        const dedup = deduplicarBatidasPonto(batidas, cancelados);
+        return derivarEstadoPontoDeBatidas(dedup.validas, cancelados);
+    }
+
+    async function registrarEventoSequenciaPontoInvalida(dados) {
+        try {
+            await ensureAuth();
+            await addDoc(collection(db, 'ponto_eventos'), Object.assign({
+                tipo: 'SEQUENCIA_INVALIDA',
+                bloqueado: true,
+                criado_em: serverTimestamp()
+            }, dados));
+        } catch (e) {
+            console.warn('evento sequencia ponto', e);
+        }
+    }
+
+    window.validarSequenciaPontoTipo = validarSequenciaPontoTipo;
+    window.detectarErrosSequenciaPontoDia = detectarErrosSequenciaPontoDia;
+    window.obterEstadoPontoDiaFromFirestore = obterEstadoPontoDiaFromFirestore;
+
     async function sincronizarPontoOffline() {
         const pontosOffline = JSON.parse(localStorage.getItem('pontos_offline') || '[]');
         
         if (pontosOffline.length > 0 && navigator.onLine) {
             let salvos = 0;
+            const pendentes = [];
             for (let i = 0; i < pontosOffline.length; i++) {
-                try { 
+                try {
                     const payload = { ...pontosOffline[i] };
+                    const funcId = payload.funcionario_id;
+                    const dataBR = payload.data || obterDataHojeBrPonto();
+                    let estado = estadoPontoVazio();
+                    if (funcId) {
+                        estado = await obterEstadoPontoDiaFromFirestore(funcId, dataBR);
+                    }
+                    const valid = validarSequenciaPontoTipo(payload.tipo, estado);
+                    if (!valid.ok) {
+                        await registrarEventoSequenciaPontoInvalida({
+                            empresa_id: payload.empresa_id || null,
+                            funcionario_id: funcId,
+                            funcionario_nome: payload.nome || '',
+                            tipo_tentado: payload.tipo,
+                            motivo: valid.msg,
+                            data_br: dataBR,
+                            hora_tentativa: payload.hora || '',
+                            origem: 'offline_sync'
+                        });
+                        continue;
+                    }
+                    const cancelados = funcId ? await buscarIdsPontoCanceladosFuncionario(funcId) : new Set();
+                    const batidasDia = funcId ? await buscarBatidasPontoDiaFuncionario(funcId, dataBR) : [];
+                    if (existeBatidaDuplicadaPonto(batidasDia, cancelados, payload.tipo, dataBR, payload.hora)) {
+                        continue;
+                    }
                     if (!payload.created_at) payload.created_at = serverTimestamp();
                     payload.synced_at = serverTimestamp();
-                    await addDoc(collection(db, "ponto_registros"), payload); 
-                    salvos++; 
-                } catch(e) {
+                    await addDoc(collection(db, "ponto_registros"), payload);
+                    salvos++;
+                } catch (e) {
                     console.error('Erro de sincronização', e);
+                    pendentes.push(pontosOffline[i]);
                 }
             }
-            if (salvos === pontosOffline.length) {
+            if (pendentes.length) {
+                localStorage.setItem('pontos_offline', JSON.stringify(pendentes));
+            } else {
                 localStorage.removeItem('pontos_offline');
+            }
+            if (salvos > 0) {
                 Swal.fire({ 
                     toast: true, 
                     position: 'top-end', 
@@ -11539,78 +11836,75 @@ window.gerarFolhaPagamento = async function() {
             localStorage.setItem(getChaveEstadoPonto(funcId), JSON.stringify(estado));
         }
 
-        function validarSequencia(tipoMarcacao, estado) {
-            const last = estado?.lastTipo || null;
-            const emIntervalo = Boolean(estado?.emIntervalo);
-            const encerrado = Boolean(estado?.encerrado);
-
-            // Se já marcou saída final do dia, não permite novas marcações nesse mesmo dia
-            if (encerrado) {
-                return { ok: false, msg: 'Você já registrou a SAÍDA hoje. Se precisar corrigir, fale com a gestão.' };
-            }
-
-            // Primeiro registro do dia
-            if (!last) {
-                if (tipoMarcacao !== 'Entrada') {
-                    return { ok: false, msg: 'A primeira marcação do dia deve ser ENTRADA.' };
-                }
-                return { ok: true };
-            }
-
-            if (tipoMarcacao === 'Entrada') {
-                return { ok: false, msg: 'Você já fez ENTRADA hoje. Use INÍCIO/FIM INTERVALO ou SAÍDA.' };
-            }
-
-            if (tipoMarcacao === 'Início Intervalo') {
-                if (emIntervalo) return { ok: false, msg: 'Você já está em intervalo. Para voltar, clique em FIM INTERVALO.' };
-                if (last !== 'Entrada' && last !== 'Fim Intervalo') {
-                    return { ok: false, msg: 'Para iniciar o intervalo, você precisa estar trabalhando (após ENTRADA ou FIM INTERVALO).' };
-                }
-                return { ok: true };
-            }
-
-            if (tipoMarcacao === 'Fim Intervalo') {
-                if (!emIntervalo) return { ok: false, msg: 'Você não iniciou o intervalo ainda. Clique primeiro em INÍCIO INTERVALO.' };
-                if (last !== 'Início Intervalo') {
-                    return { ok: false, msg: 'Para finalizar o intervalo, a última marcação deve ser INÍCIO INTERVALO.' };
-                }
-                return { ok: true };
-            }
-
-            if (tipoMarcacao === 'Saída') {
-                if (emIntervalo) return { ok: false, msg: 'Você está em intervalo. Primeiro registre FIM INTERVALO, depois SAÍDA.' };
-                if (last !== 'Entrada' && last !== 'Fim Intervalo') {
-                    return { ok: false, msg: 'Para registrar SAÍDA, você precisa estar trabalhando (após ENTRADA ou FIM INTERVALO).' };
-                }
-                return { ok: true };
-            }
-
-            return { ok: true };
-        }
-
         function atualizarEstadoAposMarcacao(funcId, tipoMarcacao, ts) {
-            const novo = {
-                lastTipo: tipoMarcacao,
-                lastTs: ts,
-                emIntervalo: tipoMarcacao === 'Início Intervalo' ? true : (tipoMarcacao === 'Fim Intervalo' ? false : (lerEstadoPonto(funcId)?.emIntervalo || false)),
-                encerrado: tipoMarcacao === 'Saída'
-            };
-            // Se marcou "Fim Intervalo", garante que não fica travado em intervalo
-            if (tipoMarcacao === 'Fim Intervalo') novo.emIntervalo = false;
-            // Se marcou entrada/saída, não muda o "emIntervalo" (exceto saída final)
-            if (tipoMarcacao === 'Entrada') novo.emIntervalo = false;
-            if (tipoMarcacao === 'Saída') novo.emIntervalo = false;
+            const base = lerEstadoPonto(funcId) || estadoPontoVazio();
+            const novo = aplicarBatidaEstadoPonto(base, tipoMarcacao);
+            novo.lastTs = ts;
             salvarEstadoPonto(funcId, novo);
         }
 
-        // Validação de sequência (evita batidas fora de ordem)
         const funcIdPre = getSessaoFunc('funcLogadoId');
+        const dataHojePonto = obterDataAtualStr();
         if (funcIdPre) {
-            const estadoAtual = lerEstadoPonto(funcIdPre);
-            const valid = validarSequencia(tipo, estadoAtual);
-            if (!valid.ok) {
-                return Swal.fire('Sequência inválida', valid.msg, 'warning');
+            let estadoAtual = estadoPontoVazio();
+            try {
+                Swal.fire({
+                    title: 'Verificando sequência...',
+                    allowOutsideClick: false,
+                    showConfirmButton: false,
+                    didOpen: function () { Swal.showLoading(); }
+                });
+                estadoAtual = await obterEstadoPontoDiaFromFirestore(funcIdPre, dataHojePonto);
+                salvarEstadoPonto(funcIdPre, estadoAtual);
+            } catch (e) {
+                console.warn('estado ponto nuvem', e);
+                estadoAtual = lerEstadoPonto(funcIdPre) || estadoPontoVazio();
+            } finally {
+                try { if (Swal.isVisible()) Swal.close(); } catch (_) {}
             }
+
+            const valid = validarSequenciaPontoTipo(tipo, estadoAtual);
+            if (!valid.ok) {
+                const horaTent = String(new Date().getHours()).padStart(2, '0') + ':' + String(new Date().getMinutes()).padStart(2, '0');
+                await registrarEventoSequenciaPontoInvalida({
+                    empresa_id: empresaDoFuncionario || null,
+                    funcionario_id: funcIdPre,
+                    funcionario_nome: getSessaoFunc('funcLogadoNome') || '',
+                    tipo_tentado: tipo,
+                    motivo: valid.msg,
+                    data_br: dataHojePonto,
+                    hora_tentativa: horaTent,
+                    origem: 'batida_funcionario'
+                });
+                if (typeof monitorarSequenciaPontoGestor === 'function') {
+                    try { monitorarSequenciaPontoGestor(); } catch (_) {}
+                }
+                return Swal.fire(
+                    'Sequência inválida',
+                    valid.msg + '<br><br><small>A gestão foi avisada automaticamente.</small>',
+                    'warning'
+                );
+            }
+
+            const horaPrev = String(new Date().getHours()).padStart(2, '0') + ':' + String(new Date().getMinutes()).padStart(2, '0');
+            const canceladosDup = await buscarIdsPontoCanceladosFuncionario(funcIdPre);
+            const batidasHojeDup = await buscarBatidasPontoDiaFuncionario(funcIdPre, dataHojePonto);
+            if (existeBatidaDuplicadaPonto(batidasHojeDup, canceladosDup, tipo, dataHojePonto, horaPrev)) {
+                return Swal.fire(
+                    'Ponto já registado',
+                    'Já existe <b>' + escapeHtmlBasico(tipo) + '</b> hoje às <b>' + escapeHtmlBasico(horaPrev) + '</b>.<br><br>Apenas <b>uma</b> batida com o mesmo horário conta.',
+                    'info'
+                );
+            }
+
+            const chaveAntiDuplo = 'ultimo_ponto_envio_' + funcIdPre;
+            try {
+                const ult = JSON.parse(localStorage.getItem(chaveAntiDuplo) || 'null');
+                const agoraMs = Date.now();
+                if (ult && ult.tipo === tipo && ult.data === dataHojePonto && ult.hora === horaPrev && (agoraMs - (ult.ts || 0)) < 20000) {
+                    return Swal.fire({ icon: 'info', title: 'Aguarde', text: 'Este ponto já foi enviado há instantes. Não é necessário clicar novamente.', timer: 2800, showConfirmButton: false });
+                }
+            } catch (_) {}
         }
 
         if (!obra) {
@@ -11677,8 +11971,28 @@ window.gerarFolhaPagamento = async function() {
 
             if (navigator.onLine) {
                 try {
+                    const canceladosGrav = await buscarIdsPontoCanceladosFuncionario(funcId);
+                    const batidasGrav = await buscarBatidasPontoDiaFuncionario(funcId, dataAtual);
+                    if (existeBatidaDuplicadaPonto(batidasGrav, canceladosGrav, tipo, dataAtual, horaAtual)) {
+                        return Swal.fire(
+                            'Ponto já registado',
+                            'Já existe este registro às ' + horaAtual + '. Apenas uma batida conta.',
+                            'info'
+                        );
+                    }
                     const docRef = await addDoc(collection(db, "ponto_registros"), payloadPonto);
                     atualizarEstadoAposMarcacao(funcId, tipo, payloadPonto.timestamp);
+                    try {
+                        localStorage.setItem('ultimo_ponto_envio_' + funcId, JSON.stringify({
+                            tipo: tipo,
+                            data: dataAtual,
+                            hora: horaAtual,
+                            ts: Date.now()
+                        }));
+                    } catch (_) {}
+                    if (typeof monitorarSequenciaPontoGestor === 'function') {
+                        try { monitorarSequenciaPontoGestor(); } catch (_) {}
+                    }
                     const avisoGps = geo.ok ? '' : '<br><small style="color:#666;">GPS não obtido nesta batida; o registro foi gravado sem coordenadas.</small>';
                     Swal.fire(
                         'Sucesso!',
@@ -11704,9 +12018,21 @@ window.gerarFolhaPagamento = async function() {
 
         function salvarNoCelular(payloadPonto) {
             const offlineData = JSON.parse(localStorage.getItem('pontos_offline') || '[]');
+            if (offlineData.some((p) => chaveDedupBatidaPonto(p) === chaveDedupBatidaPonto(payloadPonto))) {
+                Swal.fire('Já guardado', 'Este ponto (mesmo tipo e horário) já está na fila offline. Apenas um registro conta.', 'info');
+                return;
+            }
             offlineData.push(payloadPonto);
             localStorage.setItem('pontos_offline', JSON.stringify(offlineData));
             atualizarEstadoAposMarcacao(payloadPonto.funcionario_id, payloadPonto.tipo, payloadPonto.timestamp);
+            try {
+                localStorage.setItem('ultimo_ponto_envio_' + payloadPonto.funcionario_id, JSON.stringify({
+                    tipo: payloadPonto.tipo,
+                    data: payloadPonto.data,
+                    hora: payloadPonto.hora,
+                    ts: Date.now()
+                }));
+            } catch (_) {}
             Swal.fire(
                 'Ponto Guardado Offline! 📶❌',
                 `Sem internet. O seu ponto de ${payloadPonto.tipo} foi travado com o horário exato:<br><br><b style="font-size:18px; color:#d9534f;">${payloadPonto.data} às ${payloadPonto.hora}</b><br><br>Será enviado quando conectar a uma rede.`,
@@ -11809,6 +12135,24 @@ window.gerarFolhaPagamento = async function() {
                 return;
             }
 
+            const pontosPorDia = {};
+            querySnapshot.forEach((docSnap) => {
+                const dados = docSnap.data();
+                const chaveDia = String(dados.data || '');
+                if (!pontosPorDia[chaveDia]) pontosPorDia[chaveDia] = [];
+                pontosPorDia[chaveDia].push(Object.assign({ id: docSnap.id }, dados));
+            });
+            const idsErroSequencia = new Set();
+            const idsDuplicadosPonto = new Set();
+            const idsCanceladosPonto = new Set(infoCancelamentoPorPonto.keys());
+            Object.keys(pontosPorDia).forEach((diaChave) => {
+                const dedup = deduplicarBatidasPonto(pontosPorDia[diaChave], idsCanceladosPonto);
+                dedup.duplicadosIds.forEach((id) => idsDuplicadosPonto.add(id));
+                detectarErrosSequenciaPontoDia(dedup.validas, idsCanceladosPonto).forEach((er) => {
+                    if (er.pontoId) idsErroSequencia.add(er.pontoId);
+                });
+            });
+
             let agrupado = {};
             querySnapshot.forEach((doc) => {
                 const dados = doc.data(); 
@@ -11897,6 +12241,12 @@ window.gerarFolhaPagamento = async function() {
                         const fotoThumb = dados.foto ? `<img src="${dados.foto}" onclick="abrirFoto('${dados.foto}')" style="width: 50px; border-radius: 5px; float: right; cursor: pointer; border: 1px solid #ccc; transition: 0.2s;" title="Clique para ampliar" onmouseover="this.style.transform='scale(1.1)'" onmouseout="this.style.transform='scale(1)'">` : '';
                         
                         const motivoEsc = escapeHtmlBasico(dados.cancelamento_motivo || '');
+                        const badgeSeqErrada = idsErroSequencia.has(dados.id)
+                            ? `<div style="margin-top:6px;padding:8px 10px;background:#fff5f5;border:1px solid #f5c6cb;color:#b02a37;border-radius:8px;font-size:12px;font-weight:700;">⚠️ BATIDA FORA DE ORDEM — corrija ou cancele este registro</div>`
+                            : '';
+                        const badgeDuplicado = idsDuplicadosPonto.has(dados.id)
+                            ? `<div style="margin-top:6px;padding:8px 10px;background:#f0f0f0;border:1px solid #ccc;color:#555;border-radius:8px;font-size:12px;font-weight:700;">📋 DUPLICADO — não conta na folha (mesmo tipo e horário)</div>`
+                            : '';
                         const canceladoBadge = (dados.cancelado_em_evento
                             ? `<div style="margin-top:6px; padding:8px 10px; background:#fff3cd; border:1px solid #ffeeba; color:#5c4a00; border-radius:8px; font-size:12px;">
                                 <div style="font-weight:700;margin-bottom:4px;">⚠️ REGISTRO CANCELADO (mantido para auditoria)</div>
@@ -11916,9 +12266,11 @@ window.gerarFolhaPagamento = async function() {
                             ? `<span style="display:inline-block;margin-top:4px;font-size:11px;background:#e7f3ff;color:#0c5460;padding:3px 8px;border-radius:6px;font-weight:600;">📋 Registo manual pelo RH</span><br>`
                             : '';
                         htmlFinal += `
-                            <div class="resultado-item" style="border-left-color: ${cor}">
+                            <div class="resultado-item" style="border-left-color: ${idsErroSequencia.has(dados.id) ? '#b02a37' : (idsDuplicadosPonto.has(dados.id) ? '#999' : cor)}${idsErroSequencia.has(dados.id) ? ';background:#fffbfb' : (idsDuplicadosPonto.has(dados.id) ? ';opacity:0.75;background:#f8f8f8' : '')}">
                                 ${fotoThumb}
-                                <b style="color: ${cor}">${dados.tipo}</b> - Dia ${dados.data} às ${dados.hora || '??'} <br>
+                                <b style="color: ${idsErroSequencia.has(dados.id) ? '#b02a37' : (idsDuplicadosPonto.has(dados.id) ? '#777' : cor)}">${dados.tipo}</b> - Dia ${dados.data} às ${dados.hora || '??'} <br>
+                                ${badgeDuplicado}
+                                ${badgeSeqErrada}
                                 ${badgeManualRH}
                                <span style="font-size: 13px; color: #555;"><b>Local:</b> ${dados.obra}</span><br>
                                 ${dados.cancelado_em_evento ? `<span style="font-size:12px;color:#555;"><b>ID do registro (nuvem / Firestore):</b> ${dados.id}</span><br>` : ''}
@@ -13546,7 +13898,7 @@ function ensureAlertaStack() {
         const telaPatrao = document.getElementById('tela-patrao');
         (telaPatrao || document.body).appendChild(stack);
     }
-    ['alerta-container-docs', 'alerta-container-global'].forEach((id) => {
+    ['alerta-container-docs', 'alerta-container-ponto', 'alerta-container-global'].forEach((id) => {
         let el = document.getElementById(id);
         if (!el) {
             el = document.createElement('div');
@@ -13558,9 +13910,13 @@ function ensureAlertaStack() {
         }
     });
     const docs = document.getElementById('alerta-container-docs');
+    const ponto = document.getElementById('alerta-container-ponto');
     const global = document.getElementById('alerta-container-global');
-    if (docs && global && docs.nextElementSibling !== global) {
-        stack.insertBefore(docs, global);
+    if (docs && ponto && docs.nextElementSibling !== ponto) {
+        stack.insertBefore(docs, ponto);
+    }
+    if (ponto && global && ponto.nextElementSibling !== global) {
+        stack.insertBefore(ponto, global);
     }
     stack.style.display = 'flex';
     return stack;
@@ -13583,6 +13939,8 @@ async function monitorarVencimentosObras() {
         if (containerAlerta) containerAlerta.style.display = 'none';
         const containerDocs = document.getElementById('alerta-container-docs');
         if (containerDocs) containerDocs.style.display = 'none';
+        const containerPonto = document.getElementById('alerta-container-ponto');
+        if (containerPonto) containerPonto.style.display = 'none';
         const stack = document.getElementById('alerta-stack-global');
         if (stack) stack.style.display = 'none';
         return;
@@ -14305,15 +14663,250 @@ function renderizarAlertasDocsNoCanto(conteudo, som) {
     if (som && !minimizado) tocarSomAlertaVencimento();
 }
 
+function montarPainelAlertaPonto(chave, nomeFunc, titulo, detalhe, funcId) {
+    const corTema = '#e67e22';
+    const funcIdEsc = String(funcId || '').replace(/'/g, "\\'");
+    return ''
+        + '<div id="card-alerta-ponto-' + chave + '" class="card-alerta-venc" style="border-left:8px solid ' + corTema + ';">'
+        + '<div style="flex:1;min-width:0;">'
+        + '<div style="font-weight:800;font-size:12px;color:' + corTema + ';">' + escapeHtmlBasico(titulo) + '</div>'
+        + '<div style="font-size:13px;font-weight:700;color:#1a2a43;margin-top:4px;">' + escapeHtmlBasico(nomeFunc || 'Funcionário') + '</div>'
+        + '<div style="font-size:12px;color:#555;margin-top:4px;">' + escapeHtmlBasico(detalhe || '') + '</div>'
+        + '<button type="button" class="alerta-btn-ver-ponto" onclick="window.irParaPontoFuncionarioAlerta(\'' + funcIdEsc + '\')" style="margin-top:8px;width:100%;background:#e67e22;color:#fff;border:none;border-radius:6px;padding:7px 10px;font-size:11px;font-weight:700;cursor:pointer;">📍 VER PONTO</button>'
+        + '</div>'
+        + '<button type="button" class="alerta-btn-fechar" onclick="window.confirmarLeituraAlertaPonto(\'' + chave + '\')" title="Silenciar hoje">Fechar</button>'
+        + '</div>';
+}
+
+function renderizarAlertasPontoNoCanto(conteudo, som) {
+    ensureAlertaStack();
+    let container = document.getElementById('alerta-container-ponto');
+    if (!container) {
+        container = document.createElement('div');
+        container.id = 'alerta-container-ponto';
+        ensureAlertaStack();
+    }
+    const qtd = (conteudo.match(/card-alerta-ponto-/g) || []).length;
+    const minimizado = sessionStorage.getItem('alertas_ponto_painel_minimizado') === '1';
+    container.style.display = 'block';
+    container.innerHTML = ''
+        + '<div class="alerta-barra-minimizada" style="display:' + (minimizado ? 'flex' : 'none') + ';align-items:center;gap:8px;background:#fff;border:1px solid #e0e0e0;border-radius:10px;padding:10px 14px;box-shadow:0 4px 12px rgba(0,0,0,0.08);cursor:pointer;" onclick="window.togglePainelAlertasPontoMinimizado()">'
+        + '<span style="font-weight:700;font-size:13px;flex:1;">📍 <span class="alerta-ponto-contagem-qtd">' + qtd + '</span> ponto(s) fora de ordem</span>'
+        + '<span style="font-size:11px;color:#888;">Expandir</span>'
+        + '</div>'
+        + '<div class="alerta-painel-wrapper" style="display:' + (minimizado ? 'none' : 'block') + ';">'
+        + '<div class="alerta-painel-header" style="border-color:#e67e22;">'
+        + '<span class="alerta-painel-header-titulo">📍 PONTO FORA DE ORDEM (<span class="alerta-ponto-contagem-qtd">' + qtd + '</span>)</span>'
+        + '<div class="alerta-painel-header-acoes">'
+        + '<button type="button" class="alerta-btn-fechar" onclick="window.confirmarLeituraTodosAlertasPonto()" title="Silenciar todos hoje">Fechar tudo</button>'
+        + '<button type="button" class="alerta-btn-minimizar" onclick="window.togglePainelAlertasPontoMinimizado()" title="Minimizar">−</button>'
+        + '</div>'
+        + '</div>'
+        + '<div class="alerta-painel-corpo">' + conteudo + '</div>'
+        + '</div>';
+    if (som && !minimizado) tocarSomAlertaVencimento();
+}
+
+window.irParaPontoFuncionarioAlerta = function (funcId) {
+    if (!funcId) return;
+    const btnPonto = document.querySelector('.gestor-menu-btn[data-titulo="Ponto"]');
+    if (typeof mudarAba === 'function') {
+        mudarAba('ponto', btnPonto || null);
+    }
+    setTimeout(function () {
+        const sel = document.getElementById('pt-func-select');
+        if (sel) {
+            sel.value = funcId;
+            if (typeof buscarPonto === 'function') buscarPonto();
+        }
+    }, 350);
+};
+
+window.confirmarLeituraAlertaPonto = function (chave) {
+    const hj = new Date().toISOString().substring(0, 10);
+    localStorage.setItem(chaveAlertaSilenciadoPonto(chave, hj), 'true');
+    const el = document.getElementById('card-alerta-ponto-' + chave);
+    if (el) {
+        el.style.opacity = '0';
+        el.style.transform = 'translateX(50px)';
+        setTimeout(function () {
+            el.remove();
+            const restantes = document.querySelectorAll('#alerta-container-ponto [id^="card-alerta-ponto-"]');
+            document.querySelectorAll('.alerta-ponto-contagem-qtd').forEach(function (n) {
+                n.textContent = String(restantes.length);
+            });
+            if (!restantes.length) {
+                const container = document.getElementById('alerta-container-ponto');
+                if (container) {
+                    container.innerHTML = '';
+                    container.style.display = 'none';
+                }
+            }
+        }, 400);
+    }
+};
+
+window.confirmarLeituraTodosAlertasPonto = function () {
+    const cards = document.querySelectorAll('#alerta-container-ponto [id^="card-alerta-ponto-"]');
+    if (!cards.length) return;
+    const hj = new Date().toISOString().substring(0, 10);
+    cards.forEach(function (el) {
+        const chave = el.id.replace('card-alerta-ponto-', '');
+        localStorage.setItem(chaveAlertaSilenciadoPonto(chave, hj), 'true');
+        el.style.opacity = '0';
+        el.style.transform = 'translateX(50px)';
+    });
+    setTimeout(function () {
+        const container = document.getElementById('alerta-container-ponto');
+        if (container) {
+            container.innerHTML = '';
+            container.style.display = 'none';
+        }
+        sessionStorage.removeItem('alertas_ponto_painel_minimizado');
+    }, 400);
+};
+
+window.togglePainelAlertasPontoMinimizado = function () {
+    const minimizado = sessionStorage.getItem('alertas_ponto_painel_minimizado') === '1';
+    sessionStorage.setItem('alertas_ponto_painel_minimizado', minimizado ? '0' : '1');
+    const container = document.getElementById('alerta-container-ponto');
+    if (!container) return;
+    const wrap = container.querySelector('.alerta-painel-wrapper');
+    const barra = container.querySelector('.alerta-barra-minimizada');
+    if (wrap) wrap.style.display = minimizado ? 'block' : 'none';
+    if (barra) barra.style.display = minimizado ? 'none' : 'flex';
+};
+
+async function monitorarSequenciaPontoGestor() {
+    const empresaGestor = getEmpresaGestor();
+    const telaPatraoAtiva = painelGestorEstaVisivel();
+    let containerPonto = document.getElementById('alerta-container-ponto');
+
+    if (!empresaGestor || !telaPatraoAtiva) {
+        if (containerPonto) containerPonto.style.display = 'none';
+        return;
+    }
+
+    ensureAlertaStack();
+
+    try {
+        const dataHojeBr = (function () {
+            const d = new Date();
+            return String(d.getDate()).padStart(2, '0') + '/' + String(d.getMonth() + 1).padStart(2, '0') + '/' + d.getFullYear();
+        })();
+        const hojeFormatado = new Date().toISOString().substring(0, 10);
+
+        const qPonto = query(collection(db, 'ponto_registros'), where('empresa_id', '==', empresaGestor));
+        const qEvt = query(collection(db, 'ponto_eventos'), where('empresa_id', '==', empresaGestor));
+        const [snapPonto, snapEvt] = await Promise.all([getDocs(qPonto), getDocs(qEvt)]);
+
+        const cancelados = new Set();
+        const tentativas = [];
+        snapEvt.forEach((docSnap) => {
+            const ev = docSnap.data();
+            if (!ev) return;
+            if (ev.tipo === 'CANCELAMENTO' && ev.ponto_id) {
+                cancelados.add(ev.ponto_id);
+                return;
+            }
+            if (ev.tipo !== 'SEQUENCIA_INVALIDA') return;
+            let evHoje = false;
+            if (String(ev.data_br || '') === dataHojeBr) evHoje = true;
+            const t = ev.criado_em;
+            if (!evHoje && t) {
+                let ms = 0;
+                if (typeof t.toMillis === 'function') ms = t.toMillis();
+                else if (typeof t.seconds === 'number') ms = t.seconds * 1000;
+                if (ms) {
+                    const dt = new Date(ms);
+                    const br = String(dt.getDate()).padStart(2, '0') + '/' + String(dt.getMonth() + 1).padStart(2, '0') + '/' + dt.getFullYear();
+                    if (br === dataHojeBr) evHoje = true;
+                }
+            }
+            if (!evHoje) return;
+            tentativas.push({
+                chave: 'evt_' + docSnap.id,
+                funcionario_id: ev.funcionario_id,
+                nome: ev.funcionario_nome || 'Funcionário',
+                tipo: ev.tipo_tentado || '—',
+                data: ev.data_br || dataHojeBr,
+                hora: ev.hora_tentativa || '—',
+                msg: ev.motivo || 'Tentativa bloqueada fora da sequência.',
+                origem: 'tentativa'
+            });
+        });
+
+        const porFuncDia = {};
+        snapPonto.forEach((docSnap) => {
+            const d = docSnap.data();
+            if (String(d.data || '') !== dataHojeBr) return;
+            const fid = d.funcionario_id || '';
+            if (!fid) return;
+            const chaveDia = fid + '::' + dataHojeBr;
+            if (!porFuncDia[chaveDia]) porFuncDia[chaveDia] = [];
+            porFuncDia[chaveDia].push(Object.assign({ id: docSnap.id }, d));
+        });
+
+        const filaAlertas = [];
+        let emitirSom = false;
+
+        Object.keys(porFuncDia).forEach((chaveDia) => {
+            const dedup = typeof deduplicarBatidasPonto === 'function'
+                ? deduplicarBatidasPonto(porFuncDia[chaveDia], cancelados)
+                : { validas: porFuncDia[chaveDia] };
+            const erros = typeof detectarErrosSequenciaPontoDia === 'function'
+                ? detectarErrosSequenciaPontoDia(dedup.validas, cancelados)
+                : [];
+            erros.forEach((er) => {
+                const chave = 'reg_' + er.pontoId;
+                if (localStorage.getItem(chaveAlertaSilenciadoPonto(chave, hojeFormatado))) return;
+                emitirSom = true;
+                const detalhe = (er.tipo || 'Batida') + ' às ' + (er.hora || '—') + ' — ' + (er.msg || '');
+                filaAlertas.push({
+                    ts: er.pontoId,
+                    html: montarPainelAlertaPonto(chave, er.nome, 'REGISTRO FORA DE ORDEM', detalhe, er.funcionario_id)
+                });
+            });
+        });
+
+        tentativas.forEach((t) => {
+            if (localStorage.getItem(chaveAlertaSilenciadoPonto(t.chave, hojeFormatado))) return;
+            emitirSom = true;
+            const detalhe = 'Tentou ' + t.tipo + ' às ' + t.hora + ' (bloqueado) — ' + t.msg;
+            filaAlertas.push({
+                ts: t.chave,
+                html: montarPainelAlertaPonto(t.chave, t.nome, 'TENTATIVA ERRADA (BLOQUEADA)', detalhe, t.funcionario_id)
+            });
+        });
+
+        const htmlAlertas = filaAlertas.map(function (a) { return a.html; }).join('');
+        if (htmlAlertas) {
+            renderizarAlertasPontoNoCanto(htmlAlertas, emitirSom);
+        } else if (containerPonto) {
+            containerPonto.innerHTML = '';
+            containerPonto.style.display = 'none';
+        }
+    } catch (err) {
+        console.warn('Aguardando alertas de ponto...', err);
+    }
+}
+
+window.monitorarSequenciaPontoGestor = monitorarSequenciaPontoGestor;
+
 // Inicia a monitorização 3 segundos após carregar a página
 setTimeout(function () {
     monitorarVencimentosDocumentos();
     monitorarVencimentosObras();
+    monitorarSequenciaPontoGestor();
 }, 3000);
 setInterval(function () {
     monitorarVencimentosDocumentos();
     monitorarVencimentosObras();
+    monitorarSequenciaPontoGestor();
 }, 3600000);
+setInterval(function () {
+    monitorarSequenciaPontoGestor();
+}, 120000);
 // === FIM DO SISTEMA DE ALERTAS ===
 
 </script>
