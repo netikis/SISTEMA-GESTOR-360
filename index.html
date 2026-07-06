@@ -3227,6 +3227,7 @@
             <button type="button" class="btn-enviar" onclick="toggleSecoesRelGeralObras(true)">▼ Expandir tudo</button>
             <button type="button" class="btn-enviar" onclick="toggleSecoesRelGeralObras(false)">▲ Recolher tudo</button>
             <button type="button" id="btnExportarRelGeralObrasPdf" class="btn-pdf-relatorio" onclick="exportarPDFRelatorioGeralObras()">🖨️ EXPORTAR ESPELHO PDF (IMPRIMIR)</button>
+            <button type="button" id="btnExportarRelGeralObrasExcel" class="btn-pdf-relatorio" style="background-color:#217346;" onclick="exportarExcelRelatorioGeralObras()">📊 EXPORTAR ESPELHO EXCEL</button>
         </div>
 
         <div id="rel-geral-obras-resumo" style="display: none; margin-top: 20px; background: #fff3cd; padding: 15px; border-radius: 10px; text-align: center; border: 1px solid #ffeeba;">
@@ -5160,6 +5161,119 @@ function separarDataSegura(dataString) {
     }
 
     window._documentosPessoaisCache = window._documentosPessoaisCache || {};
+    window._documentosPessoaisArquivoCache = window._documentosPessoaisArquivoCache || {};
+    window._documentosEmpresaFetchPromise = null;
+    window._documentosEmpresaFetchEmpresa = null;
+    window._documentosEmpresaFetchTs = 0;
+
+    function invalidarCacheDocumentosPessoaisEmpresa() {
+        window._documentosEmpresaFetchPromise = null;
+        window._documentosEmpresaFetchEmpresa = null;
+        window._documentosEmpresaFetchTs = 0;
+        window._documentosPessoaisArquivoCache = {};
+        PASTAS_DOCUMENTOS.forEach((p) => { window._documentosPessoaisCache[p] = []; });
+    }
+
+    window.invalidarCacheDocumentosPessoaisEmpresa = invalidarCacheDocumentosPessoaisEmpresa;
+
+    function metaDocumentoPessoalFromSnap(docSnap) {
+        const d = docSnap.data();
+        const id = docSnap.id;
+        const pasta = String(d.pasta || '');
+        const arquivo = d.arquivo || '';
+        if (arquivo) window._documentosPessoaisArquivoCache[id] = arquivo;
+        return {
+            id,
+            nome: d.nome || '',
+            mime: d.mime || '',
+            thumb: d.thumb || '',
+            storage_path: d.storage_path || '',
+            data_vencimento: d.data_vencimento || '',
+            data_vencimento_ts: d.data_vencimento_ts != null ? d.data_vencimento_ts : null,
+            data_cadastro: d.data_cadastro || '',
+            pasta,
+            tem_arquivo: Boolean(arquivo)
+        };
+    }
+
+    async function fetchDocumentosPessoaisEmpresa(empresaId, opts) {
+        const force = opts && opts.force;
+        const agora = Date.now();
+        const cacheValido = !force
+            && window._documentosEmpresaFetchEmpresa === empresaId
+            && window._documentosEmpresaFetchPromise
+            && window._documentosEmpresaFetchTs
+            && (agora - window._documentosEmpresaFetchTs < 300000);
+
+        if (cacheValido) {
+            return window._documentosEmpresaFetchPromise;
+        }
+
+        if (!force
+            && window._documentosEmpresaFetchPromise
+            && window._documentosEmpresaFetchEmpresa === empresaId
+            && !window._documentosEmpresaFetchTs) {
+            return window._documentosEmpresaFetchPromise;
+        }
+
+        window._documentosEmpresaFetchEmpresa = empresaId;
+        window._documentosEmpresaFetchTs = 0;
+        window._documentosPessoaisArquivoCache = {};
+        const byPasta = {};
+        PASTAS_DOCUMENTOS.forEach((p) => { byPasta[p] = []; });
+
+        window._documentosEmpresaFetchPromise = (async () => {
+            await ensureAuth();
+            const q = query(collection(db, COLECAO_DOCUMENTOS_PESSOAIS), where('empresa_id', '==', empresaId));
+            const snap = await getDocs(q);
+            const todosMeta = [];
+            snap.forEach((docSnap) => {
+                const meta = metaDocumentoPessoalFromSnap(docSnap);
+                todosMeta.push(meta);
+                if (byPasta[meta.pasta]) byPasta[meta.pasta].push(meta);
+            });
+            PASTAS_DOCUMENTOS.forEach((p) => {
+                byPasta[p].sort((a, b) => String(b.data_cadastro || '').localeCompare(String(a.data_cadastro || '')));
+                window._documentosPessoaisCache[p] = byPasta[p];
+            });
+            window._documentosEmpresaFetchTs = Date.now();
+            return { byPasta, todosMeta };
+        })();
+
+        return window._documentosEmpresaFetchPromise;
+    }
+
+    async function obterDocumentoPessoalCompleto(id, pasta) {
+        const meta = buscarDocumentoPessoalCache(id, pasta);
+        let arquivo = window._documentosPessoaisArquivoCache[id];
+        if (meta && arquivo) return Object.assign({}, meta, { arquivo });
+
+        try {
+            await ensureAuth();
+            const snap = await getDoc(doc(db, COLECAO_DOCUMENTOS_PESSOAIS, id));
+            if (!snap.exists()) return null;
+            const d = snap.data();
+            arquivo = d.arquivo || '';
+            if (arquivo) window._documentosPessoaisArquivoCache[id] = arquivo;
+            return {
+                id: snap.id,
+                nome: d.nome || '',
+                arquivo,
+                mime: d.mime || '',
+                thumb: d.thumb || '',
+                pasta: d.pasta || pasta || '',
+                data_vencimento: d.data_vencimento || '',
+                data_vencimento_ts: d.data_vencimento_ts != null ? d.data_vencimento_ts : null,
+                data_cadastro: d.data_cadastro || '',
+                tem_arquivo: Boolean(arquivo)
+            };
+        } catch (e) {
+            console.error(e);
+            return null;
+        }
+    }
+
+    window.obterDocumentoPessoalCompleto = obterDocumentoPessoalCompleto;
 
     function formatarTamanhoArquivo(bytes) {
         const n = Number(bytes) || 0;
@@ -5274,6 +5388,32 @@ function separarDataSegura(dataString) {
                 resolve(canvas.toDataURL('image/jpeg', 0.72));
             };
             img.onerror = () => reject(new Error('imagem'));
+            img.src = dataUrl;
+        });
+    }
+
+    function gerarThumbDocumentoPessoal(dataUrl) {
+        return new Promise((resolve) => {
+            if (!dataUrl || String(dataUrl).startsWith('data:application/pdf')) {
+                resolve('');
+                return;
+            }
+            const img = new Image();
+            img.onload = function () {
+                const canvas = document.createElement('canvas');
+                const MAX_WIDTH = 120;
+                let width = img.width;
+                let height = img.height;
+                if (width > MAX_WIDTH) {
+                    height = Math.round(height * (MAX_WIDTH / width));
+                    width = MAX_WIDTH;
+                }
+                canvas.width = width;
+                canvas.height = height;
+                canvas.getContext('2d').drawImage(img, 0, 0, width, height);
+                resolve(canvas.toDataURL('image/jpeg', 0.55));
+            };
+            img.onerror = () => resolve('');
             img.src = dataUrl;
         });
     }
@@ -5393,9 +5533,14 @@ function separarDataSegura(dataString) {
         let html = '<div class="doc-lista-grid">';
         itens.forEach((doc) => {
             const ehPdf = documentoPessoalEhPdf(doc);
-            const thumb = ehPdf
-                ? '<div class="doc-card-thumb-pdf">📄</div>'
-                : '<img src="' + escapeAttrBasico(doc.arquivo) + '" alt="' + escapeAttrBasico(doc.nome) + '">';
+            let thumb;
+            if (ehPdf) {
+                thumb = '<div class="doc-card-thumb-pdf">📄</div>';
+            } else if (doc.thumb) {
+                thumb = '<img src="' + escapeAttrBasico(doc.thumb) + '" alt="' + escapeAttrBasico(doc.nome) + '" loading="lazy" decoding="async">';
+            } else {
+                thumb = '<div class="doc-card-thumb-pdf" style="background:#eef2f7;color:#5a6a7a;font-size:28px;">🖼️</div>';
+            }
             html += ''
                 + '<div class="doc-card">'
                 + '<div class="doc-card-thumb" onclick="visualizarDocumentoPessoal(\'' + doc.id + '\', \'' + pasta + '\')" title="Clique para ampliar">' + thumb + '</div>'
@@ -5423,29 +5568,18 @@ function separarDataSegura(dataString) {
             if (wrap) wrap.innerHTML = '<p style="text-align:center;color:#d9534f;">Entre como gestor para ver os documentos.</p>';
             return;
         }
+        const cacheLocal = window._documentosPessoaisCache[pasta];
+        const cacheEmpresaOk = window._documentosEmpresaFetchEmpresa === empresaLogada
+            && window._documentosEmpresaFetchTs
+            && (Date.now() - window._documentosEmpresaFetchTs < 300000);
+        if (cacheEmpresaOk && Array.isArray(cacheLocal)) {
+            renderizarListaDocumentosPessoais(pasta, cacheLocal);
+            return;
+        }
         if (wrap) wrap.innerHTML = '<p style="text-align:center;color:#888;">Carregando documentos...</p>';
         try {
-            await ensureAuth();
-            const q = query(collection(db, COLECAO_DOCUMENTOS_PESSOAIS), where('empresa_id', '==', empresaLogada));
-            const snap = await getDocs(q);
-            const itens = [];
-            snap.forEach((docSnap) => {
-                const d = docSnap.data();
-                if (String(d.pasta || '') !== pasta) return;
-                itens.push({
-                    id: docSnap.id,
-                    nome: d.nome || '',
-                    arquivo: d.arquivo || '',
-                    mime: d.mime || '',
-                    storage_path: d.storage_path || '',
-                    data_vencimento: d.data_vencimento || '',
-                    data_vencimento_ts: d.data_vencimento_ts != null ? d.data_vencimento_ts : null,
-                    data_cadastro: d.data_cadastro || '',
-                    pasta: d.pasta || pasta
-                });
-            });
-            itens.sort((a, b) => String(b.data_cadastro || '').localeCompare(String(a.data_cadastro || '')));
-            window._documentosPessoaisCache[pasta] = itens;
+            const resultado = await fetchDocumentosPessoaisEmpresa(empresaLogada);
+            const itens = (resultado.byPasta && resultado.byPasta[pasta]) || [];
             renderizarListaDocumentosPessoais(pasta, itens);
         } catch (e) {
             console.error(e);
@@ -5495,12 +5629,18 @@ function separarDataSegura(dataString) {
                 docPayload.data_vencimento = vencimento;
                 docPayload.data_vencimento_ts = parseDataVencimentoParaTimestamp(vencimento);
             }
+            if (mime !== 'application/pdf' && arquivo && !arquivo.startsWith('data:application/pdf')) {
+                const thumb = await gerarThumbDocumentoPessoal(arquivo);
+                if (thumb) docPayload.thumb = thumb;
+            }
 
             await promiseComTimeout(
                 addDoc(collection(db, COLECAO_DOCUMENTOS_PESSOAIS), docPayload),
                 30000,
                 'timeout_firestore'
             );
+
+            invalidarCacheDocumentosPessoaisEmpresa();
 
             sucesso = true;
         } catch (e) {
@@ -5537,8 +5677,10 @@ function separarDataSegura(dataString) {
         }
     };
 
-    window.visualizarDocumentoPessoal = function (id, pasta) {
-        const item = buscarDocumentoPessoalCache(id, pasta);
+    window.visualizarDocumentoPessoal = async function (id, pasta) {
+        Swal.fire({ title: 'Abrindo documento...', allowOutsideClick: false, showConfirmButton: false, didOpen: () => Swal.showLoading() });
+        const item = await obterDocumentoPessoalCompleto(id, pasta);
+        fecharLoadingDocumentoPessoal();
         const url = urlArquivoDocumentoPessoal(item);
         if (!item || !url) return Swal.fire('Atenção', 'Documento não encontrado.', 'warning');
         if (documentoPessoalEhPdf(item)) {
@@ -5552,7 +5694,7 @@ function separarDataSegura(dataString) {
     };
 
     window.exportarDocumentoPessoal = async function (id, pasta) {
-        const item = buscarDocumentoPessoalCache(id, pasta);
+        const item = await obterDocumentoPessoalCompleto(id, pasta);
         if (!item || !urlArquivoDocumentoPessoal(item)) return Swal.fire('Atenção', 'Documento não encontrado.', 'warning');
         try {
             await baixarArquivoDocumentoPessoal(item, item.nome);
@@ -5563,8 +5705,10 @@ function separarDataSegura(dataString) {
         }
     };
 
-    window.imprimirDocumentoPessoal = function (id, pasta) {
-        const item = buscarDocumentoPessoalCache(id, pasta);
+    window.imprimirDocumentoPessoal = async function (id, pasta) {
+        Swal.fire({ title: 'Preparando impressão...', allowOutsideClick: false, showConfirmButton: false, didOpen: () => Swal.showLoading() });
+        const item = await obterDocumentoPessoalCompleto(id, pasta);
+        fecharLoadingDocumentoPessoal();
         const url = urlArquivoDocumentoPessoal(item);
         if (!item || !url) return Swal.fire('Atenção', 'Documento não encontrado.', 'warning');
         const ehPdf = documentoPessoalEhPdf(item);
@@ -5594,6 +5738,7 @@ function separarDataSegura(dataString) {
         try {
             Swal.fire({ title: 'Excluindo...', allowOutsideClick: false, didOpen: () => Swal.showLoading() });
             await deleteDoc(doc(db, COLECAO_DOCUMENTOS_PESSOAIS, id));
+            invalidarCacheDocumentosPessoaisEmpresa();
             Swal.close();
             Swal.fire({ toast: true, position: 'top-end', icon: 'success', title: 'Documento excluído', showConfirmButton: false, timer: 2000 });
             await carregarDocumentosPessoais(pasta);
@@ -7680,44 +7825,41 @@ window.carregarFiltrosDespesas = async function() {
         });
     };
 
-    window.exportarPDFRelatorioGeralObras = async function () {
-        const pack = window._relGeralObrasExport;
-        if (!pack) {
-            return Swal.fire('Atenção', 'Carregue o relatório geral primeiro (Atualizar Relatório Geral).', 'warning');
-        }
-
+    async function perguntarOpcoesExportRelGeralObras(pack, config) {
+        const cfg = config || {};
+        const prefix = cfg.prefix || 'rel-geral-export';
         const cntVenc = (pack.vencidas || []).length;
         const cntAvencer = (pack.aVencer || []).length;
         const cntPagos = (pack.pagasForn || []).length + (pack.terceiros || []).length;
 
         const result = await Swal.fire({
-            title: '🖨️ Exportar espelho PDF',
+            title: cfg.titulo || 'Exportar espelho',
             html: ''
-                + '<p style="font-size:13px;margin:0 0 14px 0;color:#555;text-align:left;">Marque o que deseja incluir no PDF para imprimir:</p>'
+                + '<p style="font-size:13px;margin:0 0 14px 0;color:#555;text-align:left;">' + (cfg.textoIntro || 'Marque o que deseja incluir no espelho:') + '</p>'
                 + '<label style="display:flex;align-items:flex-start;gap:10px;margin:10px 0;padding:10px;border:1px solid #f5c6cb;border-radius:8px;background:#fff5f5;cursor:pointer;text-align:left;">'
-                + '<input type="checkbox" id="pdf-rel-vencido" checked style="width:18px;height:18px;margin-top:2px;flex-shrink:0;">'
+                + '<input type="checkbox" id="' + prefix + '-vencido" checked style="width:18px;height:18px;margin-top:2px;flex-shrink:0;">'
                 + '<span><b style="color:#dc3545;">🔴 VENCIDO</b><br><span style="font-size:12px;color:#666;">' + cntVenc + ' item(ns) · ' + formatarMoeda(pack.somaVencidas) + '</span></span>'
                 + '</label>'
                 + '<label style="display:flex;align-items:flex-start;gap:10px;margin:10px 0;padding:10px;border:1px solid #ffeeba;border-radius:8px;background:#fffdf5;cursor:pointer;text-align:left;">'
-                + '<input type="checkbox" id="pdf-rel-avencer" checked style="width:18px;height:18px;margin-top:2px;flex-shrink:0;">'
+                + '<input type="checkbox" id="' + prefix + '-avencer" checked style="width:18px;height:18px;margin-top:2px;flex-shrink:0;">'
                 + '<span><b style="color:#856404;">🟡 A VENCER</b><br><span style="font-size:12px;color:#666;">' + cntAvencer + ' item(ns) · ' + formatarMoeda(pack.somaAVencer) + '</span></span>'
                 + '</label>'
                 + '<label style="display:flex;align-items:flex-start;gap:10px;margin:10px 0;padding:10px;border:1px solid #c3e6cb;border-radius:8px;background:#f4fdf6;cursor:pointer;text-align:left;">'
-                + '<input type="checkbox" id="pdf-rel-pagos" checked style="width:18px;height:18px;margin-top:2px;flex-shrink:0;">'
+                + '<input type="checkbox" id="' + prefix + '-pagos" checked style="width:18px;height:18px;margin-top:2px;flex-shrink:0;">'
                 + '<span><b style="color:#28a745;">🟢 PAGOS</b> <span style="font-size:11px;color:#888;">(fornecedores + terceiros)</span><br>'
                 + '<span style="font-size:12px;color:#666;">' + cntPagos + ' item(ns) · ' + formatarMoeda(pack.somaPagas) + '</span></span>'
                 + '</label>',
             showCancelButton: true,
-            confirmButtonText: 'Gerar PDF',
+            confirmButtonText: cfg.botaoConfirmar || 'Exportar',
             cancelButtonText: 'Cancelar',
-            confirmButtonColor: '#1a2a43',
+            confirmButtonColor: cfg.corConfirmar || '#1a2a43',
             cancelButtonColor: '#6c757d',
             focusConfirm: false,
             preConfirm: () => {
                 const opcoes = {
-                    vencido: !!document.getElementById('pdf-rel-vencido')?.checked,
-                    aVencer: !!document.getElementById('pdf-rel-avencer')?.checked,
-                    pagos: !!document.getElementById('pdf-rel-pagos')?.checked
+                    vencido: !!document.getElementById(prefix + '-vencido')?.checked,
+                    aVencer: !!document.getElementById(prefix + '-avencer')?.checked,
+                    pagos: !!document.getElementById(prefix + '-pagos')?.checked
                 };
                 if (!opcoes.vencido && !opcoes.aVencer && !opcoes.pagos) {
                     Swal.showValidationMessage('Selecione pelo menos uma opção (Vencido, A vencer ou Pagos).');
@@ -7727,8 +7869,181 @@ window.carregarFiltrosDespesas = async function() {
             }
         });
 
-        if (!result.isConfirmed || !result.value) return;
-        gerarPdfRelGeralObrasEspelho(pack, result.value);
+        if (!result.isConfirmed || !result.value) return null;
+        return result.value;
+    }
+
+    function sufixoArquivoExportRelGeralObras(opcoes) {
+        const sufixos = [];
+        if (opcoes.vencido) sufixos.push('vencido');
+        if (opcoes.aVencer) sufixos.push('a_vencer');
+        if (opcoes.pagos) sufixos.push('pagos');
+        return sufixos.length ? '_' + sufixos.join('_') : '';
+    }
+
+    function linhaExcelDespesaRelGeralObra(d, situacao) {
+        const valorNum = Number(d.valor_numero != null ? d.valor_numero : (parseMoedaLocal(d.valor_string) || 0));
+        return {
+            'Situação': situacao,
+            'Tipo': 'Fornecedor',
+            'Obra': d.obra_nome || '',
+            'Fornecedor / Profissional': d.loja_nome || '',
+            'NF / Referência': d.nota_fiscal || refChequeBoletoDesp(d) || '',
+            'Vencimento': formatarVencimentoDespesaExibir(d),
+            'Data pagamento': d.data_pagamento || '',
+            'Data lançamento': d.data || '',
+            'Valor (R$)': valorNum,
+            'Descrição': d.descricao || '',
+            'CPF': '',
+            'Telefone': ''
+        };
+    }
+
+    function linhaExcelTerceiroRelGeralObra(d) {
+        const valorNum = Number(d.valor_numero != null ? d.valor_numero : (parseMoedaLocal(d.valor_string) || 0));
+        return {
+            'Situação': 'PAGO',
+            'Tipo': 'Terceiro',
+            'Obra': d.obra || '',
+            'Fornecedor / Profissional': d.nome || '',
+            'NF / Referência': '',
+            'Vencimento': '',
+            'Data pagamento': d.data || '',
+            'Data lançamento': '',
+            'Valor (R$)': valorNum,
+            'Descrição': d.descricao || '',
+            'CPF': d.cpf || '',
+            'Telefone': d.tel || ''
+        };
+    }
+
+    function montarLinhasExcelRelGeralObras(pack, opcoes) {
+        const linhas = [];
+        if (opcoes.vencido) {
+            (pack.vencidas || []).forEach((d) => linhas.push(linhaExcelDespesaRelGeralObra(d, 'VENCIDO')));
+        }
+        if (opcoes.aVencer) {
+            (pack.aVencer || []).forEach((d) => linhas.push(linhaExcelDespesaRelGeralObra(d, 'A VENCER')));
+        }
+        if (opcoes.pagos) {
+            (pack.pagasForn || []).forEach((d) => linhas.push(linhaExcelDespesaRelGeralObra(d, 'PAGO')));
+            (pack.terceiros || []).forEach((d) => linhas.push(linhaExcelTerceiroRelGeralObra(d)));
+        }
+        return linhas;
+    }
+
+    function gerarExcelRelGeralObrasEspelho(pack, opcoes) {
+        if (!window.XLSX) {
+            return Swal.fire('Erro', 'Biblioteca Excel não carregou. Recarregue a página (Ctrl+F5).', 'error');
+        }
+
+        const linhas = montarLinhasExcelRelGeralObras(pack, opcoes);
+        if (!linhas.length) {
+            return Swal.fire('Aviso', 'Não há registros nas opções selecionadas para exportar.', 'info');
+        }
+
+        const emp = String(pack.empresa || getEmpresaGestor() || 'Empresa').trim();
+        const totalSelecionado = (opcoes.vencido ? pack.somaVencidas : 0)
+            + (opcoes.aVencer ? pack.somaAVencer : 0)
+            + (opcoes.pagos ? pack.somaPagas : 0);
+
+        const ws = XLSX.utils.json_to_sheet(linhas);
+        const colunas = Object.keys(linhas[0]);
+        ws['!cols'] = [
+            { wch: 12 },
+            { wch: 12 },
+            { wch: 28 },
+            { wch: 28 },
+            { wch: 20 },
+            { wch: 14 },
+            { wch: 14 },
+            { wch: 14 },
+            { wch: 14 },
+            { wch: 40 },
+            { wch: 16 },
+            { wch: 16 }
+        ];
+
+        const range = XLSX.utils.decode_range(ws['!ref']);
+        const idxValor = colunas.indexOf('Valor (R$)');
+        if (idxValor >= 0) {
+            for (let r = range.s.r + 1; r <= range.e.r; r += 1) {
+                const addr = XLSX.utils.encode_cell({ r, c: idxValor });
+                if (ws[addr] && typeof ws[addr].v === 'number') {
+                    ws[addr].t = 'n';
+                    ws[addr].z = '#,##0.00';
+                }
+            }
+        }
+
+        const linhaTotal = range.e.r + 2;
+        const addrLabel = XLSX.utils.encode_cell({ r: linhaTotal, c: Math.max(0, idxValor - 1) });
+        const addrTotal = XLSX.utils.encode_cell({ r: linhaTotal, c: idxValor });
+        ws[addrLabel] = { t: 's', v: 'TOTAL EXPORTADO (R$)' };
+        ws[addrTotal] = { t: 'n', v: totalSelecionado, z: '#,##0.00' };
+        const novoFim = XLSX.utils.encode_cell({ r: linhaTotal, c: range.e.c });
+        ws['!ref'] = ws['!ref'].split(':')[0] + ':' + novoFim;
+        ws['!autofilter'] = { ref: XLSX.utils.encode_range({ s: { r: 0, c: 0 }, e: { r: range.e.r, c: range.e.c } }) };
+
+        const wb = XLSX.utils.book_new();
+        XLSX.utils.book_append_sheet(wb, ws, 'Espelho Obras');
+
+        const resumo = [{
+            'Empresa': emp,
+            'Gerado em': new Date().toLocaleString('pt-BR'),
+            'Vencido (R$)': opcoes.vencido ? Number(pack.somaVencidas || 0) : 0,
+            'A vencer (R$)': opcoes.aVencer ? Number(pack.somaAVencer || 0) : 0,
+            'Pagos (R$)': opcoes.pagos ? Number(pack.somaPagas || 0) : 0,
+            'Total exportado (R$)': totalSelecionado
+        }];
+        const wsResumo = XLSX.utils.json_to_sheet(resumo);
+        wsResumo['!cols'] = [{ wch: 28 }, { wch: 22 }, { wch: 16 }, { wch: 16 }, { wch: 16 }, { wch: 20 }];
+        XLSX.utils.book_append_sheet(wb, wsResumo, 'Resumo');
+
+        const sufixoArquivo = sufixoArquivoExportRelGeralObras(opcoes);
+        XLSX.writeFile(wb, nomeArquivoExcelSeguro('espelho_relatorio_geral_obras' + sufixoArquivo + '_' + emp) + '.xlsx');
+
+        Swal.fire({
+            toast: true,
+            position: 'top-end',
+            icon: 'success',
+            title: 'Excel exportado com sucesso!',
+            showConfirmButton: false,
+            timer: 2500
+        });
+    }
+
+    window.exportarPDFRelatorioGeralObras = async function () {
+        const pack = window._relGeralObrasExport;
+        if (!pack) {
+            return Swal.fire('Atenção', 'Carregue o relatório geral primeiro (Atualizar Relatório Geral).', 'warning');
+        }
+
+        const opcoes = await perguntarOpcoesExportRelGeralObras(pack, {
+            prefix: 'pdf-rel',
+            titulo: '🖨️ Exportar espelho PDF',
+            textoIntro: 'Marque o que deseja incluir no PDF para imprimir:',
+            botaoConfirmar: 'Gerar PDF'
+        });
+        if (!opcoes) return;
+        gerarPdfRelGeralObrasEspelho(pack, opcoes);
+    };
+
+    window.exportarExcelRelatorioGeralObras = async function () {
+        const pack = window._relGeralObrasExport;
+        if (!pack) {
+            return Swal.fire('Atenção', 'Carregue o relatório geral primeiro (Atualizar Relatório Geral).', 'warning');
+        }
+
+        const opcoes = await perguntarOpcoesExportRelGeralObras(pack, {
+            prefix: 'xls-rel',
+            titulo: '📊 Exportar espelho Excel',
+            textoIntro: 'Marque o que deseja incluir na planilha:',
+            botaoConfirmar: 'Gerar Excel',
+            corConfirmar: '#217346'
+        });
+        if (!opcoes) return;
+        gerarExcelRelGeralObrasEspelho(pack, opcoes);
     };
 
     function gerarPdfRelGeralObrasEspelho(pack, opcoes) {
@@ -7866,11 +8181,7 @@ window.carregarFiltrosDespesas = async function() {
             return Swal.fire('Aviso', 'Não há registros nas opções selecionadas para exportar.', 'info');
         }
 
-        const sufixos = [];
-        if (opcoes.vencido) sufixos.push('vencido');
-        if (opcoes.aVencer) sufixos.push('a_vencer');
-        if (opcoes.pagos) sufixos.push('pagos');
-        const sufixoArquivo = sufixos.length ? '_' + sufixos.join('_') : '';
+        const sufixoArquivo = sufixoArquivoExportRelGeralObras(opcoes);
 
         doc.save('espelho_relatorio_geral_obras' + sufixoArquivo + '_' + emp.replace(/\s+/g, '_') + '.pdf');
     };
@@ -13678,8 +13989,8 @@ async function monitorarVencimentosDocumentos() {
 
     try {
         window._mapAlertasDocumentos = {};
-        const q = query(collection(db, COLECAO_DOCUMENTOS_PESSOAIS), where("empresa_id", "==", empresaGestor));
-        const querySnapshot = await getDocs(q);
+        const resultado = await fetchDocumentosPessoaisEmpresa(empresaGestor);
+        const todosMeta = (resultado && resultado.todosMeta) || [];
 
         const dataHojeReal = new Date();
         const hojeFormatado = dataHojeReal.toISOString().substring(0, 10);
@@ -13689,9 +14000,8 @@ async function monitorarVencimentosDocumentos() {
         const filaAlertas = [];
         let emitirSom = false;
 
-        querySnapshot.forEach((docSnap) => {
-            const dados = docSnap.data();
-            const idDoc = docSnap.id;
+        todosMeta.forEach((dados) => {
+            const idDoc = dados.id;
             const tsVenc = tsVencimentoDocumentoPessoal(dados);
             if (tsVenc == null) return;
 
@@ -13722,7 +14032,7 @@ async function monitorarVencimentosDocumentos() {
                     const pastaLabel = PASTA_LABEL_DOCUMENTOS[pasta] || pasta.toUpperCase() || "—";
                     const nomeDoc = dados.nome || "Documento";
                     const vencAlerta = formatarVencimentoDocExibir(dados);
-                    const temArquivo = Boolean(dados.arquivo);
+                    const temArquivo = Boolean(dados.tem_arquivo);
                     window._mapAlertasDocumentos[idDoc] = Object.assign({ id: idDoc }, dados);
                     filaAlertas.push({
                         ts: tsVenc,
@@ -13848,10 +14158,18 @@ window.imprimirRelatorioAlertasDocumentos = function () {
     }
 };
 
-window.visualizarDocumentoAlertaCertidao = function (idDoc) {
-    const d = window._mapAlertasDocumentos && window._mapAlertasDocumentos[idDoc];
+window.visualizarDocumentoAlertaCertidao = async function (idDoc) {
+    const meta = window._mapAlertasDocumentos && window._mapAlertasDocumentos[idDoc];
+    if (!meta) return Swal.fire('Aviso', 'Documento não encontrado.', 'warning');
+    Swal.fire({ title: 'Abrindo documento...', allowOutsideClick: false, showConfirmButton: false, didOpen: () => Swal.showLoading() });
+    const obter = typeof window.obterDocumentoPessoalCompleto === 'function'
+        ? window.obterDocumentoPessoalCompleto
+        : null;
+    const d = obter ? await obter(idDoc, meta.pasta) : null;
+    try {
+        if (typeof Swal !== 'undefined' && Swal.isVisible()) Swal.close();
+    } catch (_) {}
     if (!d || !d.arquivo) return Swal.fire('Aviso', 'Documento não encontrado.', 'warning');
-    const pasta = PASTA_LABEL_DOCUMENTOS[d.pasta] || String(d.pasta || '').toUpperCase();
     if (documentoPessoalEhPdf(d)) {
         const w = window.open('', '_blank');
         if (!w) return Swal.fire('Atenção', 'Permita pop-ups para visualizar o PDF.', 'warning');
