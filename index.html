@@ -3795,6 +3795,9 @@
     // Sessão independente por aba/janela (sessionStorage não é compartilhado entre tabs)
     const SESSAO_GESTOR_KEY = 'empresaGestor';
     const SESSAO_FUNC_KEYS = ['funcLogadoId', 'funcLogadoNome', 'funcLogadoEmpresa', 'empresaTemporariaFuncionario'];
+    // Login do FUNCIONÁRIO deve permanecer salvo mesmo após fechar o app/navegador
+    // (evita pedir CPF e senha a cada batida de ponto). Fica no localStorage.
+    const SESSAO_FUNC_PERSISTENTE = ['funcLogadoId', 'funcLogadoNome', 'funcLogadoEmpresa'];
 
     function limparChaveSessaoLegadoLocalStorage(chave) {
         try { localStorage.removeItem(chave); } catch (_) {}
@@ -3832,6 +3835,24 @@
     }
 
     function getSessaoFunc(chave) {
+        // Chaves persistentes do funcionário ficam no localStorage (login permanente)
+        if (SESSAO_FUNC_PERSISTENTE.includes(chave)) {
+            try {
+                let v = localStorage.getItem(chave);
+                if (!v) {
+                    // Migra sessão antiga que ficou no sessionStorage
+                    const legado = sessionStorage.getItem(chave);
+                    if (legado) {
+                        localStorage.setItem(chave, legado);
+                        try { sessionStorage.removeItem(chave); } catch (_) {}
+                        v = legado;
+                    }
+                }
+                return v;
+            } catch (_) {
+                return localStorage.getItem(chave);
+            }
+        }
         try {
             let v = sessionStorage.getItem(chave);
             if (!v && SESSAO_FUNC_KEYS.includes(chave)) {
@@ -3849,6 +3870,16 @@
     }
 
     function setSessaoFunc(chave, valor) {
+        // Login permanente do funcionário: grava no localStorage
+        if (SESSAO_FUNC_PERSISTENTE.includes(chave)) {
+            try {
+                localStorage.setItem(chave, valor);
+                try { sessionStorage.removeItem(chave); } catch (_) {}
+            } catch (_) {
+                try { sessionStorage.setItem(chave, valor); } catch (__) {}
+            }
+            return;
+        }
         try {
             sessionStorage.setItem(chave, valor);
             if (SESSAO_FUNC_KEYS.includes(chave)) limparChaveSessaoLegadoLocalStorage(chave);
