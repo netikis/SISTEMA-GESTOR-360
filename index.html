@@ -2742,6 +2742,13 @@
             <option value="mensal">Mensal (CLT) — salário do mês + DSR; desconto por falta</option>
             <option value="ponto">Por ponto — só paga dias com registro de batida</option>
         </select>
+        <label style="display:flex;align-items:center;gap:10px;margin:6px 0 12px 0;padding:10px;border:1px solid #e0e6ed;border-radius:10px;background:#fafcff;cursor:pointer;">
+            <input type="checkbox" id="c-descontar-inss" style="width:18px;height:18px;">
+            <span style="font-size:13px;color:#333;">
+                <b>Descontar INSS automaticamente (CLT)</b><br>
+                <span style="font-size:12px;color:#666;">Calcula pela tabela progressiva (competência 01/2026) e inclui no líquido.</span>
+            </span>
+        </label>
         <p class="texto-explicacao" style="margin: 0 0 12px 0;">
             <b>Mensal:</b> domingos, feriados e sábados sem escala entram no salário (DSR). Falta = dia útil/sábado de escala sem ponto.<br>
             <b>Por ponto:</b> salário ÷ <b>dias a trabalhar no mês</b>; dia útil/sábado de escala <b>sem ponto = falta</b> (desconto de 1 dia).
@@ -4757,6 +4764,42 @@ function separarDataSegura(dataString) {
         if (!a || !b) return false;
         return a.toLowerCase() === b.toLowerCase();
     }
+
+    function normalizarTextoSemAcentoLower(s) {
+        return String(s || '')
+            .trim()
+            .toLowerCase()
+            .normalize('NFD')
+            .replace(/[\u0300-\u036f]/g, '');
+    }
+
+    // INSS (empregado CLT) — Tabela progressiva válida a partir da competência JAN/2026
+    // Fonte: https://www.gov.br/inss/.../tabela-de-contribuicao-mensal (Atualizado em 13/01/2026)
+    const TABELA_INSS_EMPREGADO_2026 = [
+        { ate: 1621.00, aliquota: 0.075 },
+        { ate: 2902.84, aliquota: 0.09 },
+        { ate: 4354.27, aliquota: 0.12 },
+        { ate: 8475.55, aliquota: 0.14 }
+    ];
+
+    function calcularInssEmpregado2026(salarioContribuicao) {
+        const base = Math.max(0, Number(salarioContribuicao) || 0);
+        if (!base) return 0;
+        let restante = Math.min(base, TABELA_INSS_EMPREGADO_2026[TABELA_INSS_EMPREGADO_2026.length - 1].ate);
+        let anterior = 0;
+        let total = 0;
+        for (const fx of TABELA_INSS_EMPREGADO_2026) {
+            if (restante <= 0) break;
+            const teto = fx.ate;
+            const faixaValor = Math.max(0, Math.min(restante, teto) - anterior);
+            if (faixaValor > 0) total += faixaValor * fx.aliquota;
+            anterior = teto;
+        }
+        // Arredondamento padrão a centavos
+        return Math.round(total * 100) / 100;
+    }
+
+    window.calcularInssEmpregado2026 = calcularInssEmpregado2026;
 
     function timestampMeioDiaDataIso(ymd) {
         const p = String(ymd || '').split('-');
@@ -10344,6 +10387,12 @@ window.gerarFolhaPagamento = async function() {
                 console.warn('Descontos folha:', eDf);
             }
 
+            // INSS automático (CLT): calcula pela tabela progressiva vigente e injeta como desconto do mês
+            // Só aplica se o funcionário estiver marcado com a opção de INSS automático e se ainda não houver INSS lançado manualmente.
+            const deveInssAuto = normalizarTipoRemuneracao(funcionario.tipo_remuneracao) === 'mensal' && funcionario.descontar_inss === true;
+            const jaTemInssLancado = itensDescontosFolha.some((it) => normalizarTextoSemAcentoLower(it.tipo_desconto).includes('inss'));
+            let inssAutoValor = 0;
+
             // 2. BUSCA DE PONTOS (ignora registros cancelados por evento de auditoria)
             const qPonto = query(collection(db, "ponto_registros"), where("funcionario_id", "==", funcId));
             const pontoSnap = await getDocs(qPonto);
@@ -10821,6 +10870,24 @@ window.gerarFolhaPagamento = async function() {
                     salarioProporcional = Math.min(salarioBase, salarioProporcional);
                 }
                 salarioProporcional = Math.max(0, salarioProporcional);
+            }
+
+            if (deveInssAuto && !jaTemInssLancado) {
+                // Base do INSS: salário do período + férias/1/3 + extras incluídas na folha.
+                // O cálculo só pode ocorrer depois que a base salarial final do mês já estiver definida.
+                const baseInss = Math.max(0, (salarioProporcional || 0) + (valorFeriasClt || 0) + (valorExtrasFolha || 0));
+                inssAutoValor = calcularInssEmpregado2026(baseInss);
+                if (inssAutoValor > 0) {
+                    totalDescontosLancados += inssAutoValor;
+                    itensDescontosFolha.push({
+                        id: 'auto_inss',
+                        tipo_desconto: 'INSS',
+                        observacao: 'Automático (tabela INSS 2026)',
+                        valor: inssAutoValor,
+                        valor_fmt: formatarMoeda(inssAutoValor)
+                    });
+                    itensDescontosFolha.sort((a, b) => String(a.tipo_desconto).localeCompare(String(b.tipo_desconto), 'pt-BR'));
+                }
             }
 
             const descontoFaltasNoLiquido = (tipoRemuneracao === 'mensal' && faltasInjustificadas > 0)
@@ -11337,6 +11404,7 @@ window.gerarFolhaPagamento = async function() {
         const dataInicioFerias = document.getElementById('c-data-inicio-ferias') ? document.getElementById('c-data-inicio-ferias').value : '';
         const feriasDiasCad = Number(document.getElementById('c-ferias-dias')?.value || 30);
         const tipoRemuneracaoCad = document.getElementById('c-tipo-remuneracao') ? document.getElementById('c-tipo-remuneracao').value : 'mensal';
+       const descontarInss = Boolean(document.getElementById('c-descontar-inss') && document.getElementById('c-descontar-inss').checked);
 
         if (!nome || !cpf) {
             return Swal.fire('Atenção', 'Preencha pelo menos o Nome e o CPF!', 'warning');
@@ -11363,6 +11431,7 @@ window.gerarFolhaPagamento = async function() {
                 data_inicio_ferias: dataInicioFerias || null,
                 ferias_dias: Number.isFinite(feriasDiasCad) ? Math.min(30, Math.max(1, feriasDiasCad)) : 30,
                 tipo_remuneracao: normalizarTipoRemuneracao(tipoRemuneracaoCad),
+                descontar_inss: descontarInss,
                 senha: "" // Senha vazia para ele criar no 1º acesso
             });
             
@@ -11381,6 +11450,7 @@ window.gerarFolhaPagamento = async function() {
             if (document.getElementById('c-data-inicio-ferias')) document.getElementById('c-data-inicio-ferias').value = '';
             if (document.getElementById('c-ferias-dias')) document.getElementById('c-ferias-dias').value = '30';
             if (document.getElementById('c-tipo-remuneracao')) document.getElementById('c-tipo-remuneracao').value = 'mensal';
+            if (document.getElementById('c-descontar-inss')) document.getElementById('c-descontar-inss').checked = false;
             
             // Recarrega a lista na hora
             await carregarListaDeFuncionarios();
@@ -11415,6 +11485,7 @@ window.gerarFolhaPagamento = async function() {
         const vFer = escapeHtmlBasico(parseDataIsoFuncionario(func.data_inicio_ferias) || '');
         const vFerDias = escapeHtmlBasico(String(func.ferias_dias ?? 30));
         const tipoRemEdit = normalizarTipoRemuneracao(func.tipo_remuneracao);
+        const descontarInssEdit = func.descontar_inss === true;
 
         Swal.fire({
             title: '✏️ Editar Funcionário',
@@ -11461,6 +11532,13 @@ window.gerarFolhaPagamento = async function() {
                         <option value="mensal" ${tipoRemEdit === 'mensal' ? 'selected' : ''}>Mensal (CLT)</option>
                         <option value="ponto" ${tipoRemEdit === 'ponto' ? 'selected' : ''}>Por ponto</option>
                     </select>
+                    <label style="display:flex;align-items:center;gap:10px;margin-top:10px;padding:10px;border:1px solid #e0e6ed;border-radius:10px;background:#fafcff;cursor:pointer;">
+                        <input type="checkbox" id="edit-f-descontar-inss" style="width:18px;height:18px;" ${descontarInssEdit ? 'checked' : ''}>
+                        <span style="font-size:13px;color:#333;">
+                            <b>Descontar INSS automaticamente (CLT)</b><br>
+                            <span style="font-size:12px;color:#666;">Tabela progressiva (competência 01/2026).</span>
+                        </span>
+                    </label>
 
                     <p style="margin:14px 0 6px 0;font-weight:700;color:#1a2a43;border-bottom:1px solid #eee;padding-bottom:4px;">Vínculo e férias</p>
                     <label style="margin-top: 8px;">Data de entrada (admissão)</label>
@@ -11493,7 +11571,8 @@ window.gerarFolhaPagamento = async function() {
                     data_demissao: document.getElementById('edit-f-demissao').value || null,
                     data_inicio_ferias: document.getElementById('edit-f-inicio-ferias').value || null,
                     ferias_dias: Number.isFinite(fd) ? Math.min(30, Math.max(1, fd)) : 30,
-                    tipo_remuneracao: normalizarTipoRemuneracao(document.getElementById('edit-f-tipo-remuneracao').value)
+                    tipo_remuneracao: normalizarTipoRemuneracao(document.getElementById('edit-f-tipo-remuneracao').value),
+                    descontar_inss: Boolean(document.getElementById('edit-f-descontar-inss') && document.getElementById('edit-f-descontar-inss').checked)
                 }
             }
         }).then(async (result) => {
