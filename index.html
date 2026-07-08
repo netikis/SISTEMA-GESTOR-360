@@ -3120,7 +3120,7 @@
                     <strong id="f-tipo-remuneracao-display">—</strong>
                 </div>
                 <div class="folha-linha acrescimo">
-                    <span>(+) Salário proporcional:</span>
+                    <span>(+) Salário do período:</span>
                     <strong id="f-salario-base">R$ 0,00</strong>
                 </div>
                 <p id="f-detalhe-salario-proporcional" class="folha-detalhe"></p>
@@ -10809,9 +10809,14 @@ window.gerarFolhaPagamento = async function() {
             let salarioBrutoPeriodoMensal = 0;
 
             if (tipoRemuneracao === 'mensal') {
-                diasPagosExibir = Math.max(0, diasPagos + diasDescansoIncluidosRef - dsrPerdidos);
-                salarioBrutoPeriodoMensal = valorDiaSalario * (diasPagos + diasDescansoIncluidosRef + faltasInjustificadas);
-                salarioProporcional = valorDiaSalario * diasPagosExibir;
+                // Base do salário do mês = dias úteis + descansos + faltas (reincorporadas).
+                // As faltas e o DSR perdido são descontados UMA única vez no líquido; por isso
+                // NÃO podem reduzir o salário aqui também (senão o desconto seria em dobro:
+                // uma vez no proporcional/base e outra no líquido).
+                const diasBaseSalarioMensal = diasPagos + diasDescansoIncluidosRef + faltasInjustificadas;
+                diasPagosExibir = Math.max(0, mesCheio ? Math.min(diasNoMesCalc, diasBaseSalarioMensal) : diasBaseSalarioMensal);
+                salarioBrutoPeriodoMensal = valorDiaSalario * diasBaseSalarioMensal;
+                salarioProporcional = salarioBrutoPeriodoMensal;
                 if (mesCheio) {
                     salarioProporcional = Math.min(salarioBase, salarioProporcional);
                 }
@@ -10886,7 +10891,7 @@ window.gerarFolhaPagamento = async function() {
             }
             if (elLabelDias) {
                 elLabelDias.innerText = tipoRemuneracao === 'mensal'
-                    ? 'Dias referência pagos (úteis + descansos − DSR perdido):'
+                    ? 'Dias base do salário (úteis + descansos + faltas):'
                     : 'Dias trabalhados (com batida de ponto):';
             }
             document.getElementById('f-dias-pagos').innerText = String(diasPagosExibir);
@@ -10916,13 +10921,13 @@ window.gerarFolhaPagamento = async function() {
                 if (tipoRemuneracao === 'mensal') {
                     if (mesCheio) {
                         detSal.innerHTML = `<b>Modo mensal CLT</b> — salário contrato ${formatarMoeda(salarioBase)} (÷ 30 = ${formatarMoeda(valorDiaSalario)}/dia).<br>
-                        <b>(+) Proporcional:</b> ${diasPagosExibir} dia(s) referência × ${formatarMoeda(valorDiaSalario)} = <b>${formatarMoeda(salarioProporcional)}</b><br>
-                        <span style="color:#666;">Composição: ${diasPagos} útil(is) c/ ponto + ${diasDescansoIncluidosRef} descanso(s) − ${dsrPerdidos} DSR perdido(s).</span><br>
-                        <b>(−) No líquido:</b> faltas ${formatarMoeda(valorDescontoFaltasLinha)} (${faltasInjustificadas} dia(s)) + DSR ${formatarMoeda(valorDescontoDsr)} (${dsrPerdidos} descanso(s)).`;
+                        <b>(+) Salário integral:</b> ${diasPagosExibir} dia(s) × ${formatarMoeda(valorDiaSalario)} = <b>${formatarMoeda(salarioProporcional)}</b><br>
+                        <span style="color:#666;">Composição: ${diasPagos} útil(is) c/ ponto + ${diasDescansoIncluidosRef} descanso(s) + ${faltasInjustificadas} falta(s) (reincorporadas na base).</span><br>
+                        <b>(−) Descontado só uma vez no líquido:</b> faltas ${formatarMoeda(valorDescontoFaltasLinha)} (${faltasInjustificadas} dia(s)) + DSR ${formatarMoeda(valorDescontoDsr)} (${dsrPerdidos} descanso(s)).`;
                     } else {
                         detSal.innerHTML = `<b>Modo mensal CLT</b> — mês parcial (admissão/desligamento).<br>
-                        <b>(+) Proporcional:</b> ${diasPagosExibir} dia(s) × ${formatarMoeda(valorDiaSalario)} = <b>${formatarMoeda(salarioProporcional)}</b>.<br>
-                        <b>(−) No líquido:</b> faltas ${formatarMoeda(valorDescontoFaltasLinha)} + DSR ${formatarMoeda(valorDescontoDsr)}.`;
+                        <b>(+) Salário do período:</b> ${diasPagosExibir} dia(s) × ${formatarMoeda(valorDiaSalario)} = <b>${formatarMoeda(salarioProporcional)}</b>.<br>
+                        <b>(−) Descontado só uma vez no líquido:</b> faltas ${formatarMoeda(valorDescontoFaltasLinha)} + DSR ${formatarMoeda(valorDescontoDsr)}.`;
                     }
                 } else {
                     const divP = diasDevidosNoMes > 0 ? diasDevidosNoMes : diasMesParaSalario;
@@ -11162,7 +11167,7 @@ window.gerarFolhaPagamento = async function() {
                 const subFaltas = (tipoRemuneracao === 'mensal' && faltasInjustificadas > 0) ? (' − ' + lblFaltasForm) : '';
                 const subDsr = dsrPerdidos > 0 ? (' − ' + lblDsrForm) : '';
                 let txtForm = `<b>Fórmula do líquido:</b><br>
-                ${formatarMoeda(salarioProporcional)} (proporcional) + ${formatarMoeda(valorFeriasClt)} (férias CLT) + ${lblExtrasForm}
+                ${formatarMoeda(salarioProporcional)} (salário integral) + ${formatarMoeda(valorFeriasClt)} (férias CLT) + ${lblExtrasForm}
                 − ${formatarMoeda(totalDinheiro)} (vales) − ${formatarMoeda(totalProduto)} (produtos)${subFaltas}${subDsr} − ${lblAtrasosForm}${totalDescontosLancados > 0 ? ' − ' + formatarMoeda(totalDescontosLancados) + ' (INSS/outros)' : ''}
                 = <b>${formatarMoeda(liquidoReceber)}</b>`;
                 if (nAjuda > 0) {
@@ -11225,7 +11230,7 @@ window.gerarFolhaPagamento = async function() {
                 ? (diasPagos + diasDescansoIncluidosRef + faltasInjustificadas)
                 : 0;
             const labelSalProp = tipoRemuneracao === 'mensal'
-                ? ('Salário proporcional CLT (' + diasPagosExibir + ' dias líquidos × ' + formatarMoeda(valorDiaSalario) + ')')
+                ? ('Salário mensal CLT (' + diasPagosExibir + ' dias × ' + formatarMoeda(valorDiaSalario) + ')')
                 : ('Salário por ponto (' + diasPagosExibir + ' dias × ' + formatarMoeda(valorDiaSalario) + ')');
             const usarSalarioBrutoHolerite = tipoRemuneracao === 'ponto';
             let valorProventoSalarioPdf = salarioProporcional;
