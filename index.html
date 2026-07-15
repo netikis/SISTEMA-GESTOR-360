@@ -2398,22 +2398,19 @@
             min-width: 0;
         }
 
-        #busca-obra-sugestoes {
-            display: none;
-            position: absolute;
-            left: 0;
-            right: 0;
-            top: calc(100% + 4px);
-            z-index: 1200;
-            max-height: 240px;
-            overflow-y: auto;
-            background: #fff;
-            border: 1px solid #c5d0de;
-            border-radius: 10px;
-            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
+        .busca-despesas-wrap.busca-cadastro-desp {
+            flex: none;
+            width: 100%;
+            margin-bottom: 0;
         }
 
-        #rel-desp-filtro-sugestoes {
+        #busca-obra-sugestoes,
+        #rel-desp-filtro-sugestoes,
+        #d-obra-sugestoes,
+        #d-loja-sugestoes,
+        #rd-obra-sugestoes,
+        #rd-loja-sugestoes,
+        #rel-nf-filtro-sugestoes {
             display: none;
             position: absolute;
             left: 0;
@@ -2853,7 +2850,7 @@
         <label>Consultar Ponto do Funcionário:</label>
         <p class="texto-explicacao" style="margin:4px 0 10px 0;">Os batimentos ficam na lista abaixo (nuvem: coleção <b>ponto_registros</b>). Um <b>cancelamento</b> só cola o aviso amarelo: o documento continua no mesmo sítio até o RH apagar com <b>APAGAR BATIDA</b> se quiser retirá-lo da base.</p>
         <p class="texto-explicacao" style="margin:0 0 10px 0;background:#fff5f5;border:1px solid #f5c6cb;border-radius:8px;padding:8px 10px;">
-            <b>Sequência do ponto:</b> Entrada → Início intervalo → Fim intervalo → Saída. Batidas fora de ordem aparecem em <b style="color:#b02a37;">vermelho</b> e geram alerta no canto da tela.
+            <b>Sequência do ponto:</b> Entrada → Início intervalo → Fim intervalo → Saída (apenas 1 de cada, nesta ordem). Batidas fora de ordem aparecem em <b style="color:#b02a37;">vermelho</b> e geram alerta no canto da tela.
         </p>
         <p class="texto-explicacao" style="margin:0 0 10px 0;background:#f8f9fa;border:1px solid #dee2e6;border-radius:8px;padding:8px 10px;">
             <b>Duplicados:</b> se o funcionário bater o mesmo tipo no <b>mesmo horário</b> mais de uma vez, só <b>uma</b> batida conta na folha. As repetidas aparecem como <b>DUPLICADO</b> — pode apagar com <b>APAGAR BATIDA (RH)</b>.
@@ -3283,7 +3280,10 @@
         <div style="display:flex;flex-wrap:wrap;gap:10px;align-items:flex-end;margin-top:12px;">
             <div style="flex:1;min-width:200px;">
                 <label>Filtrar (obra, fornecedor ou nº NF)</label>
-                <input type="text" id="rel-nf-filtro-texto" placeholder="Digite para buscar..." autocomplete="off" style="margin:0;">
+                <div class="busca-despesas-wrap" style="flex:1;width:100%;">
+                    <input type="text" id="rel-nf-filtro-texto" placeholder="Digite para buscar..." autocomplete="off" style="width:100%;margin:0;" oninput="filtrarAutocompleteRelGeralNF()" onfocus="filtrarAutocompleteRelGeralNF()" onkeydown="teclaAutocompleteRelGeralNF(event)">
+                    <div id="rel-nf-filtro-sugestoes" role="listbox" aria-label="Sugestões de filtro NF"></div>
+                </div>
             </div>
             <div style="min-width:140px;">
                 <label>Situação</label>
@@ -3350,11 +3350,20 @@
 
     <div id="aba-despesas-cadastrar" class="view-section">
         <label>Nome da Obra ou Local</label>
-        <input type="text" id="d-obra" list="datalist-obras-desp" autocomplete="off" placeholder="Onde o material foi usado?">
+        <div class="busca-despesas-wrap busca-cadastro-desp">
+            <input type="text" id="d-obra" autocomplete="off" placeholder="Digite para buscar obras cadastradas..." style="width:100%;margin:0;" oninput="filtrarAutocompleteCadastroDespesa('obra')" onfocus="filtrarAutocompleteCadastroDespesa('obra')" onkeydown="teclaAutocompleteCadastroDespesa(event, 'obra')">
+            <div id="d-obra-sugestoes" role="listbox" aria-label="Sugestões de obras"></div>
+        </div>
+        <datalist id="datalist-obras-desp"></datalist>
 
-        <label>Nome da Loja ou Fornecedor</label>
-        <input type="text" id="d-loja" list="datalist-lojas-desp" autocomplete="off" placeholder="Onde foi comprado?">
-        <label>Número da Nota Fiscal / Recibo</label>
+        <label style="margin-top:12px;">Nome da Loja ou Fornecedor</label>
+        <div class="busca-despesas-wrap busca-cadastro-desp">
+            <input type="text" id="d-loja" autocomplete="off" placeholder="Digite para buscar fornecedores cadastrados..." style="width:100%;margin:0;" oninput="filtrarAutocompleteCadastroDespesa('loja')" onfocus="filtrarAutocompleteCadastroDespesa('loja')" onkeydown="teclaAutocompleteCadastroDespesa(event, 'loja')">
+            <div id="d-loja-sugestoes" role="listbox" aria-label="Sugestões de fornecedores"></div>
+        </div>
+        <datalist id="datalist-lojas-desp"></datalist>
+
+        <label style="margin-top:12px;">Número da Nota Fiscal / Recibo</label>
         <input type="text" id="d-nf" placeholder="Ex: 123456 (Opcional)">
 
         <label>Valor da Fatura (R$)</label>
@@ -3370,9 +3379,6 @@
         <p class="texto-explicacao" style="margin-top: 5px;">* Tire uma foto clara do recibo impresso.</p>
 
         <button class="btn-gold" id="btnSalvarDespesa" onclick="salvarDespesaObra()">SALVAR DESPESA</button>
-
-        <datalist id="datalist-obras-desp"></datalist>
-        <datalist id="datalist-lojas-desp"></datalist>
     </div>
 
     <div id="aba-despesas-relatorio" class="view-section">
@@ -3705,9 +3711,10 @@
         ⚠️ O sistema aguardará o sinal do satélite para salvar a localização exata. Permaneça em um local aberto.
     </div>
     <p style="text-align:center;font-size:12px;color:#856404;background:#fff8e6;border:1px solid #ffeeba;border-radius:8px;padding:10px;margin:12px 0 0 0;">
-        <b>Ordem correta do dia:</b> 🟢 Entrada → ⏸️ Início intervalo → ▶️ Fim intervalo → 🔴 Saída.<br>
-        Batidas fora dessa ordem são bloqueadas e a gestão é avisada automaticamente.<br>
-        <b>Não clique várias vezes:</b> o mesmo tipo no mesmo horário só conta uma vez.
+        <b>Ordem obrigatória do dia (só 1 vez cada):</b><br>
+        🟢 ENTRADA → ⏸️ INÍCIO DE INTERVALO → ▶️ FIM DE INTERVALO → 🔴 SAÍDA<br>
+        Clique na ordem certa. Se errar ou repetir, o sistema bloqueia.<br>
+        <b>Não clique várias vezes</b> no mesmo botão.
     </p>
 
     <button type="button" class="btn-entrada" onclick="baterPonto('Entrada')">🟢 REGISTAR ENTRADA</button>
@@ -7060,14 +7067,15 @@ function separarDataSegura(dataString) {
 
 window.carregarFiltrosDespesas = async function() {
         const divTags = document.getElementById('tags-filtros-despesas');
-        if(!divTags) return;
-        
         const empresaLogada = getEmpresaGestor();
+        if (!empresaLogada) return;
         try {
             const q = query(collection(db, "despesas_obras"), where("empresa_id", "==", empresaLogada));
             const querySnapshot = await getDocs(q);
             const cache = montarCacheNomesDespesas(querySnapshot);
             atualizarDatalistsNomesDespesas(cache);
+
+            if (!divTags) return;
 
             if (cache.obras.length === 0 && cache.lojas.length === 0) {
                 divTags.innerHTML = '<p class="cadastro-desp-vazio" style="padding:16px;">Nenhuma obra ou loja registada.</p>';
@@ -7077,9 +7085,138 @@ window.carregarFiltrosDespesas = async function() {
             divTags.innerHTML = montarPainelCadastrosDespesasHtml();
             renderizarPainelCadastrosDespesas('');
         } catch (e) {
-            divTags.innerHTML = '<p class="cadastro-desp-vazio" style="padding:16px;color:#d9534f;">Erro ao carregar locais.</p>';
+            if (divTags) {
+                divTags.innerHTML = '<p class="cadastro-desp-vazio" style="padding:16px;color:#d9534f;">Erro ao carregar locais.</p>';
+            }
         }
     };
+
+    window.carregarNomesCadastroDespesas = async function () {
+        const empresaLogada = getEmpresaGestor();
+        if (!empresaLogada) return null;
+        try {
+            if (window._cacheNomesDespesas && window._cacheNomesDespesas.obras) {
+                atualizarDatalistsNomesDespesas(window._cacheNomesDespesas);
+                return window._cacheNomesDespesas;
+            }
+            const q = query(collection(db, 'despesas_obras'), where('empresa_id', '==', empresaLogada));
+            const snap = await getDocs(q);
+            const cache = montarCacheNomesDespesas(snap);
+            atualizarDatalistsNomesDespesas(cache);
+            return cache;
+        } catch (e) {
+            console.error('carregarNomesCadastroDespesas', e);
+            return null;
+        }
+    };
+
+    window.fecharSugestoesCadastroDespesa = function (tipo) {
+        const ids = tipo
+            ? [(tipo === 'obra' ? 'd-obra-sugestoes' : 'd-loja-sugestoes')]
+            : ['d-obra-sugestoes', 'd-loja-sugestoes'];
+        ids.forEach((id) => {
+            const box = document.getElementById(id);
+            if (box) {
+                box.style.display = 'none';
+                box.innerHTML = '';
+            }
+        });
+    };
+
+    window.selecionarCadastroDespesaSugestao = function (tipo, nome) {
+        const inputId = tipo === 'obra' ? 'd-obra' : 'd-loja';
+        const inp = document.getElementById(inputId);
+        if (inp) inp.value = formatarNomeCanonicoDespesa(nome);
+        fecharSugestoesCadastroDespesa(tipo);
+        if (tipo === 'obra') {
+            const loja = document.getElementById('d-loja');
+            if (loja) loja.focus();
+        } else {
+            const nf = document.getElementById('d-nf');
+            if (nf) nf.focus();
+        }
+    };
+
+    window.filtrarAutocompleteCadastroDespesa = async function (tipo) {
+        const inputId = tipo === 'obra' ? 'd-obra' : 'd-loja';
+        const boxId = tipo === 'obra' ? 'd-obra-sugestoes' : 'd-loja-sugestoes';
+        const input = document.getElementById(inputId);
+        const box = document.getElementById(boxId);
+        if (!input || !box) return;
+
+        let cache = window._cacheNomesDespesas;
+        if (!cache) {
+            box.innerHTML = '<div style="padding:10px 12px;font-size:12px;color:#666;">Carregando nomes...</div>';
+            box.style.display = 'block';
+            cache = await carregarNomesCadastroDespesas();
+        }
+        if (!cache) {
+            box.style.display = 'none';
+            box.innerHTML = '';
+            return;
+        }
+
+        const termo = normalizarChaveNomeDespesa(input.value);
+        const lista = tipo === 'obra' ? (cache.obras || []) : (cache.lojas || []);
+        let matches;
+        if (!termo) {
+            matches = lista.slice(0, 20);
+        } else {
+            matches = lista.filter((n) => normalizarChaveNomeDespesa(n).includes(termo)).slice(0, 20);
+        }
+
+        if (!matches.length) {
+            box.style.display = 'none';
+            box.innerHTML = '';
+            return;
+        }
+
+        const tipoLabel = tipo === 'obra' ? '🏢 Obra' : '🏪 Fornecedor';
+        box.innerHTML = matches.map((nome) => {
+            return '<button type="button" class="busca-desp-sugestao" data-tipo="' + tipo + '" data-nome="' + escapeHtmlBasico(nome) + '">'
+                + '<span class="busca-desp-sug-tipo">' + tipoLabel + '</span>'
+                + escapeHtmlBasico(nome)
+                + '</button>';
+        }).join('');
+        box.style.display = 'block';
+    };
+
+    window.teclaAutocompleteCadastroDespesa = function (ev, tipo) {
+        if (ev.key === 'Escape') {
+            fecharSugestoesCadastroDespesa(tipo);
+        } else if (ev.key === 'Enter') {
+            const boxId = tipo === 'obra' ? 'd-obra-sugestoes' : 'd-loja-sugestoes';
+            const box = document.getElementById(boxId);
+            const primeiro = box && box.querySelector('.busca-desp-sugestao');
+            if (primeiro && box.style.display !== 'none') {
+                ev.preventDefault();
+                selecionarCadastroDespesaSugestao(tipo, primeiro.getAttribute('data-nome') || '');
+            }
+        }
+    };
+
+    (function initAutocompleteCadastroDespesas() {
+        document.addEventListener('click', (ev) => {
+            const wrapObra = document.getElementById('d-obra') && document.getElementById('d-obra').closest('.busca-despesas-wrap');
+            const wrapLoja = document.getElementById('d-loja') && document.getElementById('d-loja').closest('.busca-despesas-wrap');
+            if (wrapObra && !wrapObra.contains(ev.target)) fecharSugestoesCadastroDespesa('obra');
+            if (wrapLoja && !wrapLoja.contains(ev.target)) fecharSugestoesCadastroDespesa('loja');
+        });
+        ['d-obra-sugestoes', 'd-loja-sugestoes'].forEach((id) => {
+            const box = document.getElementById(id);
+            if (!box || box._delegacaoOk) return;
+            box._delegacaoOk = true;
+            box.addEventListener('mousedown', (ev) => {
+                const alvo = ev.target.closest('.busca-desp-sugestao');
+                if (!alvo) return;
+                ev.preventDefault();
+                selecionarCadastroDespesaSugestao(
+                    alvo.getAttribute('data-tipo') || 'obra',
+                    alvo.getAttribute('data-nome') || ''
+                );
+            });
+        });
+    })();
 
   window.salvarDespesaObra = async function() {
         const empresaLogada = getEmpresaGestor();
@@ -8554,6 +8691,147 @@ window.carregarFiltrosDespesas = async function() {
         };
     }
 
+    function montarCacheSugestoesRelGeralNF(itens) {
+        const mapa = new Map();
+        function add(nome, tipo) {
+            const n = formatarNomeCanonicoDespesa(nome);
+            const chave = normalizarChaveNomeDespesa(n);
+            if (!chave) return;
+            if (!mapa.has(chave + '|' + tipo)) {
+                mapa.set(chave + '|' + tipo, { chave: chave, nome: n, tipo: tipo });
+            }
+        }
+        (itens || []).forEach((d) => {
+            add(d.obra_nome || d.obra, 'obra');
+            add(d.loja_nome || d.loja, 'loja');
+            const nf = d.nota_fiscal != null ? String(d.nota_fiscal).trim() : '';
+            if (nf) {
+                const chaveNf = normalizarChaveNomeDespesa(nf);
+                if (chaveNf && !mapa.has(chaveNf + '|nf')) {
+                    mapa.set(chaveNf + '|nf', { chave: chaveNf, nome: nf, tipo: 'nf' });
+                }
+            }
+        });
+        const sugestoes = Array.from(mapa.values()).sort((a, b) => {
+            const ordem = { obra: 0, loja: 1, nf: 2 };
+            const oa = ordem[a.tipo] != null ? ordem[a.tipo] : 9;
+            const ob = ordem[b.tipo] != null ? ordem[b.tipo] : 9;
+            if (oa !== ob) return oa - ob;
+            return String(a.nome).localeCompare(String(b.nome), 'pt-BR');
+        });
+        window._cacheSugestoesRelGeralNF = { sugestoes: sugestoes };
+        return window._cacheSugestoesRelGeralNF;
+    }
+
+    window.carregarSugestoesRelGeralNF = async function () {
+        const empresaLogada = getEmpresaGestor();
+        if (!empresaLogada) return null;
+        try {
+            const qDesp = query(collection(db, 'despesas_obras'), where('empresa_id', '==', empresaLogada));
+            const qRel = query(collection(db, COLECAO_RELATORIO_DESPESAS), where('empresa_id', '==', empresaLogada));
+            const [snapDesp, snapRel] = await Promise.all([getDocs(qDesp), getDocs(qRel)]);
+            const itens = [];
+            snapDesp.forEach((docSnap) => itens.push(docSnap.data()));
+            snapRel.forEach((docSnap) => itens.push(docSnap.data()));
+            return montarCacheSugestoesRelGeralNF(itens);
+        } catch (e) {
+            console.error('carregarSugestoesRelGeralNF', e);
+            return null;
+        }
+    };
+
+    window.fecharSugestoesRelGeralNF = function () {
+        const box = document.getElementById('rel-nf-filtro-sugestoes');
+        if (box) {
+            box.style.display = 'none';
+            box.innerHTML = '';
+        }
+    };
+
+    window.selecionarFiltroRelGeralNF = function (nome) {
+        const inp = document.getElementById('rel-nf-filtro-texto');
+        if (inp) inp.value = nome;
+        fecharSugestoesRelGeralNF();
+        if (typeof window.carregarRelatorioGeralNotasFiscais === 'function') {
+            window.carregarRelatorioGeralNotasFiscais();
+        }
+    };
+
+    window.filtrarAutocompleteRelGeralNF = async function () {
+        const input = document.getElementById('rel-nf-filtro-texto');
+        const box = document.getElementById('rel-nf-filtro-sugestoes');
+        if (!input || !box) return;
+
+        let cache = window._cacheSugestoesRelGeralNF;
+        if (!cache || !cache.sugestoes) {
+            box.innerHTML = '<div style="padding:10px 12px;font-size:12px;color:#666;">Carregando nomes...</div>';
+            box.style.display = 'block';
+            cache = await carregarSugestoesRelGeralNF();
+        }
+        if (!cache || !cache.sugestoes) {
+            box.style.display = 'none';
+            box.innerHTML = '';
+            return;
+        }
+
+        const termo = normalizarChaveNomeDespesa(input.value);
+        let matches;
+        if (!termo) {
+            matches = cache.sugestoes.filter((s) => s.tipo !== 'nf').slice(0, 20);
+        } else {
+            matches = cache.sugestoes.filter((s) => s.chave.includes(termo)).slice(0, 20);
+        }
+
+        if (!matches.length) {
+            box.style.display = 'none';
+            box.innerHTML = '';
+            return;
+        }
+
+        box.innerHTML = matches.map((s) => {
+            const tipoLabel = s.tipo === 'obra' ? '🏢 Obra' : (s.tipo === 'loja' ? '🏪 Fornecedor' : '🧾 NF');
+            return '<button type="button" class="busca-desp-sugestao" data-nome="' + escapeHtmlBasico(s.nome) + '">'
+                + '<span class="busca-desp-sug-tipo">' + tipoLabel + '</span>'
+                + escapeHtmlBasico(s.nome)
+                + '</button>';
+        }).join('');
+        box.style.display = 'block';
+    };
+
+    window.teclaAutocompleteRelGeralNF = function (ev) {
+        if (ev.key === 'Escape') {
+            fecharSugestoesRelGeralNF();
+        } else if (ev.key === 'Enter') {
+            ev.preventDefault();
+            const box = document.getElementById('rel-nf-filtro-sugestoes');
+            const primeiro = box && box.style.display !== 'none' && box.querySelector('.busca-desp-sugestao');
+            if (primeiro) {
+                selecionarFiltroRelGeralNF(primeiro.getAttribute('data-nome') || '');
+            } else if (typeof window.carregarRelatorioGeralNotasFiscais === 'function') {
+                fecharSugestoesRelGeralNF();
+                window.carregarRelatorioGeralNotasFiscais();
+            }
+        }
+    };
+
+    (function initAutocompleteRelGeralNF() {
+        document.addEventListener('click', (ev) => {
+            const wrap = document.getElementById('rel-nf-filtro-texto')
+                && document.getElementById('rel-nf-filtro-texto').closest('.busca-despesas-wrap');
+            if (wrap && !wrap.contains(ev.target)) fecharSugestoesRelGeralNF();
+        });
+        const box = document.getElementById('rel-nf-filtro-sugestoes');
+        if (box && !box._delegacaoOk) {
+            box._delegacaoOk = true;
+            box.addEventListener('mousedown', (ev) => {
+                const alvo = ev.target.closest('.busca-desp-sugestao');
+                if (!alvo) return;
+                ev.preventDefault();
+                selecionarFiltroRelGeralNF(alvo.getAttribute('data-nome') || '');
+            });
+        }
+    })();
+
     function itemPassaFiltroRelGeralNF(d, filtros) {
         if (filtros.soComNf && !notaFiscalPreenchida(d)) return false;
 
@@ -8948,6 +9226,8 @@ window.carregarFiltrosDespesas = async function() {
             snapRel.forEach((docSnap) => {
                 itens.push(normalizarItemRelGeralNF({ id: docSnap.id, ...docSnap.data() }, 'relatorio_despesas'));
             });
+
+            montarCacheSugestoesRelGeralNF(itens);
 
             const totalBruto = itens.length;
             const comNf = itens.filter(notaFiscalPreenchida).length;
@@ -10579,6 +10859,12 @@ window.exportarPDF = function(tipo) {
         if (aba === 'equipe-cadastrada') {
             carregarListaDeFuncionarios();
         }
+        if (aba === 'despesas-cadastrar') {
+            if (typeof window.carregarNomesCadastroDespesas === 'function') {
+                window._cacheNomesDespesas = null;
+                window.carregarNomesCadastroDespesas();
+            }
+        }
         if (aba === 'despesas-relatorio') {
             carregarFiltrosDespesas();
         }
@@ -10593,6 +10879,9 @@ window.exportarPDF = function(tipo) {
             }
         }
         if (aba === 'notas-fiscais-geral') {
+            if (typeof window.carregarSugestoesRelGeralNF === 'function') {
+                window.carregarSugestoesRelGeralNF();
+            }
             if (typeof window.carregarRelatorioGeralNotasFiscais === 'function') {
                 window.carregarRelatorioGeralNotasFiscais();
             }
@@ -12258,45 +12547,68 @@ window.gerarFolhaPagamento = async function() {
         return { lastTipo: null, emIntervalo: false, encerrado: false };
     }
 
+    /** Mensagem única exibida ao funcionário quando clica fora da ordem ou repete batida. */
+    const MSG_PONTO_ORDEM_ERRADA_FUNC =
+        'OPS, você já registrou esta jornada ou bateu a ordem errada.<br><br>'
+        + '<b>Ordem correta:</b><br>🟢 ENTRADA → ⏸️ INÍCIO DE INTERVALO → ▶️ FIM DE INTERVALO → 🔴 SAÍDA';
+
+    /**
+     * Sequência rígida do dia (1 de cada):
+     * Entrada → Início Intervalo → Fim Intervalo → Saída
+     * Não permite 2 entradas, 2 intervalos nem pular etapas.
+     */
     function validarSequenciaPontoTipo(tipoMarcacao, estado) {
         const last = estado && estado.lastTipo ? estado.lastTipo : null;
-        const emIntervalo = Boolean(estado && estado.emIntervalo);
         const encerrado = Boolean(estado && estado.encerrado);
+        const tipo = normalizarTipoBatidaPonto(tipoMarcacao);
 
-        if (encerrado) {
-            return { ok: false, msg: 'Já foi registrada a SAÍDA hoje. Se precisar corrigir, fale com a gestão.' };
+        function falha(motivoInterno) {
+            return { ok: false, msg: MSG_PONTO_ORDEM_ERRADA_FUNC, motivo: motivoInterno || 'ordem_errada' };
         }
+
+        if (encerrado || last === 'Saída') {
+            return falha('Jornada já encerrada com SAÍDA.');
+        }
+
+        // 1ª batida: só ENTRADA
         if (!last) {
-            if (tipoMarcacao !== 'Entrada') {
-                return { ok: false, msg: 'A primeira marcação do dia deve ser ENTRADA.' };
+            if (tipo !== 'Entrada') {
+                return falha('A primeira marcação do dia deve ser ENTRADA.');
             }
             return { ok: true };
         }
-        if (tipoMarcacao === 'Entrada') {
-            return { ok: false, msg: 'Já existe ENTRADA hoje. Use INÍCIO/FIM INTERVALO ou SAÍDA.' };
-        }
-        if (tipoMarcacao === 'Início Intervalo') {
-            if (emIntervalo) return { ok: false, msg: 'Já está em intervalo. Use FIM INTERVALO para voltar.' };
-            if (last !== 'Entrada' && last !== 'Fim Intervalo') {
-                return { ok: false, msg: 'Para iniciar intervalo, a última batida válida deve ser ENTRADA ou FIM INTERVALO.' };
+
+        // Depois de ENTRADA: só INÍCIO INTERVALO
+        if (last === 'Entrada') {
+            if (tipo === 'Entrada') return falha('ENTRADA já registrada.');
+            if (tipo !== 'Início Intervalo') {
+                return falha('Após ENTRADA, o próximo passo é INÍCIO DE INTERVALO.');
             }
             return { ok: true };
         }
-        if (tipoMarcacao === 'Fim Intervalo') {
-            if (!emIntervalo) return { ok: false, msg: 'Intervalo não iniciado. Clique primeiro em INÍCIO INTERVALO.' };
-            if (last !== 'Início Intervalo') {
-                return { ok: false, msg: 'Para finalizar o intervalo, a última batida deve ser INÍCIO INTERVALO.' };
+
+        // Depois de INÍCIO INTERVALO: só FIM INTERVALO
+        if (last === 'Início Intervalo') {
+            if (tipo === 'Início Intervalo') return falha('INÍCIO DE INTERVALO já registrado.');
+            if (tipo !== 'Fim Intervalo') {
+                return falha('Após INÍCIO DE INTERVALO, o próximo passo é FIM DE INTERVALO.');
             }
             return { ok: true };
         }
-        if (tipoMarcacao === 'Saída') {
-            if (emIntervalo) return { ok: false, msg: 'Está em intervalo. Registre FIM INTERVALO antes da SAÍDA.' };
-            if (last !== 'Entrada' && last !== 'Fim Intervalo') {
-                return { ok: false, msg: 'Para SAÍDA, a última batida válida deve ser ENTRADA ou FIM INTERVALO.' };
+
+        // Depois de FIM INTERVALO: só SAÍDA (sem segundo intervalo)
+        if (last === 'Fim Intervalo') {
+            if (tipo === 'Fim Intervalo') return falha('FIM DE INTERVALO já registrado.');
+            if (tipo === 'Início Intervalo') {
+                return falha('Só é permitido 1 intervalo por dia. O próximo passo é SAÍDA.');
+            }
+            if (tipo !== 'Saída') {
+                return falha('Após FIM DE INTERVALO, o próximo passo é SAÍDA.');
             }
             return { ok: true };
         }
-        return { ok: true };
+
+        return falha('Ordem de batida inválida.');
     }
 
     function aplicarBatidaEstadoPonto(estado, tipoMarcacao) {
@@ -12652,7 +12964,7 @@ window.gerarFolhaPagamento = async function() {
             }
 
             const valid = validarSequenciaPontoTipo(tipo, estadoAtual);
-            if (!valid.ok) {
+                if (!valid.ok) {
                 const horaTent = String(new Date().getHours()).padStart(2, '0') + ':' + String(new Date().getMinutes()).padStart(2, '0');
                 if (!estaOffline) {
                     await registrarEventoSequenciaPontoInvalida({
@@ -12660,7 +12972,7 @@ window.gerarFolhaPagamento = async function() {
                         funcionario_id: funcIdPre,
                         funcionario_nome: getSessaoFunc('funcLogadoNome') || '',
                         tipo_tentado: tipo,
-                        motivo: valid.msg,
+                        motivo: valid.motivo || valid.msg,
                         data_br: dataHojePonto,
                         hora_tentativa: horaTent,
                         origem: 'batida_funcionario'
@@ -12669,13 +12981,16 @@ window.gerarFolhaPagamento = async function() {
                         try { monitorarSequenciaPontoGestor(); } catch (_) {}
                     }
                 }
-                return Swal.fire(
-                    'Sequência inválida',
-                    valid.msg + (estaOffline
-                        ? '<br><br><small>Sem internet: o aviso à gestão será enviado ao sincronizar, se necessário.</small>'
-                        : '<br><br><small>A gestão foi avisada automaticamente.</small>'),
-                    'warning'
-                );
+                return Swal.fire({
+                    icon: 'warning',
+                    title: 'OPS!',
+                    html: valid.msg
+                        + (estaOffline
+                            ? '<br><br><small>Sem internet: fale com a gestão se precisar corrigir.</small>'
+                            : '<br><br><small>A gestão foi avisada automaticamente.</small>'),
+                    confirmButtonText: 'Entendi',
+                    confirmButtonColor: '#1a2a43'
+                });
             }
 
             const horaPrev = String(new Date().getHours()).padStart(2, '0') + ':' + String(new Date().getMinutes()).padStart(2, '0');
