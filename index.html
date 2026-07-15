@@ -4097,6 +4097,7 @@
    
     window.entrarEmpresaFuncionario = function(nomeEmpresa) {
         setSessaoFunc('empresaTemporariaFuncionario', nomeEmpresa);
+        try { localStorage.setItem('empresaTemporariaFuncionario', nomeEmpresa); } catch (_) {}
         atualizarLogoInterface(nomeEmpresa);
         
         document.getElementById('tela-selecao-empresa-funcionario').style.display = 'none';
@@ -4806,7 +4807,67 @@ function separarDataSegura(dataString) {
     }
 
     function normalizarCpfSomenteDigitos(valor) {
-        return String(valor || '').replace(/\D/g, '');
+        if (valor == null || valor === '') return '';
+        // Número vindo do Firestore (evita notação científica em string)
+        if (typeof valor === 'number' && Number.isFinite(valor)) {
+            return String(Math.trunc(Math.abs(valor)));
+        }
+        let s = String(valor).trim();
+        // Ex.: "1.2345678901e+10" → converte para inteiro
+        if (/e\+/i.test(s)) {
+            const n = Number(s);
+            if (Number.isFinite(n)) return String(Math.trunc(Math.abs(n)));
+        }
+        return s.replace(/\D/g, '');
+    }
+
+    /** Compara CPF ignorando pontuação e zeros à esquerda (ex.: 0123... vs 123...). */
+    function cpfParaComparacao(valor) {
+        let digitos = normalizarCpfSomenteDigitos(valor);
+        if (!digitos) return '';
+        // Firestore/número antigo pode ter perdido zero à esquerda — alinha em 11 dígitos
+        if (digitos.length < 11) digitos = digitos.padStart(11, '0');
+        if (digitos.length > 11) digitos = digitos.slice(-11);
+        return digitos;
+    }
+
+    function obterCpfDoFuncionario(dados) {
+        if (!dados) return '';
+        const bruto = dados.cpf != null ? dados.cpf
+            : (dados.CPF != null ? dados.CPF
+                : (dados.documento != null ? dados.documento : ''));
+        return bruto;
+    }
+
+    function cpfsSaoIguais(a, b) {
+        const da = normalizarCpfSomenteDigitos(a);
+        const db = normalizarCpfSomenteDigitos(b);
+        if (!da || !db) return false;
+        if (da === db) return true;
+        // Também compara com 11 dígitos (zero à esquerda)
+        const ca = cpfParaComparacao(a);
+        const cb = cpfParaComparacao(b);
+        return Boolean(ca && cb && ca === cb);
+    }
+
+    function empresasSaoIguais(a, b) {
+        return normalizarTextoSemAcentoLower(a) === normalizarTextoSemAcentoLower(b);
+    }
+
+    function resolverEmpresaLoginFuncionario() {
+        let emp = getSessaoFunc('empresaTemporariaFuncionario');
+        if (emp) return String(emp).trim();
+        try {
+            emp = localStorage.getItem('empresaTemporariaFuncionario');
+            if (emp) {
+                setSessaoFunc('empresaTemporariaFuncionario', emp);
+                return String(emp).trim();
+            }
+        } catch (_) {}
+        const el = document.getElementById('login-nome-empresa');
+        const txt = el ? String(el.textContent || '').trim() : '';
+        if (txt && txt !== 'Login do Funcionário') return txt;
+        return '';
     }
 
     function normalizarSenhaFuncionario(valor) {
@@ -10683,41 +10744,85 @@ window.exportarPDF = function(tipo) {
     };
 
     window.fazerLogin = async function() {
-        const cpf = normalizarCpfSomenteDigitos(document.getElementById('login-cpf').value);
+        const cpfDigitado = document.getElementById('login-cpf').value;
+        const cpf = normalizarCpfSomenteDigitos(cpfDigitado);
         const senha = normalizarSenhaFuncionario(document.getElementById('login-senha').value);
-        const empresaEscolhida = getSessaoFunc('empresaTemporariaFuncionario');
+        let empresaEscolhida = resolverEmpresaLoginFuncionario();
         
         if (!cpf || !senha) {
             return Swal.fire('Atenção', 'Preencha o CPF e a Senha!', 'warning');
         }
         
-        if (!empresaEscolhida) {
-            return Swal.fire('Atenção', 'Empresa não selecionada. Volte ao início.', 'error');
-        }
-        
         Swal.fire({
-            title: 'Autenticando...', 
-            allowOutsideClick: false
-        }); 
-        Swal.showLoading();
+            title: 'Autenticando...',
+            allowOutsideClick: false,
+            didOpen: function () { Swal.showLoading(); }
+        });
         
         try {
-            const q = query(collection(db, "funcionarios"), where("empresa_id", "==", empresaEscolhida));
-            const querySnapshot = await getDocs(q);
-            
-            let funcId = null;
-            let funcData = null;
+            try { await ensureAuth(); } catch (_) {}
 
-            querySnapshot.forEach((docSnap) => {
-                const d = docSnap.data();
-                if (normalizarCpfSomenteDigitos(d.cpf) === cpf) {
-                    funcId = docSnap.id;
-                    funcData = d;
+            // Busca em toda a coleção (mais confiável) e filtra por CPF;
+            // assim não falha se a empresa da sessão estiver diferente/ausente.
+            const snapTodos = await getDocs(collection(db, 'funcionarios'));
+            const candidatos = [];
+            snapTodos.forEach((docSnap) => {
+                const d = docSnap.data() || {};
+                if (cpfsSaoIguais(obterCpfDoFuncionario(d), cpf)) {
+                    candidatos.push({ id: docSnap.id, data: d, empresa: String(d.empresa_id || '').trim() });
                 }
             });
 
-            if (!funcId || !funcData) {
-                return Swal.fire('Erro', 'Funcionário não encontrado nesta Empresa. Confira o CPF (somente números).', 'error');
+            if (!candidatos.length) {
+                return Swal.fire({
+                    icon: 'error',
+                    title: 'CPF não encontrado',
+                    html: 'Não encontramos o CPF <b>' + escapeHtmlBasico(cpf) + '</b> no sistema.<br><br>'
+                        + 'Peça ao RH para conferir em <b>Equipe → Equipe Cadastrada</b> se o CPF está correto.',
+                    confirmButtonColor: '#1a2a43'
+                });
+            }
+
+            let escolhido = null;
+            if (empresaEscolhida) {
+                escolhido = candidatos.find((c) => empresasSaoIguais(c.empresa, empresaEscolhida)) || null;
+            }
+            if (!escolhido && candidatos.length === 1) {
+                escolhido = candidatos[0];
+                empresaEscolhida = escolhido.empresa;
+            }
+            if (!escolhido && candidatos.length > 1) {
+                const listaEmp = candidatos.map((c) => c.empresa || '(sem empresa)').filter(Boolean);
+                return Swal.fire({
+                    icon: 'warning',
+                    title: 'Escolha a empresa',
+                    html: 'Este CPF existe em mais de uma empresa:<br><b>'
+                        + listaEmp.map((e) => escapeHtmlBasico(e)).join('</b><br><b>')
+                        + '</b><br><br>Volte e selecione a empresa correta antes de entrar.',
+                    confirmButtonColor: '#1a2a43'
+                });
+            }
+            if (!escolhido) {
+                return Swal.fire({
+                    icon: 'error',
+                    title: 'Empresa incorreta',
+                    html: 'O CPF está cadastrado em <b>'
+                        + candidatos.map((c) => escapeHtmlBasico(c.empresa || '?')).join('</b>, <b>')
+                        + '</b>.<br>Você selecionou: <b>' + escapeHtmlBasico(empresaEscolhida || '(nenhuma)') + '</b>.',
+                    confirmButtonColor: '#1a2a43'
+                });
+            }
+
+            const funcId = escolhido.id;
+            const funcData = escolhido.data;
+            empresaEscolhida = escolhido.empresa || empresaEscolhida;
+            setSessaoFunc('empresaTemporariaFuncionario', empresaEscolhida);
+            try { localStorage.setItem('empresaTemporariaFuncionario', empresaEscolhida); } catch (_) {}
+
+            // Corrige CPF antigo salvo com formatação/número
+            const cpfCanonico = cpfParaComparacao(obterCpfDoFuncionario(funcData)) || cpf;
+            if (String(funcData.cpf || '') !== cpfCanonico) {
+                try { await updateDoc(doc(db, 'funcionarios', funcId), { cpf: cpfCanonico }); } catch (_) {}
             }
 
             if (senhaFuncionarioEstaVazia(funcData.senha)) {
@@ -10738,7 +10843,8 @@ window.exportarPDF = function(tipo) {
                 location.reload();
             }
         } catch(e) {
-            Swal.fire('Erro', 'Falha na autenticação. Tente novamente.', 'error');
+            console.error('fazerLogin', e);
+            Swal.fire('Erro', 'Falha na autenticação. Verifique a internet (ou se o Firebase está no limite diário) e tente novamente.', 'error');
         }
     };
 
@@ -12299,7 +12405,7 @@ window.gerarFolhaPagamento = async function() {
     };
        document.getElementById('btnCadastrarFunc').onclick = async function() {
         const nome = document.getElementById('c-nome').value.trim();
-        const cpf = normalizarCpfSomenteDigitos(document.getElementById('c-cpf').value.trim());
+        const cpf = cpfParaComparacao(document.getElementById('c-cpf').value.trim());
         const salario = document.getElementById('c-salario').value.trim();
         const tel = document.getElementById('c-tel').value.trim();
         const pix = document.getElementById('c-pix') ? document.getElementById('c-pix').value.trim() : '';
@@ -12317,6 +12423,9 @@ window.gerarFolhaPagamento = async function() {
 
         if (!nome || !cpf) {
             return Swal.fire('Atenção', 'Preencha pelo menos o Nome e o CPF!', 'warning');
+        }
+        if (cpf.length !== 11) {
+            return Swal.fire('Atenção', 'CPF deve ter 11 dígitos (somente números).', 'warning');
         }
 
         const btn = document.getElementById('btnCadastrarFunc');
