@@ -1460,7 +1460,8 @@
             min-width: 140px;
         }
 
-        #rel-geral-obras-quadro {
+        #rel-geral-obras-quadro,
+        #rel-geral-nf-quadro {
             margin-top: 12px;
             border: 2px solid var(--dark-navy);
             border-radius: 12px;
@@ -1469,7 +1470,8 @@
             padding: 12px;
         }
 
-        #rel-geral-obras-quadro .secao-despesas-busca {
+        #rel-geral-obras-quadro .secao-despesas-busca,
+        #rel-geral-nf-quadro .secao-despesas-busca {
             background: #fff;
             border: 1px solid #e0e6ed;
             border-radius: 10px;
@@ -1477,11 +1479,13 @@
             overflow: hidden;
         }
 
-        #rel-geral-obras-quadro .secao-despesas-busca:last-child {
+        #rel-geral-obras-quadro .secao-despesas-busca:last-child,
+        #rel-geral-nf-quadro .secao-despesas-busca:last-child {
             margin-bottom: 0;
         }
 
-        #rel-geral-obras-quadro .secao-despesas-busca summary {
+        #rel-geral-obras-quadro .secao-despesas-busca summary,
+        #rel-geral-nf-quadro .secao-despesas-busca summary {
             display: flex;
             align-items: center;
             gap: 8px;
@@ -1492,11 +1496,13 @@
             border-bottom: none;
         }
 
-        #rel-geral-obras-quadro .secao-despesas-busca[open] summary {
+        #rel-geral-obras-quadro .secao-despesas-busca[open] summary,
+        #rel-geral-nf-quadro .secao-despesas-busca[open] summary {
             border-bottom: 2px solid;
         }
 
-        #rel-geral-obras-quadro .secao-despesas-busca .secao-despesas-conteudo {
+        #rel-geral-obras-quadro .secao-despesas-busca .secao-despesas-conteudo,
+        #rel-geral-nf-quadro .secao-despesas-busca .secao-despesas-conteudo {
             padding: 10px 12px 12px;
             border-top: 1px solid #e0e6ed;
             max-height: 420px;
@@ -1504,7 +1510,8 @@
             -webkit-overflow-scrolling: touch;
         }
 
-        #rel-geral-obras-quadro .secao-despesas-busca .secao-seta {
+        #rel-geral-obras-quadro .secao-despesas-busca .secao-seta,
+        #rel-geral-nf-quadro .secao-despesas-busca .secao-seta {
             margin-left: auto;
         }
 
@@ -2642,6 +2649,7 @@
                     <button type="button" class="gestor-menu-btn menu-despesas" id="btn-menu-despesas-relatorio" data-titulo="Relatório de Gastos por Obra" onclick="mudarAba('despesas-relatorio', this)">🔍 Relatório de Gastos por Obra</button>
                     <button type="button" class="gestor-menu-btn menu-despesas" id="btn-menu-relatorio-despesas" data-titulo="Exportar Relatórios" onclick="mudarAba('relatorio-despesas', this)">📋 Exportar Relatórios</button>
                     <button type="button" class="gestor-menu-btn menu-despesas" id="btn-menu-obras-relatorio-geral" data-titulo="Relatório Geral de Obras" onclick="mudarAba('obras-relatorio-geral', this)">📊 Relatório Geral de Obras</button>
+                    <button type="button" class="gestor-menu-btn menu-despesas" id="btn-menu-notas-fiscais-geral" data-titulo="Relatório Geral de Notas Fiscais" onclick="mudarAba('notas-fiscais-geral', this)">📑 Relatório Geral de Notas Fiscais</button>
                     <button type="button" class="gestor-menu-btn menu-despesas" id="btn-menu-terceiros" data-titulo="Terceiros" onclick="mudarAba('terceiros', this)">👷 Terceiros</button>
                 </div>
             </div>
@@ -3266,6 +3274,50 @@
 
         <div id="rel-geral-obras-secoes" style="margin-top: 15px;">
             <p style="text-align: center; color: #888; font-size: 13px;">Clique em "Atualizar Relatório Geral" ou abra esta opção no menu para carregar.</p>
+        </div>
+    </div>
+
+    <div id="aba-notas-fiscais-geral" class="view-section">
+        <p class="texto-explicacao" style="margin-top: 0;">Consolidado de <b>notas fiscais e recibos</b> cadastrados em <b>Adicionar Despesas</b> e em <b>Exportar Relatórios</b>. Mostra o que está <b>vencido</b>, <b>a vencer</b> e <b>já pago</b>.</p>
+
+        <div style="display:flex;flex-wrap:wrap;gap:10px;align-items:flex-end;margin-top:12px;">
+            <div style="flex:1;min-width:200px;">
+                <label>Filtrar (obra, fornecedor ou nº NF)</label>
+                <input type="text" id="rel-nf-filtro-texto" placeholder="Digite para buscar..." autocomplete="off" style="margin:0;">
+            </div>
+            <div style="min-width:140px;">
+                <label>Situação</label>
+                <select id="rel-nf-filtro-status" style="margin:0;">
+                    <option value="todos">Todas</option>
+                    <option value="vencido">Vencidas</option>
+                    <option value="a_vencer">A vencer</option>
+                    <option value="pago">Pagas</option>
+                    <option value="pendente">Pendentes (vencida + a vencer)</option>
+                </select>
+            </div>
+            <label style="display:flex;align-items:center;gap:8px;font-size:13px;cursor:pointer;min-width:200px;margin-bottom:4px;">
+                <input type="checkbox" id="rel-nf-so-com-nf" checked style="width:18px;height:18px;">
+                Só com nº de NF preenchido
+            </label>
+        </div>
+
+        <button type="button" class="btn-enviar" style="margin-top: 12px;" onclick="carregarRelatorioGeralNotasFiscais()">🔄 ATUALIZAR RELATÓRIO DE NF</button>
+
+        <div id="rel-geral-nf-acoes" class="rel-geral-obras-toolbar" style="display: none; margin-top: 12px;">
+            <button type="button" class="btn-enviar" onclick="toggleSecoesRelGeralNF(true)">▼ Expandir tudo</button>
+            <button type="button" class="btn-enviar" onclick="toggleSecoesRelGeralNF(false)">▲ Recolher tudo</button>
+            <button type="button" id="btnExportarRelGeralNfPdf" class="btn-pdf-relatorio" onclick="exportarPDFRelatorioGeralNotasFiscais()">🖨️ EXPORTAR ESPELHO PDF (IMPRIMIR)</button>
+            <button type="button" id="btnExportarRelGeralNfExcel" class="btn-pdf-relatorio" style="background-color:#217346;" onclick="exportarExcelRelatorioGeralNotasFiscais()">📊 EXPORTAR ESPELHO EXCEL</button>
+        </div>
+
+        <div id="rel-geral-nf-resumo" style="display: none; margin-top: 20px; background: #fff3cd; padding: 15px; border-radius: 10px; text-align: center; border: 1px solid #ffeeba;">
+            <h4 style="margin: 0; color: #856404;">Resumo Geral — Notas Fiscais</h4>
+            <div id="rel-geral-nf-resumo-totais" style="margin-top: 8px;"></div>
+            <p id="rel-geral-nf-resumo-detalhe" class="texto-explicacao" style="margin: 12px 0 0 0; font-size: 12px; text-align: center;"></p>
+        </div>
+
+        <div id="rel-geral-nf-secoes" style="margin-top: 15px;">
+            <p style="text-align: center; color: #888; font-size: 13px;">Clique em "Atualizar Relatório de NF" ou abra esta opção no menu para carregar.</p>
         </div>
     </div>
 
@@ -8468,6 +8520,569 @@ window.carregarFiltrosDespesas = async function() {
         }
     };
 
+    function despesaEstaPagaNorm(d) {
+        return String(d && d.status != null ? d.status : '').toLowerCase() === 'pago';
+    }
+
+    function notaFiscalPreenchida(d) {
+        const nf = d && d.nota_fiscal != null ? String(d.nota_fiscal).trim() : '';
+        return nf.length > 0;
+    }
+
+    function normalizarItemRelGeralNF(d, origem) {
+        const valorNum = d.valor_numero != null ? Number(d.valor_numero) : (parseMoedaLocal(d.valor_string) || 0);
+        return {
+            ...d,
+            _origem: origem,
+            obra_nome: d.obra_nome || d.obra || '',
+            loja_nome: d.loja_nome || d.loja || '',
+            nota_fiscal: d.nota_fiscal != null ? String(d.nota_fiscal).trim() : '',
+            cheque_boleto_num: d.cheque_boleto_num != null ? String(d.cheque_boleto_num).trim() : '',
+            valor_numero: valorNum,
+            valor_string: d.valor_string || formatarMoeda(valorNum)
+        };
+    }
+
+    function obterFiltrosRelGeralNF() {
+        const elTexto = document.getElementById('rel-nf-filtro-texto');
+        const elStatus = document.getElementById('rel-nf-filtro-status');
+        const elSoNf = document.getElementById('rel-nf-so-com-nf');
+        return {
+            texto: normalizarChaveNomeDespesa(elTexto ? elTexto.value : ''),
+            status: (elStatus && elStatus.value) || 'todos',
+            soComNf: !(elSoNf && elSoNf.checked === false)
+        };
+    }
+
+    function itemPassaFiltroRelGeralNF(d, filtros) {
+        if (filtros.soComNf && !notaFiscalPreenchida(d)) return false;
+
+        if (filtros.texto) {
+            const obra = normalizarChaveNomeDespesa(d.obra_nome || '');
+            const loja = normalizarChaveNomeDespesa(d.loja_nome || '');
+            const nf = normalizarChaveNomeDespesa(d.nota_fiscal || '');
+            if (!obra.includes(filtros.texto) && !loja.includes(filtros.texto) && !nf.includes(filtros.texto)) {
+                return false;
+            }
+        }
+
+        const pago = despesaEstaPagaNorm(d);
+        const vencida = !pago && despesaEstaVencida(d);
+        if (filtros.status === 'pago' && !pago) return false;
+        if (filtros.status === 'vencido' && (pago || !vencida)) return false;
+        if (filtros.status === 'a_vencer' && (pago || vencida)) return false;
+        if (filtros.status === 'pendente' && pago) return false;
+        return true;
+    }
+
+    function rotuloOrigemRelGeralNF(d) {
+        return d._origem === 'relatorio_despesas' ? 'Relatório despesas' : 'Despesa obra';
+    }
+
+    function htmlCardNFRelGeral(d, isVencida) {
+        const corBorda = isVencida ? '#dc3545' : '#ffc107';
+        const corTexto = isVencida ? '#dc3545' : '#856404';
+        const badgeFundo = isVencida ? '#f8d7da' : '#fff3cd';
+        const textoBadge = isVencida ? '⚠️ VENCIDA' : '⏳ A VENCER';
+        const vencTexto = formatarVencimentoDespesaExibirHtml(d);
+        const chq = d.cheque_boleto_num ? escapeHtmlBasico(d.cheque_boleto_num) : '';
+        const fotoHtml = d.foto_recibo
+            ? '<img src="' + escapeAttrBasico(d.foto_recibo) + '" onclick="abrirFoto(\'' + String(d.foto_recibo).replace(/'/g, "\\'") + '\')" style="width:60px;height:60px;object-fit:cover;border-radius:8px;border:2px solid #e0e6ed;float:right;cursor:pointer;">'
+            : '';
+        return ''
+            + '<div class="resultado-item" style="border-left-color:' + corBorda + ';">'
+            + fotoHtml
+            + '<span style="font-size:10px;background:#e8edf2;color:#1a2a43;padding:2px 6px;border-radius:4px;font-weight:bold;">' + escapeHtmlBasico(rotuloOrigemRelGeralNF(d)) + '</span> '
+            + '<b style="color:' + corBorda + ';font-size:16px;">R$ ' + escapeHtmlBasico(String(d.valor_string || '0')) + '</b> '
+            + '<span style="font-size:10px;background:' + badgeFundo + ';color:' + corTexto + ';padding:2px 6px;border-radius:4px;margin-left:5px;font-weight:bold;">' + textoBadge + '</span><br>'
+            + '<span style="font-size:13px;color:#555;"><b>Obra:</b> ' + escapeHtmlBasico(d.obra_nome || '—') + '</span><br>'
+            + '<span style="font-size:13px;color:#555;"><b>Fornecedor:</b> ' + escapeHtmlBasico(d.loja_nome || '—') + '</span><br>'
+            + '<span style="font-size:13px;color:#1a2a43;"><b>Nota Fiscal:</b> ' + escapeHtmlBasico(d.nota_fiscal || 'Sem NF') + '</span><br>'
+            + (chq ? '<span style="font-size:12px;color:#555;"><b>Chq./Boleto:</b> ' + chq + '</span><br>' : '')
+            + '<span style="font-size:13px;color:' + corTexto + ';"><b>Vencimento:</b> ' + vencTexto + '</span><br>'
+            + '<span style="font-size:12px;color:#888;">Lançamento: ' + escapeHtmlBasico(diaLancamentoDespExibir(d)) + '</span>'
+            + (d.descricao ? '<div style="font-size:12px;margin-top:5px;padding-top:5px;border-top:1px solid #eee;">' + escapeHtmlBasico(String(d.descricao)) + '</div>' : '')
+            + (d.observacao ? '<div style="font-size:11px;margin-top:4px;color:#666;"><b>Obs.:</b> ' + escapeHtmlBasico(String(d.observacao)) + '</div>' : '')
+            + '</div>';
+    }
+
+    function htmlCardNFPagaRelGeral(d) {
+        const compPgtoHtml = typeof montarHtmlComprovantePagamento === 'function' ? montarHtmlComprovantePagamento(d) : '';
+        const chq = d.cheque_boleto_num ? escapeHtmlBasico(d.cheque_boleto_num) : '';
+        const fotoHtml = d.foto_recibo
+            ? '<img src="' + escapeAttrBasico(d.foto_recibo) + '" onclick="abrirFoto(\'' + String(d.foto_recibo).replace(/'/g, "\\'") + '\')" style="width:60px;height:60px;object-fit:cover;border-radius:8px;border:2px solid #e0e6ed;float:right;cursor:pointer;">'
+            : '';
+        return ''
+            + '<div class="resultado-item" style="border-left-color:#28a745;opacity:0.9;background:#f4fdf6;">'
+            + fotoHtml + compPgtoHtml
+            + '<span style="font-size:10px;background:#e8edf2;color:#1a2a43;padding:2px 6px;border-radius:4px;font-weight:bold;">' + escapeHtmlBasico(rotuloOrigemRelGeralNF(d)) + '</span> '
+            + '<b style="color:#28a745;font-size:16px;">R$ ' + escapeHtmlBasico(String(d.valor_string || '0')) + '</b> '
+            + '<span style="font-size:10px;background:#d4edda;color:#155724;padding:2px 6px;border-radius:4px;margin-left:5px;font-weight:bold;">PAGO EM: ' + escapeHtmlBasico(d.data_pagamento || 'N/A') + '</span><br>'
+            + '<span style="font-size:13px;color:#555;"><b>Obra:</b> ' + escapeHtmlBasico(d.obra_nome || '—') + '</span><br>'
+            + '<span style="font-size:13px;color:#555;"><b>Fornecedor:</b> ' + escapeHtmlBasico(d.loja_nome || '—') + '</span><br>'
+            + '<span style="font-size:13px;color:#1a2a43;"><b>Nota Fiscal:</b> ' + escapeHtmlBasico(d.nota_fiscal || 'Sem NF') + '</span><br>'
+            + (chq ? '<span style="font-size:12px;color:#555;"><b>Chq./Boleto:</b> ' + chq + '</span><br>' : '')
+            + '<span style="font-size:12px;color:#888;">Lançamento: ' + escapeHtmlBasico(diaLancamentoDespExibir(d)) + '</span>'
+            + (d.descricao ? '<div style="font-size:12px;margin-top:5px;padding-top:5px;border-top:1px solid #eee;color:#666;">' + escapeHtmlBasico(String(d.descricao)) + '</div>' : '')
+            + (d.observacao ? '<div style="font-size:11px;margin-top:4px;color:#666;"><b>Obs.:</b> ' + escapeHtmlBasico(String(d.observacao)) + '</div>' : '')
+            + '</div>';
+    }
+
+    window.toggleSecoesRelGeralNF = function (abrir) {
+        const quadro = document.getElementById('rel-geral-nf-quadro');
+        if (!quadro) return;
+        quadro.querySelectorAll('details').forEach((det) => {
+            if (abrir) det.setAttribute('open', '');
+            else det.removeAttribute('open');
+        });
+    };
+
+    function linhaExcelNFRelGeral(d, situacao) {
+        const valorNum = Number(d.valor_numero != null ? d.valor_numero : (parseMoedaLocal(d.valor_string) || 0));
+        return {
+            'Situação': situacao,
+            'Origem': rotuloOrigemRelGeralNF(d),
+            'Obra': d.obra_nome || '',
+            'Fornecedor': d.loja_nome || '',
+            'Nota Fiscal': d.nota_fiscal || '',
+            'Chq. / Boleto': d.cheque_boleto_num || '',
+            'Vencimento': formatarVencimentoDespesaExibir(d),
+            'Lançamento': diaLancamentoDespExibir(d),
+            'Data pagamento': d.data_pagamento || '',
+            'Valor (R$)': valorNum,
+            'Descrição': d.descricao || '',
+            'Observação': d.observacao || '',
+            'Tem foto': d.foto_recibo ? 'Sim' : 'Não'
+        };
+    }
+
+    function montarLinhasExcelRelGeralNF(pack, opcoes) {
+        const linhas = [];
+        if (opcoes.vencido) {
+            (pack.vencidas || []).forEach((d) => linhas.push(linhaExcelNFRelGeral(d, 'VENCIDO')));
+        }
+        if (opcoes.aVencer) {
+            (pack.aVencer || []).forEach((d) => linhas.push(linhaExcelNFRelGeral(d, 'A VENCER')));
+        }
+        if (opcoes.pagos) {
+            (pack.pagasForn || []).forEach((d) => linhas.push(linhaExcelNFRelGeral(d, 'PAGO')));
+        }
+        return linhas;
+    }
+
+    function gerarExcelRelGeralNFEspelho(pack, opcoes) {
+        if (!window.XLSX) {
+            return Swal.fire('Erro', 'Biblioteca Excel não carregou. Recarregue a página (Ctrl+F5).', 'error');
+        }
+
+        const linhas = montarLinhasExcelRelGeralNF(pack, opcoes);
+        if (!linhas.length) {
+            return Swal.fire('Aviso', 'Não há registros nas opções selecionadas para exportar.', 'info');
+        }
+
+        const emp = String(pack.empresa || getEmpresaGestor() || 'Empresa').trim();
+        const totalSelecionado = (opcoes.vencido ? pack.somaVencidas : 0)
+            + (opcoes.aVencer ? pack.somaAVencer : 0)
+            + (opcoes.pagos ? pack.somaPagas : 0);
+
+        const ws = XLSX.utils.json_to_sheet(linhas);
+        const colunas = Object.keys(linhas[0]);
+        ws['!cols'] = colunas.map((c) => ({ wch: c === 'Descrição' || c === 'Observação' ? 36 : (c === 'Obra' || c === 'Fornecedor' ? 28 : 16) }));
+
+        const range = XLSX.utils.decode_range(ws['!ref']);
+        const idxValor = colunas.indexOf('Valor (R$)');
+        if (idxValor >= 0) {
+            for (let r = range.s.r + 1; r <= range.e.r; r += 1) {
+                const addr = XLSX.utils.encode_cell({ r, c: idxValor });
+                if (ws[addr] && typeof ws[addr].v === 'number') {
+                    ws[addr].t = 'n';
+                    ws[addr].z = '#,##0.00';
+                }
+            }
+        }
+
+        const linhaTotal = range.e.r + 2;
+        const addrLabel = XLSX.utils.encode_cell({ r: linhaTotal, c: Math.max(0, idxValor - 1) });
+        const addrTotal = XLSX.utils.encode_cell({ r: linhaTotal, c: idxValor });
+        ws[addrLabel] = { t: 's', v: 'TOTAL EXPORTADO (R$)' };
+        ws[addrTotal] = { t: 'n', v: totalSelecionado, z: '#,##0.00' };
+        const novoFim = XLSX.utils.encode_cell({ r: linhaTotal, c: range.e.c });
+        ws['!ref'] = `${ws['!ref'].split(':')[0]}:${novoFim}`;
+        ws['!autofilter'] = { ref: XLSX.utils.encode_range({ s: { r: 0, c: 0 }, e: { r: range.e.r, c: range.e.c } }) };
+
+        const resumo = [
+            { Item: 'Empresa', Valor: emp },
+            { Item: 'Gerado em', Valor: new Date().toLocaleString('pt-BR') },
+            { Item: 'Vencido', Valor: opcoes.vencido ? pack.somaVencidas : 0 },
+            { Item: 'A vencer', Valor: opcoes.aVencer ? pack.somaAVencer : 0 },
+            { Item: 'Pagos', Valor: opcoes.pagos ? pack.somaPagas : 0 },
+            { Item: 'Total exportado', Valor: totalSelecionado },
+            { Item: 'Registros exportados', Valor: linhas.length }
+        ];
+        const wsResumo = XLSX.utils.json_to_sheet(resumo);
+        wsResumo['!cols'] = [{ wch: 28 }, { wch: 24 }];
+
+        const wb = XLSX.utils.book_new();
+        XLSX.utils.book_append_sheet(wb, ws, 'Notas Fiscais');
+        XLSX.utils.book_append_sheet(wb, wsResumo, 'Resumo');
+        const sufixoArquivo = sufixoArquivoExportRelGeralObras(opcoes);
+        XLSX.writeFile(wb, 'espelho_relatorio_geral_nf' + sufixoArquivo + '_' + emp.replace(/\s+/g, '_') + '.xlsx');
+
+        Swal.fire({
+            toast: true,
+            position: 'top-end',
+            icon: 'success',
+            title: 'Excel exportado com sucesso!',
+            showConfirmButton: false,
+            timer: 2500
+        });
+    }
+
+    function gerarPdfRelGeralNFEspelho(pack, opcoes) {
+        const { jsPDF } = window.jspdf;
+        const doc = new jsPDF('l', 'mm', 'a4');
+        const emp = String(pack.empresa || getEmpresaGestor() || 'Empresa').trim();
+
+        const totalSelecionado = (opcoes.vencido ? pack.somaVencidas : 0)
+            + (opcoes.aVencer ? pack.somaAVencer : 0)
+            + (opcoes.pagos ? pack.somaPagas : 0);
+
+        doc.setFillColor(26, 42, 67);
+        doc.rect(0, 0, 297, 30, 'F');
+        doc.setTextColor(255, 255, 255);
+        doc.setFontSize(14);
+        doc.setFont('helvetica', 'bold');
+        doc.text('ESPELHO — RELATÓRIO GERAL DE NOTAS FISCAIS', 14, 12);
+        doc.setFontSize(9);
+        doc.setFont('helvetica', 'normal');
+        doc.setTextColor(220, 220, 220);
+        doc.text(emp + '  |  Gerado em: ' + new Date().toLocaleString('pt-BR') + '  |  Gestor 360', 14, 20);
+
+        let xResumo = 14;
+        doc.setFontSize(10);
+        doc.setFont('helvetica', 'bold');
+        if (opcoes.vencido) {
+            doc.setTextColor(220, 53, 69);
+            doc.text('Vencido: ' + formatarMoeda(pack.somaVencidas), xResumo, 28);
+            xResumo += 64;
+        }
+        if (opcoes.aVencer) {
+            doc.setTextColor(133, 100, 4);
+            doc.text('A vencer: ' + formatarMoeda(pack.somaAVencer), xResumo, 28);
+            xResumo += 64;
+        }
+        if (opcoes.pagos) {
+            doc.setTextColor(40, 167, 69);
+            doc.text('Pagos: ' + formatarMoeda(pack.somaPagas), xResumo, 28);
+            xResumo += 64;
+        }
+        doc.setTextColor(26, 42, 67);
+        doc.text('Total exportado: ' + formatarMoeda(totalSelecionado), Math.min(xResumo, 206), 28);
+
+        const headNf = [['Estado', 'Origem', 'Obra', 'Fornecedor', 'NF', 'Vencimento', 'Valor (R$)', 'Descrição']];
+        const estiloTabela = {
+            theme: 'striped',
+            styles: { fontSize: 7, cellPadding: 2.5, valign: 'middle', textColor: '#333333' },
+            headStyles: { fillColor: '#1a2a43', textColor: '#ffffff', fontStyle: 'bold' },
+            alternateRowStyles: { fillColor: '#f5f8fa' },
+            margin: { left: 14, right: 14 },
+            didDrawPage: function (data) {
+                doc.setFontSize(8);
+                doc.setTextColor(150);
+                doc.text('Página ' + doc.internal.getNumberOfPages(), data.settings.margin.left, doc.internal.pageSize.height - 8);
+            }
+        };
+
+        function linhaNfPdf(d, estado) {
+            return [
+                estado,
+                rotuloOrigemRelGeralNF(d),
+                String(d.obra_nome || '—').slice(0, 28),
+                String(d.loja_nome || '—').slice(0, 24),
+                String(d.nota_fiscal || '—').slice(0, 16),
+                formatarVencimentoDespesaExibir(d),
+                'R$ ' + String(d.valor_string || '0'),
+                String(d.descricao || '').slice(0, 42)
+            ];
+        }
+
+        let yAtual = 36;
+        let incluiuAlgumaSecao = false;
+
+        function blocoSecao(titulo, corRgb, body, head, didParseCell) {
+            if (!body.length) return;
+            incluiuAlgumaSecao = true;
+            if (yAtual > 170) {
+                doc.addPage();
+                yAtual = 14;
+            }
+            doc.setFillColor.apply(doc, corRgb);
+            doc.rect(14, yAtual, 269, 7, 'F');
+            doc.setTextColor(255, 255, 255);
+            doc.setFontSize(9);
+            doc.setFont('helvetica', 'bold');
+            doc.text(titulo, 16, yAtual + 5);
+            yAtual += 10;
+            doc.autoTable({
+                ...estiloTabela,
+                startY: yAtual,
+                head: head,
+                body: body,
+                didParseCell: didParseCell || undefined
+            });
+            yAtual = doc.lastAutoTable.finalY + 8;
+        }
+
+        if (opcoes.vencido) {
+            const body = (pack.vencidas || []).map((d) => linhaNfPdf(d, 'VENCIDO'));
+            blocoSecao('EM ABERTO — VENCIDO', [220, 53, 69], body, headNf, function (data) {
+                if (data.column.index === 0 && data.cell.section === 'body') {
+                    data.cell.styles.textColor = '#dc3545';
+                    data.cell.styles.fontStyle = 'bold';
+                }
+            });
+        }
+        if (opcoes.aVencer) {
+            const body = (pack.aVencer || []).map((d) => linhaNfPdf(d, 'A VENCER'));
+            blocoSecao('A VENCER — NO PRAZO', [255, 193, 7], body, headNf, function (data) {
+                if (data.column.index === 0 && data.cell.section === 'body') {
+                    data.cell.styles.textColor = '#856404';
+                    data.cell.styles.fontStyle = 'bold';
+                }
+            });
+        }
+        if (opcoes.pagos) {
+            const body = (pack.pagasForn || []).map((d) => linhaNfPdf(d, 'PAGO'));
+            blocoSecao('JÁ PAGO', [40, 167, 69], body, headNf, function (data) {
+                if (data.column.index === 0 && data.cell.section === 'body') {
+                    data.cell.styles.textColor = '#28a745';
+                    data.cell.styles.fontStyle = 'bold';
+                }
+            });
+        }
+
+        if (!incluiuAlgumaSecao) {
+            return Swal.fire('Aviso', 'Não há registros nas opções selecionadas para exportar.', 'info');
+        }
+
+        const sufixoArquivo = sufixoArquivoExportRelGeralObras(opcoes);
+        doc.save('espelho_relatorio_geral_nf' + sufixoArquivo + '_' + emp.replace(/\s+/g, '_') + '.pdf');
+    }
+
+    window.exportarPDFRelatorioGeralNotasFiscais = async function () {
+        const pack = window._relGeralNFExport;
+        if (!pack) {
+            return Swal.fire('Atenção', 'Carregue o relatório de NF primeiro (Atualizar Relatório de NF).', 'warning');
+        }
+
+        const opcoes = await perguntarOpcoesExportRelGeralObras({
+            vencidas: pack.vencidas,
+            aVencer: pack.aVencer,
+            pagasForn: pack.pagasForn,
+            terceiros: [],
+            somaVencidas: pack.somaVencidas,
+            somaAVencer: pack.somaAVencer,
+            somaPagas: pack.somaPagas
+        }, {
+            prefix: 'pdf-rel-nf',
+            titulo: '🖨️ Exportar espelho PDF — Notas Fiscais',
+            textoIntro: 'Marque o que deseja incluir no PDF para imprimir:',
+            botaoConfirmar: 'Gerar PDF'
+        });
+        if (!opcoes) return;
+        gerarPdfRelGeralNFEspelho(pack, opcoes);
+    };
+
+    window.exportarExcelRelatorioGeralNotasFiscais = async function () {
+        const pack = window._relGeralNFExport;
+        if (!pack) {
+            return Swal.fire('Atenção', 'Carregue o relatório de NF primeiro (Atualizar Relatório de NF).', 'warning');
+        }
+
+        const opcoes = await perguntarOpcoesExportRelGeralObras({
+            vencidas: pack.vencidas,
+            aVencer: pack.aVencer,
+            pagasForn: pack.pagasForn,
+            terceiros: [],
+            somaVencidas: pack.somaVencidas,
+            somaAVencer: pack.somaAVencer,
+            somaPagas: pack.somaPagas
+        }, {
+            prefix: 'xls-rel-nf',
+            titulo: '📊 Exportar espelho Excel — Notas Fiscais',
+            textoIntro: 'Marque o que deseja incluir na planilha:',
+            botaoConfirmar: 'Gerar Excel',
+            corConfirmar: '#217346'
+        });
+        if (!opcoes) return;
+        gerarExcelRelGeralNFEspelho(pack, opcoes);
+    };
+
+    window.carregarRelatorioGeralNotasFiscais = async function () {
+        const empresaLogada = getEmpresaGestor();
+        const divSecoes = document.getElementById('rel-geral-nf-secoes');
+        const divResumo = document.getElementById('rel-geral-nf-resumo');
+        const divTotais = document.getElementById('rel-geral-nf-resumo-totais');
+        const divDetalhe = document.getElementById('rel-geral-nf-resumo-detalhe');
+        const divAcoes = document.getElementById('rel-geral-nf-acoes');
+
+        if (!empresaLogada) return Swal.fire('Atenção', 'Empresa não definida.', 'warning');
+        if (!divSecoes) return;
+
+        divSecoes.innerHTML = '<p style="text-align:center;color:#888;">Carregando relatório de notas fiscais...</p>';
+        if (divResumo) divResumo.style.display = 'none';
+        if (divAcoes) divAcoes.style.display = 'none';
+        window._relGeralNFExport = null;
+
+        const filtros = obterFiltrosRelGeralNF();
+
+        try {
+            const qDesp = query(collection(db, 'despesas_obras'), where('empresa_id', '==', empresaLogada));
+            const qRel = query(collection(db, COLECAO_RELATORIO_DESPESAS), where('empresa_id', '==', empresaLogada));
+            const [snapDesp, snapRel] = await Promise.all([getDocs(qDesp), getDocs(qRel)]);
+
+            let itens = [];
+            snapDesp.forEach((docSnap) => {
+                itens.push(normalizarItemRelGeralNF({ id: docSnap.id, ...docSnap.data() }, 'despesas_obras'));
+            });
+            snapRel.forEach((docSnap) => {
+                itens.push(normalizarItemRelGeralNF({ id: docSnap.id, ...docSnap.data() }, 'relatorio_despesas'));
+            });
+
+            const totalBruto = itens.length;
+            const comNf = itens.filter(notaFiscalPreenchida).length;
+            itens = itens.filter((d) => itemPassaFiltroRelGeralNF(d, filtros));
+
+            let htmlVencidas = '';
+            let htmlAVencer = '';
+            let htmlPagas = '';
+            let somaVencidas = 0;
+            let somaAVencer = 0;
+            let somaPagas = 0;
+
+            const pendentes = itens.filter((d) => !despesaEstaPagaNorm(d));
+            const pagas = itens.filter((d) => despesaEstaPagaNorm(d));
+            const listaVencidas = pendentes.filter((d) => despesaEstaVencida(d));
+            const listaAVencer = pendentes.filter((d) => !despesaEstaVencida(d));
+            ordenarRelatorioDespesasPorVencimento(listaVencidas);
+            ordenarRelatorioDespesasPorVencimento(listaAVencer);
+            ordenarRelatorioDespesasPorVencimento(pagas);
+
+            listaVencidas.forEach((d) => {
+                somaVencidas += (d.valor_numero || 0);
+                htmlVencidas += htmlCardNFRelGeral(d, true);
+            });
+
+            listaAVencer.forEach((d) => {
+                somaAVencer += (d.valor_numero || 0);
+                htmlAVencer += htmlCardNFRelGeral(d, false);
+            });
+
+            const agrupadoPagas = {};
+            pagas.forEach((d) => {
+                somaPagas += (d.valor_numero || 0);
+                const ref = separarDataSegura(d.data_pagamento || d.data);
+                if (!agrupadoPagas[ref.ano]) agrupadoPagas[ref.ano] = {};
+                if (!agrupadoPagas[ref.ano][ref.mes]) agrupadoPagas[ref.ano][ref.mes] = [];
+                agrupadoPagas[ref.ano][ref.mes].push(d);
+            });
+
+            const chavesAno = Object.keys(agrupadoPagas).sort((a, b) => {
+                if (a === 'Outros') return 1;
+                if (b === 'Outros') return -1;
+                return Number(b) - Number(a);
+            });
+            chavesAno.forEach((ano) => {
+                htmlPagas += '<details class="pasta-ano"><summary>Ano ' + escapeHtmlBasico(ano) + '</summary><div class="folder-content">';
+                const chavesMes = Object.keys(agrupadoPagas[ano]).sort((a, b) => {
+                    if (a === 'Outros') return 1;
+                    if (b === 'Outros') return -1;
+                    return Number(b) - Number(a);
+                });
+                chavesMes.forEach((mes) => {
+                    const nomeDoMes = nomeMeses[mes] || mes;
+                    htmlPagas += '<details class="pasta-mes"><summary>' + escapeHtmlBasico(String(nomeDoMes)) + '</summary><div class="folder-content">';
+                    ordenarRelatorioDespesasPorVencimento(agrupadoPagas[ano][mes]);
+                    agrupadoPagas[ano][mes].forEach((d) => {
+                        htmlPagas += htmlCardNFPagaRelGeral(d);
+                    });
+                    htmlPagas += '</div></details>';
+                });
+                htmlPagas += '</div></details>';
+            });
+
+            const emAberto = somaVencidas + somaAVencer;
+            const totalGeral = emAberto + somaPagas;
+
+            if (divTotais) {
+                divTotais.innerHTML = montarHtmlPainelResumoDespesas(somaVencidas, somaAVencer, somaPagas, 'Total Geral (NF):');
+            }
+            if (divDetalhe) {
+                const filtrosTxt = [];
+                if (filtros.soComNf) filtrosTxt.push('somente com nº de NF');
+                if (filtros.texto) filtrosTxt.push('busca: "' + (document.getElementById('rel-nf-filtro-texto')?.value || '').trim() + '"');
+                if (filtros.status !== 'todos') filtrosTxt.push('situação: ' + filtros.status.replace('_', ' '));
+                divDetalhe.innerHTML = '<b>' + itens.length + '</b> registro(s) exibido(s)'
+                    + ' · Em aberto: <b>' + formatarMoeda(emAberto) + '</b>'
+                    + ' · Pagos: <b>' + formatarMoeda(somaPagas) + '</b>'
+                    + ' · Total: <b>' + formatarMoeda(totalGeral) + '</b>'
+                    + '<br>Base: <b>' + totalBruto + '</b> lançamento(s) · <b>' + comNf + '</b> com NF preenchida'
+                    + (filtrosTxt.length ? ' · Filtros: ' + filtrosTxt.join(' · ') : '');
+            }
+            if (divResumo) divResumo.style.display = 'block';
+            if (divAcoes) divAcoes.style.display = 'flex';
+
+            window._relGeralNFExport = {
+                empresa: empresaLogada,
+                somaVencidas,
+                somaAVencer,
+                somaPagas,
+                emAberto,
+                totalGeral,
+                vencidas: listaVencidas.slice(),
+                aVencer: listaAVencer.slice(),
+                pagasForn: pagas.slice()
+            };
+
+            let htmlSecoes = '';
+            const cntVenc = listaVencidas.length;
+            const cntAvencer = listaAVencer.length;
+
+            htmlSecoes += '<div id="rel-geral-nf-quadro">';
+
+            htmlSecoes += '<details class="secao-despesas-busca secao-vencidas">'
+                + '<summary>🔴 Em aberto — Vencido (' + cntVenc + ') — ' + formatarMoeda(somaVencidas) + ' <span class="secao-seta">▲</span></summary>'
+                + '<div class="secao-despesas-conteudo">'
+                + (htmlVencidas || '<p style="text-align:center;color:#888;padding:12px;">Nenhuma nota vencida com os filtros atuais.</p>')
+                + '</div></details>';
+
+            htmlSecoes += '<details class="secao-despesas-busca secao-avencer">'
+                + '<summary>🟡 A vencer — No prazo (' + cntAvencer + ') — ' + formatarMoeda(somaAVencer) + ' <span class="secao-seta">▲</span></summary>'
+                + '<div class="secao-despesas-conteudo">'
+                + (htmlAVencer || '<p style="text-align:center;color:#888;padding:12px;">Nenhuma nota a vencer com os filtros atuais.</p>')
+                + '</div></details>';
+
+            htmlSecoes += '<details class="secao-despesas-busca secao-pagas">'
+                + '<summary>🟢 Já pago (' + pagas.length + ') — ' + formatarMoeda(somaPagas) + ' <span class="secao-seta">▲</span></summary>'
+                + '<div class="secao-despesas-conteudo">'
+                + (htmlPagas || '<p style="text-align:center;color:#888;padding:12px;">Nenhuma nota paga com os filtros atuais.</p>')
+                + '</div></details>';
+
+            htmlSecoes += '</div>';
+
+            if (!itens.length) {
+                divSecoes.innerHTML = '<p style="text-align:center;color:#888;padding:20px;">Nenhum registro encontrado com os filtros atuais.'
+                    + (filtros.soComNf ? '<br><span style="font-size:12px;">Desmarque "Só com nº de NF preenchido" para ver lançamentos sem número de NF.</span>' : '')
+                    + '</p>';
+            } else {
+                divSecoes.innerHTML = htmlSecoes;
+            }
+        } catch (e) {
+            console.error(e);
+            divSecoes.innerHTML = '<p style="text-align:center;color:#d9534f;">Erro ao carregar o relatório de notas fiscais. Tente novamente.</p>';
+        }
+    };
+
  window.buscarDespesasObra = async function() {
         const inputEl = document.getElementById('busca-obra');
         const termoBusca = normalizarChaveNomeDespesa(inputEl ? inputEl.value : '');
@@ -9859,7 +10474,7 @@ window.exportarPDF = function(tipo) {
     };
 
     const ABAS_GRUPO_EQUIPE = ['cadastrar', 'equipe-cadastrada', 'criar', 'buscar', 'ponto', 'ajuda-custo', 'descontos-folha', 'folha', 'pedidos'];
-    const ABAS_GRUPO_OBRAS = ['despesas-cadastrar', 'despesas-relatorio', 'relatorio-despesas', 'obras-relatorio-geral', 'terceiros'];
+    const ABAS_GRUPO_OBRAS = ['despesas-cadastrar', 'despesas-relatorio', 'relatorio-despesas', 'obras-relatorio-geral', 'notas-fiscais-geral', 'terceiros'];
     const ABAS_GRUPO_DOCUMENTOS = ['documentos-fh', 'documentos-hallana', 'documentos-felipe', 'documentos-wellington'];
 
     window.abrirGrupoMenuObras = function () {
@@ -9975,6 +10590,11 @@ window.exportarPDF = function(tipo) {
         if (aba === 'obras-relatorio-geral') {
             if (typeof window.carregarRelatorioGeralObras === 'function') {
                 window.carregarRelatorioGeralObras();
+            }
+        }
+        if (aba === 'notas-fiscais-geral') {
+            if (typeof window.carregarRelatorioGeralNotasFiscais === 'function') {
+                window.carregarRelatorioGeralNotasFiscais();
             }
         }
         if (aba === 'pedidos') {
@@ -11851,42 +12471,84 @@ window.gerarFolhaPagamento = async function() {
     window.detectarErrosSequenciaPontoDia = detectarErrosSequenciaPontoDia;
     window.obterEstadoPontoDiaFromFirestore = obterEstadoPontoDiaFromFirestore;
 
+    function sanitizarPayloadPontoParaLocal(payload) {
+        const limpo = Object.assign({}, payload || {});
+        // FieldValue (serverTimestamp) não sobrevive ao JSON.stringify do localStorage
+        delete limpo.created_at;
+        delete limpo.synced_at;
+        return limpo;
+    }
+
+    function prepararPayloadPontoParaFirestore(payloadOrigem) {
+        const payload = sanitizarPayloadPontoParaLocal(payloadOrigem);
+        payload.created_at = serverTimestamp();
+        payload.synced_at = serverTimestamp();
+        payload.origem_registro = payload.origem_registro || 'offline_sync';
+        return payload;
+    }
+
     async function sincronizarPontoOffline() {
         const pontosOffline = JSON.parse(localStorage.getItem('pontos_offline') || '[]');
         
         if (pontosOffline.length > 0 && navigator.onLine) {
             let salvos = 0;
             const pendentes = [];
+            try { await ensureAuth(); } catch (_) {}
+
             for (let i = 0; i < pontosOffline.length; i++) {
                 try {
-                    const payload = { ...pontosOffline[i] };
+                    const bruto = pontosOffline[i];
+                    const payload = prepararPayloadPontoParaFirestore(bruto);
                     const funcId = payload.funcionario_id;
                     const dataBR = payload.data || obterDataHojeBrPonto();
-                    let estado = estadoPontoVazio();
-                    if (funcId) {
-                        estado = await obterEstadoPontoDiaFromFirestore(funcId, dataBR);
+
+                    // Avisa a gestão se estiver fora de ordem, mas NÃO descarta o ponto
+                    // (comportamento antigo: offline sempre entra no sistema ao sincronizar).
+                    try {
+                        let estado = estadoPontoVazio();
+                        if (funcId) {
+                            estado = await promiseComTimeout(
+                                obterEstadoPontoDiaFromFirestore(funcId, dataBR),
+                                10000,
+                                'timeout_estado_sync'
+                            );
+                        }
+                        const valid = validarSequenciaPontoTipo(payload.tipo, estado);
+                        if (!valid.ok) {
+                            await registrarEventoSequenciaPontoInvalida({
+                                empresa_id: payload.empresa_id || null,
+                                funcionario_id: funcId,
+                                funcionario_nome: payload.nome || '',
+                                tipo_tentado: payload.tipo,
+                                motivo: valid.msg,
+                                data_br: dataBR,
+                                hora_tentativa: payload.hora || '',
+                                origem: 'offline_sync'
+                            });
+                        }
+                    } catch (eSeq) {
+                        console.warn('validação sequência no sync offline', eSeq);
                     }
-                    const valid = validarSequenciaPontoTipo(payload.tipo, estado);
-                    if (!valid.ok) {
-                        await registrarEventoSequenciaPontoInvalida({
-                            empresa_id: payload.empresa_id || null,
-                            funcionario_id: funcId,
-                            funcionario_nome: payload.nome || '',
-                            tipo_tentado: payload.tipo,
-                            motivo: valid.msg,
-                            data_br: dataBR,
-                            hora_tentativa: payload.hora || '',
-                            origem: 'offline_sync'
-                        });
-                        continue;
+
+                    try {
+                        const cancelados = funcId ? await promiseComTimeout(
+                            buscarIdsPontoCanceladosFuncionario(funcId),
+                            8000,
+                            'timeout_cancel_sync'
+                        ) : new Set();
+                        const batidasDia = funcId ? await promiseComTimeout(
+                            buscarBatidasPontoDiaFuncionario(funcId, dataBR),
+                            8000,
+                            'timeout_batidas_sync'
+                        ) : [];
+                        if (existeBatidaDuplicadaPonto(batidasDia, cancelados, payload.tipo, dataBR, payload.hora)) {
+                            salvos++; // já existe na nuvem — remove da fila local
+                            continue;
+                        }
+                    } catch (eDup) {
+                        console.warn('checagem duplicado no sync offline', eDup);
                     }
-                    const cancelados = funcId ? await buscarIdsPontoCanceladosFuncionario(funcId) : new Set();
-                    const batidasDia = funcId ? await buscarBatidasPontoDiaFuncionario(funcId, dataBR) : [];
-                    if (existeBatidaDuplicadaPonto(batidasDia, cancelados, payload.tipo, dataBR, payload.hora)) {
-                        continue;
-                    }
-                    if (!payload.created_at) payload.created_at = serverTimestamp();
-                    payload.synced_at = serverTimestamp();
+
                     await addDoc(collection(db, "ponto_registros"), payload);
                     salvos++;
                 } catch (e) {
@@ -11960,56 +12622,98 @@ window.gerarFolhaPagamento = async function() {
 
         const funcIdPre = getSessaoFunc('funcLogadoId');
         const dataHojePonto = obterDataAtualStr();
+        const estaOffline = !navigator.onLine;
+
         if (funcIdPre) {
             let estadoAtual = estadoPontoVazio();
-            try {
-                Swal.fire({
-                    title: 'Verificando sequência...',
-                    allowOutsideClick: false,
-                    showConfirmButton: false,
-                    didOpen: function () { Swal.showLoading(); }
-                });
-                estadoAtual = await obterEstadoPontoDiaFromFirestore(funcIdPre, dataHojePonto);
-                salvarEstadoPonto(funcIdPre, estadoAtual);
-            } catch (e) {
-                console.warn('estado ponto nuvem', e);
+            if (estaOffline) {
+                // Offline: usa só o estado do celular (não espera a nuvem)
                 estadoAtual = lerEstadoPonto(funcIdPre) || estadoPontoVazio();
-            } finally {
-                try { if (Swal.isVisible()) Swal.close(); } catch (_) {}
+            } else {
+                try {
+                    Swal.fire({
+                        title: 'Verificando sequência...',
+                        allowOutsideClick: false,
+                        showConfirmButton: false,
+                        didOpen: function () { Swal.showLoading(); }
+                    });
+                    estadoAtual = await promiseComTimeout(
+                        obterEstadoPontoDiaFromFirestore(funcIdPre, dataHojePonto),
+                        8000,
+                        'timeout_estado_ponto'
+                    );
+                    salvarEstadoPonto(funcIdPre, estadoAtual);
+                } catch (e) {
+                    console.warn('estado ponto nuvem', e);
+                    estadoAtual = lerEstadoPonto(funcIdPre) || estadoPontoVazio();
+                } finally {
+                    try { if (Swal.isVisible()) Swal.close(); } catch (_) {}
+                }
             }
 
             const valid = validarSequenciaPontoTipo(tipo, estadoAtual);
             if (!valid.ok) {
                 const horaTent = String(new Date().getHours()).padStart(2, '0') + ':' + String(new Date().getMinutes()).padStart(2, '0');
-                await registrarEventoSequenciaPontoInvalida({
-                    empresa_id: empresaDoFuncionario || null,
-                    funcionario_id: funcIdPre,
-                    funcionario_nome: getSessaoFunc('funcLogadoNome') || '',
-                    tipo_tentado: tipo,
-                    motivo: valid.msg,
-                    data_br: dataHojePonto,
-                    hora_tentativa: horaTent,
-                    origem: 'batida_funcionario'
-                });
-                if (typeof monitorarSequenciaPontoGestor === 'function') {
-                    try { monitorarSequenciaPontoGestor(); } catch (_) {}
+                if (!estaOffline) {
+                    await registrarEventoSequenciaPontoInvalida({
+                        empresa_id: empresaDoFuncionario || null,
+                        funcionario_id: funcIdPre,
+                        funcionario_nome: getSessaoFunc('funcLogadoNome') || '',
+                        tipo_tentado: tipo,
+                        motivo: valid.msg,
+                        data_br: dataHojePonto,
+                        hora_tentativa: horaTent,
+                        origem: 'batida_funcionario'
+                    });
+                    if (typeof monitorarSequenciaPontoGestor === 'function') {
+                        try { monitorarSequenciaPontoGestor(); } catch (_) {}
+                    }
                 }
                 return Swal.fire(
                     'Sequência inválida',
-                    valid.msg + '<br><br><small>A gestão foi avisada automaticamente.</small>',
+                    valid.msg + (estaOffline
+                        ? '<br><br><small>Sem internet: o aviso à gestão será enviado ao sincronizar, se necessário.</small>'
+                        : '<br><br><small>A gestão foi avisada automaticamente.</small>'),
                     'warning'
                 );
             }
 
             const horaPrev = String(new Date().getHours()).padStart(2, '0') + ':' + String(new Date().getMinutes()).padStart(2, '0');
-            const canceladosDup = await buscarIdsPontoCanceladosFuncionario(funcIdPre);
-            const batidasHojeDup = await buscarBatidasPontoDiaFuncionario(funcIdPre, dataHojePonto);
-            if (existeBatidaDuplicadaPonto(batidasHojeDup, canceladosDup, tipo, dataHojePonto, horaPrev)) {
-                return Swal.fire(
-                    'Ponto já registado',
-                    'Já existe <b>' + escapeHtmlBasico(tipo) + '</b> hoje às <b>' + escapeHtmlBasico(horaPrev) + '</b>.<br><br>Apenas <b>uma</b> batida com o mesmo horário conta.',
-                    'info'
-                );
+
+            // Duplicado na fila offline (mesmo tipo + horário)
+            try {
+                const filaOff = JSON.parse(localStorage.getItem('pontos_offline') || '[]');
+                if (existeBatidaDuplicadaPonto(filaOff, null, tipo, dataHojePonto, horaPrev)) {
+                    return Swal.fire(
+                        'Ponto já registado',
+                        'Já existe <b>' + escapeHtmlBasico(tipo) + '</b> hoje às <b>' + escapeHtmlBasico(horaPrev) + '</b> na fila offline.<br><br>NÃO BATA NOVAMENTE.',
+                        'info'
+                    );
+                }
+            } catch (_) {}
+
+            if (!estaOffline) {
+                try {
+                    const canceladosDup = await promiseComTimeout(
+                        buscarIdsPontoCanceladosFuncionario(funcIdPre),
+                        6000,
+                        'timeout_cancel_ponto'
+                    );
+                    const batidasHojeDup = await promiseComTimeout(
+                        buscarBatidasPontoDiaFuncionario(funcIdPre, dataHojePonto),
+                        6000,
+                        'timeout_batidas_ponto'
+                    );
+                    if (existeBatidaDuplicadaPonto(batidasHojeDup, canceladosDup, tipo, dataHojePonto, horaPrev)) {
+                        return Swal.fire(
+                            'Ponto já registado',
+                            'Já existe <b>' + escapeHtmlBasico(tipo) + '</b> hoje às <b>' + escapeHtmlBasico(horaPrev) + '</b>.<br><br>Apenas <b>uma</b> batida com o mesmo horário conta.',
+                            'info'
+                        );
+                    }
+                } catch (eDup) {
+                    console.warn('checagem duplicado nuvem', eDup);
+                }
             }
 
             const chaveAntiDuplo = 'ultimo_ponto_envio_' + funcIdPre;
@@ -12031,11 +12735,15 @@ window.gerarFolhaPagamento = async function() {
         }
 
         let authUid = null;
-        try {
-            const user = await ensureAuth();
-            authUid = user?.uid || localStorage.getItem('auth_uid') || null;
-        } catch (e) {
-            console.error('ensureAuth no ponto', e);
+        if (!estaOffline) {
+            try {
+                const user = await promiseComTimeout(ensureAuth(), 8000, 'timeout_auth_ponto');
+                authUid = user?.uid || localStorage.getItem('auth_uid') || null;
+            } catch (e) {
+                console.error('ensureAuth no ponto', e);
+                authUid = localStorage.getItem('auth_uid') || null;
+            }
+        } else {
             authUid = localStorage.getItem('auth_uid') || null;
         }
 
@@ -12045,8 +12753,10 @@ window.gerarFolhaPagamento = async function() {
 
         window.__pontoProcessando = true;
         Swal.fire({
-            title: 'A gravar ponto...',
-            text: 'A obter localização (GPS). Permita o acesso à localização se o navegador pedir.',
+            title: estaOffline ? 'A gravar ponto offline...' : 'A gravar ponto...',
+            text: estaOffline
+                ? 'Sem internet — o ponto será salvo neste celular e enviado depois.'
+                : 'A obter localização (GPS). Permita o acesso à localização se o navegador pedir.',
             allowOutsideClick: true,
             didOpen: function () { Swal.showLoading(); }
         });
@@ -12081,13 +12791,21 @@ window.gerarFolhaPagamento = async function() {
                 foto: fotoBase64,
                 timestamp: dataObj.getTime(),
                 client_device_tz: Intl.DateTimeFormat().resolvedOptions().timeZone || "unknown",
-                created_at: serverTimestamp()
+                origem_registro: (!navigator.onLine) ? 'offline_local' : 'online'
             };
 
             if (navigator.onLine) {
                 try {
-                    const canceladosGrav = await buscarIdsPontoCanceladosFuncionario(funcId);
-                    const batidasGrav = await buscarBatidasPontoDiaFuncionario(funcId, dataAtual);
+                    const canceladosGrav = await promiseComTimeout(
+                        buscarIdsPontoCanceladosFuncionario(funcId),
+                        5000,
+                        'timeout_cancel_grav'
+                    );
+                    const batidasGrav = await promiseComTimeout(
+                        buscarBatidasPontoDiaFuncionario(funcId, dataAtual),
+                        5000,
+                        'timeout_batidas_grav'
+                    );
                     if (existeBatidaDuplicadaPonto(batidasGrav, canceladosGrav, tipo, dataAtual, horaAtual)) {
                         return Swal.fire(
                             'Ponto já registado',
@@ -12095,7 +12813,8 @@ window.gerarFolhaPagamento = async function() {
                             'info'
                         );
                     }
-                    const docRef = await addDoc(collection(db, "ponto_registros"), payloadPonto);
+                    const payloadOnline = Object.assign({}, payloadPonto, { created_at: serverTimestamp() });
+                    const docRef = await addDoc(collection(db, "ponto_registros"), payloadOnline);
                     atualizarEstadoAposMarcacao(funcId, tipo, payloadPonto.timestamp);
                     try {
                         localStorage.setItem('ultimo_ponto_envio_' + funcId, JSON.stringify({
@@ -12109,11 +12828,18 @@ window.gerarFolhaPagamento = async function() {
                         try { monitorarSequenciaPontoGestor(); } catch (_) {}
                     }
                     const avisoGps = geo.ok ? '' : '<br><small style="color:#666;">GPS não obtido nesta batida; o registro foi gravado sem coordenadas.</small>';
-                    Swal.fire(
-                        'Sucesso!',
-                        `Ponto de ${tipo} registrado às ${horaAtual}.<br><br><b>Protocolo:</b> ${docRef.id}${avisoGps}`,
-                        'success'
-                    );
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'PONTO REGISTRADO',
+                        html: ''
+                            + '<p style="font-size:22px;font-weight:900;color:#b02a37;letter-spacing:0.5px;margin:8px 0 14px 0;line-height:1.25;">NÃO BATA NOVAMENTE</p>'
+                            + '<p style="font-size:15px;margin:0 0 10px 0;"><b>' + escapeHtmlBasico(tipo) + '</b> às <b>' + escapeHtmlBasico(horaAtual) + '</b></p>'
+                            + '<p style="font-size:12px;color:#555;margin:0;">Protocolo: ' + escapeHtmlBasico(docRef.id) + '</p>'
+                            + avisoGps,
+                        confirmButtonText: 'Entendi',
+                        confirmButtonColor: '#1a2a43',
+                        allowOutsideClick: false
+                    });
                 } catch (e) {
                     console.error(e);
                     salvarNoCelular(payloadPonto);
@@ -12133,30 +12859,53 @@ window.gerarFolhaPagamento = async function() {
 
         function salvarNoCelular(payloadPonto) {
             const offlineData = JSON.parse(localStorage.getItem('pontos_offline') || '[]');
-            if (offlineData.some((p) => chaveDedupBatidaPonto(p) === chaveDedupBatidaPonto(payloadPonto))) {
-                Swal.fire('Já guardado', 'Este ponto (mesmo tipo e horário) já está na fila offline. Apenas um registro conta.', 'info');
+            const payloadLimpo = sanitizarPayloadPontoParaLocal(payloadPonto);
+            if (offlineData.some((p) => chaveDedupBatidaPonto(p) === chaveDedupBatidaPonto(payloadLimpo))) {
+                Swal.fire('Já guardado', 'Este ponto (mesmo tipo e horário) já está na fila offline. Apenas um registro conta.<br><br><b style="color:#b02a37;">NÃO BATA NOVAMENTE</b>', 'info');
                 return;
             }
-            offlineData.push(payloadPonto);
+            offlineData.push(payloadLimpo);
             localStorage.setItem('pontos_offline', JSON.stringify(offlineData));
-            atualizarEstadoAposMarcacao(payloadPonto.funcionario_id, payloadPonto.tipo, payloadPonto.timestamp);
+            atualizarEstadoAposMarcacao(payloadLimpo.funcionario_id, payloadLimpo.tipo, payloadLimpo.timestamp);
             try {
-                localStorage.setItem('ultimo_ponto_envio_' + payloadPonto.funcionario_id, JSON.stringify({
-                    tipo: payloadPonto.tipo,
-                    data: payloadPonto.data,
-                    hora: payloadPonto.hora,
+                localStorage.setItem('ultimo_ponto_envio_' + payloadLimpo.funcionario_id, JSON.stringify({
+                    tipo: payloadLimpo.tipo,
+                    data: payloadLimpo.data,
+                    hora: payloadLimpo.hora,
                     ts: Date.now()
                 }));
             } catch (_) {}
-            Swal.fire(
-                'Ponto Guardado Offline! 📶❌',
-                `Sem internet. O seu ponto de ${payloadPonto.tipo} foi travado com o horário exato:<br><br><b style="font-size:18px; color:#d9534f;">${payloadPonto.data} às ${payloadPonto.hora}</b><br><br>Será enviado quando conectar a uma rede.`,
-                'info'
-            );
+            Swal.fire({
+                icon: 'info',
+                title: 'PONTO REGISTRADO',
+                html: ''
+                    + '<p style="font-size:22px;font-weight:900;color:#b02a37;letter-spacing:0.5px;margin:8px 0 14px 0;line-height:1.25;">NÃO BATA NOVAMENTE</p>'
+                    + '<p style="font-size:14px;margin:0 0 10px 0;">Sem internet — o ponto foi guardado no celular.</p>'
+                    + '<p style="font-size:16px;margin:0;"><b>' + escapeHtmlBasico(payloadLimpo.tipo) + '</b><br>'
+                    + '<b style="color:#d9534f;">' + escapeHtmlBasico(payloadLimpo.data) + ' às ' + escapeHtmlBasico(payloadLimpo.hora) + '</b></p>'
+                    + '<p style="font-size:12px;color:#555;margin:12px 0 0 0;">Será enviado automaticamente quando a internet voltar.</p>',
+                confirmButtonText: 'Entendi',
+                confirmButtonColor: '#1a2a43',
+                allowOutsideClick: false
+            });
         }
 
         try {
-            const coords = await obterCoordenadasGeolocalizacaoRapida();
+            let coords = { lat: null, lng: null };
+            if (estaOffline) {
+                // Offline: não trava no GPS — tenta rápido ou segue sem coordenadas
+                try {
+                    coords = await promiseComTimeout(
+                        obterCoordenadasGeolocalizacaoRapida(),
+                        4000,
+                        'timeout_gps_offline'
+                    );
+                } catch (_) {
+                    coords = { lat: null, lng: null };
+                }
+            } else {
+                coords = await obterCoordenadasGeolocalizacaoRapida();
+            }
             try { Swal.close(); } catch (_) {}
             await processarPontoFinal(coords.lat, coords.lng);
         } catch (e) {
@@ -12164,7 +12913,6 @@ window.gerarFolhaPagamento = async function() {
             try { Swal.close(); } catch (_) {}
             Swal.fire('Erro', 'Não foi possível concluir o registro.', 'error');
         } finally {
-            try { Swal.close(); } catch (_) {}
             liberaProcessamento();
         }
     };
