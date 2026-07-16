@@ -1182,7 +1182,8 @@
 
             #alerta-container-global,
             #alerta-container-docs,
-            #alerta-container-ponto {
+            #alerta-container-ponto,
+            #alerta-container-pedidos {
                 --alerta-painel-largura: min(380px, calc(100vw - 16px));
             }
 
@@ -1198,7 +1199,9 @@
             #alerta-container-docs .alerta-painel-wrapper,
             #alerta-container-docs .alerta-barra-minimizada,
             #alerta-container-ponto .alerta-painel-wrapper,
-            #alerta-container-ponto .alerta-barra-minimizada {
+            #alerta-container-ponto .alerta-barra-minimizada,
+            #alerta-container-pedidos .alerta-painel-wrapper,
+            #alerta-container-pedidos .alerta-barra-minimizada {
                 width: 100%;
                 max-width: 100%;
             }
@@ -1607,7 +1610,9 @@
             pointer-events: none;
         }
         #video-selfie.camera-espelhada,
-        #foto-tirada.camera-espelhada {
+        #foto-tirada.camera-espelhada,
+        #hol-video-selfie.camera-espelhada,
+        #hol-foto-tirada.camera-espelhada {
             transform: scaleX(-1);
         }
         
@@ -2228,13 +2233,15 @@
 
         #alerta-container-global,
         #alerta-container-docs,
-        #alerta-container-ponto {
+        #alerta-container-ponto,
+        #alerta-container-pedidos {
             --alerta-painel-largura: 380px;
         }
 
         #alerta-container-global .alerta-painel-wrapper,
         #alerta-container-docs .alerta-painel-wrapper,
-        #alerta-container-ponto .alerta-painel-wrapper {
+        #alerta-container-ponto .alerta-painel-wrapper,
+        #alerta-container-pedidos .alerta-painel-wrapper {
             width: var(--alerta-painel-largura);
             max-width: calc(100vw - 32px);
             box-sizing: border-box;
@@ -2242,7 +2249,8 @@
 
         #alerta-container-global .alerta-barra-minimizada,
         #alerta-container-docs .alerta-barra-minimizada,
-        #alerta-container-ponto .alerta-barra-minimizada {
+        #alerta-container-ponto .alerta-barra-minimizada,
+        #alerta-container-pedidos .alerta-barra-minimizada {
             width: var(--alerta-painel-largura);
             max-width: calc(100vw - 32px);
             box-sizing: border-box;
@@ -2250,7 +2258,8 @@
 
         #alerta-container-global .alerta-painel-header,
         #alerta-container-docs .alerta-painel-header,
-        #alerta-container-ponto .alerta-painel-header {
+        #alerta-container-ponto .alerta-painel-header,
+        #alerta-container-pedidos .alerta-painel-header {
             display: flex;
             align-items: center;
             justify-content: space-between;
@@ -2268,7 +2277,8 @@
 
         #alerta-container-global .alerta-painel-header-titulo,
         #alerta-container-docs .alerta-painel-header-titulo,
-        #alerta-container-ponto .alerta-painel-header-titulo {
+        #alerta-container-ponto .alerta-painel-header-titulo,
+        #alerta-container-pedidos .alerta-painel-header-titulo {
             font-weight: 800;
             font-size: 13px;
             color: #1a2a43;
@@ -2277,7 +2287,8 @@
 
         #alerta-container-global .alerta-painel-header-acoes,
         #alerta-container-docs .alerta-painel-header-acoes,
-        #alerta-container-ponto .alerta-painel-header-acoes {
+        #alerta-container-ponto .alerta-painel-header-acoes,
+        #alerta-container-pedidos .alerta-painel-header-acoes {
             display: flex;
             gap: 6px;
             flex-shrink: 0;
@@ -2286,7 +2297,8 @@
 
         #alerta-container-global .alerta-painel-corpo,
         #alerta-container-docs .alerta-painel-corpo,
-        #alerta-container-ponto .alerta-painel-corpo {
+        #alerta-container-ponto .alerta-painel-corpo,
+        #alerta-container-pedidos .alerta-painel-corpo {
             width: 100%;
             box-sizing: border-box;
             max-height: 70vh;
@@ -2303,7 +2315,8 @@
 
         #alerta-container-global .card-alerta-venc,
         #alerta-container-docs .card-alerta-venc,
-        #alerta-container-ponto .card-alerta-venc {
+        #alerta-container-ponto .card-alerta-venc,
+        #alerta-container-pedidos .card-alerta-venc {
             background: #fff;
             width: 100%;
             box-sizing: border-box;
@@ -2321,13 +2334,15 @@
 
         #alerta-container-global .card-alerta-venc:last-child,
         #alerta-container-docs .card-alerta-venc:last-child,
-        #alerta-container-ponto .card-alerta-venc:last-child {
+        #alerta-container-ponto .card-alerta-venc:last-child,
+        #alerta-container-pedidos .card-alerta-venc:last-child {
             margin-bottom: 0;
         }
 
         #alerta-container-global .alerta-btn-fechar,
         #alerta-container-docs .alerta-btn-fechar,
-        #alerta-container-ponto .alerta-btn-fechar {
+        #alerta-container-ponto .alerta-btn-fechar,
+        #alerta-container-pedidos .alerta-btn-fechar {
             background: #d9534f;
             color: #fff;
             border: none;
@@ -2341,7 +2356,8 @@
 
         #alerta-container-global .alerta-btn-imprimir,
         #alerta-container-docs .alerta-btn-imprimir,
-        #alerta-container-ponto .alerta-btn-ver-ponto {
+        #alerta-container-ponto .alerta-btn-ver-ponto,
+        #alerta-container-pedidos .alerta-btn-ver-pedidos {
             background: #1a2a43;
             color: #fff;
             border: none;
@@ -2355,7 +2371,8 @@
 
         #alerta-container-global .alerta-btn-minimizar,
         #alerta-container-docs .alerta-btn-minimizar,
-        #alerta-container-ponto .alerta-btn-minimizar {
+        #alerta-container-ponto .alerta-btn-minimizar,
+        #alerta-container-pedidos .alerta-btn-minimizar {
             background: #f8f9fa;
             border: 1px solid #ddd;
             border-radius: 6px;
@@ -2452,6 +2469,159 @@
             font-weight: 700;
             color: #888;
             margin-right: 6px;
+        }
+
+        .espelho-ponto-wrap {
+            background: #fff;
+            border: 1px solid #c5d0de;
+            border-radius: 10px;
+            overflow: hidden;
+            margin-top: 8px;
+        }
+
+        .espelho-ponto-cabecalho {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 12px 24px;
+            justify-content: space-between;
+            padding: 12px 14px;
+            background: #f4f7fb;
+            border-bottom: 1px solid #dbe3ee;
+            font-size: 12px;
+            color: #333;
+        }
+
+        .espelho-ponto-cabecalho b {
+            color: #1a2a43;
+        }
+
+        .espelho-ponto-titulo {
+            width: 100%;
+            text-align: center;
+            font-size: 14px;
+            font-weight: 800;
+            color: #1a2a43;
+            letter-spacing: 0.4px;
+            margin: 0 0 4px 0;
+        }
+
+        .espelho-ponto-scroll {
+            overflow-x: auto;
+            -webkit-overflow-scrolling: touch;
+        }
+
+        table.espelho-ponto-tabela {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 11px;
+            min-width: 920px;
+            background: #fff;
+        }
+
+        table.espelho-ponto-tabela th,
+        table.espelho-ponto-tabela td {
+            border: 1px solid #cfd8e3;
+            padding: 4px 5px;
+            text-align: center;
+            white-space: nowrap;
+            vertical-align: middle;
+        }
+
+        table.espelho-ponto-tabela thead th {
+            background: #e8eef5;
+            color: #1a2a43;
+            font-weight: 700;
+            font-size: 10px;
+        }
+
+        table.espelho-ponto-tabela thead tr.grupo th {
+            background: #1a2a43;
+            color: #fff;
+            font-size: 10px;
+            letter-spacing: 0.3px;
+        }
+
+        table.espelho-ponto-tabela tbody tr:nth-child(even) {
+            background: #fafcfe;
+        }
+
+        table.espelho-ponto-tabela tbody tr.espelho-dia-clicavel {
+            cursor: pointer;
+        }
+
+        table.espelho-ponto-tabela tbody tr.espelho-dia-clicavel:hover {
+            background: #eef5ff;
+        }
+
+        table.espelho-ponto-tabela tbody tr.espelho-dia-selecionado {
+            outline: 2px solid #1a2a43;
+            outline-offset: -2px;
+            background: #e8f0fe !important;
+        }
+
+        table.espelho-ponto-tabela td.hora-alerta {
+            color: #b02a37;
+            font-weight: 700;
+        }
+
+        table.espelho-ponto-tabela td.hora-clicavel {
+            cursor: pointer;
+            text-decoration: underline;
+            text-underline-offset: 2px;
+            color: #1a2a43;
+            font-weight: 700;
+        }
+
+        table.espelho-ponto-tabela td.hora-clicavel:hover {
+            background: #d6e8ff !important;
+        }
+
+        table.espelho-ponto-tabela td.hora-clicavel.hora-alerta {
+            color: #b02a37;
+        }
+
+        .espelho-selfie-preview {
+            max-width: 100%;
+            max-height: 320px;
+            border-radius: 10px;
+            border: 2px solid #e0e6ed;
+            margin: 8px auto;
+            display: block;
+            cursor: zoom-in;
+        }
+
+        table.espelho-ponto-tabela td.col-data {
+            text-align: left;
+            font-weight: 600;
+            color: #1a2a43;
+        }
+
+        table.espelho-ponto-tabela td.col-motivo {
+            text-align: left;
+            font-size: 10px;
+            white-space: normal;
+            min-width: 90px;
+            max-width: 140px;
+        }
+
+        table.espelho-ponto-tabela tfoot td {
+            background: #eef2f5;
+            font-weight: 800;
+            color: #1a2a43;
+        }
+
+        .espelho-ponto-detalhe {
+            margin-top: 10px;
+            padding: 10px;
+            border: 1px dashed #c5d0de;
+            border-radius: 10px;
+            background: #fafcff;
+        }
+
+        .espelho-ponto-detalhe h4 {
+            margin: 0 0 8px 0;
+            color: #1a2a43;
+            font-size: 13px;
         }
 
         /* Estilo da Tela de Backup */
@@ -2633,6 +2803,7 @@
                     <button type="button" class="gestor-menu-btn" data-titulo="Ajuda de Custo" onclick="mudarAba('ajuda-custo', this)">🧳 Ajuda de Custo</button>
                     <button type="button" class="gestor-menu-btn" data-titulo="Descontos Folha" onclick="mudarAba('descontos-folha', this)">📋 Descontos Folha</button>
                     <button type="button" class="gestor-menu-btn" data-titulo="Folha Pagamento" onclick="mudarAba('folha', this)">📄 Folha Pagamento</button>
+                    <button type="button" class="gestor-menu-btn" data-titulo="Holerites Assinados" onclick="mudarAba('holerites', this)">✍️ Holerites Assinados</button>
                     <button type="button" class="gestor-menu-btn" id="btn-menu-pedidos" data-titulo="Pedidos Materiais" onclick="mudarAba('pedidos', this)">📦 Pedidos Materiais</button>
                 </div>
             </div>
@@ -2848,7 +3019,7 @@
         </div>
 
         <label>Consultar Ponto do Funcionário:</label>
-        <p class="texto-explicacao" style="margin:4px 0 10px 0;">Os batimentos ficam na lista abaixo (nuvem: coleção <b>ponto_registros</b>). Um <b>cancelamento</b> só cola o aviso amarelo: o documento continua no mesmo sítio até o RH apagar com <b>APAGAR BATIDA</b> se quiser retirá-lo da base.</p>
+        <p class="texto-explicacao" style="margin:4px 0 10px 0;">Os batimentos ficam agrupados por <b>ano</b> e <b>mês</b>. Ao abrir o mês, aparece o <b>espelho de ponto</b> (tabela diária). Clique numa linha do dia para ver foto, GPS e ações do RH.</p>
         <p class="texto-explicacao" style="margin:0 0 10px 0;background:#fff5f5;border:1px solid #f5c6cb;border-radius:8px;padding:8px 10px;">
             <b>Sequência do ponto:</b> Entrada → Início intervalo → Fim intervalo → Saída (apenas 1 de cada, nesta ordem). Batidas fora de ordem aparecem em <b style="color:#b02a37;">vermelho</b> e geram alerta no canto da tela.
         </p>
@@ -2862,7 +3033,7 @@
             <button onclick="buscarPonto()" style="flex: 1; background: var(--dark-navy); color: white; border: none; border-radius: 10px; cursor: pointer; font-weight:bold;">Buscar</button>
         </div>
         
-        <button id="btnExportarPonto" class="btn-pdf-relatorio" style="display:none;" onclick="exportarPDF('ponto')">📥 EXPORTAR RELATÓRIO PDF</button>
+        <button id="btnExportarPonto" class="btn-pdf-relatorio" style="display:none;" onclick="exportarEspelhoPontoPDF()">📥 EXPORTAR ESPELHO PDF</button>
         <button type="button" class="btn-enviar" style="margin-top:12px; width:100%; background:#2c6f9e; box-shadow:none;" onclick="abrirRegistoPontoManualRH()">➕ Registar batida manual (RH) — caderno / correção</button>
         <button type="button" class="btn-enviar" style="margin-top:8px; width:100%; background:#b02a37; box-shadow:none;" onclick="rhGerirFaltaDia()">🚫 Falta injustificada / atestado (RH)</button>
         <p class="texto-explicacao" style="margin:6px 0 0 0;">Use após escolher o funcionário. <b>Falta injustificada</b> desconta o dia (e DSR, se o RH marcar). <b>Atestado / justificada</b> remove a falta automática (dia sem ponto).</p>
@@ -3089,7 +3260,8 @@
         <button class="btn-enviar" onclick="gerarFolhaPagamento()">💰 CALCULAR FECHAMENTO</button>
 
         <div id="resultado-folha" style="display: none;">
-            <button type="button" id="btnExportarHoleriteFolha" class="btn-pdf-relatorio" style="width:100%; margin-bottom:14px; padding:14px; font-size:14px;" onclick="exportarPDFHoleriteFolha()">🖨️ EXPORTAR ESPELHO DE HOLERITE (PDF PARA IMPRIMIR)</button>
+            <button type="button" id="btnExportarHoleriteFolha" class="btn-pdf-relatorio" style="width:100%; margin-bottom:10px; padding:14px; font-size:14px;" onclick="exportarPDFHoleriteFolha()">🖨️ EXPORTAR ESPELHO DE HOLERITE (PDF PARA IMPRIMIR)</button>
+            <button type="button" id="btnEnviarHoleriteAssinar" class="btn-enviar" style="width:100%; margin-bottom:14px; padding:14px; font-size:14px; background:#25D366; box-shadow:none;" onclick="enviarHoleriteParaAssinar()">✍️ ENVIAR HOLERITE PARA O FUNCIONÁRIO ASSINAR</button>
             <div class="card-folha">
                 <div style="text-align: center; border-bottom: 1px solid #ccc; padding-bottom: 10px; margin-bottom: 15px;">
                     <h3 style="margin: 0; color: var(--dark-navy);" id="f-nome-display">Nome</h3>
@@ -3219,6 +3391,25 @@
                     <div id="f-tabela-discriminacao" style="overflow-x:auto; max-height:560px; overflow-y:auto; border:1px solid #e0e6ed; border-radius:10px;"></div>
                 </details>
             </div>
+        </div>
+    </div>
+
+    <div id="aba-holerites" class="view-section">
+        <div style="background: #eef2f5; padding: 15px; border-radius: 10px; margin-bottom: 15px; border: 1px solid #1a2a43;">
+            <h3 style="margin: 0; color: var(--dark-navy); text-align: center;">✍️ Holerites para Assinatura</h3>
+            <p class="texto-explicacao" style="margin: 8px 0 0 0; text-align: center;">
+                Histórico dos holerites enviados para o funcionário assinar. Nos assinados, confira a <b>assinatura</b> e a <b>selfie</b> de comprovação.
+            </p>
+        </div>
+        <label>Funcionário</label>
+        <div style="display: flex; gap: 10px;">
+            <select id="hol-func-select" class="lista-funcs" style="margin: 0; flex: 2;">
+                <option value="">Carregando...</option>
+            </select>
+            <button type="button" onclick="buscarHoleritesAssinatura()" style="flex: 1; background: var(--dark-navy); color: white; border: none; border-radius: 10px; cursor: pointer; font-weight:bold;">Buscar</button>
+        </div>
+        <div id="lista-holerites-resultados" style="margin-top: 20px;">
+            <p style="text-align: center; color: #888; font-size: 13px;">Selecione o funcionário para ver os holerites.</p>
         </div>
     </div>
 
@@ -3765,6 +3956,38 @@
     <button class="btn-gold" id="btnAssinar" style="margin-top: 25px;">CONFIRMAR E ASSINAR</button>
 </div>
 
+<div class="main-card" id="tela-assinatura-holerite" style="display: none;">
+    <div class="header-logo">
+        <img src="https://i.postimg.cc/zDRJMSTn/69420f5a-5b80-457e-8146-00485162d7f2.jpg" crossorigin="anonymous" class="logo-img">
+        <div class="title-top">Holerite Digital Oficial</div>
+    </div>
+
+    <div id="area-recibo-holerite">
+        <div class="recibo-header">HOLERITE PARA ASSINATURA</div>
+        <div class="data-recibo" id="hol-f-data">--/--/----</div>
+        <div id="hol-f-texto" style="font-size:13px; line-height:1.55; color:#333;">Carregando dados...</div>
+
+        <label style="text-align: center; margin-top: 24px;">1) SELFIE DE COMPROVAÇÃO (obrigatória):</label>
+        <p style="font-size: 12px; color: #666; text-align: center; margin: 6px 0 10px;">Tire uma foto do seu rosto para comprovar que foi você quem assinou.</p>
+        <div class="botoes-camera-ponto" id="hol-botoes-abrir-camera" style="display:flex; gap:8px;">
+            <button id="hol-btn-camera-frontal" type="button" style="flex:1; background: #e0e6ed; color: #1a2a43; border:none; border-radius:10px; padding:12px; font-weight:700; cursor:pointer;" onclick="iniciarCameraHolerite('user')">🤳 Abrir selfie</button>
+        </div>
+        <button id="hol-btn-trocar-camera" type="button" class="btn-logout" style="display: none; margin-top: 8px; background: #6c757d; color: #fff; width: 100%;" onclick="alternarCameraHolerite()">🔄 Trocar câmera</button>
+        <video id="hol-video-selfie" autoplay playsinline muted style="display:none; width:100%; max-height:280px; border-radius:12px; margin-top:10px; background:#111; object-fit:cover;"></video>
+        <canvas id="hol-canvas-selfie" style="display: none;"></canvas>
+        <img id="hol-foto-tirada" src="" alt="Selfie de comprovação" style="display:none; width:100%; max-height:280px; border-radius:12px; margin-top:10px; object-fit:cover; border:2px solid #28a745;">
+        <button id="hol-btn-tirar-foto" type="button" class="btn-gold" style="display: none; margin-top: 10px;" onclick="tirarFotoHolerite()">📸 Tirar Selfie</button>
+        <button id="hol-btn-iniciar-camera" type="button" class="btn-logout" style="display: none; margin-top: 8px; background: #e0e6ed;" onclick="iniciarCameraHolerite('user')">🔄 Tirar outra selfie</button>
+        <input type="hidden" id="hol-foto-base64" value="">
+
+        <label style="text-align: center; margin-top: 28px;">2) ASSINATURA DIGITAL AQUI:</label>
+        <canvas id="signature-pad-holerite"></canvas>
+        <button class="btn-limpar" type="button" onclick="limparAssinaturaHolerite()">Corrigir Assinatura</button>
+    </div>
+
+    <button class="btn-gold" id="btnAssinarHolerite" type="button" style="margin-top: 25px;" onclick="confirmarAssinaturaHolerite()">CONFIRMAR SELFIE + ASSINATURA</button>
+</div>
+
 <div id="fatal-error" style="display:none; max-width:750px; margin:20px auto; background:#fff3cd; border:1px solid #ffeeba; color:#856404; padding:16px; border-radius:12px; font-family:'Poppins', sans-serif;">
     <b>Erro ao carregar o sistema.</b><br>
     <span style="font-size:12px;">Se estiver como “Aplicativo” no celular, tente fechar e abrir novamente. Se persistir, atualize a página (limpe cache do app) e verifique a internet.</span>
@@ -3994,8 +4217,14 @@
         return `ponto_seq_${emp}_${chave}_${dataStr}`;
     }
 
+    function chaveAlertaSilenciadoPedido(idPedido, dataStr) {
+        const emp = getEmpresaGestor() || 'global';
+        return `pedido_mat_${emp}_${idPedido}_${dataStr}`;
+    }
+
     window.chaveAlertaSilenciado = chaveAlertaSilenciado;
     window.chaveAlertaSilenciadoPonto = chaveAlertaSilenciadoPonto;
+    window.chaveAlertaSilenciadoPedido = chaveAlertaSilenciadoPedido;
 
     // CHECAGEM DO STATUS (KILL SWITCH)
     async function verificarStatusSistema() {
@@ -4090,6 +4319,9 @@
         if (document.getElementById('alerta-container-ponto')) {
             document.getElementById('alerta-container-ponto').style.display = 'none';
         }
+        if (document.getElementById('alerta-container-pedidos')) {
+            document.getElementById('alerta-container-pedidos').style.display = 'none';
+        }
         if (document.getElementById('alerta-stack-global')) {
             document.getElementById('alerta-stack-global').style.display = 'none';
         }
@@ -4108,11 +4340,20 @@
     // --- ROTAS INICIAIS REFORMULADAS ---
     const urlParams = new URLSearchParams(window.location.search);
     const valeId = urlParams.get('id');
+    const holeriteId = urlParams.get('holerite');
 
     const idLogado = getSessaoFunc('funcLogadoId');
     const temSessaoGestor = getEmpresaGestor();
 
-    if (valeId) {
+    if (holeriteId) {
+        document.title = "ASSINATURA HOLERITE";
+        document.getElementById('tela-assinatura-holerite').style.display = 'block';
+        setTimeout(function () {
+            if (typeof carregarHoleriteParaAssinatura === 'function') {
+                carregarHoleriteParaAssinatura(holeriteId);
+            }
+        }, 0);
+    } else if (valeId) {
         document.title = "ASSINATURA"; 
         document.getElementById('tela-funcionario').style.display = 'block';
         carregarValeParaAssinatura(valeId);
@@ -10859,7 +11100,7 @@ window.exportarPDF = function(tipo) {
         if (btn) mudarAba('equipe-cadastrada', btn);
     };
 
-    const ABAS_GRUPO_EQUIPE = ['cadastrar', 'equipe-cadastrada', 'criar', 'buscar', 'ponto', 'ajuda-custo', 'descontos-folha', 'folha', 'pedidos'];
+    const ABAS_GRUPO_EQUIPE = ['cadastrar', 'equipe-cadastrada', 'criar', 'buscar', 'ponto', 'ajuda-custo', 'descontos-folha', 'folha', 'holerites', 'pedidos'];
     const ABAS_GRUPO_OBRAS = ['despesas-cadastrar', 'despesas-relatorio', 'relatorio-despesas', 'obras-relatorio-geral', 'notas-fiscais-geral', 'terceiros'];
     const ABAS_GRUPO_DOCUMENTOS = ['documentos-fh', 'documentos-hallana', 'documentos-felipe', 'documentos-wellington'];
 
@@ -10994,6 +11235,11 @@ window.exportarPDF = function(tipo) {
         }
         if (aba === 'pedidos') {
             buscarPedidosMaterial();
+        }
+        if (aba === 'holerites') {
+            if (typeof buscarHoleritesAssinatura === 'function') {
+                // lista só após escolher funcionário; mantém select atualizado
+            }
         }
         if (aba === 'calendario') {
             carregarFeriados();
@@ -13352,6 +13598,642 @@ window.gerarFolhaPagamento = async function() {
         });
     };
 
+    const NOMES_DIA_SEMANA_CURTO = ['Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb'];
+
+    function formatarHorasEspelhoHM(hDec) {
+        if (hDec == null || !Number.isFinite(Number(hDec)) || Math.abs(Number(hDec)) < 0.0005) return '';
+        const neg = Number(hDec) < 0;
+        let abs = Math.abs(Number(hDec));
+        let h = Math.floor(abs + 1e-9);
+        let m = Math.round((abs - h) * 60);
+        if (m === 60) { h += 1; m = 0; }
+        return (neg ? '-' : '') + String(h).padStart(2, '0') + ':' + String(m).padStart(2, '0');
+    }
+
+    function feriadosNacionaisFixosEspelho(ano) {
+        const y = Number(ano);
+        return new Set([
+            y + '-01-01', y + '-04-21', y + '-05-01', y + '-09-07',
+            y + '-10-12', y + '-11-02', y + '-11-15', y + '-12-25'
+        ]);
+    }
+
+    function dataBrParaIsoEspelho(dataBr) {
+        const s = separarDataSegura(dataBr);
+        if (!s || s.ano === 'Outros') return '';
+        return String(s.ano) + '-' + String(s.mes).padStart(2, '0') + '-' + String(s.dia).padStart(2, '0');
+    }
+
+    function calcularHorasDoDiaEspelho(batidasRaw, canceladosSet) {
+        const dedupDia = deduplicarBatidasPonto(batidasRaw, canceladosSet || null);
+        const batidas = (dedupDia.validas || [])
+            .map((b) => (b ? { ...b, tipo: normalizarTipoBatidaPonto(b.tipo) } : b))
+            .filter((b) => b && ['Entrada', 'Saída', 'Início Intervalo', 'Fim Intervalo'].includes(b.tipo) && Number.isFinite(b.timestamp))
+            .sort((a, b) => (a.timestamp || 0) - (b.timestamp || 0));
+
+        let trabalhandoDesde = null;
+        let emIntervalo = false;
+        let segundosTrabalhados = 0;
+        let tevePar = false;
+        let segundosIntervaloMedido = 0;
+        let inicioIntervaloTs = null;
+        const porTipo = {};
+
+        for (const b of batidas) {
+            if (!porTipo[b.tipo]) porTipo[b.tipo] = b;
+            if (b.tipo === 'Entrada') {
+                if (!emIntervalo && trabalhandoDesde == null) trabalhandoDesde = b.timestamp;
+            } else if (b.tipo === 'Saída') {
+                if (trabalhandoDesde != null && b.timestamp > trabalhandoDesde) {
+                    segundosTrabalhados += (b.timestamp - trabalhandoDesde) / 1000;
+                    trabalhandoDesde = null;
+                    tevePar = true;
+                }
+                emIntervalo = false;
+                inicioIntervaloTs = null;
+            } else if (b.tipo === 'Início Intervalo') {
+                if (trabalhandoDesde != null && b.timestamp > trabalhandoDesde) {
+                    segundosTrabalhados += (b.timestamp - trabalhandoDesde) / 1000;
+                    trabalhandoDesde = null;
+                    tevePar = true;
+                }
+                inicioIntervaloTs = b.timestamp;
+                emIntervalo = true;
+            } else if (b.tipo === 'Fim Intervalo') {
+                if (inicioIntervaloTs != null && b.timestamp > inicioIntervaloTs) {
+                    segundosIntervaloMedido += (b.timestamp - inicioIntervaloTs) / 1000;
+                }
+                if (emIntervalo) {
+                    trabalhandoDesde = b.timestamp;
+                    emIntervalo = false;
+                }
+                inicioIntervaloTs = null;
+            }
+        }
+
+        return {
+            horasFechadas: segundosTrabalhados / 3600,
+            intervaloHoras: segundosIntervaloMedido / 3600,
+            tevePar,
+            nBatidas: batidas.length,
+            porTipo,
+            validas: batidas,
+            duplicadosIds: dedupDia.duplicadosIds || []
+        };
+    }
+
+    function jornadaEsperadaEspelho(funcionario, isoDia, holidaySet) {
+        const [y, m, d] = isoDia.split('-').map(Number);
+        const dow = new Date(y, m - 1, d).getDay();
+        if (holidaySet.has(isoDia) || dow === 0) return { esperado: 0, tipo: holidaySet.has(isoDia) ? 'feriado' : 'domingo' };
+
+        const sabadoH = Number(funcionario && funcionario.sabado_horas != null ? funcionario.sabado_horas : 0);
+        if (dow === 6) {
+            return { esperado: Number.isFinite(sabadoH) && sabadoH > 0 ? sabadoH : 0, tipo: 'sabado' };
+        }
+
+        const he = String((funcionario && funcionario.hora_entrada) || '07:00').split(':').map(Number);
+        const hs = String((funcionario && funcionario.hora_saida) || '17:00').split(':').map(Number);
+        const intMin = Math.max(0, Number(funcionario && funcionario.intervalo_minutos != null ? funcionario.intervalo_minutos : 60));
+        let jornada = (hs[0] + (hs[1] || 0) / 60) - (he[0] + (he[1] || 0) / 60);
+        if (jornada < 0) jornada += 24;
+        jornada = Math.max(0, jornada - intMin / 60);
+        return { esperado: jornada, tipo: 'util' };
+    }
+
+    function montarLinhasEspelhoMes(opts) {
+        const ano = String(opts.ano);
+        const mes = String(opts.mes).padStart(2, '0');
+        const mesNum = Number(mes);
+        const anoNum = Number(ano);
+        const funcionario = opts.funcionario || {};
+        const pontosPorDia = opts.pontosPorDia || {};
+        const cancelados = opts.canceladosSet || new Set();
+        const errosSeq = opts.idsErroSequencia || new Set();
+        const duplicados = opts.idsDuplicadosPonto || new Set();
+        const faltasMes = opts.faltasMes || [];
+        const holidaySet = opts.holidaySet || feriadosNacionaisFixosEspelho(anoNum);
+        const totalDias = diasNoCalendarioMes(anoNum, mesNum);
+
+        const faltaPorIso = {};
+        faltasMes.forEach((f) => {
+            if (f && f.iso) faltaPorIso[f.iso] = f;
+        });
+
+        const linhas = [];
+        let saldo = 0;
+        let totCredito = 0;
+        let totDebito = 0;
+        let totIntervalo = 0;
+        let totNormais = 0;
+        let totHe50 = 0;
+        let totHe100 = 0;
+        let totHt = 0;
+
+        for (let dia = 1; dia <= totalDias; dia++) {
+            const diaStr = String(dia).padStart(2, '0');
+            const iso = ano + '-' + mes + '-' + diaStr;
+            const dataBr = diaStr + '/' + mes + '/' + ano;
+            const dow = new Date(anoNum, mesNum - 1, dia).getDay();
+            const labelData = NOMES_DIA_SEMANA_CURTO[dow] + ', ' + dataBr;
+
+            const batidasDia = pontosPorDia[dataBr] || pontosPorDia[dia + '/' + mesNum + '/' + ano] || [];
+            // também tenta chaves sem zero à esquerda
+            let batidas = batidasDia;
+            if (!batidas.length) {
+                const alt = Object.keys(pontosPorDia).find((k) => dataBrParaIsoEspelho(k) === iso);
+                if (alt) batidas = pontosPorDia[alt];
+            }
+
+            const calc = calcularHorasDoDiaEspelho(batidas, cancelados);
+            const meta = jornadaEsperadaEspelho(funcionario, iso, holidaySet);
+            const faltaRh = faltaPorIso[iso];
+
+            const hEnt = calc.porTipo['Entrada'];
+            const hIni = calc.porTipo['Início Intervalo'];
+            const hFim = calc.porTipo['Fim Intervalo'];
+            const hSai = calc.porTipo['Saída'];
+
+            function cellHora(b) {
+                if (!b) return { txt: '', alerta: false, id: null, batida: null };
+                const alerta = errosSeq.has(b.id) || duplicados.has(b.id) || Boolean(b.cancelado_em_evento);
+                return { txt: normalizarHoraHHmm(b.hora || ''), alerta: alerta, id: b.id, batida: b };
+            }
+
+            const c1 = cellHora(hEnt);
+            const c2 = cellHora(hIni);
+            const c3 = cellHora(hFim);
+            const c4 = cellHora(hSai);
+
+            let credito = 0;
+            let debito = 0;
+            let he50 = 0;
+            let he100 = 0;
+            let horasNormais = 0;
+            let intervaloH = calc.intervaloHoras || 0;
+            const trabalhado = calc.horasFechadas || 0;
+            const motivos = [];
+
+            if (faltaRh) {
+                if (faltaRh.tipo === 'FALTA_INJUSTIFICADA') {
+                    motivos.push('Falta injustificada');
+                    if (meta.esperado > 0 && trabalhado < 0.01) debito = meta.esperado;
+                } else {
+                    motivos.push('Atestado / justificada');
+                }
+            }
+
+            if (meta.tipo === 'feriado') motivos.push('FERIADO');
+            else if (meta.tipo === 'domingo' && trabalhado < 0.01) motivos.push('FOLGA');
+            else if (meta.tipo === 'sabado' && meta.esperado <= 0 && trabalhado < 0.01) motivos.push('FOLGA');
+
+            if (trabalhado > 0.01) {
+                if (meta.tipo === 'feriado' || meta.tipo === 'domingo') {
+                    he100 = trabalhado;
+                    credito = trabalhado;
+                } else {
+                    const esp = meta.esperado || 0;
+                    horasNormais = Math.min(trabalhado, esp);
+                    if (trabalhado > esp) {
+                        he50 = trabalhado - esp;
+                        credito = he50;
+                    } else if (trabalhado < esp - 0.01) {
+                        debito = esp - trabalhado;
+                    }
+                }
+                if (calc.validas.some((b) => b.registo_manual_rh)) motivos.push('Ajuste');
+                if (calc.validas.some((b) => errosSeq.has(b.id))) motivos.push('Fora de ordem');
+            } else if (!motivos.length && meta.tipo === 'util') {
+                // dia útil sem ponto — deixa em branco (falta automática só na folha)
+            }
+
+            if (!intervaloH && hIni && hFim && hIni.timestamp && hFim.timestamp && hFim.timestamp > hIni.timestamp) {
+                intervaloH = (hFim.timestamp - hIni.timestamp) / 3600000;
+            }
+
+            const ht = trabalhado;
+            const saldoDia = credito - debito;
+            saldo += saldoDia;
+
+            totCredito += credito;
+            totDebito += debito;
+            totIntervalo += intervaloH;
+            totNormais += horasNormais;
+            totHe50 += he50;
+            totHe100 += he100;
+            totHt += ht;
+
+            linhas.push({
+                iso,
+                dataBr,
+                labelData,
+                c1, c2, c3, c4,
+                credito,
+                debito,
+                intervaloH,
+                horasNormais,
+                he50,
+                he100,
+                ht,
+                saldo,
+                motivo: motivos.filter((v, i, a) => a.indexOf(v) === i).join(' / '),
+                batidas: batidas.slice(),
+                temBatida: batidas.length > 0
+            });
+        }
+
+        return {
+            linhas,
+            totais: {
+                credito: totCredito,
+                debito: totDebito,
+                intervaloH: totIntervalo,
+                horasNormais: totNormais,
+                he50: totHe50,
+                he100: totHe100,
+                ht: totHt,
+                saldo
+            }
+        };
+    }
+
+    function htmlCelulaHoraEspelho(cell, chaveMes, idxLinha, colKey) {
+        if (!cell || !cell.txt) return '<td></td>';
+        const classes = [];
+        if (cell.alerta) classes.push('hora-alerta');
+        if (cell.id) classes.push('hora-clicavel');
+        const cls = classes.length ? ' class="' + classes.join(' ') + '"' : '';
+        if (!cell.id) {
+            return '<td' + cls + '>' + escapeHtmlBasico(cell.txt) + '</td>';
+        }
+        return '<td' + cls + ' title="Clique para ver selfie e local"'
+            + ' onclick="event.stopPropagation();abrirSelfieLocalEspelhoPonto(\''
+            + escapeAttrBasico(chaveMes) + '\',' + idxLinha + ',\'' + escapeAttrBasico(colKey) + '\')">'
+            + escapeHtmlBasico(cell.txt) + '</td>';
+    }
+
+    function htmlTabelaEspelhoPontoMes(pack) {
+        const func = pack.funcionario || {};
+        const ano = pack.ano;
+        const mes = String(pack.mes).padStart(2, '0');
+        const mesNome = (nomeMeses[mes] || mes).toUpperCase();
+        const chaveMes = ano + '-' + mes;
+        const he = func.hora_entrada || '07:00';
+        const hs = func.hora_saida || '17:00';
+        const intMin = func.intervalo_minutos != null ? func.intervalo_minutos : 60;
+        const sab = func.sabado_horas != null ? func.sabado_horas : 0;
+        const adm = parseDataIsoFuncionario(func.data_admissao);
+        const admBr = adm ? isoParaDataBr(adm) : '—';
+
+        const montado = montarLinhasEspelhoMes(pack);
+        window._espelhoPontoPorMes = window._espelhoPontoPorMes || {};
+        window._espelhoPontoPorMes[chaveMes] = {
+            ...pack,
+            linhas: montado.linhas,
+            totais: montado.totais
+        };
+
+        let html = '<div class="espelho-ponto-wrap" data-espelho-mes="' + escapeAttrBasico(chaveMes) + '">';
+        html += '<div class="espelho-ponto-cabecalho">';
+        html += '<div class="espelho-ponto-titulo">ESPELHO DE PONTO ELETRÔNICO — ' + escapeHtmlBasico(mesNome) + '/' + escapeHtmlBasico(String(ano)) + '</div>';
+        html += '<div><b>Nome:</b> ' + escapeHtmlBasico(func.nome || '—') + '<br>';
+        html += '<b>CPF:</b> ' + escapeHtmlBasico(String(func.cpf || '—')) + '<br>';
+        html += '<b>Admissão:</b> ' + escapeHtmlBasico(admBr) + '</div>';
+        html += '<div><b>Turno:</b> ' + escapeHtmlBasico(he) + ' às ' + escapeHtmlBasico(hs) + '<br>';
+        html += '<b>Intervalo:</b> ' + escapeHtmlBasico(String(intMin)) + ' min<br>';
+        html += '<b>Sábado:</b> ' + escapeHtmlBasico(String(sab)) + ' h</div>';
+        html += '</div>';
+
+        html += '<div class="espelho-ponto-scroll"><table class="espelho-ponto-tabela">';
+        html += '<thead>';
+        html += '<tr class="grupo">';
+        html += '<th rowspan="2">Data</th>';
+        html += '<th colspan="4">Pontos</th>';
+        html += '<th colspan="4">Totais da jornada</th>';
+        html += '<th colspan="2">H. Extras</th>';
+        html += '<th rowspan="2">H.T.</th>';
+        html += '<th rowspan="2">Saldo</th>';
+        html += '<th rowspan="2">Motivo</th>';
+        html += '</tr>';
+        html += '<tr>';
+        html += '<th>1ª Entrada</th><th>1ª Saída</th><th>2ª Entrada</th><th>2ª Saída</th>';
+        html += '<th>Crédito</th><th>Débito</th><th>H. Intervalo</th><th>Horas normais</th>';
+        html += '<th>H.E. 50%</th><th>H.E. 100%</th>';
+        html += '</tr></thead><tbody>';
+
+        montado.linhas.forEach((ln, idx) => {
+            const cls = ln.temBatida || ln.motivo ? 'espelho-dia-clicavel' : '';
+            html += '<tr class="' + cls + '" data-espelho-mes="' + escapeAttrBasico(chaveMes) + '" data-espelho-idx="' + idx + '" onclick="selecionarDiaEspelhoPonto(\'' + escapeAttrBasico(chaveMes) + '\',' + idx + ')">';
+            html += '<td class="col-data">' + escapeHtmlBasico(ln.labelData) + '</td>';
+            html += htmlCelulaHoraEspelho(ln.c1, chaveMes, idx, 'c1');
+            html += htmlCelulaHoraEspelho(ln.c2, chaveMes, idx, 'c2');
+            html += htmlCelulaHoraEspelho(ln.c3, chaveMes, idx, 'c3');
+            html += htmlCelulaHoraEspelho(ln.c4, chaveMes, idx, 'c4');
+            html += '<td>' + escapeHtmlBasico(formatarHorasEspelhoHM(ln.credito)) + '</td>';
+            html += '<td>' + escapeHtmlBasico(formatarHorasEspelhoHM(ln.debito)) + '</td>';
+            html += '<td>' + escapeHtmlBasico(formatarHorasEspelhoHM(ln.intervaloH)) + '</td>';
+            html += '<td>' + escapeHtmlBasico(formatarHorasEspelhoHM(ln.horasNormais)) + '</td>';
+            html += '<td>' + escapeHtmlBasico(formatarHorasEspelhoHM(ln.he50)) + '</td>';
+            html += '<td>' + escapeHtmlBasico(formatarHorasEspelhoHM(ln.he100)) + '</td>';
+            html += '<td>' + escapeHtmlBasico(formatarHorasEspelhoHM(ln.ht)) + '</td>';
+            html += '<td>' + escapeHtmlBasico(formatarHorasEspelhoHM(ln.saldo)) + '</td>';
+            html += '<td class="col-motivo">' + escapeHtmlBasico(ln.motivo || '') + '</td>';
+            html += '</tr>';
+        });
+
+        const t = montado.totais;
+        html += '</tbody><tfoot><tr>';
+        html += '<td class="col-data">TOTAL</td><td></td><td></td><td></td><td></td>';
+        html += '<td>' + escapeHtmlBasico(formatarHorasEspelhoHM(t.credito)) + '</td>';
+        html += '<td>' + escapeHtmlBasico(formatarHorasEspelhoHM(t.debito)) + '</td>';
+        html += '<td>' + escapeHtmlBasico(formatarHorasEspelhoHM(t.intervaloH)) + '</td>';
+        html += '<td>' + escapeHtmlBasico(formatarHorasEspelhoHM(t.horasNormais)) + '</td>';
+        html += '<td>' + escapeHtmlBasico(formatarHorasEspelhoHM(t.he50)) + '</td>';
+        html += '<td>' + escapeHtmlBasico(formatarHorasEspelhoHM(t.he100)) + '</td>';
+        html += '<td>' + escapeHtmlBasico(formatarHorasEspelhoHM(t.ht)) + '</td>';
+        html += '<td>' + escapeHtmlBasico(formatarHorasEspelhoHM(t.saldo)) + '</td>';
+        html += '<td></td></tr></tfoot></table></div>';
+        html += '<div class="espelho-ponto-detalhe" id="espelho-detalhe-' + escapeAttrBasico(chaveMes) + '">';
+        html += '<p style="margin:0;font-size:12px;color:#666;text-align:center;">Clique em um <b>horário</b> para ver a selfie e o local. Clique na <b>data</b> do dia para ver todas as batidas e ações do RH.</p>';
+        html += '</div></div>';
+        return html;
+    }
+
+    const ROTULO_COLUNA_ESPELHO = {
+        c1: '1ª Entrada',
+        c2: '1ª Saída (Início intervalo)',
+        c3: '2ª Entrada (Fim intervalo)',
+        c4: '2ª Saída'
+    };
+
+    window.abrirSelfieLocalEspelhoPonto = function (chaveMes, idxLinha, colKey) {
+        const pack = window._espelhoPontoPorMes && window._espelhoPontoPorMes[chaveMes];
+        if (!pack || !pack.linhas) return;
+        const ln = pack.linhas[idxLinha];
+        if (!ln) return;
+        const cell = ln[colKey];
+        const batida = cell && (cell.batida || (cell.id && (ln.batidas || []).find((b) => b.id === cell.id)));
+        if (!batida) {
+            return Swal.fire('Atenção', 'Não há batida neste horário.', 'info');
+        }
+
+        const rotulo = ROTULO_COLUNA_ESPELHO[colKey] || batida.tipo || 'Batida';
+        const coordsTxt = textoCoordenadasParaExibicao(batida);
+        const linkMaps = montarLinkGoogleMapsOuNull(batida.latitude, batida.longitude);
+        const foto = batida.foto || '';
+        const obra = batida.obra || '—';
+        const hora = batida.hora || cell.txt || '—';
+        const dataTxt = batida.data || ln.dataBr || '—';
+
+        let htmlFoto = '';
+        if (foto) {
+            const fotoEsc = String(foto).replace(/'/g, "\\'");
+            htmlFoto = '<img class="espelho-selfie-preview" src="' + foto + '" alt="Selfie da batida" onclick="abrirFoto(\'' + fotoEsc + '\')" title="Clique para ampliar">';
+        } else {
+            htmlFoto = '<p style="margin:12px 0;padding:20px;background:#f5f5f5;border-radius:8px;color:#888;font-size:13px;">Sem selfie nesta batida.</p>';
+        }
+
+        const btnMaps = linkMaps
+            ? '<button type="button" class="btn-maps" style="width:100%;margin-top:8px;" onclick="window.open(\'' + linkMaps + '\', \'_blank\')">📍 VER NO MAPA (GPS)</button>'
+            : '<p style="margin:8px 0 0 0;font-size:12px;color:#888;">GPS indisponível nesta batida.</p>';
+
+        Swal.fire({
+            title: escapeHtmlBasico(rotulo),
+            html: ''
+                + '<div style="text-align:left;font-size:13px;color:#333;">'
+                + '<p style="margin:0 0 6px 0;"><b>Data:</b> ' + escapeHtmlBasico(dataTxt) + ' &nbsp; <b>Hora:</b> ' + escapeHtmlBasico(String(hora)) + '</p>'
+                + '<p style="margin:0 0 6px 0;"><b>Tipo:</b> ' + escapeHtmlBasico(batida.tipo || '—') + '</p>'
+                + '<p style="margin:0 0 10px 0;"><b>Local / obra:</b> ' + escapeHtmlBasico(String(obra)) + '</p>'
+                + htmlFoto
+                + '<p style="margin:10px 0 0 0;font-size:12px;color:#555;"><b>GPS:</b> ' + coordsTxt + '</p>'
+                + btnMaps
+                + '</div>',
+            width: 420,
+            confirmButtonText: 'Fechar',
+            confirmButtonColor: '#1a2a43',
+            showCancelButton: true,
+            cancelButtonText: 'Ver dia completo',
+            cancelButtonColor: '#6c757d'
+        }).then((result) => {
+            if (result.isDismissed && result.dismiss === Swal.DismissReason.cancel) {
+                selecionarDiaEspelhoPonto(chaveMes, idxLinha);
+            }
+        });
+    };
+
+    function htmlCardBatidaEspelhoDetalhe(dados, idsErroSequencia, idsDuplicadosPonto, funcId) {
+        const cor = dados.tipo === 'Entrada' ? '#28a745'
+            : (dados.tipo === 'Saída' ? '#d9534f' : '#6c757d');
+        const fotoThumb = dados.foto
+            ? `<img src="${dados.foto}" onclick="abrirFoto('${String(dados.foto).replace(/'/g, "\\'")}')" style="width: 50px; border-radius: 5px; float: right; cursor: pointer; border: 1px solid #ccc;" title="Clique para ampliar">`
+            : '';
+        const motivoEsc = escapeHtmlBasico(dados.cancelamento_motivo || '');
+        const badgeSeqErrada = idsErroSequencia.has(dados.id)
+            ? `<div style="margin-top:6px;padding:8px 10px;background:#fff5f5;border:1px solid #f5c6cb;color:#b02a37;border-radius:8px;font-size:12px;font-weight:700;">⚠️ BATIDA FORA DE ORDEM</div>`
+            : '';
+        const badgeDuplicado = idsDuplicadosPonto.has(dados.id)
+            ? `<div style="margin-top:6px;padding:8px 10px;background:#f0f0f0;border:1px solid #ccc;color:#555;border-radius:8px;font-size:12px;font-weight:700;">📋 DUPLICADO — não conta na folha</div>`
+            : '';
+        const canceladoBadge = dados.cancelado_em_evento
+            ? `<div style="margin-top:6px;padding:8px 10px;background:#fff3cd;border:1px solid #ffeeba;color:#5c4a00;border-radius:8px;font-size:12px;"><b>⚠️ REGISTRO CANCELADO</b><br>${motivoEsc}</div>`
+            : '';
+        const coordsTxt = textoCoordenadasParaExibicao(dados);
+        const linkMaps = montarLinkGoogleMapsOuNull(dados.latitude, dados.longitude);
+        const btnMaps = linkMaps
+            ? `<button type="button" class="btn-maps" onclick="window.open('${linkMaps}', '_blank')">📍 VER NO MAPA</button>`
+            : `<span style="font-size:12px;color:#888;">📍 Mapa indisponível</span>`;
+        const fid = String(dados.funcionario_id || funcId || '').replace(/'/g, "\\'");
+        const btnAcao = dados.cancelado_em_evento ? '' : `<button type="button" onclick="solicitarCancelamentoPonto('${dados.id}','${fid}')" style="background:#6c757d;color:white;border:none;padding:8px;border-radius:5px;cursor:pointer;width:100%;margin-top:5px;font-weight:bold;font-size:12px;">⚠️ SOLICITAR CANCELAMENTO</button>`;
+        const btnApagarRH = `<button type="button" onclick="excluirPontoGestorRH('${dados.id}')" style="background:#b02a37;color:white;border:none;padding:8px;border-radius:5px;cursor:pointer;width:100%;margin-top:5px;font-weight:bold;font-size:12px;">🗑️ APAGAR BATIDA (RH)</button>`;
+        const btnEditarHoraRH = dados.cancelado_em_evento ? '' : `<button type="button" onclick="editarPontoDataHoraRH('${dados.id}')" style="background:#17a2b8;color:white;border:none;padding:8px;border-radius:5px;cursor:pointer;width:100%;margin-top:5px;font-weight:bold;font-size:12px;">🕐 Ajustar data / hora (RH)</button>`;
+        const badgeManualRH = dados.registo_manual_rh
+            ? `<span style="display:inline-block;margin-top:4px;font-size:11px;background:#e7f3ff;color:#0c5460;padding:3px 8px;border-radius:6px;font-weight:600;">📋 Registo manual pelo RH</span><br>`
+            : '';
+        const borda = idsErroSequencia.has(dados.id) ? '#b02a37' : (idsDuplicadosPonto.has(dados.id) ? '#999' : cor);
+        return `
+            <div class="resultado-item" style="border-left-color:${borda};${idsDuplicadosPonto.has(dados.id) ? 'opacity:0.75;background:#f8f8f8;' : ''}">
+                ${fotoThumb}
+                <b style="color:${borda}">${escapeHtmlBasico(dados.tipo || '')}</b> — ${escapeHtmlBasico(dados.data || '')} às ${escapeHtmlBasico(dados.hora || '??')}<br>
+                ${badgeDuplicado}${badgeSeqErrada}${badgeManualRH}
+                <span style="font-size:13px;color:#555;"><b>Local:</b> ${escapeHtmlBasico(dados.obra || '—')}</span><br>
+                <span style="font-size:12px;color:#555;"><b>GPS:</b> ${coordsTxt}</span><br>
+                ${btnMaps}${btnAcao}${btnEditarHoraRH}${btnApagarRH}${canceladoBadge}
+            </div>`;
+    }
+
+    window.selecionarDiaEspelhoPonto = function (chaveMes, idx) {
+        const pack = window._espelhoPontoPorMes && window._espelhoPontoPorMes[chaveMes];
+        const detalhe = document.getElementById('espelho-detalhe-' + chaveMes);
+        if (!pack || !detalhe) return;
+        const ln = pack.linhas[idx];
+        if (!ln) return;
+
+        document.querySelectorAll('.espelho-ponto-tabela tr.espelho-dia-selecionado').forEach((tr) => {
+            tr.classList.remove('espelho-dia-selecionado');
+        });
+        const tr = document.querySelector('tr[data-espelho-mes="' + chaveMes + '"][data-espelho-idx="' + idx + '"]');
+        if (tr) tr.classList.add('espelho-dia-selecionado');
+
+        const idsErro = pack.idsErroSequencia || new Set();
+        const idsDup = pack.idsDuplicadosPonto || new Set();
+        const funcId = pack.funcId || '';
+
+        let html = '<h4>Detalhe do dia — ' + escapeHtmlBasico(ln.labelData) + '</h4>';
+        if (ln.motivo) {
+            html += '<p style="margin:0 0 8px 0;font-size:12px;"><b>Motivo:</b> ' + escapeHtmlBasico(ln.motivo) + '</p>';
+        }
+        const batidasOrd = (ln.batidas || []).slice().sort((a, b) => (a.timestamp || 0) - (b.timestamp || 0));
+        if (!batidasOrd.length) {
+            html += '<p style="text-align:center;color:#888;font-size:12px;margin:0;">Sem batidas neste dia.</p>';
+            const dataBrJs = String(ln.dataBr || '').replace(/\\/g, '\\\\').replace(/'/g, "\\'");
+            html += `<button type="button" onclick="rhGerirFaltaDia('${dataBrJs}')" style="margin-top:8px;width:100%;background:#b02a37;color:#fff;border:none;padding:10px;border-radius:8px;font-weight:700;cursor:pointer;">🚫 Falta / atestado neste dia (RH)</button>`;
+        } else {
+            batidasOrd.forEach((b) => {
+                html += htmlCardBatidaEspelhoDetalhe(b, idsErro, idsDup, funcId);
+            });
+        }
+        detalhe.innerHTML = html;
+    };
+
+    window.exportarEspelhoPontoPDF = async function () {
+        const packExp = window._espelhoPontoExport;
+        if (!packExp || !packExp.agrupado) {
+            return Swal.fire('Atenção', 'Busque o ponto do funcionário primeiro.', 'warning');
+        }
+
+        const opcoesMes = [];
+        Object.keys(packExp.agrupado).sort((a, b) => Number(b) - Number(a)).forEach((ano) => {
+            Object.keys(packExp.agrupado[ano] || {}).sort((a, b) => Number(b) - Number(a)).forEach((mes) => {
+                const mesPad = String(mes).padStart(2, '0');
+                const nome = (nomeMeses[mesPad] || nomeMeses[mes] || mes) + '/' + ano;
+                opcoesMes.push({ value: ano + '-' + mesPad, label: String(nome).toUpperCase() });
+            });
+        });
+        if (!opcoesMes.length) {
+            return Swal.fire('Atenção', 'Não há meses para exportar.', 'info');
+        }
+
+        let chaveEscolhida = opcoesMes[0].value;
+        if (opcoesMes.length > 1) {
+            const htmlOpts = opcoesMes.map((o, i) =>
+                '<option value="' + escapeAttrBasico(o.value) + '"' + (i === 0 ? ' selected' : '') + '>' + escapeHtmlBasico(o.label) + '</option>'
+            ).join('');
+            const r = await Swal.fire({
+                title: 'Exportar espelho PDF',
+                html: '<label style="display:block;text-align:left;font-size:13px;margin-bottom:6px;">Selecione o mês:</label>'
+                    + '<select id="espelho-pdf-mes" class="swal2-input" style="width:100%;margin:0;">' + htmlOpts + '</select>',
+                showCancelButton: true,
+                confirmButtonText: 'Gerar PDF',
+                cancelButtonText: 'Cancelar',
+                confirmButtonColor: '#1a2a43',
+                preConfirm: () => {
+                    const sel = document.getElementById('espelho-pdf-mes');
+                    return sel ? sel.value : null;
+                }
+            });
+            if (!r.isConfirmed || !r.value) return;
+            chaveEscolhida = r.value;
+        }
+
+        const [ano, mes] = String(chaveEscolhida).split('-');
+        const mesPad = String(mes).padStart(2, '0');
+        const holidaySet = (packExp.holidayByYear && packExp.holidayByYear[ano]) || feriadosNacionaisFixosEspelho(ano);
+        const faltasMes = (packExp.faltasRhPorMes[ano] && (packExp.faltasRhPorMes[ano][mes] || packExp.faltasRhPorMes[ano][mesPad])) || [];
+        const montado = montarLinhasEspelhoMes({
+            ano: ano,
+            mes: mesPad,
+            funcionario: packExp.funcionario,
+            pontosPorDia: packExp.pontosPorDia,
+            canceladosSet: packExp.idsCanceladosPonto,
+            idsErroSequencia: packExp.idsErroSequencia,
+            idsDuplicadosPonto: packExp.idsDuplicadosPonto,
+            faltasMes: faltasMes,
+            holidaySet: holidaySet
+        });
+
+        const { jsPDF } = window.jspdf;
+        const doc = new jsPDF('l', 'mm', 'a4');
+        const emp = getEmpresaGestor() || 'Empresa';
+        const func = packExp.funcionario || {};
+        const mesNome = (nomeMeses[mesPad] || mesPad).toUpperCase();
+
+        doc.setFillColor(26, 42, 67);
+        doc.rect(0, 0, 297, 28, 'F');
+        doc.setTextColor(255, 255, 255);
+        doc.setFontSize(14);
+        doc.setFont('helvetica', 'bold');
+        doc.text('ESPELHO DE PONTO ELETRÔNICO', 14, 11);
+        doc.setFontSize(9);
+        doc.setFont('helvetica', 'normal');
+        doc.setTextColor(220, 220, 220);
+        doc.text(emp + '  |  ' + mesNome + '/' + ano + '  |  ' + new Date().toLocaleString('pt-BR'), 14, 19);
+        doc.text((func.nome || '') + '  |  CPF: ' + (func.cpf || '—') + '  |  Turno: ' + (func.hora_entrada || '07:00') + '-' + (func.hora_saida || '17:00'), 14, 25);
+
+        const head = [[
+            'Data', '1ª Ent.', '1ª Saí.', '2ª Ent.', '2ª Saí.',
+            'Crédito', 'Débito', 'Intervalo', 'Normais',
+            'HE 50%', 'HE 100%', 'H.T.', 'Saldo', 'Motivo'
+        ]];
+        const body = montado.linhas.map((ln) => [
+            ln.labelData,
+            ln.c1.txt || '',
+            ln.c2.txt || '',
+            ln.c3.txt || '',
+            ln.c4.txt || '',
+            formatarHorasEspelhoHM(ln.credito),
+            formatarHorasEspelhoHM(ln.debito),
+            formatarHorasEspelhoHM(ln.intervaloH),
+            formatarHorasEspelhoHM(ln.horasNormais),
+            formatarHorasEspelhoHM(ln.he50),
+            formatarHorasEspelhoHM(ln.he100),
+            formatarHorasEspelhoHM(ln.ht),
+            formatarHorasEspelhoHM(ln.saldo),
+            ln.motivo || ''
+        ]);
+        const t = montado.totais;
+        body.push([
+            'TOTAL', '', '', '', '',
+            formatarHorasEspelhoHM(t.credito),
+            formatarHorasEspelhoHM(t.debito),
+            formatarHorasEspelhoHM(t.intervaloH),
+            formatarHorasEspelhoHM(t.horasNormais),
+            formatarHorasEspelhoHM(t.he50),
+            formatarHorasEspelhoHM(t.he100),
+            formatarHorasEspelhoHM(t.ht),
+            formatarHorasEspelhoHM(t.saldo),
+            ''
+        ]);
+
+        doc.autoTable({
+            startY: 32,
+            head: head,
+            body: body,
+            theme: 'grid',
+            styles: { fontSize: 7, cellPadding: 1.5, valign: 'middle', halign: 'center' },
+            headStyles: { fillColor: '#1a2a43', textColor: '#ffffff', fontStyle: 'bold', fontSize: 7 },
+            columnStyles: {
+                0: { cellWidth: 28, halign: 'left' },
+                13: { cellWidth: 28, halign: 'left', fontSize: 6 }
+            },
+            didParseCell: function (data) {
+                if (data.section === 'body' && data.row.index === body.length - 1) {
+                    data.cell.styles.fontStyle = 'bold';
+                    data.cell.styles.fillColor = '#eef2f5';
+                }
+            },
+            didDrawPage: function (data) {
+                doc.setFontSize(8);
+                doc.setTextColor(150);
+                doc.text('Página ' + doc.internal.getNumberOfPages() + '  |  Gestor 360', data.settings.margin.left, doc.internal.pageSize.height - 8);
+            },
+            margin: { left: 10, right: 10 }
+        });
+
+        const nomeArq = 'espelho_ponto_' + String(func.nome || 'func').replace(/\s+/g, '_') + '_' + mesPad + '_' + ano + '.pdf';
+        doc.save(nomeArq);
+        Swal.fire({ toast: true, position: 'top-end', icon: 'success', title: 'Espelho PDF gerado!', showConfirmButton: false, timer: 2200 });
+    };
+
     window.buscarPonto = async function() {
         const funcId = document.getElementById('pt-func-select').value;
         if (!funcId) {
@@ -13364,13 +14246,16 @@ window.gerarFolhaPagamento = async function() {
         divLista.innerHTML = "Buscando..."; 
         btnExportar.style.display = 'none'; 
         window.dadosExportacaoPonto = [];
+        window._espelhoPontoPorMes = {};
+        window._espelhoPontoExport = null;
 
         try {
-            // Carrega os registros do ponto
+            const funcionario = (window.listaFuncionarios && window.listaFuncionarios[funcId]) || {};
+            registrarFuncionarioContextoRH(funcId);
+
             const q = query(collection(db, "ponto_registros"), where("funcionario_id", "==", funcId)); 
             const querySnapshot = await getDocs(q);
 
-            // Carrega eventos (ex.: cancelamentos) para manter trilha/auditoria sem apagar registros
             const qEvt = query(collection(db, "ponto_eventos"), where("funcionario_id", "==", funcId));
             const snapEvt = await getDocs(qEvt);
             const infoCancelamentoPorPonto = new Map();
@@ -13425,10 +14310,16 @@ window.gerarFolhaPagamento = async function() {
             const pontosPorDia = {};
             querySnapshot.forEach((docSnap) => {
                 const dados = docSnap.data();
-                const chaveDia = String(dados.data || '');
+                const chaveDia = formatarDataBrPadrao(dados.data) || String(dados.data || '');
                 if (!pontosPorDia[chaveDia]) pontosPorDia[chaveDia] = [];
-                pontosPorDia[chaveDia].push(Object.assign({ id: docSnap.id }, dados));
+                const infoCanc = infoCancelamentoPorPonto.get(docSnap.id);
+                pontosPorDia[chaveDia].push(Object.assign({
+                    id: docSnap.id,
+                    cancelado_em_evento: Boolean(infoCanc),
+                    cancelamento_motivo: infoCanc ? infoCanc.motivo : ''
+                }, dados));
             });
+
             const idsErroSequencia = new Set();
             const idsDuplicadosPonto = new Set();
             const idsCanceladosPonto = new Set(infoCancelamentoPorPonto.keys());
@@ -13441,145 +14332,101 @@ window.gerarFolhaPagamento = async function() {
             });
 
             let agrupado = {};
-            querySnapshot.forEach((doc) => {
-                const dados = doc.data(); 
-                dados.id = doc.id;
+            querySnapshot.forEach((docSnap) => {
+                const dados = Object.assign({}, docSnap.data(), { id: docSnap.id });
                 const infoCanc = infoCancelamentoPorPonto.get(dados.id);
                 dados.cancelado_em_evento = Boolean(infoCanc);
                 dados.cancelamento_motivo = infoCanc ? infoCanc.motivo : '';
-                window.dadosExportacaoPonto.push(dados); 
-                
-                dados.linkMaps = montarLinkGoogleMapsOuNull(dados.latitude, dados.longitude);   
-                
-                const { ano, mes, dia } = separarDataSegura(dados.data);
-                
-                if (!agrupado[ano]) {
-                    agrupado[ano] = {}; 
-                }
-                
-                if (!agrupado[ano][mes]) {
-                    agrupado[ano][mes] = [];
-                }
-                
-                dados.diaFormatado = dia; 
-                agrupado[ano][mes].push(dados);
+                window.dadosExportacaoPonto.push(dados);
+                const { ano, mes } = separarDataSegura(dados.data);
+                if (!agrupado[ano]) agrupado[ano] = {};
+                if (!agrupado[ano][mes]) agrupado[ano][mes] = true;
             });
 
             Object.keys(faltasRhPorMes).forEach(function (anoF) {
                 if (!agrupado[anoF]) agrupado[anoF] = {};
                 Object.keys(faltasRhPorMes[anoF]).forEach(function (mesF) {
-                    if (!agrupado[anoF][mesF]) agrupado[anoF][mesF] = [];
+                    if (!agrupado[anoF][mesF]) agrupado[anoF][mesF] = true;
                 });
             });
 
-            btnExportar.style.display = querySnapshot.empty ? 'none' : 'block';
-            let htmlFinal = "";
-            
-            let chavesAno = Object.keys(agrupado).sort((a, b) => { 
-                if (a === 'Outros') return 1; 
-                if (b === 'Outros') return -1; 
-                return Number(b) - Number(a); 
+            // Feriados da empresa (anos envolvidos)
+            const holidayByYear = {};
+            const anosLista = Object.keys(agrupado).filter((a) => a !== 'Outros');
+            anosLista.forEach((a) => {
+                holidayByYear[a] = feriadosNacionaisFixosEspelho(a);
             });
-
-            chavesAno.forEach(ano => {
-                htmlFinal += `<details class="pasta-ano" open><summary>Ano ${ano}</summary><div class="folder-content">`;
-                
-                let chavesMes = Object.keys(agrupado[ano]).sort((a, b) => { 
-                    if (a === 'Outros') return 1; 
-                    if (b === 'Outros') return -1; 
-                    return Number(b) - Number(a); 
-                });
-                
-                chavesMes.forEach(mes => {
-                   const nomeDoMes = nomeMeses[mes] || mes;
-                   htmlFinal += `<details class="pasta-mes" open><summary>${nomeDoMes.toUpperCase()}</summary><div class="folder-content">`;
-
-                    const faltasMesArr = (faltasRhPorMes[ano] && faltasRhPorMes[ano][mes]) ? faltasRhPorMes[ano][mes].slice() : [];
-                    if (faltasMesArr.length) {
-                        faltasMesArr.sort(function (a, b) { return String(b.iso).localeCompare(String(a.iso)); });
-                        htmlFinal += `<div style="margin:8px 0 12px;padding:10px;background:#fff5f5;border:1px solid #f5c6cb;border-radius:8px;">
-                            <div style="font-weight:700;font-size:12px;color:#b02a37;margin-bottom:8px;">Faltas / atestados registados pelo RH</div>`;
-                        faltasMesArr.forEach(function (f) {
-                            const injust = f.tipo === 'FALTA_INJUSTIFICADA';
-                            const corF = injust ? '#b02a37' : '#28a745';
-                            const lblF = injust ? 'Falta injustificada' : 'Atestado / justificada';
-                            const detF = injust
-                                ? (f.descontarDsr === false
-                                    ? 'Desconta 1 dia de salário na folha (sem DSR — opção RH).'
-                                    : 'Desconta 1 dia de salário + DSR da semana na folha.')
-                                : 'Não conta como falta nem desconta DSR na folha.';
-                            const motivoEscF = escapeHtmlBasico(f.motivo || '');
-                            const dataBrJs = String(f.dataBr || '').replace(/\\/g, '\\\\').replace(/'/g, "\\'");
-                            htmlFinal += `<div class="resultado-item" style="border-left-color:${corF};margin-bottom:6px;">
-                                <b style="color:${corF}">${lblF}</b> — ${escapeHtmlBasico(f.dataBr)}<br>
-                                <span style="font-size:12px;color:#555;">${detF}</span>
-                                ${motivoEscF ? `<br><span style="font-size:12px;color:#666;"><b>Motivo:</b> ${motivoEscF}</span>` : ''}
-                                <button type="button" onclick="rhGerirFaltaDia('${dataBrJs}')" style="background:#6c757d;color:white;border:none;padding:6px 10px;border-radius:5px;cursor:pointer;margin-top:6px;font-size:11px;font-weight:bold;">✏️ Editar / remover</button>
-                            </div>`;
-                        });
-                        htmlFinal += `</div>`;
-                    }
-
-                    agrupado[ano][mes].sort((a, b) => { 
-                        return (b.timestamp || 0) - (a.timestamp || 0); 
-                    }).forEach(dados => {
-                        const cor = dados.tipo === 'Entrada' ? '#28a745'
-                                  : (dados.tipo === 'Saída' ? '#d9534f' : '#6c757d');
-                        const fotoThumb = dados.foto ? `<img src="${dados.foto}" onclick="abrirFoto('${dados.foto}')" style="width: 50px; border-radius: 5px; float: right; cursor: pointer; border: 1px solid #ccc; transition: 0.2s;" title="Clique para ampliar" onmouseover="this.style.transform='scale(1.1)'" onmouseout="this.style.transform='scale(1)'">` : '';
-                        
-                        const motivoEsc = escapeHtmlBasico(dados.cancelamento_motivo || '');
-                        const badgeSeqErrada = idsErroSequencia.has(dados.id)
-                            ? `<div style="margin-top:6px;padding:8px 10px;background:#fff5f5;border:1px solid #f5c6cb;color:#b02a37;border-radius:8px;font-size:12px;font-weight:700;">⚠️ BATIDA FORA DE ORDEM — corrija ou cancele este registro</div>`
-                            : '';
-                        const badgeDuplicado = idsDuplicadosPonto.has(dados.id)
-                            ? `<div style="margin-top:6px;padding:8px 10px;background:#f0f0f0;border:1px solid #ccc;color:#555;border-radius:8px;font-size:12px;font-weight:700;">📋 DUPLICADO — não conta na folha (mesmo tipo e horário)</div>`
-                            : '';
-                        const canceladoBadge = (dados.cancelado_em_evento
-                            ? `<div style="margin-top:6px; padding:8px 10px; background:#fff3cd; border:1px solid #ffeeba; color:#5c4a00; border-radius:8px; font-size:12px;">
-                                <div style="font-weight:700;margin-bottom:4px;">⚠️ REGISTRO CANCELADO (mantido para auditoria)</div>
-                                <div style="font-weight:600;">Motivo registado pelo RH:</div>
-                                <div style="margin-top:2px; white-space:pre-wrap;">${motivoEsc}</div>
-                                <div style="margin-top:8px;font-size:11px;color:#856404;">O batimento continua <b>nesta mesma lista</b> (documento na nuvem). Para retirar da base, use <b>APAGAR BATIDA (RH)</b> abaixo.</div>
-                            </div>`
-                            : ``);
-                        const coordsTxt = textoCoordenadasParaExibicao(dados);
-                        const btnMaps = dados.linkMaps
-                            ? `<button type="button" class="btn-maps" onclick="window.open('${dados.linkMaps}', '_blank')">📍 VER NO MAPA</button>`
-                            : `<span style="font-size:12px;color:#888;">📍 Mapa indisponível (sem coordenadas GPS neste registro)</span>`;
-                        const btnAcao = (dados.cancelado_em_evento ? `` : `<button type="button" onclick="solicitarCancelamentoPonto('${dados.id}','${(dados.funcionario_id || funcId).replace(/'/g, "\\'")}')" style="background: #6c757d; color: white; border: none; padding: 8px; border-radius: 5px; cursor: pointer; width: 100%; margin-top: 5px; font-weight: bold; font-size: 12px;">⚠️ SOLICITAR CANCELAMENTO</button>`);
-                        const btnApagarRH = `<button type="button" onclick="excluirPontoGestorRH('${dados.id}')" style="background: #b02a37; color: white; border: none; padding: 8px; border-radius: 5px; cursor: pointer; width: 100%; margin-top: 5px; font-weight: bold; font-size: 12px;">🗑️ APAGAR BATIDA (RH)</button>`;
-                        const btnEditarHoraRH = (dados.cancelado_em_evento ? `` : `<button type="button" onclick="editarPontoDataHoraRH('${dados.id}')" style="background: #17a2b8; color: white; border: none; padding: 8px; border-radius: 5px; cursor: pointer; width: 100%; margin-top: 5px; font-weight: bold; font-size: 12px;">🕐 Ajustar data / hora (RH)</button>`);
-                        const badgeManualRH = dados.registo_manual_rh
-                            ? `<span style="display:inline-block;margin-top:4px;font-size:11px;background:#e7f3ff;color:#0c5460;padding:3px 8px;border-radius:6px;font-weight:600;">📋 Registo manual pelo RH</span><br>`
-                            : '';
-                        htmlFinal += `
-                            <div class="resultado-item" style="border-left-color: ${idsErroSequencia.has(dados.id) ? '#b02a37' : (idsDuplicadosPonto.has(dados.id) ? '#999' : cor)}${idsErroSequencia.has(dados.id) ? ';background:#fffbfb' : (idsDuplicadosPonto.has(dados.id) ? ';opacity:0.75;background:#f8f8f8' : '')}">
-                                ${fotoThumb}
-                                <b style="color: ${idsErroSequencia.has(dados.id) ? '#b02a37' : (idsDuplicadosPonto.has(dados.id) ? '#777' : cor)}">${dados.tipo}</b> - Dia ${dados.data} às ${dados.hora || '??'} <br>
-                                ${badgeDuplicado}
-                                ${badgeSeqErrada}
-                                ${badgeManualRH}
-                               <span style="font-size: 13px; color: #555;"><b>Local:</b> ${dados.obra}</span><br>
-                                ${dados.cancelado_em_evento ? `<span style="font-size:12px;color:#555;"><b>ID do registro (nuvem / Firestore):</b> ${dados.id}</span><br>` : ''}
-                                <span style="font-size:12px;color:#555;"><b>GPS:</b> ${coordsTxt}</span><br>
-                                ${btnMaps}
-                                ${btnAcao}
-                                ${btnEditarHoraRH}
-                                ${btnApagarRH}
-                                ${canceladoBadge}
-                            </div>`;
+            try {
+                const empresaLogada = getEmpresaGestor();
+                if (empresaLogada) {
+                    const qFer = query(collection(db, 'feriados'), where('empresa_id', '==', empresaLogada));
+                    const snapFer = await getDocs(qFer);
+                    snapFer.forEach((docF) => {
+                        const f = docF.data() || {};
+                        const iso = f.data_iso || (f.data ? dataBrParaIsoEspelho(f.data) : '');
+                        if (!iso) return;
+                        const y = iso.slice(0, 4);
+                        if (!holidayByYear[y]) holidayByYear[y] = feriadosNacionaisFixosEspelho(y);
+                        holidayByYear[y].add(iso);
                     });
-                    
+                }
+            } catch (_) {}
+
+            btnExportar.style.display = 'block';
+            window._espelhoPontoExport = {
+                funcId,
+                funcionario,
+                pontosPorDia,
+                idsErroSequencia,
+                idsDuplicadosPonto,
+                idsCanceladosPonto,
+                faltasRhPorMes,
+                holidayByYear,
+                agrupado
+            };
+
+            let htmlFinal = '';
+            let chavesAno = Object.keys(agrupado).sort((a, b) => {
+                if (a === 'Outros') return 1;
+                if (b === 'Outros') return -1;
+                return Number(b) - Number(a);
+            });
+
+            chavesAno.forEach((ano) => {
+                htmlFinal += `<details class="pasta-ano" open><summary>Ano ${escapeHtmlBasico(ano)}</summary><div class="folder-content">`;
+                let chavesMes = Object.keys(agrupado[ano]).sort((a, b) => {
+                    if (a === 'Outros') return 1;
+                    if (b === 'Outros') return -1;
+                    return Number(b) - Number(a);
+                });
+
+                chavesMes.forEach((mes) => {
+                    const nomeDoMes = nomeMeses[mes] || mes;
+                    const mesPad = String(mes).padStart(2, '0');
+                    htmlFinal += `<details class="pasta-mes"><summary>${escapeHtmlBasico(String(nomeDoMes).toUpperCase())} — Espelho de ponto</summary><div class="folder-content">`;
+                    htmlFinal += htmlTabelaEspelhoPontoMes({
+                        ano: ano,
+                        mes: mesPad,
+                        funcId: funcId,
+                        funcionario: funcionario,
+                        pontosPorDia: pontosPorDia,
+                        canceladosSet: idsCanceladosPonto,
+                        idsErroSequencia: idsErroSequencia,
+                        idsDuplicadosPonto: idsDuplicadosPonto,
+                        faltasMes: (faltasRhPorMes[ano] && faltasRhPorMes[ano][mes]) ? faltasRhPorMes[ano][mes] : (faltasRhPorMes[ano] && faltasRhPorMes[ano][mesPad] ? faltasRhPorMes[ano][mesPad] : []),
+                        holidaySet: holidayByYear[ano] || feriadosNacionaisFixosEspelho(ano)
+                    });
                     htmlFinal += `</div></details>`;
                 });
-                
+
                 htmlFinal += `</div></details>`;
             });
-            
-            divLista.innerHTML = htmlFinal;
+
+            divLista.innerHTML = htmlFinal || '<p style="text-align:center;color:#888;">Sem dados para montar o espelho.</p>';
             
         } catch(e) { 
-            divLista.innerHTML = `<p style="color:red; text-align:center;">Erro ao organizar.</p>`; 
+            console.error('buscarPonto', e);
+            divLista.innerHTML = `<p style="color:red; text-align:center;">Erro ao organizar o espelho de ponto.</p>`; 
         }
     };
 
@@ -14543,6 +15390,434 @@ window.gerarFolhaPagamento = async function() {
     };
 
 // ==========================================
+    // MÓDULO: HOLERITE PARA ASSINATURA (+ SELFIE)
+    // ==========================================
+
+    let signaturePadHolerite = null;
+    let streamCameraHolerite = null;
+    let cameraFacingHolerite = 'user';
+    let holeriteAssinaturaIdAtual = null;
+    window.holeritesEncontrados = window.holeritesEncontrados || {};
+
+    function montarHtmlTextoHoleriteAssinatura(pack) {
+        const linhasProv = (pack.proventos || []).map(function (it) {
+            return '<tr><td style="padding:4px 6px;border-bottom:1px solid #eee;">' + escapeHtmlBasico(it.label || '') + '</td><td style="padding:4px 6px;border-bottom:1px solid #eee;text-align:right;color:#218838;font-weight:600;">' + escapeHtmlBasico(formatarMoeda(it.valor)) + '</td></tr>';
+        }).join('');
+        const linhasDesc = (pack.descontos || []).map(function (it) {
+            return '<tr><td style="padding:4px 6px;border-bottom:1px solid #eee;">' + escapeHtmlBasico(it.label || '') + '</td><td style="padding:4px 6px;border-bottom:1px solid #eee;text-align:right;color:#c0392b;font-weight:600;">' + escapeHtmlBasico(formatarMoeda(it.valor)) + '</td></tr>';
+        }).join('');
+        const corLiq = pack.liquidoNegativo ? '#c0392b' : '#1a2a43';
+        return ''
+            + '<div style="text-align:center;margin-bottom:12px;">'
+            + '<div style="font-weight:800;color:#1a2a43;font-size:15px;">' + escapeHtmlBasico(pack.empresaNome || '') + '</div>'
+            + '<div style="font-size:13px;font-weight:700;margin-top:4px;">ESPELHO DE HOLERITE</div>'
+            + '<div style="font-size:12px;color:#666;margin-top:4px;">Ref.: ' + escapeHtmlBasico(pack.mesRef || '') + '</div>'
+            + '</div>'
+            + '<div style="background:#f8fafc;border:1px solid #e0e6ed;border-radius:10px;padding:10px;margin-bottom:12px;font-size:12px;">'
+            + '<div><b>Colaborador:</b> ' + escapeHtmlBasico(pack.funcionarioNome || '') + '</div>'
+            + '<div><b>CPF:</b> ' + escapeHtmlBasico(pack.cpf || '—') + '</div>'
+            + '<div><b>PIX:</b> ' + escapeHtmlBasico(pack.pix || '—') + '</div>'
+            + '<div><b>Jornada:</b> ' + escapeHtmlBasico(pack.horario || '—') + '</div>'
+            + '<div><b>Dias pagos:</b> ' + escapeHtmlBasico(String(pack.diasPagos != null ? pack.diasPagos : '0')) + '</div>'
+            + '</div>'
+            + '<div style="font-weight:700;color:#218838;margin:8px 0 4px;">PROVENTOS</div>'
+            + '<table style="width:100%;border-collapse:collapse;font-size:12px;">' + (linhasProv || '<tr><td colspan="2" style="padding:6px;color:#888;">—</td></tr>') + '</table>'
+            + '<div style="display:flex;justify-content:space-between;font-size:12px;font-weight:700;margin:6px 0 12px;padding:6px;background:#eef9f0;border-radius:6px;"><span>Total proventos</span><span>' + escapeHtmlBasico(formatarMoeda(pack.totalProventos)) + '</span></div>'
+            + '<div style="font-weight:700;color:#c0392b;margin:8px 0 4px;">DESCONTOS</div>'
+            + '<table style="width:100%;border-collapse:collapse;font-size:12px;">' + (linhasDesc || '<tr><td colspan="2" style="padding:6px;color:#888;">—</td></tr>') + '</table>'
+            + '<div style="display:flex;justify-content:space-between;font-size:12px;font-weight:700;margin:6px 0 12px;padding:6px;background:#fdf0ef;border-radius:6px;"><span>Total descontos</span><span>' + escapeHtmlBasico(formatarMoeda(pack.totalDescontos)) + '</span></div>'
+            + '<div style="display:flex;justify-content:space-between;align-items:center;padding:12px;border-radius:10px;background:#1a2a43;color:#fff;margin-top:8px;">'
+            + '<span style="font-weight:700;">LÍQUIDO A RECEBER</span>'
+            + '<span style="font-size:18px;font-weight:800;color:' + (pack.liquidoNegativo ? '#ffb4b4' : '#ffd76a') + ';">' + escapeHtmlBasico(formatarMoeda(pack.liquido)) + '</span>'
+            + '</div>'
+            + '<p style="font-size:11px;color:#666;margin-top:14px;text-align:justify;">Declaro que conferi os valores deste holerite referente a <b>' + escapeHtmlBasico(pack.mesRef || '') + '</b> e confirmo a ciência mediante assinatura digital e selfie de comprovação.</p>';
+    }
+
+    function resizeCanvasHolerite() {
+        const canvas = document.getElementById('signature-pad-holerite');
+        if (!canvas) return;
+        let data = null;
+        if (signaturePadHolerite && !signaturePadHolerite.isEmpty()) {
+            data = signaturePadHolerite.toData();
+        }
+        const ratio = Math.max(window.devicePixelRatio || 1, 1);
+        canvas.width = canvas.offsetWidth * ratio;
+        canvas.height = canvas.offsetHeight * ratio;
+        canvas.getContext('2d').scale(ratio, ratio);
+        if (signaturePadHolerite) {
+            signaturePadHolerite.clear();
+            if (data) signaturePadHolerite.fromData(data);
+        }
+    }
+
+    window.addEventListener('resize', resizeCanvasHolerite);
+    window.addEventListener('orientationchange', function () { setTimeout(resizeCanvasHolerite, 200); });
+
+    function pararCameraHolerite() {
+        if (streamCameraHolerite) {
+            streamCameraHolerite.getTracks().forEach(function (t) { t.stop(); });
+            streamCameraHolerite = null;
+        }
+        const video = document.getElementById('hol-video-selfie');
+        if (video) video.srcObject = null;
+    }
+
+    window.iniciarCameraHolerite = async function (facing) {
+        const modo = facing === 'environment' ? 'environment' : 'user';
+        const video = document.getElementById('hol-video-selfie');
+        const btnTirar = document.getElementById('hol-btn-tirar-foto');
+        const btnTrocar = document.getElementById('hol-btn-trocar-camera');
+        const blocoAbrir = document.getElementById('hol-botoes-abrir-camera');
+        const imgFoto = document.getElementById('hol-foto-tirada');
+        const btnIniciar = document.getElementById('hol-btn-iniciar-camera');
+
+        pararCameraHolerite();
+        cameraFacingHolerite = modo;
+
+        try {
+            streamCameraHolerite = await obterStreamCamera(modo);
+            video.srcObject = streamCameraHolerite;
+            await video.play().catch(function () {});
+            video.style.display = 'block';
+            video.classList.toggle('camera-espelhada', modo === 'user');
+            if (blocoAbrir) blocoAbrir.style.display = 'none';
+            if (btnTrocar) btnTrocar.style.display = 'block';
+            if (btnTirar) btnTirar.style.display = 'block';
+            if (btnIniciar) btnIniciar.style.display = 'none';
+            if (imgFoto) imgFoto.style.display = 'none';
+        } catch (err) {
+            console.warn('Câmera holerite', err);
+            Swal.fire('Erro', 'Não foi possível abrir a câmera. Permita o acesso à câmera no celular.', 'error');
+            if (blocoAbrir) blocoAbrir.style.display = 'flex';
+        }
+    };
+
+    window.alternarCameraHolerite = function () {
+        iniciarCameraHolerite(cameraFacingHolerite === 'user' ? 'environment' : 'user');
+    };
+
+    window.tirarFotoHolerite = function () {
+        const video = document.getElementById('hol-video-selfie');
+        const canvas = document.getElementById('hol-canvas-selfie');
+        const imgFoto = document.getElementById('hol-foto-tirada');
+        const inputBase64 = document.getElementById('hol-foto-base64');
+        const btnTirar = document.getElementById('hol-btn-tirar-foto');
+        const btnTrocar = document.getElementById('hol-btn-trocar-camera');
+        const btnIniciar = document.getElementById('hol-btn-iniciar-camera');
+        const blocoAbrir = document.getElementById('hol-botoes-abrir-camera');
+
+        if (!video || !video.videoWidth) {
+            return Swal.fire('Atenção', 'Aguarde a câmera carregar e tente novamente.', 'warning');
+        }
+
+        const maxW = 640;
+        let w = video.videoWidth;
+        let h = video.videoHeight;
+        if (w > maxW) {
+            h = Math.round(h * (maxW / w));
+            w = maxW;
+        }
+        canvas.width = w;
+        canvas.height = h;
+        canvas.getContext('2d').drawImage(video, 0, 0, w, h);
+
+        const fotoDataUrl = canvas.toDataURL('image/jpeg', 0.55);
+        imgFoto.src = fotoDataUrl;
+        inputBase64.value = fotoDataUrl;
+        imgFoto.classList.toggle('camera-espelhada', cameraFacingHolerite === 'user');
+        imgFoto.style.display = 'block';
+        video.style.display = 'none';
+        if (btnTirar) btnTirar.style.display = 'none';
+        if (btnTrocar) btnTrocar.style.display = 'none';
+        if (btnIniciar) {
+            btnIniciar.style.display = 'block';
+            btnIniciar.innerText = '🔄 Tirar outra selfie';
+        }
+        if (blocoAbrir) blocoAbrir.style.display = 'flex';
+        pararCameraHolerite();
+    };
+
+    window.limparAssinaturaHolerite = function () {
+        if (signaturePadHolerite) signaturePadHolerite.clear();
+    };
+
+    async function carregarHoleriteParaAssinatura(id) {
+        holeriteAssinaturaIdAtual = id;
+        try {
+            const docSnap = await getDoc(doc(db, 'holerites_sistema', id));
+            if (!docSnap.exists()) {
+                document.getElementById('tela-assinatura-holerite').innerHTML = '<h3 style="text-align:center;color:#d9534f;padding:40px;">Link inválido.</h3>';
+                return;
+            }
+            const dados = docSnap.data();
+            if (String(dados.status || '').toLowerCase() === 'assinado') {
+                document.getElementById('tela-assinatura-holerite').innerHTML = '<div style="text-align:center;padding:40px;"><img src="https://i.postimg.cc/zDRJMSTn/69420f5a-5b80-457e-8146-00485162d7f2.jpg" style="max-width:150px;margin-bottom:20px;"><h3 style="color:#28a745;">✅ Holerite já assinado!</h3></div>';
+                return;
+            }
+            document.getElementById('hol-f-data').innerText = 'Gerado em: ' + (dados.data_criacao || '') + (dados.hora_criacao ? ' às ' + dados.hora_criacao : '');
+            document.getElementById('hol-f-texto').innerHTML = dados.texto || montarHtmlTextoHoleriteAssinatura(dados.pack || {});
+            document.getElementById('hol-foto-base64').value = '';
+            setTimeout(function () {
+                const canvas = document.getElementById('signature-pad-holerite');
+                if (canvas) {
+                    signaturePadHolerite = new SignaturePad(canvas, { penColor: '#1a2a43', minWidth: 0.5, maxWidth: 1.5 });
+                    resizeCanvasHolerite();
+                }
+            }, 400);
+        } catch (e) {
+            console.error('Erro ao carregar holerite', e);
+            Swal.fire('Erro', 'Não foi possível carregar o holerite.', 'error');
+        }
+    }
+    window.carregarHoleriteParaAssinatura = carregarHoleriteParaAssinatura;
+
+    window.confirmarAssinaturaHolerite = async function () {
+        const id = holeriteAssinaturaIdAtual || new URLSearchParams(window.location.search).get('holerite');
+        if (!id) return Swal.fire('Erro', 'Link inválido.', 'error');
+
+        const selfie = (document.getElementById('hol-foto-base64') || {}).value || '';
+        if (!selfie) {
+            return Swal.fire('Atenção', 'Tire a selfie de comprovação antes de assinar.', 'warning');
+        }
+        if (!signaturePadHolerite || signaturePadHolerite.isEmpty()) {
+            return Swal.fire('Atenção', 'Assine no quadro em branco antes de confirmar.', 'warning');
+        }
+
+        const btn = document.getElementById('btnAssinarHolerite');
+        btn.innerText = '⏳ A GUARDAR...';
+        btn.disabled = true;
+        pararCameraHolerite();
+
+        try {
+            const assinaturaImg = signaturePadHolerite.toDataURL('image/png');
+            const agoraAss = new Date();
+            const dataAssinatura = String(agoraAss.getDate()).padStart(2, '0') + '/' + String(agoraAss.getMonth() + 1).padStart(2, '0') + '/' + agoraAss.getFullYear();
+            const horaAssinatura = String(agoraAss.getHours()).padStart(2, '0') + ':' + String(agoraAss.getMinutes()).padStart(2, '0');
+
+            await updateDoc(doc(db, 'holerites_sistema', id), {
+                assinatura: assinaturaImg,
+                foto_assinatura: selfie,
+                status: 'assinado',
+                data_assinatura: dataAssinatura,
+                hora_assinatura: horaAssinatura,
+                timestamp_assinatura: agoraAss.getTime()
+            });
+
+            Swal.fire({
+                title: 'Assinado!',
+                text: 'Holerite registrado com assinatura e selfie de comprovação.',
+                icon: 'success',
+                allowOutsideClick: false,
+                confirmButtonColor: '#1a2a43'
+            }).then(function () {
+                document.getElementById('tela-assinatura-holerite').innerHTML = '<div style="text-align:center;padding:40px;"><img src="https://i.postimg.cc/zDRJMSTn/69420f5a-5b80-457e-8146-00485162d7f2.jpg" style="max-width:150px;margin-bottom:20px;"><h3 style="color:#1a2a43;">✅ Assinatura do holerite concluída!</h3><p style="color:#666;font-size:13px;">Sua selfie e assinatura foram salvas no sistema.</p></div>';
+            });
+        } catch (e) {
+            console.error(e);
+            Swal.fire('Erro', 'Não foi possível salvar. Tente novamente (a selfie + assinatura podem ser grandes — use Wi-Fi).', 'error');
+            btn.innerText = 'CONFIRMAR SELFIE + ASSINATURA';
+            btn.disabled = false;
+        }
+    };
+
+    window.enviarHoleriteParaAssinar = async function () {
+        const pack = window.folhaHoleritePDF;
+        if (!pack) {
+            return Swal.fire('Atenção', 'Calcule a folha primeiro (botão "Calcular fechamento").', 'warning');
+        }
+        const funcId = document.getElementById('folha-func-select').value;
+        if (!funcId) {
+            return Swal.fire('Atenção', 'Selecione o funcionário.', 'warning');
+        }
+        const empresaLogada = getEmpresaGestor();
+        if (!empresaLogada) {
+            return Swal.fire('Atenção', 'Sessão do gestor inválida.', 'warning');
+        }
+
+        const btn = document.getElementById('btnEnviarHoleriteAssinar');
+        const txtOriginal = btn ? btn.innerText : '';
+        if (btn) {
+            btn.innerText = '⏳ GERANDO LINK...';
+            btn.disabled = true;
+        }
+
+        const dataObj = new Date();
+        const dataAtual = String(dataObj.getDate()).padStart(2, '0') + '/' + String(dataObj.getMonth() + 1).padStart(2, '0') + '/' + dataObj.getFullYear();
+        const horaAtual = String(dataObj.getHours()).padStart(2, '0') + ':' + String(dataObj.getMinutes()).padStart(2, '0');
+
+        try {
+            const packLimpo = JSON.parse(JSON.stringify(pack));
+            const textoHtml = montarHtmlTextoHoleriteAssinatura(packLimpo);
+            const docRef = await addDoc(collection(db, 'holerites_sistema'), {
+                empresa_id: empresaLogada,
+                funcionario_id: funcId,
+                nome: pack.funcionarioNome || '',
+                mes_ref: pack.mesAnoRef || '',
+                mes_nome: pack.mesRef || '',
+                liquido: pack.liquido != null ? pack.liquido : 0,
+                status: 'pendente',
+                pack: packLimpo,
+                texto: textoHtml,
+                data_criacao: dataAtual,
+                hora_criacao: horaAtual,
+                timestamp: dataObj.getTime()
+            });
+
+            const linkAssinatura = window.location.origin + window.location.pathname + '?holerite=' + docRef.id;
+            const msgWhats = 'Olá ' + (pack.funcionarioNome || '') + ', acesse o link abaixo para conferir e assinar o seu holerite (' + (pack.mesRef || '') + '). Será necessário tirar uma selfie e assinar digitalmente:\n\n' + linkAssinatura;
+
+            Swal.fire({
+                title: 'Holerite pronto!',
+                text: 'Link de assinatura gerado. O funcionário precisará tirar selfie e assinar.',
+                icon: 'success',
+                showCancelButton: true,
+                confirmButtonColor: '#25D366',
+                cancelButtonColor: '#1a2a43',
+                confirmButtonText: '🟢 Enviar no WhatsApp',
+                cancelButtonText: 'Copiar Link'
+            }).then(function (result) {
+                if (result.isConfirmed) {
+                    const funcionario = window.listaFuncionarios && window.listaFuncionarios[funcId];
+                    if (funcionario && funcionario.tel) {
+                        window.open('https://api.whatsapp.com/send?phone=55' + funcionario.tel + '&text=' + encodeURIComponent(msgWhats), '_blank');
+                    } else {
+                        Swal.fire('Aviso', 'Este funcionário não tem telefone cadastrado. Copie o link manualmente.', 'info');
+                        navigator.clipboard.writeText(linkAssinatura);
+                    }
+                } else {
+                    navigator.clipboard.writeText(linkAssinatura);
+                    Swal.fire({ toast: true, position: 'top-end', icon: 'success', title: 'Link Copiado!', showConfirmButton: false, timer: 2000 });
+                }
+            });
+        } catch (e) {
+            console.error(e);
+            Swal.fire('Erro', 'Falha ao gerar o holerite para assinatura.', 'error');
+        } finally {
+            if (btn) {
+                btn.innerText = txtOriginal || '✍️ ENVIAR HOLERITE PARA O FUNCIONÁRIO ASSINAR';
+                btn.disabled = false;
+            }
+        }
+    };
+
+    window.buscarHoleritesAssinatura = async function () {
+        const funcId = document.getElementById('hol-func-select').value;
+        const divLista = document.getElementById('lista-holerites-resultados');
+        if (!funcId) {
+            return Swal.fire('Atenção', 'Selecione o funcionário.', 'warning');
+        }
+        divLista.innerHTML = 'Carregando...';
+        const empresaLogada = getEmpresaGestor();
+        try {
+            const q = query(collection(db, 'holerites_sistema'), where('empresa_id', '==', empresaLogada));
+            const snap = await getDocs(q);
+            if (snap.empty) {
+                divLista.innerHTML = '<p style="text-align:center;color:#888;">Nenhum holerite enviado para este funcionário.</p>';
+                return;
+            }
+            const arr = [];
+            snap.forEach(function (d) {
+                const item = { id: d.id, ...d.data() };
+                if (String(item.funcionario_id || '') !== String(funcId)) return;
+                arr.push(item);
+                window.holeritesEncontrados[d.id] = item;
+            });
+            if (!arr.length) {
+                divLista.innerHTML = '<p style="text-align:center;color:#888;">Nenhum holerite enviado para este funcionário.</p>';
+                return;
+            }
+            arr.sort(function (a, b) { return (b.timestamp || 0) - (a.timestamp || 0); });
+
+            let html = '';
+            arr.forEach(function (h) {
+                const isAssinado = String(h.status || '').toLowerCase() === 'assinado';
+                const corBorda = isAssinado ? '#28a745' : '#f0ad4e';
+                const badge = isAssinado ? '✅ ASSINADO' : '⏳ PENDENTE';
+                const dataRef = isAssinado
+                    ? ('Assinado em: ' + (h.data_assinatura || '') + (h.hora_assinatura ? ' às ' + h.hora_assinatura : ''))
+                    : ('Enviado em: ' + (h.data_criacao || '') + (h.hora_criacao ? ' às ' + h.hora_criacao : ''));
+                html += ''
+                    + '<div class="resultado-item" style="border-left-color:' + corBorda + ';background:' + (isAssinado ? '#f8fff9' : '#fff') + ';">'
+                    + '<div style="display:flex;justify-content:space-between;align-items:center;">'
+                    + '<b style="color:var(--dark-navy);font-size:15px;">' + escapeHtmlBasico(h.mes_nome || h.mes_ref || 'Holerite') + '</b>'
+                    + '<span style="font-size:10px;font-weight:bold;background:#eef2f5;padding:4px 8px;border-radius:5px;color:' + corBorda + ';">' + badge + '</span>'
+                    + '</div>'
+                    + '<span style="font-size:12px;color:#555;"><b>Líquido:</b> ' + escapeHtmlBasico(formatarMoeda(h.liquido)) + '</span><br>'
+                    + '<span style="font-size:12px;color:#888;">' + escapeHtmlBasico(dataRef) + '</span>'
+                    + '<div style="display:flex;gap:8px;margin-top:12px;flex-wrap:wrap;">'
+                    + (isAssinado
+                        ? '<button type="button" onclick="verComprovanteHoleriteAssinado(\'' + h.id + '\')" style="flex:1;min-width:140px;background:#4285F4;color:#fff;border:none;padding:10px;border-radius:8px;font-size:11px;font-weight:bold;cursor:pointer;">👁️ VER ASSINATURA + SELFIE</button>'
+                        : '<button type="button" onclick="reenviarLinkHolerite(\'' + h.id + '\')" style="flex:1;min-width:140px;background:#25D366;color:#fff;border:none;padding:10px;border-radius:8px;font-size:11px;font-weight:bold;cursor:pointer;">🟢 REENVIAR LINK</button>')
+                    + '<button type="button" onclick="excluirHoleriteAssinatura(\'' + h.id + '\')" style="flex:1;min-width:120px;background:#d9534f;color:#fff;border:none;padding:10px;border-radius:8px;font-size:11px;font-weight:bold;cursor:pointer;">🗑️ APAGAR</button>'
+                    + '</div></div>';
+            });
+            divLista.innerHTML = html;
+        } catch (e) {
+            console.error(e);
+            divLista.innerHTML = '<p style="text-align:center;color:#d9534f;">Erro ao buscar holerites.</p>';
+        }
+    };
+
+    window.verComprovanteHoleriteAssinado = function (id) {
+        const h = window.holeritesEncontrados[id];
+        if (!h) return Swal.fire('Erro', 'Registro não encontrado.', 'error');
+        const selfie = h.foto_assinatura || '';
+        const assinatura = h.assinatura || '';
+        Swal.fire({
+            title: 'Comprovante de assinatura',
+            width: 480,
+            html: ''
+                + '<div style="text-align:left;font-size:13px;margin-bottom:10px;">'
+                + '<b>' + escapeHtmlBasico(h.nome || '') + '</b><br>'
+                + 'Ref.: ' + escapeHtmlBasico(h.mes_nome || h.mes_ref || '') + '<br>'
+                + 'Assinado em: ' + escapeHtmlBasico((h.data_assinatura || '') + (h.hora_assinatura ? ' às ' + h.hora_assinatura : '')) + '<br>'
+                + 'Líquido: ' + escapeHtmlBasico(formatarMoeda(h.liquido))
+                + '</div>'
+                + '<div style="font-weight:700;margin:10px 0 6px;color:#1a2a43;">Selfie de comprovação</div>'
+                + (selfie ? '<img src="' + selfie + '" style="width:100%;max-height:280px;object-fit:cover;border-radius:10px;border:2px solid #28a745;">' : '<p style="color:#d9534f;">Selfie não encontrada.</p>')
+                + '<div style="font-weight:700;margin:14px 0 6px;color:#1a2a43;">Assinatura digital</div>'
+                + (assinatura ? '<img src="' + assinatura + '" style="width:100%;max-height:140px;object-fit:contain;background:#fff;border:1px solid #ddd;border-radius:10px;">' : '<p style="color:#d9534f;">Assinatura não encontrada.</p>')
+                + '<div style="margin-top:14px;max-height:220px;overflow:auto;border:1px solid #eee;border-radius:8px;padding:8px;background:#fafcff;">' + (h.texto || '') + '</div>',
+            confirmButtonColor: '#1a2a43',
+            confirmButtonText: 'Fechar'
+        });
+    };
+
+    window.reenviarLinkHolerite = async function (id) {
+        const h = window.holeritesEncontrados[id] || (await getDoc(doc(db, 'holerites_sistema', id))).data();
+        if (!h) return Swal.fire('Erro', 'Holerite não encontrado.', 'error');
+        const linkAssinatura = window.location.origin + window.location.pathname + '?holerite=' + id;
+        const msgWhats = 'Olá ' + (h.nome || '') + ', acesse o link para assinar o holerite (' + (h.mes_nome || h.mes_ref || '') + '). Será necessário selfie + assinatura:\n\n' + linkAssinatura;
+        const funcionario = window.listaFuncionarios && window.listaFuncionarios[h.funcionario_id];
+        if (funcionario && funcionario.tel) {
+            window.open('https://api.whatsapp.com/send?phone=55' + funcionario.tel + '&text=' + encodeURIComponent(msgWhats), '_blank');
+        } else {
+            navigator.clipboard.writeText(linkAssinatura);
+            Swal.fire('Link copiado', 'Telefone não cadastrado — o link foi copiado.', 'info');
+        }
+    };
+
+    window.excluirHoleriteAssinatura = function (id) {
+        Swal.fire({
+            title: 'Excluir holerite?',
+            text: 'Isso apaga o registro, a assinatura e a selfie salvos.',
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#d9534f',
+            confirmButtonText: 'Sim, apagar'
+        }).then(async function (result) {
+            if (!result.isConfirmed) return;
+            try {
+                await deleteDoc(doc(db, 'holerites_sistema', id));
+                buscarHoleritesAssinatura();
+                Swal.fire('Excluído!', 'Registro removido.', 'success');
+            } catch (e) {
+                Swal.fire('Erro', 'Não foi possível apagar.', 'error');
+            }
+        });
+    };
+
+// ==========================================
     // MÓDULO: VALES E ADIANTAMENTOS
     // ==========================================
 
@@ -14913,9 +16188,9 @@ window.gerarFolhaPagamento = async function() {
     };
 
     window.checarNovosPedidosManutencao = async function() {
-        // Função desativada: A notificação agora é exclusiva via WhatsApp.
-        // A tela não vai mais travar pedindo o nome de quem visualizou.
-        return;
+        if (typeof monitorarPedidosMaterialGestor === 'function') {
+            await monitorarPedidosMaterialGestor();
+        }
     };
 
             window.buscarPedidosMaterial = async function() {
@@ -14945,8 +16220,8 @@ window.gerarFolhaPagamento = async function() {
         divLista.innerHTML = "Carregando...";
 
         try {
-            // Busca apenas os pedidos atrelados à MANUTENÇÃO
-            const q = query(collection(db, "pedidos_material"), where("empresa_id", "==", "MANUTENÇÃO"));
+            const empresaGestor = (typeof getEmpresaGestor === 'function' ? getEmpresaGestor() : '') || 'MANUTENÇÃO';
+            const q = query(collection(db, "pedidos_material"), where("empresa_id", "==", empresaGestor));
             const snap = await getDocs(q);
 
             if (snap.empty) {
@@ -15009,6 +16284,7 @@ window.gerarFolhaPagamento = async function() {
             await updateDoc(doc(db, "pedidos_material", id), { status: 'analise' });
             Swal.fire({toast:true, position:'top-end', icon:'info', title:'Status alterado para EM ANÁLISE!', showConfirmButton:false, timer:2000});
             buscarPedidosMaterial();
+            if (typeof monitorarPedidosMaterialGestor === 'function') monitorarPedidosMaterialGestor();
         } catch(e) { Swal.fire('Erro', 'Não foi possível atualizar.', 'error'); }
     };
 
@@ -15029,7 +16305,8 @@ window.gerarFolhaPagamento = async function() {
                     await deleteDoc(doc(db, "pedidos_material", id));
                     
                     Swal.fire('Entregue!', 'O pedido foi marcado como entregue e removido da tela.', 'success');
-                    buscarPedidosMaterial(); // Atualiza a lista para o pedido sumir
+                    buscarPedidosMaterial();
+                    if (typeof monitorarPedidosMaterialGestor === 'function') monitorarPedidosMaterialGestor();
                 } catch(e) { 
                     Swal.fire('Erro', 'Não foi possível confirmar a entrega.', 'error'); 
                 }
@@ -15046,6 +16323,7 @@ window.gerarFolhaPagamento = async function() {
                 try {
                     await deleteDoc(doc(db, "pedidos_material", id));
                     buscarPedidosMaterial();
+                    if (typeof monitorarPedidosMaterialGestor === 'function') monitorarPedidosMaterialGestor();
                     Swal.fire('Excluído!', 'O pedido foi removido.', 'success');
                 } catch(e) { Swal.fire('Erro', 'Não foi possível apagar.', 'error'); }
             }
@@ -15185,7 +16463,7 @@ function ensureAlertaStack() {
         const telaPatrao = document.getElementById('tela-patrao');
         (telaPatrao || document.body).appendChild(stack);
     }
-    ['alerta-container-docs', 'alerta-container-ponto', 'alerta-container-global'].forEach((id) => {
+    ['alerta-container-pedidos', 'alerta-container-docs', 'alerta-container-ponto', 'alerta-container-global'].forEach((id) => {
         let el = document.getElementById(id);
         if (!el) {
             el = document.createElement('div');
@@ -15196,9 +16474,13 @@ function ensureAlertaStack() {
             stack.appendChild(el);
         }
     });
+    const pedidos = document.getElementById('alerta-container-pedidos');
     const docs = document.getElementById('alerta-container-docs');
     const ponto = document.getElementById('alerta-container-ponto');
     const global = document.getElementById('alerta-container-global');
+    if (pedidos && docs && pedidos.nextElementSibling !== docs) {
+        stack.insertBefore(pedidos, docs);
+    }
     if (docs && ponto && docs.nextElementSibling !== ponto) {
         stack.insertBefore(docs, ponto);
     }
@@ -15228,6 +16510,8 @@ async function monitorarVencimentosObras() {
         if (containerDocs) containerDocs.style.display = 'none';
         const containerPonto = document.getElementById('alerta-container-ponto');
         if (containerPonto) containerPonto.style.display = 'none';
+        const containerPedidos = document.getElementById('alerta-container-pedidos');
+        if (containerPedidos) containerPedidos.style.display = 'none';
         const stack = document.getElementById('alerta-stack-global');
         if (stack) stack.style.display = 'none';
         return;
@@ -16180,11 +17464,254 @@ async function monitorarSequenciaPontoGestor() {
 
 window.monitorarSequenciaPontoGestor = monitorarSequenciaPontoGestor;
 
+function chaveIdsPedidosConhecidos() {
+    const emp = (typeof getEmpresaGestor === 'function' ? getEmpresaGestor() : '') || 'global';
+    return 'pedidos_material_ids_conhecidos_' + emp;
+}
+
+function lerIdsPedidosConhecidos() {
+    try {
+        const raw = sessionStorage.getItem(chaveIdsPedidosConhecidos());
+        const arr = raw ? JSON.parse(raw) : [];
+        return Array.isArray(arr) ? arr : [];
+    } catch (_) {
+        return [];
+    }
+}
+
+function salvarIdsPedidosConhecidos(ids) {
+    try {
+        sessionStorage.setItem(chaveIdsPedidosConhecidos(), JSON.stringify(ids || []));
+    } catch (_) {}
+}
+
+function tocarSomAlertaPedidosMaterial() {
+    tocarSomAlertaVencimento();
+    setTimeout(function () { tocarSomAlertaVencimento(); }, 650);
+    setTimeout(function () { tocarSomAlertaVencimento(); }, 1300);
+}
+
+function atualizarBadgeMenuPedidos(qtdNovos) {
+    if (!document.getElementById('style-piscar')) {
+        const style = document.createElement('style');
+        style.id = 'style-piscar';
+        style.innerHTML = `
+            @keyframes piscarVermelho {
+                0% { background-color: #d9534f; color: white; box-shadow: 0 0 8px #d9534f; }
+                50% { background-color: #f8d7da; color: #721c24; box-shadow: none; }
+                100% { background-color: #d9534f; color: white; box-shadow: 0 0 8px #d9534f; }
+            }
+            .badge-piscar {
+                animation: piscarVermelho 1.2s infinite;
+                padding: 4px 8px;
+                border-radius: 5px;
+                font-weight: bold;
+                font-size: 10px;
+                display: inline-block;
+            }
+        `;
+        document.head.appendChild(style);
+    }
+    const btn = document.getElementById('btn-menu-pedidos');
+    if (!btn) return;
+    const base = '📦 Pedidos Materiais';
+    if (qtdNovos > 0) {
+        btn.innerHTML = base + ' <span class="badge-piscar" style="margin-left:6px;">' + qtdNovos + ' NOVO</span>';
+    } else {
+        btn.textContent = base;
+    }
+}
+
+function montarPainelAlertaPedido(id, nome, equipe, descricao, dataHora) {
+    const idEsc = String(id || '').replace(/'/g, "\\'");
+    const descCurta = String(descricao || '').length > 120
+        ? String(descricao || '').substring(0, 120) + '...'
+        : String(descricao || '');
+    return ''
+        + '<div id="card-alerta-pedido-' + id + '" class="card-alerta-venc" style="border-left:8px solid #d9534f;">'
+        + '<div style="flex:1;min-width:0;">'
+        + '<div style="font-weight:800;font-size:12px;color:#d9534f;">🚨 PEDIDO DE MATERIAL</div>'
+        + '<div style="font-size:13px;font-weight:700;color:#1a2a43;margin-top:4px;">' + escapeHtmlBasico(nome || 'Funcionário') + '</div>'
+        + '<div style="font-size:12px;color:#555;margin-top:4px;"><b>Obra/Equipe:</b> ' + escapeHtmlBasico(equipe || '-') + '</div>'
+        + '<div style="font-size:11px;color:#888;margin-top:2px;">' + escapeHtmlBasico(dataHora || '') + '</div>'
+        + '<div style="font-size:12px;color:#333;margin-top:6px;white-space:pre-wrap;">' + escapeHtmlBasico(descCurta) + '</div>'
+        + '<button type="button" class="alerta-btn-ver-pedidos" onclick="window.irParaPedidosMaterialAlerta()" style="margin-top:8px;width:100%;background:#d9534f;color:#fff;border:none;border-radius:6px;padding:7px 10px;font-size:11px;font-weight:700;cursor:pointer;">📦 VER PEDIDOS</button>'
+        + '</div>'
+        + '<button type="button" class="alerta-btn-fechar" onclick="window.confirmarLeituraAlertaPedido(\'' + idEsc + '\')" title="Silenciar hoje">Fechar</button>'
+        + '</div>';
+}
+
+function renderizarAlertasPedidosNoCanto(conteudo, som) {
+    ensureAlertaStack();
+    let container = document.getElementById('alerta-container-pedidos');
+    if (!container) {
+        container = document.createElement('div');
+        container.id = 'alerta-container-pedidos';
+        ensureAlertaStack();
+        container = document.getElementById('alerta-container-pedidos');
+    }
+    const qtd = (conteudo.match(/card-alerta-pedido-/g) || []).length;
+    const minimizado = sessionStorage.getItem('alertas_pedidos_painel_minimizado') === '1';
+    container.style.display = 'block';
+    container.innerHTML = ''
+        + '<div class="alerta-barra-minimizada" style="display:' + (minimizado ? 'flex' : 'none') + ';align-items:center;gap:8px;background:#d9534f;color:#fff;padding:10px 14px;border-radius:10px;box-shadow:0 6px 20px rgba(0,0,0,0.2);cursor:pointer;" onclick="window.togglePainelAlertasPedidosMinimizado()">'
+        + '<span style="font-weight:700;font-size:13px;flex:1;">📦 <span class="alerta-pedidos-contagem-qtd">' + qtd + '</span> pedido(s) novo(s)</span>'
+        + '<span style="font-size:11px;opacity:0.9;">Expandir</span>'
+        + '</div>'
+        + '<div class="alerta-painel-wrapper" style="display:' + (minimizado ? 'none' : 'block') + ';">'
+        + '<div class="alerta-painel-header" style="border-color:#d9534f;">'
+        + '<span class="alerta-painel-header-titulo">📦 PEDIDOS MATERIAIS (<span class="alerta-pedidos-contagem-qtd">' + qtd + '</span>)</span>'
+        + '<div class="alerta-painel-header-acoes">'
+        + '<button type="button" class="alerta-btn-fechar" onclick="window.confirmarLeituraTodosAlertasPedidos()" title="Silenciar todos hoje">Fechar tudo</button>'
+        + '<button type="button" class="alerta-btn-minimizar" onclick="window.togglePainelAlertasPedidosMinimizado()" title="Minimizar">−</button>'
+        + '</div>'
+        + '</div>'
+        + '<div class="alerta-painel-corpo">' + conteudo + '</div>'
+        + '</div>';
+    if (som && !minimizado) tocarSomAlertaPedidosMaterial();
+}
+
+window.irParaPedidosMaterialAlerta = function () {
+    const btn = document.getElementById('btn-menu-pedidos');
+    if (typeof mudarAba === 'function') {
+        mudarAba('pedidos', btn || null);
+    }
+    setTimeout(function () {
+        if (typeof buscarPedidosMaterial === 'function') buscarPedidosMaterial();
+    }, 300);
+};
+
+window.confirmarLeituraAlertaPedido = function (id) {
+    const hj = new Date().toISOString().substring(0, 10);
+    localStorage.setItem(chaveAlertaSilenciadoPedido(id, hj), 'true');
+    const el = document.getElementById('card-alerta-pedido-' + id);
+    if (el) {
+        el.style.opacity = '0';
+        el.style.transform = 'translateX(50px)';
+        setTimeout(function () {
+            el.remove();
+            const restantes = document.querySelectorAll('#alerta-container-pedidos [id^="card-alerta-pedido-"]');
+            document.querySelectorAll('.alerta-pedidos-contagem-qtd').forEach(function (n) {
+                n.textContent = String(restantes.length);
+            });
+            if (!restantes.length) {
+                const container = document.getElementById('alerta-container-pedidos');
+                if (container) {
+                    container.innerHTML = '';
+                    container.style.display = 'none';
+                }
+            }
+        }, 350);
+    }
+};
+
+window.confirmarLeituraTodosAlertasPedidos = function () {
+    const hj = new Date().toISOString().substring(0, 10);
+    document.querySelectorAll('#alerta-container-pedidos [id^="card-alerta-pedido-"]').forEach(function (el) {
+        const id = el.id.replace('card-alerta-pedido-', '');
+        localStorage.setItem(chaveAlertaSilenciadoPedido(id, hj), 'true');
+    });
+    const container = document.getElementById('alerta-container-pedidos');
+    if (container) {
+        container.innerHTML = '';
+        container.style.display = 'none';
+    }
+};
+
+window.togglePainelAlertasPedidosMinimizado = function () {
+    const minimizado = sessionStorage.getItem('alertas_pedidos_painel_minimizado') === '1';
+    sessionStorage.setItem('alertas_pedidos_painel_minimizado', minimizado ? '0' : '1');
+    const container = document.getElementById('alerta-container-pedidos');
+    if (!container) return;
+    const wrap = container.querySelector('.alerta-painel-wrapper');
+    const barra = container.querySelector('.alerta-barra-minimizada');
+    if (wrap) wrap.style.display = minimizado ? 'block' : 'none';
+    if (barra) barra.style.display = minimizado ? 'none' : 'flex';
+};
+
+async function monitorarPedidosMaterialGestor() {
+    const empresaGestor = typeof getEmpresaGestor === 'function' ? getEmpresaGestor() : '';
+    const telaPatraoAtiva = typeof painelGestorEstaVisivel === 'function' ? painelGestorEstaVisivel() : false;
+    let containerPedidos = document.getElementById('alerta-container-pedidos');
+
+    if (!empresaGestor || !telaPatraoAtiva) {
+        if (containerPedidos) containerPedidos.style.display = 'none';
+        return;
+    }
+
+    ensureAlertaStack();
+
+    try {
+        const hojeFormatado = new Date().toISOString().substring(0, 10);
+        const q = query(collection(db, 'pedidos_material'), where('empresa_id', '==', empresaGestor));
+        const snap = await getDocs(q);
+
+        const pedidosNovos = [];
+        snap.forEach(function (docSnap) {
+            const p = docSnap.data() || {};
+            if (String(p.status || '').toLowerCase() !== 'novo') return;
+            pedidosNovos.push({ id: docSnap.id, ...p });
+        });
+        pedidosNovos.sort(function (a, b) { return (b.timestamp || 0) - (a.timestamp || 0); });
+
+        atualizarBadgeMenuPedidos(pedidosNovos.length);
+
+        const conhecidos = lerIdsPedidosConhecidos();
+        const conhecidosSet = new Set(conhecidos);
+        const idsAtuais = pedidosNovos.map(function (p) { return p.id; });
+        const idsNovosDetectados = idsAtuais.filter(function (id) { return !conhecidosSet.has(id); });
+        const primeiraVarredura = !sessionStorage.getItem(chaveIdsPedidosConhecidos() + '_init');
+
+        // Mantém IDs conhecidos (inclui os que saíram de "novo" para não bipar de novo se voltarem)
+        const uniao = Array.from(new Set(conhecidos.concat(idsAtuais)));
+        salvarIdsPedidosConhecidos(uniao);
+        if (primeiraVarredura) {
+            sessionStorage.setItem(chaveIdsPedidosConhecidos() + '_init', '1');
+        }
+
+        const filaHtml = [];
+        pedidosNovos.forEach(function (p) {
+            if (localStorage.getItem(chaveAlertaSilenciadoPedido(p.id, hojeFormatado))) return;
+            const dataHora = ((p.data || '') + (p.hora ? ' às ' + p.hora : '')).trim();
+            filaHtml.push(montarPainelAlertaPedido(p.id, p.nome, p.equipe, p.descricao, dataHora));
+        });
+
+        const htmlAlertas = filaHtml.join('');
+        const emitirSom = !primeiraVarredura && idsNovosDetectados.length > 0;
+
+        if (htmlAlertas) {
+            renderizarAlertasPedidosNoCanto(htmlAlertas, emitirSom);
+            // Na primeira abertura do painel, se já houver pedidos novos, avisa 1 vez
+            if (primeiraVarredura && pedidosNovos.some(function (p) {
+                return !localStorage.getItem(chaveAlertaSilenciadoPedido(p.id, hojeFormatado));
+            })) {
+                tocarSomAlertaPedidosMaterial();
+            }
+        } else if (containerPedidos || document.getElementById('alerta-container-pedidos')) {
+            const c = document.getElementById('alerta-container-pedidos');
+            if (c) {
+                c.innerHTML = '';
+                c.style.display = 'none';
+            }
+        }
+
+        // Se chegou pedido novo com painel minimizado, ainda assim apita
+        if (emitirSom && sessionStorage.getItem('alertas_pedidos_painel_minimizado') === '1') {
+            tocarSomAlertaPedidosMaterial();
+        }
+    } catch (err) {
+        console.warn('Aguardando alertas de pedidos de material...', err);
+    }
+}
+
+window.monitorarPedidosMaterialGestor = monitorarPedidosMaterialGestor;
+
 // Inicia a monitorização 3 segundos após carregar a página
 setTimeout(function () {
     monitorarVencimentosDocumentos();
     monitorarVencimentosObras();
     monitorarSequenciaPontoGestor();
+    monitorarPedidosMaterialGestor();
 }, 3000);
 setInterval(function () {
     monitorarVencimentosDocumentos();
@@ -16194,6 +17721,9 @@ setInterval(function () {
 setInterval(function () {
     monitorarSequenciaPontoGestor();
 }, 120000);
+setInterval(function () {
+    monitorarPedidosMaterialGestor();
+}, 45000);
 // === FIM DO SISTEMA DE ALERTAS ===
 
 </script>
