@@ -198,6 +198,28 @@
             transition: 0.3s;
         }
         .btn-entrada:active { transform: scale(0.98); }
+        .btn-entrada.btn-ponto-ok,
+        .btn-saida.btn-ponto-ok,
+        .btn-ponto-dia.btn-ponto-ok {
+            background: #c5c9ce !important;
+            color: #555 !important;
+            box-shadow: none !important;
+            cursor: not-allowed !important;
+            opacity: 0.92;
+            pointer-events: none;
+        }
+        .btn-ponto-ok-badge {
+            display: inline-block;
+            margin-left: 8px;
+            background: #28a745;
+            color: #fff;
+            font-size: 12px;
+            font-weight: 800;
+            padding: 3px 8px;
+            border-radius: 6px;
+            letter-spacing: 0.5px;
+            vertical-align: middle;
+        }
         
         .btn-saida { 
             background: #d9534f; 
@@ -214,6 +236,39 @@
             transition: 0.3s;
         }
         .btn-saida:active { transform: scale(0.98); }
+
+        .btn-balao-despesa {
+            flex: 1;
+            min-width: 140px;
+            border: none;
+            border-radius: 999px;
+            padding: 16px 22px;
+            font-weight: 800;
+            font-size: 15px;
+            letter-spacing: 0.4px;
+            cursor: pointer;
+            box-shadow: 0 6px 18px rgba(0, 0, 0, 0.18);
+            transition: transform 0.15s ease, box-shadow 0.15s ease, filter 0.15s ease;
+        }
+        .btn-balao-despesa:active {
+            transform: scale(0.97);
+        }
+        .btn-balao-confirmar {
+            background: #28a745;
+            color: #fff;
+            box-shadow: 0 6px 18px rgba(40, 167, 69, 0.35);
+        }
+        .btn-balao-confirmar:hover {
+            filter: brightness(1.05);
+        }
+        .btn-balao-cancelar {
+            background: #d9534f;
+            color: #fff;
+            box-shadow: 0 6px 18px rgba(217, 83, 79, 0.35);
+        }
+        .btn-balao-cancelar:hover {
+            filter: brightness(1.05);
+        }
         
         .btn-logout { 
             background: #eee; 
@@ -3024,7 +3079,7 @@
             <b>Sequência do ponto:</b> Entrada → Início intervalo → Fim intervalo → Saída (apenas 1 de cada, nesta ordem). Batidas fora de ordem aparecem em <b style="color:#b02a37;">vermelho</b> e geram alerta no canto da tela.
         </p>
         <p class="texto-explicacao" style="margin:0 0 10px 0;background:#f8f9fa;border:1px solid #dee2e6;border-radius:8px;padding:8px 10px;">
-            <b>Duplicados:</b> se o funcionário bater o mesmo tipo no <b>mesmo horário</b> mais de uma vez, só <b>uma</b> batida conta na folha. As repetidas aparecem como <b>DUPLICADO</b> — pode apagar com <b>APAGAR BATIDA (RH)</b>.
+            <b>Duplicados:</b> se o mesmo tipo for batido no <b>mesmo horário</b> mais de uma vez (comum no offline), o sistema <b>mantém só a batida correta</b> na tela e na folha — as repetidas ficam ocultas.
         </p>
         <div style="display: flex; gap: 10px;">
             <select id="pt-func-select" class="lista-funcs" style="margin: 0; flex: 2;">
@@ -3569,7 +3624,10 @@
         <input type="hidden" id="d-anexo-base64">
         <p class="texto-explicacao" style="margin-top: 5px;">* Tire uma foto clara do recibo impresso.</p>
 
-        <button class="btn-gold" id="btnSalvarDespesa" onclick="salvarDespesaObra()">SALVAR DESPESA</button>
+        <div class="despesa-acoes-balao" style="display:flex; gap:12px; margin-top:18px; flex-wrap:wrap;">
+            <button type="button" class="btn-balao-despesa btn-balao-confirmar" id="btnConfirmarDespesa" onclick="salvarDespesaObra()">CONFIRMAR</button>
+            <button type="button" class="btn-balao-despesa btn-balao-cancelar" id="btnCancelarDespesa" onclick="cancelarDespesaObra()">CANCELAR</button>
+        </div>
     </div>
 
     <div id="aba-despesas-relatorio" class="view-section">
@@ -3905,13 +3963,13 @@
         <b>Ordem obrigatória do dia (só 1 vez cada):</b><br>
         🟢 ENTRADA → ⏸️ INÍCIO DE INTERVALO → ▶️ FIM DE INTERVALO → 🔴 SAÍDA<br>
         Clique na ordem certa. Se errar ou repetir, o sistema bloqueia.<br>
-        <b>Não clique várias vezes</b> no mesmo botão.
+        <b>Não clique várias vezes</b> no mesmo botão. Depois de bater, o botão fica <b>cinza com OK</b> e só libera no dia seguinte.
     </p>
 
-    <button type="button" class="btn-entrada" onclick="baterPonto('Entrada')">🟢 REGISTAR ENTRADA</button>
-    <button type="button" class="btn-logout" onclick="baterPonto('Início Intervalo')" style="margin-top: 12px; background: #6c757d; color: white; border: none; box-shadow: none; padding: 16px; border-radius: 12px; font-weight: 700; font-size: 15px;">⏸️ SAIR P/ ALMOÇO (INÍCIO INTERVALO)</button>
-    <button type="button" class="btn-logout" onclick="baterPonto('Fim Intervalo')" style="margin-top: 12px; background: #4285F4; color: white; border: none; box-shadow: none; padding: 16px; border-radius: 12px; font-weight: 700; font-size: 15px;">▶️ VOLTAR DO ALMOÇO (FIM INTERVALO)</button>
-    <button type="button" class="btn-saida" onclick="baterPonto('Saída')">🔴 REGISTAR SAÍDA</button>
+    <button type="button" class="btn-entrada btn-ponto-dia" id="btn-ponto-entrada" data-ponto-tipo="Entrada" onclick="baterPonto('Entrada')">🟢 REGISTAR ENTRADA</button>
+    <button type="button" class="btn-logout btn-ponto-dia" id="btn-ponto-inicio-intervalo" data-ponto-tipo="Início Intervalo" onclick="baterPonto('Início Intervalo')" style="margin-top: 12px; background: #6c757d; color: white; border: none; box-shadow: none; padding: 16px; border-radius: 12px; font-weight: 700; font-size: 15px;">⏸️ SAIR P/ ALMOÇO (INÍCIO INTERVALO)</button>
+    <button type="button" class="btn-logout btn-ponto-dia" id="btn-ponto-fim-intervalo" data-ponto-tipo="Fim Intervalo" onclick="baterPonto('Fim Intervalo')" style="margin-top: 12px; background: #4285F4; color: white; border: none; box-shadow: none; padding: 16px; border-radius: 12px; font-weight: 700; font-size: 15px;">▶️ VOLTAR DO ALMOÇO (FIM INTERVALO)</button>
+    <button type="button" class="btn-saida btn-ponto-dia" id="btn-ponto-saida" data-ponto-tipo="Saída" onclick="baterPonto('Saída')">🔴 REGISTAR SAÍDA</button>
 
     <hr style="border: 0; border-top: 1px solid #eee; margin: 25px 0;">
     <h4 style="text-align: center; color: var(--dark-navy); margin-bottom: 10px;">Faltou material na obra?</h4>
@@ -4372,6 +4430,11 @@
             document.getElementById('alerta-offline').style.display = 'block';
         }
         sincronizarPontoOffline();
+        setTimeout(function () {
+            if (typeof atualizarUiBotoesPontoDia === 'function') {
+                atualizarUiBotoesPontoDia(true);
+            }
+        }, 400);
     } else if (temSessaoGestor) {
         document.title = "Gestor 360 — " + temSessaoGestor; 
         iniciarPainelGestor();
@@ -7520,6 +7583,33 @@ window.carregarFiltrosDespesas = async function() {
         });
     })();
 
+  window.cancelarDespesaObra = function () {
+        const limpar = function (id) {
+            const el = document.getElementById(id);
+            if (el) el.value = '';
+        };
+        limpar('d-obra');
+        limpar('d-loja');
+        limpar('d-nf');
+        limpar('d-vencimento');
+        limpar('d-valor');
+        limpar('d-desc');
+        limpar('d-anexo');
+        limpar('d-anexo-base64');
+        const sugObra = document.getElementById('d-obra-sugestoes');
+        const sugLoja = document.getElementById('d-loja-sugestoes');
+        if (sugObra) sugObra.innerHTML = '';
+        if (sugLoja) sugLoja.innerHTML = '';
+        Swal.fire({
+            toast: true,
+            position: 'top-end',
+            icon: 'info',
+            title: 'Cadastro cancelado',
+            showConfirmButton: false,
+            timer: 1800
+        });
+    };
+
   window.salvarDespesaObra = async function() {
         const empresaLogada = getEmpresaGestor();
         if (!window._cacheNomesDespesas) {
@@ -7538,8 +7628,11 @@ window.carregarFiltrosDespesas = async function() {
         
         if (!obra || !loja || !valor) return Swal.fire('Atenção', 'Preencha a Obra, Loja e o Valor!', 'warning');
         
-        const btn = document.getElementById('btnSalvarDespesa'); 
-        btn.innerText = "⏳ A GUARDAR..."; btn.disabled = true;
+        const btn = document.getElementById('btnConfirmarDespesa') || document.getElementById('btnSalvarDespesa');
+        const btnCancel = document.getElementById('btnCancelarDespesa');
+        const txtOriginal = btn ? btn.innerText : 'CONFIRMAR';
+        if (btn) { btn.innerText = "⏳ AGUARDE..."; btn.disabled = true; }
+        if (btnCancel) btnCancel.disabled = true;
         
         const dataObj = new Date(); 
         const dataAtual = `${String(dataObj.getDate()).padStart(2, '0')}/${String(dataObj.getMonth() + 1).padStart(2, '0')}/${dataObj.getFullYear()}`;
@@ -7569,7 +7662,8 @@ window.carregarFiltrosDespesas = async function() {
         } catch (e) { 
             Swal.fire('Falha Técnica', 'Não foi possível salvar.', 'error'); 
         } finally { 
-            btn.innerText = "SALVAR DESPESA"; btn.disabled = false; 
+            if (btn) { btn.innerText = txtOriginal || 'CONFIRMAR'; btn.disabled = false; }
+            if (btnCancel) btnCancel.disabled = false;
         }
     };
 
@@ -12902,6 +12996,108 @@ window.gerarFolhaPagamento = async function() {
         return { lastTipo: null, emIntervalo: false, encerrado: false };
     }
 
+    function tiposPontoFeitosHoje(estado) {
+        const feitos = {
+            'Entrada': false,
+            'Início Intervalo': false,
+            'Fim Intervalo': false,
+            'Saída': false
+        };
+        const last = estado && estado.lastTipo ? normalizarTipoBatidaPonto(estado.lastTipo) : null;
+        const encerrado = Boolean(estado && (estado.encerrado || last === 'Saída'));
+        if (encerrado) {
+            feitos['Entrada'] = true;
+            feitos['Início Intervalo'] = true;
+            feitos['Fim Intervalo'] = true;
+            feitos['Saída'] = true;
+            return feitos;
+        }
+        if (last === 'Fim Intervalo') {
+            feitos['Entrada'] = true;
+            feitos['Início Intervalo'] = true;
+            feitos['Fim Intervalo'] = true;
+        } else if (last === 'Início Intervalo') {
+            feitos['Entrada'] = true;
+            feitos['Início Intervalo'] = true;
+        } else if (last === 'Entrada') {
+            feitos['Entrada'] = true;
+        }
+        return feitos;
+    }
+
+    const ROTULOS_BOTOES_PONTO = {
+        'Entrada': '🟢 REGISTAR ENTRADA',
+        'Início Intervalo': '⏸️ SAIR P/ ALMOÇO (INÍCIO INTERVALO)',
+        'Fim Intervalo': '▶️ VOLTAR DO ALMOÇO (FIM INTERVALO)',
+        'Saída': '🔴 REGISTAR SAÍDA'
+    };
+
+    const IDS_BOTOES_PONTO = {
+        'Entrada': 'btn-ponto-entrada',
+        'Início Intervalo': 'btn-ponto-inicio-intervalo',
+        'Fim Intervalo': 'btn-ponto-fim-intervalo',
+        'Saída': 'btn-ponto-saida'
+    };
+
+    function aplicarUiBotoesPontoDia(estado) {
+        const feitos = tiposPontoFeitosHoje(estado || estadoPontoVazio());
+        Object.keys(IDS_BOTOES_PONTO).forEach(function (tipo) {
+            const btn = document.getElementById(IDS_BOTOES_PONTO[tipo]);
+            if (!btn) return;
+            const ok = Boolean(feitos[tipo]);
+            const base = ROTULOS_BOTOES_PONTO[tipo] || tipo;
+            if (ok) {
+                btn.innerHTML = base + ' <span class="btn-ponto-ok-badge">OK</span>';
+                btn.classList.add('btn-ponto-ok');
+                btn.disabled = true;
+                btn.setAttribute('aria-disabled', 'true');
+                btn.title = 'Já registrado hoje. Liberado novamente amanhã.';
+            } else {
+                btn.innerHTML = base;
+                btn.classList.remove('btn-ponto-ok');
+                btn.disabled = false;
+                btn.removeAttribute('aria-disabled');
+                btn.title = '';
+            }
+        });
+    }
+
+    window.atualizarUiBotoesPontoDia = async function (forcarNuvem) {
+        const tela = document.getElementById('tela-relogio');
+        if (!tela || tela.style.display === 'none') return;
+        const funcId = getSessaoFunc('funcLogadoId');
+        if (!funcId) return;
+
+        const dataHoje = obterDataHojeBrPonto();
+        const chave = 'estado_ponto_' + funcId + '_' + dataHoje;
+        let estado = null;
+        try {
+            estado = JSON.parse(localStorage.getItem(chave) || 'null');
+        } catch (_) {
+            estado = null;
+        }
+
+        // Aplica já o estado local (instantâneo) e depois confirma com a nuvem
+        aplicarUiBotoesPontoDia(estado || estadoPontoVazio());
+
+        if (forcarNuvem !== false && navigator.onLine) {
+            try {
+                const nuvem = await promiseComTimeout(
+                    obterEstadoPontoDiaFromFirestore(funcId, dataHoje),
+                    7000,
+                    'timeout_ui_botoes_ponto'
+                );
+                if (nuvem) {
+                    estado = nuvem;
+                    try { localStorage.setItem(chave, JSON.stringify(nuvem)); } catch (_) {}
+                    aplicarUiBotoesPontoDia(estado);
+                }
+            } catch (e) {
+                console.warn('ui botoes ponto nuvem', e);
+            }
+        }
+    };
+
     /** Mensagem única exibida ao funcionário quando clica fora da ordem ou repete batida. */
     const MSG_PONTO_ORDEM_ERRADA_FUNC =
         'OPS, você já registrou esta jornada ou bateu a ordem errada.<br><br>'
@@ -13155,9 +13351,31 @@ window.gerarFolhaPagamento = async function() {
     }
 
     async function sincronizarPontoOffline() {
-        const pontosOffline = JSON.parse(localStorage.getItem('pontos_offline') || '[]');
+        let pontosOffline = JSON.parse(localStorage.getItem('pontos_offline') || '[]');
         
         if (pontosOffline.length > 0 && navigator.onLine) {
+            // Remove duplicados dentro da própria fila local (mesmo dia+tipo+hora)
+            try {
+                const vistosFila = new Map();
+                const filaLimpa = [];
+                pontosOffline.forEach((p) => {
+                    if (!p) return;
+                    const chave = chaveDedupBatidaPonto(p);
+                    const atual = vistosFila.get(chave);
+                    if (!atual) {
+                        vistosFila.set(chave, p);
+                        filaLimpa.push(p);
+                        return;
+                    }
+                    if (pontuacaoBatidaPontoParaManter(p) > pontuacaoBatidaPontoParaManter(atual)) {
+                        const idx = filaLimpa.indexOf(atual);
+                        if (idx >= 0) filaLimpa[idx] = p;
+                        vistosFila.set(chave, p);
+                    }
+                });
+                pontosOffline = filaLimpa;
+            } catch (_) {}
+
             let salvos = 0;
             const pendentes = [];
             try { await ensureAuth(); } catch (_) {}
@@ -13197,6 +13415,8 @@ window.gerarFolhaPagamento = async function() {
                         console.warn('validação sequência no sync offline', eSeq);
                     }
 
+                    // Checagem de duplicado: se falhar/timeout, NÃO grava — mantém na fila
+                    let jaExisteNaNuvem = false;
                     try {
                         const cancelados = funcId ? await promiseComTimeout(
                             buscarIdsPontoCanceladosFuncionario(funcId),
@@ -13208,12 +13428,16 @@ window.gerarFolhaPagamento = async function() {
                             8000,
                             'timeout_batidas_sync'
                         ) : [];
-                        if (existeBatidaDuplicadaPonto(batidasDia, cancelados, payload.tipo, dataBR, payload.hora)) {
-                            salvos++; // já existe na nuvem — remove da fila local
-                            continue;
-                        }
+                        jaExisteNaNuvem = existeBatidaDuplicadaPonto(batidasDia, cancelados, payload.tipo, dataBR, payload.hora);
                     } catch (eDup) {
-                        console.warn('checagem duplicado no sync offline', eDup);
+                        console.warn('checagem duplicado no sync offline — mantendo na fila', eDup);
+                        pendentes.push(pontosOffline[i]);
+                        continue;
+                    }
+
+                    if (jaExisteNaNuvem) {
+                        salvos++; // já existe na nuvem — remove da fila local
+                        continue;
                     }
 
                     await addDoc(collection(db, "ponto_registros"), payload);
@@ -13285,6 +13509,9 @@ window.gerarFolhaPagamento = async function() {
             const novo = aplicarBatidaEstadoPonto(base, tipoMarcacao);
             novo.lastTs = ts;
             salvarEstadoPonto(funcId, novo);
+            if (typeof aplicarUiBotoesPontoDia === 'function') {
+                aplicarUiBotoesPontoDia(novo);
+            }
         }
 
         const funcIdPre = getSessaoFunc('funcLogadoId');
@@ -13422,6 +13649,24 @@ window.gerarFolhaPagamento = async function() {
         }
 
         window.__pontoProcessando = true;
+        // Se o botão já está OK/cinza, não processa
+        const mapaBtn = {
+            'Entrada': 'btn-ponto-entrada',
+            'Início Intervalo': 'btn-ponto-inicio-intervalo',
+            'Fim Intervalo': 'btn-ponto-fim-intervalo',
+            'Saída': 'btn-ponto-saida'
+        };
+        const btnTipo = document.getElementById(mapaBtn[tipo] || '');
+        if (btnTipo && (btnTipo.disabled || btnTipo.classList.contains('btn-ponto-ok'))) {
+            window.__pontoProcessando = false;
+            return Swal.fire({
+                icon: 'info',
+                title: 'Já registrado',
+                text: 'Este ponto já foi batido hoje. Só poderá bater de novo amanhã.',
+                confirmButtonColor: '#1a2a43'
+            });
+        }
+
         Swal.fire({
             title: estaOffline ? 'A gravar ponto offline...' : 'A gravar ponto...',
             text: estaOffline
@@ -14082,7 +14327,17 @@ window.gerarFolhaPagamento = async function() {
         if (ln.motivo) {
             html += '<p style="margin:0 0 8px 0;font-size:12px;"><b>Motivo:</b> ' + escapeHtmlBasico(ln.motivo) + '</p>';
         }
-        const batidasOrd = (ln.batidas || []).slice().sort((a, b) => (a.timestamp || 0) - (b.timestamp || 0));
+        // Ignora batidas duplicadas na tela — mostra só a correta (já usada na folha/espelho)
+        const batidasOrd = (ln.batidas || [])
+            .filter((b) => b && !(b.id && idsDup.has(b.id)))
+            .slice()
+            .sort((a, b) => (a.timestamp || 0) - (b.timestamp || 0));
+        const qtdOcultos = (ln.batidas || []).length - batidasOrd.length;
+        if (qtdOcultos > 0) {
+            html += '<p style="margin:0 0 10px 0;padding:8px 10px;background:#f8f9fa;border:1px solid #dee2e6;border-radius:8px;font-size:12px;color:#555;">'
+                + '🔁 ' + qtdOcultos + ' batida(s) duplicada(s) oculta(s) automaticamente (mesmo tipo e horário). Só a correta aparece abaixo e conta na folha.'
+                + '</p>';
+        }
         if (!batidasOrd.length) {
             html += '<p style="text-align:center;color:#888;font-size:12px;margin:0;">Sem batidas neste dia.</p>';
             const dataBrJs = String(ln.dataBr || '').replace(/\\/g, '\\\\').replace(/'/g, "\\'");
@@ -16117,6 +16372,7 @@ window.gerarFolhaPagamento = async function() {
     window.voltarTelaRelogioDeVales = function() {
         document.querySelectorAll('.main-card').forEach(card => card.style.display = 'none');
         document.getElementById('tela-relogio').style.display = 'block';
+        if (typeof atualizarUiBotoesPontoDia === 'function') atualizarUiBotoesPontoDia(false);
     };
 
     window.buscarMeusVales = async function() {
@@ -16395,6 +16651,7 @@ window.gerarFolhaPagamento = async function() {
         // Cancela o pedido e volta para a tela de relógio
         document.querySelectorAll('.main-card').forEach(card => card.style.display = 'none');
         document.getElementById('tela-relogio').style.display = 'block';
+        if (typeof atualizarUiBotoesPontoDia === 'function') atualizarUiBotoesPontoDia(false);
     };
 
     window.enviarPedidoMaterial = async function() {
