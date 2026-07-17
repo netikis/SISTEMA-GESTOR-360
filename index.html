@@ -3622,7 +3622,7 @@
         <label>Foto do Recibo / Fatura</label>
         <input type="file" id="d-anexo" accept="image/*" capture="environment" style="background: #fff; padding: 10px; border-radius: 8px;">
         <input type="hidden" id="d-anexo-base64">
-        <p class="texto-explicacao" style="margin-top: 5px;">* Tire uma foto clara do recibo impresso.</p>
+        <p class="texto-explicacao" style="margin-top: 5px;">* Tire a foto <b>bem iluminada e de frente</b>. O sistema agora guarda em alta resolução para o comprovante ficar legível.</p>
 
         <div class="despesa-acoes-balao" style="display:flex; gap:12px; margin-top:18px; flex-wrap:wrap;">
             <button type="button" class="btn-balao-despesa btn-balao-confirmar" id="btnConfirmarDespesa" onclick="salvarDespesaObra()">CONFIRMAR</button>
@@ -6758,61 +6758,56 @@ function separarDataSegura(dataString) {
         return iso;
     }
 
+    /** Comprime anexo (recibo/comprovante) mantendo texto legível — lado maior até 1600px, JPEG ~82%. */
+    function comprimirImagemAnexoLegivelFromImg(img, maxLado, qualidade) {
+        const limite = maxLado || 1600;
+        const q = qualidade != null ? qualidade : 0.82;
+        let width = img.width;
+        let height = img.height;
+        const maior = Math.max(width, height);
+        if (maior > limite) {
+            const escala = limite / maior;
+            width = Math.round(width * escala);
+            height = Math.round(height * escala);
+        }
+        const canvas = document.createElement('canvas');
+        canvas.width = Math.max(1, width);
+        canvas.height = Math.max(1, height);
+        const ctx = canvas.getContext('2d');
+        ctx.imageSmoothingEnabled = true;
+        ctx.imageSmoothingQuality = 'high';
+        ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+        return canvas.toDataURL('image/jpeg', q);
+    }
+
     document.getElementById('d-anexo').addEventListener('change', function(e) {
-        const file = e.target.files;
+        const file = e.target.files && e.target.files[0];
         if (!file) return;
 
         const reader = new FileReader();
         reader.onload = function(event) {
             const img = new Image();
             img.onload = function() {
-                const canvas = document.createElement('canvas');
-                const MAX_WIDTH = 500;
-                let width = img.width;
-                let height = img.height;
-
-                if (width > MAX_WIDTH) {
-                    height = height * (MAX_WIDTH / width);
-                    width = MAX_WIDTH;
-                }
-
-                canvas.width = width;
-                canvas.height = height;
-                const ctx = canvas.getContext('2d');
-                ctx.drawImage(img, 0, 0, width, height);
-                
-                document.getElementById('d-anexo-base64').value = canvas.toDataURL('image/jpeg', 0.4);
-            }
+                document.getElementById('d-anexo-base64').value = comprimirImagemAnexoLegivelFromImg(img);
+            };
             img.src = event.target.result;
-        }
+        };
         reader.readAsDataURL(file);
     });
 
     document.getElementById('rd-anexo').addEventListener('change', function(e) {
-        const file = e.target.files;
-        if (!file || !file[0]) return;
+        const file = e.target.files && e.target.files[0];
+        if (!file) return;
         const reader = new FileReader();
         reader.onload = function(event) {
             const img = new Image();
             img.onload = function() {
-                const canvas = document.createElement('canvas');
-                const MAX_WIDTH = 500;
-                let width = img.width;
-                let height = img.height;
-                if (width > MAX_WIDTH) {
-                    height = height * (MAX_WIDTH / width);
-                    width = MAX_WIDTH;
-                }
-                canvas.width = width;
-                canvas.height = height;
-                const ctx = canvas.getContext('2d');
-                ctx.drawImage(img, 0, 0, width, height);
                 const elB64 = document.getElementById('rd-anexo-base64');
-                if (elB64) elB64.value = canvas.toDataURL('image/jpeg', 0.4);
+                if (elB64) elB64.value = comprimirImagemAnexoLegivelFromImg(img);
             };
             img.src = event.target.result;
         };
-        reader.readAsDataURL(file[0]);
+        reader.readAsDataURL(file);
     });
 
     const CODIGO_BAIXA_SEM_COMPROVANTE = '0308';
@@ -6829,18 +6824,11 @@ function separarDataSegura(dataString) {
             reader.onload = (event) => {
                 const img = new Image();
                 img.onload = () => {
-                    const canvas = document.createElement('canvas');
-                    const MAX_WIDTH = 500;
-                    let width = img.width;
-                    let height = img.height;
-                    if (width > MAX_WIDTH) {
-                        height = height * (MAX_WIDTH / width);
-                        width = MAX_WIDTH;
+                    try {
+                        resolve(comprimirImagemAnexoLegivelFromImg(img));
+                    } catch (err) {
+                        reject(err);
                     }
-                    canvas.width = width;
-                    canvas.height = height;
-                    canvas.getContext('2d').drawImage(img, 0, 0, width, height);
-                    resolve(canvas.toDataURL('image/jpeg', 0.4));
                 };
                 img.onerror = () => reject(new Error('imagem'));
                 img.src = event.target.result;
@@ -13833,13 +13821,65 @@ window.gerarFolhaPagamento = async function() {
     };
 
     window.abrirFoto = function(imgBase64) {
-        Swal.fire({ 
-            title: 'Visualização', 
-            imageUrl: imgBase64, 
-            imageWidth: 400, 
-            imageAlt: 'Foto Anexada', 
-            confirmButtonText: 'Fechar', 
-            confirmButtonColor: '#1a2a43' 
+        if (!imgBase64) {
+            return Swal.fire('Atenção', 'Nenhuma imagem para exibir.', 'info');
+        }
+        window._fotoViewerZoom = 1;
+        const srcEsc = String(imgBase64).replace(/&/g, '&amp;').replace(/"/g, '&quot;');
+
+        function aplicarZoomViewer(delta) {
+            let z = Number(window._fotoViewerZoom) || 1;
+            z = Math.max(0.5, Math.min(4, z + delta));
+            window._fotoViewerZoom = z;
+            const img = document.getElementById('foto-viewer-img');
+            const label = document.getElementById('foto-viewer-zoom-label');
+            if (img) {
+                img.style.width = (100 * z) + '%';
+            }
+            if (label) label.textContent = Math.round(z * 100) + '%';
+        }
+
+        window._fotoViewerZoomMenos = function () { aplicarZoomViewer(-0.25); };
+        window._fotoViewerZoomMais = function () { aplicarZoomViewer(0.25); };
+        window._fotoViewerZoomReset = function () { window._fotoViewerZoom = 1; aplicarZoomViewer(0); };
+
+        Swal.fire({
+            title: 'Comprovante / Anexo',
+            width: Math.min(window.innerWidth - 16, 960),
+            padding: '1rem',
+            html: ''
+                + '<p style="margin:0 0 10px 0;font-size:12px;color:#666;text-align:left;">Use <b>+</b> / <b>−</b> para ampliar, role a imagem e, se preferir, abra em nova aba em tamanho real.</p>'
+                + '<div style="display:flex;gap:8px;justify-content:center;flex-wrap:wrap;margin-bottom:10px;">'
+                + '<button type="button" onclick="window._fotoViewerZoomMenos()" style="background:#6c757d;color:#fff;border:none;border-radius:8px;padding:8px 14px;font-weight:700;cursor:pointer;">− Zoom</button>'
+                + '<button type="button" onclick="window._fotoViewerZoomReset()" style="background:#eef2f5;color:#1a2a43;border:1px solid #ccc;border-radius:8px;padding:8px 14px;font-weight:700;cursor:pointer;"><span id="foto-viewer-zoom-label">100%</span></button>'
+                + '<button type="button" onclick="window._fotoViewerZoomMais()" style="background:#1a2a43;color:#fff;border:none;border-radius:8px;padding:8px 14px;font-weight:700;cursor:pointer;">+ Zoom</button>'
+                + '</div>'
+                + '<div id="foto-viewer-scroll" style="max-height:min(72vh,720px);overflow:auto;background:#111;border-radius:10px;padding:8px;text-align:center;-webkit-overflow-scrolling:touch;">'
+                + '<img id="foto-viewer-img" src="' + srcEsc + '" alt="Anexo" style="width:100%;height:auto;display:block;margin:0 auto;image-rendering:auto;">'
+                + '</div>',
+            showDenyButton: true,
+            showCancelButton: false,
+            confirmButtonText: 'Fechar',
+            denyButtonText: 'Abrir em nova aba',
+            confirmButtonColor: '#1a2a43',
+            denyButtonColor: '#4285F4',
+            focusConfirm: false
+        }).then(function (r) {
+            if (r.isDenied) {
+                try {
+                    const w = window.open('', '_blank');
+                    if (w) {
+                        w.document.write('<!DOCTYPE html><html><head><title>Comprovante</title><meta name="viewport" content="width=device-width,initial-scale=1">'
+                            + '<style>body{margin:0;background:#111;display:flex;justify-content:center;}img{max-width:100%;height:auto;}</style></head><body>'
+                            + '<img src="' + srcEsc + '" alt="Comprovante"></body></html>');
+                        w.document.close();
+                    } else {
+                        Swal.fire('Atenção', 'O navegador bloqueou a nova aba. Permita pop-ups para este site.', 'warning');
+                    }
+                } catch (e) {
+                    Swal.fire('Erro', 'Não foi possível abrir a imagem em nova aba.', 'error');
+                }
+            }
         });
     };
 
