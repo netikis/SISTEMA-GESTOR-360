@@ -2293,6 +2293,13 @@
             --alerta-painel-largura: 380px;
         }
 
+        #alerta-container-global {
+            width: var(--alerta-painel-largura);
+            max-width: calc(100vw - 32px);
+            flex-shrink: 0;
+            box-sizing: border-box;
+        }
+
         #alerta-container-global .alerta-painel-wrapper,
         #alerta-container-docs .alerta-painel-wrapper,
         #alerta-container-ponto .alerta-painel-wrapper,
@@ -2311,7 +2318,25 @@
             box-sizing: border-box;
         }
 
-        #alerta-container-global .alerta-painel-header,
+        #alerta-container-global .alerta-painel-header {
+            display: flex;
+            flex-direction: row;
+            flex-wrap: nowrap;
+            align-items: center;
+            justify-content: space-between;
+            gap: 6px;
+            background: #fff;
+            border: 1px solid #e0e0e0;
+            border-bottom: none;
+            border-radius: 10px 10px 0 0;
+            padding: 8px 10px;
+            margin: 0;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.06);
+            width: 100%;
+            box-sizing: border-box;
+            overflow: hidden;
+        }
+
         #alerta-container-docs .alerta-painel-header,
         #alerta-container-ponto .alerta-painel-header,
         #alerta-container-pedidos .alerta-painel-header {
@@ -2340,7 +2365,36 @@
             white-space: nowrap;
         }
 
-        #alerta-container-global .alerta-painel-header-acoes,
+        #alerta-container-global .alerta-painel-header-titulo {
+            flex: 1 1 auto;
+            min-width: 0;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            font-size: 12px;
+        }
+
+        #alerta-container-global .alerta-painel-header-acoes {
+            display: flex;
+            flex-wrap: nowrap;
+            gap: 4px;
+            flex-shrink: 0;
+            align-items: center;
+            justify-content: flex-end;
+        }
+
+        #alerta-container-global .alerta-painel-header-acoes .alerta-btn-fechar,
+        #alerta-container-global .alerta-painel-header-acoes .alerta-btn-imprimir,
+        #alerta-container-global .alerta-painel-header-acoes .alerta-btn-exportar,
+        #alerta-container-global .alerta-painel-header-acoes .alerta-btn-minimizar {
+            width: auto;
+            min-width: 0;
+            padding: 4px 7px;
+            font-size: 9px;
+            line-height: 1.1;
+            box-sizing: border-box;
+        }
+
         #alerta-container-docs .alerta-painel-header-acoes,
         #alerta-container-ponto .alerta-painel-header-acoes,
         #alerta-container-pedidos .alerta-painel-header-acoes {
@@ -2366,6 +2420,10 @@
             border-top: 1px solid #ececec;
             border-radius: 0 0 10px 10px;
             box-shadow: 0 8px 20px rgba(0, 0, 0, 0.08);
+        }
+
+        #alerta-container-global .alerta-painel-corpo {
+            max-height: min(420px, 52vh);
         }
 
         #alerta-container-global .card-alerta-venc,
@@ -2422,6 +2480,70 @@
             font-size: 10px;
             cursor: pointer;
             white-space: nowrap;
+        }
+
+        #alerta-container-global .alerta-btn-exportar {
+            background: #217346;
+            color: #fff;
+            border: none;
+            border-radius: 6px;
+            padding: 5px 8px;
+            font-weight: 700;
+            font-size: 10px;
+            cursor: pointer;
+            white-space: nowrap;
+            box-sizing: border-box;
+        }
+
+        #alerta-container-global .alerta-barra-minimizada {
+            flex-wrap: wrap;
+            max-width: 100%;
+            box-sizing: border-box;
+        }
+
+        #alerta-container-global .alerta-barra-minimizada .alerta-btn-imprimir,
+        #alerta-container-global .alerta-barra-minimizada .alerta-btn-exportar,
+        #alerta-container-global .alerta-barra-minimizada .alerta-btn-fechar {
+            flex-shrink: 0;
+        }
+
+        .preview-contas-pagar-wrap {
+            max-height: min(45vh, 360px);
+            overflow: auto;
+            border: 1px solid #ccc;
+            border-radius: 8px;
+            margin-top: 8px;
+            background: #fff;
+        }
+        .preview-contas-pagar-wrap table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 10px;
+            font-family: 'Courier New', Courier, monospace;
+            color: #111;
+        }
+        .preview-contas-pagar-wrap th,
+        .preview-contas-pagar-wrap td {
+            border: 1px solid #bbb;
+            padding: 4px 5px;
+            text-align: left;
+            vertical-align: top;
+        }
+        .preview-contas-pagar-wrap th {
+            background: #e8e8e8;
+            font-weight: 700;
+            position: sticky;
+            top: 0;
+            z-index: 1;
+        }
+        .preview-contas-pagar-wrap tr.linha-total-dia td {
+            background: #f5f5f5;
+            font-weight: 700;
+            text-align: right;
+        }
+        .preview-contas-pagar-wrap tr.linha-grupo-venc td {
+            background: #fafafa;
+            font-weight: 700;
         }
 
         #alerta-container-global .alerta-btn-minimizar,
@@ -16895,6 +17017,343 @@ async function monitorarVencimentosObras() {
     }
 }
 
+function obterReferenciaMesAtualContasPagar() {
+    const agora = new Date();
+    const ano = agora.getFullYear();
+    const mes = agora.getMonth();
+    const inicio = new Date(ano, mes, 1, 12, 0, 0, 0);
+    const fim = new Date(ano, mes + 1, 0, 12, 0, 0, 0);
+    const diaIni = '01';
+    const mesStr = String(mes + 1).padStart(2, '0');
+    const diaFim = String(fim.getDate()).padStart(2, '0');
+    return {
+        inicioTs: inicio.getTime(),
+        fimTs: fim.getTime(),
+        labelPeriodo: diaIni + '/' + mesStr + '/' + ano + ' a ' + diaFim + '/' + mesStr + '/' + ano,
+        mesAno: mesStr + '/' + ano
+    };
+}
+
+function calcularDiasVencimentoContaPagar(tsVenc) {
+    if (tsVenc == null) return '';
+    const hojeMeioDia = new Date();
+    hojeMeioDia.setHours(12, 0, 0, 0);
+    return Math.round((tsVenc - hojeMeioDia.getTime()) / (1000 * 60 * 60 * 24));
+}
+
+async function coletarDespesasRelatorioContasPagarMes() {
+    const empresaGestor = getEmpresaGestor();
+    if (!empresaGestor) return { itens: [], ref: obterReferenciaMesAtualContasPagar() };
+
+    const ref = obterReferenciaMesAtualContasPagar();
+    const hojeMeioDia = new Date();
+    hojeMeioDia.setHours(12, 0, 0, 0);
+
+    const q = query(collection(db, 'despesas_obras'), where('empresa_id', '==', empresaGestor));
+    const snap = await getDocs(q);
+    const itens = [];
+
+    snap.forEach(function (docSnap) {
+        const d = docSnap.data() || {};
+        const statusAtual = d.status || d.Status || '';
+        if (statusAtual === 'Pago' || statusAtual === 'pago') return;
+
+        const tsVenc = dataVencimentoTsDespesa(d);
+        if (tsVenc == null) return;
+
+        const noMes = tsVenc >= ref.inicioTs && tsVenc <= ref.fimTs;
+        const vencido = tsVenc < hojeMeioDia.getTime();
+        if (!noMes && !vencido) return;
+
+        itens.push(Object.assign({ id: docSnap.id, _tsVenc: tsVenc }, d));
+    });
+
+    itens.sort(function (a, b) { return (a._tsVenc || 0) - (b._tsVenc || 0); });
+    return { itens: itens, ref: ref };
+}
+
+function montarLinhaEspelhoContasPagar(d, seqNoDia) {
+    const tsVenc = d._tsVenc != null ? d._tsVenc : dataVencimentoTsDespesa(d);
+    const dias = calcularDiasVencimentoContaPagar(tsVenc);
+    const valorNum = parseMoedaLocal(d.valor_string) || Number(d.valor_numero) || 0;
+    const nf = String(d.nota_fiscal || '').trim();
+    const seq = nf ? nf : String(seqNoDia || 1).padStart(2, '0');
+    const codigo = String(d.id || '').replace(/\W/g, '').slice(-7).toUpperCase() || '—';
+
+    return {
+        codigo: codigo,
+        fornecedor: d.loja_nome || d.loja || 'Fornecedor',
+        numeroSeq: nf || (codigo + '/' + String(seqNoDia || 1).padStart(2, '0')),
+        qt: String(seqNoDia || 1).padStart(2, '0'),
+        emissao: d.data || '—',
+        bol: 'S',
+        vencimento: formatarVencimentoDespesaExibir(d),
+        dias: dias,
+        port: '1',
+        cCusto: (d.obra_nome || d.obra || '—').slice(0, 24),
+        valor: valorNum,
+        valorFmt: formatarMoeda(valorNum),
+        obra: d.obra_nome || d.obra || '',
+        descricao: d.descricao || ''
+    };
+}
+
+function agruparContasPagarPorDiaVencimento(itens) {
+    const grupos = [];
+    let grupoAtual = null;
+    let seqDia = 0;
+
+    (itens || []).forEach(function (d) {
+        const venc = formatarVencimentoDespesaExibir(d);
+        if (!grupoAtual || grupoAtual.vencimento !== venc) {
+            grupoAtual = { vencimento: venc, ts: d._tsVenc, linhas: [], total: 0 };
+            grupos.push(grupoAtual);
+            seqDia = 0;
+        }
+        seqDia += 1;
+        const linha = montarLinhaEspelhoContasPagar(d, seqDia);
+        grupoAtual.linhas.push(linha);
+        grupoAtual.total += linha.valor;
+    });
+
+    return grupos;
+}
+
+function montarHtmlPreviewRelatorioContasPagarPorDia(pack) {
+    const empresa = escapeHtmlBasico(getEmpresaGestor() || 'Empresa');
+    const ref = pack.ref || obterReferenciaMesAtualContasPagar();
+    const grupos = pack.grupos || [];
+    let totalGeral = 0;
+
+    let body = '';
+    grupos.forEach(function (g) {
+        totalGeral += g.total || 0;
+        g.linhas.forEach(function (ln) {
+            body += '<tr>'
+                + '<td>' + escapeHtmlBasico(ln.codigo) + '</td>'
+                + '<td>' + escapeHtmlBasico(ln.fornecedor) + '</td>'
+                + '<td>' + escapeHtmlBasico(ln.numeroSeq) + '</td>'
+                + '<td>' + escapeHtmlBasico(ln.qt) + '</td>'
+                + '<td>' + escapeHtmlBasico(ln.emissao) + '</td>'
+                + '<td style="text-align:center;">' + escapeHtmlBasico(ln.bol) + '</td>'
+                + '<td>' + escapeHtmlBasico(ln.vencimento) + '</td>'
+                + '<td style="text-align:center;">' + escapeHtmlBasico(String(ln.dias)) + '</td>'
+                + '<td style="text-align:center;">' + escapeHtmlBasico(ln.port) + '</td>'
+                + '<td>' + escapeHtmlBasico(ln.cCusto) + '</td>'
+                + '<td style="text-align:right;">' + escapeHtmlBasico(ln.valorFmt) + '</td>'
+                + '</tr>';
+        });
+        body += '<tr class="linha-total-dia"><td colspan="10">Total Diário — ' + escapeHtmlBasico(g.vencimento) + '</td>'
+            + '<td style="text-align:right;">' + escapeHtmlBasico(formatarMoeda(g.total)) + '</td></tr>';
+    });
+
+    return ''
+        + '<div style="text-align:left;font-size:12px;color:#333;margin-bottom:8px;">'
+        + '<b>' + empresa + '</b><br>'
+        + '<span style="font-size:11px;color:#555;">Relatório de Contas a Pagar por Dia — Período: ' + escapeHtmlBasico(ref.labelPeriodo) + '</span><br>'
+        + '<span style="font-size:11px;color:#555;">Vencidos + contas com vencimento no mês · Lista pela data de: <b>Vencimento</b></span>'
+        + '</div>'
+        + '<div class="preview-contas-pagar-wrap">'
+        + '<table><thead><tr>'
+        + '<th>Código</th><th>Nome do Fornecedor</th><th>Número/Seq</th><th>Qt</th><th>Emissão</th><th>Bol</th>'
+        + '<th>Vencimento</th><th>Dias</th><th>Port</th><th>C. Custo</th><th>Valor R$</th>'
+        + '</tr></thead><tbody>' + body + '</tbody></table></div>'
+        + '<p style="margin:10px 0 0;text-align:right;font-weight:800;color:#1a2a43;">TOTAL GERAL: ' + escapeHtmlBasico(formatarMoeda(totalGeral)) + '</p>'
+        + '<div style="display:flex;gap:10px;justify-content:center;margin-top:14px;flex-wrap:wrap;">'
+        + '<button type="button" class="btn-pdf-relatorio" style="margin:0;padding:12px 20px;" onclick="exportarPdfRelatorioContasPagarPorDia()">📥 PDF</button>'
+        + '<button type="button" class="btn-pdf-relatorio" style="margin:0;padding:12px 20px;background:#217346;" onclick="exportarExcelRelatorioContasPagarPorDia()">📊 EXCEL</button>'
+        + '</div>';
+}
+
+window.abrirExportarAlertasVencimento = async function () {
+    Swal.fire({
+        title: 'Montando relatório...',
+        allowOutsideClick: false,
+        didOpen: function () { Swal.showLoading(); }
+    });
+
+    try {
+        const coleta = await coletarDespesasRelatorioContasPagarMes();
+        if (!coleta.itens.length) {
+            return Swal.fire('Atenção', 'Não há contas vencidas ou a vencer no mês atual para exportar.', 'info');
+        }
+        const grupos = agruparContasPagarPorDiaVencimento(coleta.itens);
+        window._packExportContasPagarMes = { itens: coleta.itens, ref: coleta.ref, grupos: grupos };
+
+        Swal.fire({
+            title: 'Exportar — Contas a Pagar por Dia',
+            html: montarHtmlPreviewRelatorioContasPagarPorDia(window._packExportContasPagarMes),
+            width: Math.min(window.innerWidth - 24, 520),
+            showConfirmButton: true,
+            confirmButtonText: 'Fechar',
+            confirmButtonColor: '#1a2a43',
+            showCloseButton: true
+        });
+    } catch (e) {
+        console.error(e);
+        Swal.fire('Erro', 'Não foi possível montar o relatório. Tente novamente.', 'error');
+    }
+};
+
+window.exportarPdfRelatorioContasPagarPorDia = async function () {
+    let pack = window._packExportContasPagarMes;
+    if (!pack || !pack.grupos || !pack.grupos.length) {
+        Swal.fire({ title: 'Carregando...', allowOutsideClick: false, didOpen: function () { Swal.showLoading(); } });
+        try {
+            const coleta = await coletarDespesasRelatorioContasPagarMes();
+            if (!coleta.itens.length) return Swal.fire('Atenção', 'Sem dados para exportar.', 'info');
+            pack = { itens: coleta.itens, ref: coleta.ref, grupos: agruparContasPagarPorDiaVencimento(coleta.itens) };
+            window._packExportContasPagarMes = pack;
+        } catch (e) {
+            return Swal.fire('Erro', 'Falha ao carregar dados.', 'error');
+        }
+        Swal.close();
+    }
+
+    function limparPdf(s) {
+        return String(s == null ? '' : s).replace(/[\u{1F300}-\u{1FAFF}\u{2600}-\u{27BF}]/gu, '').trim();
+    }
+
+    const { jsPDF } = window.jspdf;
+    const doc = new jsPDF('l', 'mm', 'a4');
+    const empresa = limparPdf(getEmpresaGestor() || 'Empresa');
+    const ref = pack.ref;
+
+    doc.setFontSize(11);
+    doc.setFont('helvetica', 'bold');
+    doc.text(empresa, 14, 12);
+    doc.setFontSize(10);
+    doc.text('Relatorio de Contas a Pagar por Dia', 14, 18);
+    doc.setFont('helvetica', 'normal');
+    doc.setFontSize(8);
+    doc.text('Periodo: ' + ref.labelPeriodo + '  |  Gerado: ' + new Date().toLocaleString('pt-BR'), 14, 23);
+    doc.text('Vencidos + vencimentos do mes  |  Lista pela data de: Vencimento', 14, 28);
+
+    const head = [['Codigo', 'Fornecedor', 'Numero/Seq', 'Qt', 'Emissao', 'Bol', 'Vencimento', 'Dias', 'Port', 'C. Custo', 'Valor R$']];
+    const body = [];
+    let totalGeral = 0;
+
+    pack.grupos.forEach(function (g) {
+        totalGeral += g.total || 0;
+        g.linhas.forEach(function (ln) {
+            body.push([
+                limparPdf(ln.codigo),
+                limparPdf(ln.fornecedor).slice(0, 28),
+                limparPdf(ln.numeroSeq).slice(0, 16),
+                limparPdf(ln.qt),
+                limparPdf(ln.emissao),
+                limparPdf(ln.bol),
+                limparPdf(ln.vencimento),
+                String(ln.dias),
+                limparPdf(ln.port),
+                limparPdf(ln.cCusto).slice(0, 18),
+                limparPdf(ln.valorFmt)
+            ]);
+        });
+        body.push([
+            '', '', '', '', '', '', '', '', '',
+            'Total Diario ' + limparPdf(g.vencimento),
+            limparPdf(formatarMoeda(g.total))
+        ]);
+    });
+
+    doc.autoTable({
+        startY: 32,
+        head: head,
+        body: body,
+        theme: 'grid',
+        styles: { fontSize: 7, cellPadding: 1.8, valign: 'middle' },
+        headStyles: { fillColor: [232, 232, 232], textColor: [0, 0, 0], fontStyle: 'bold' },
+        columnStyles: {
+            10: { halign: 'right', cellWidth: 22 }
+        },
+        margin: { left: 10, right: 10 }
+    });
+
+    const yFinal = doc.lastAutoTable.finalY + 6;
+    doc.setFont('helvetica', 'bold');
+    doc.setFontSize(10);
+    doc.text('TOTAL GERAL: ' + formatarMoeda(totalGeral), 280, yFinal, { align: 'right' });
+
+    const nomeArq = 'contas_a_pagar_por_dia_' + String(empresa).replace(/\s+/g, '_') + '_' + ref.mesAno.replace('/', '-') + '.pdf';
+    doc.save(nomeArq);
+    Swal.fire({ toast: true, position: 'top-end', icon: 'success', title: 'PDF gerado!', showConfirmButton: false, timer: 2200 });
+};
+
+window.exportarExcelRelatorioContasPagarPorDia = async function () {
+    if (!window.XLSX) {
+        return Swal.fire('Erro', 'Biblioteca Excel não carregada. Recarregue a página.', 'error');
+    }
+
+    let pack = window._packExportContasPagarMes;
+    if (!pack || !pack.grupos || !pack.grupos.length) {
+        Swal.fire({ title: 'Carregando...', allowOutsideClick: false, didOpen: function () { Swal.showLoading(); } });
+        try {
+            const coleta = await coletarDespesasRelatorioContasPagarMes();
+            if (!coleta.itens.length) return Swal.fire('Atenção', 'Sem dados para exportar.', 'info');
+            pack = { itens: coleta.itens, ref: coleta.ref, grupos: agruparContasPagarPorDiaVencimento(coleta.itens) };
+            window._packExportContasPagarMes = pack;
+        } catch (e) {
+            return Swal.fire('Erro', 'Falha ao carregar dados.', 'error');
+        }
+        Swal.close();
+    }
+
+    const linhas = [];
+    let totalGeral = 0;
+    pack.grupos.forEach(function (g) {
+        totalGeral += g.total || 0;
+        g.linhas.forEach(function (ln) {
+            linhas.push({
+                'Código': ln.codigo,
+                'Nome do Fornecedor': ln.fornecedor,
+                'Número/Seq': ln.numeroSeq,
+                'Qt': ln.qt,
+                'Emissão': ln.emissao,
+                'Bol': ln.bol,
+                'Vencimento': ln.vencimento,
+                'Dias': ln.dias,
+                'Port': ln.port,
+                'C. Custo': ln.cCusto,
+                'Valor R$': ln.valor
+            });
+        });
+        linhas.push({
+            'Código': '',
+            'Nome do Fornecedor': 'Total Diário — ' + g.vencimento,
+            'Número/Seq': '',
+            'Qt': '',
+            'Emissão': '',
+            'Bol': '',
+            'Vencimento': '',
+            'Dias': '',
+            'Port': '',
+            'C. Custo': '',
+            'Valor R$': g.total
+        });
+    });
+    linhas.push({
+        'Código': '',
+        'Nome do Fornecedor': 'TOTAL GERAL',
+        'Número/Seq': '',
+        'Qt': '',
+        'Emissão': '',
+        'Bol': '',
+        'Vencimento': '',
+        'Dias': '',
+        'Port': '',
+        'C. Custo': '',
+        'Valor R$': totalGeral
+    });
+
+    const ws = XLSX.utils.json_to_sheet(linhas);
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, 'Contas a Pagar');
+    const emp = String(getEmpresaGestor() || 'empresa').replace(/\s+/g, '_');
+    XLSX.writeFile(wb, 'contas_a_pagar_por_dia_' + emp + '_' + pack.ref.mesAno.replace('/', '-') + '.xlsx');
+    Swal.fire({ toast: true, position: 'top-end', icon: 'success', title: 'Excel gerado!', showConfirmButton: false, timer: 2200 });
+};
+
 window.imprimirRelatorioAlertasVencimento = function () {
     function limparTextoParaPdf(s) {
         if (s == null) return '';
@@ -17180,6 +17639,7 @@ function renderizarAlertasNoCanto(conteudo, som) {
         <div class="alerta-barra-minimizada" style="display:${minimizado ? 'flex' : 'none'}; align-items:center; gap:8px; background:#1a2a43; color:#fff; padding:10px 14px; border-radius:10px; box-shadow:0 6px 20px rgba(0,0,0,0.2);">
             <span style="font-weight:700; font-size:13px; flex:1; cursor:pointer;" onclick="window.togglePainelAlertasMinimizado()" title="Clique para expandir">🔔 <span class="alerta-contagem-qtd">${qtd}</span> vencimento(s)</span>
             <button type="button" class="alerta-btn-imprimir" onclick="event.stopPropagation(); window.imprimirRelatorioAlertasVencimento()" title="Imprimir relatório">🖨️</button>
+            <button type="button" class="alerta-btn-exportar" onclick="event.stopPropagation(); window.abrirExportarAlertasVencimento()" title="Exportar relatório por dia">📤</button>
             <button type="button" class="alerta-btn-fechar" onclick="window.confirmarLeituraTodosAlertas()" title="Silenciar todos">Fechar</button>
             <button type="button" onclick="window.togglePainelAlertasMinimizado()" style="background:#fff; color:#1a2a43; border:none; border-radius:6px; padding:4px 10px; font-weight:700; font-size:12px; cursor:pointer;">Expandir</button>
         </div>
@@ -17187,9 +17647,10 @@ function renderizarAlertasNoCanto(conteudo, som) {
             <div class="alerta-painel-header">
                 <span class="alerta-painel-header-titulo">⚠️ Vencimentos (<span class="alerta-contagem-qtd">${qtd}</span>)</span>
                 <div class="alerta-painel-header-acoes">
-                    <button type="button" class="alerta-btn-fechar" onclick="window.confirmarLeituraTodosAlertas()" title="Silenciar todos os alertas de hoje">Fechar tudo</button>
-                    <button type="button" class="alerta-btn-imprimir" onclick="window.imprimirRelatorioAlertasVencimento()" title="Imprimir relatório de tudo a pagar">🖨️ Imprimir</button>
-                    <button type="button" class="alerta-btn-minimizar" onclick="window.togglePainelAlertasMinimizado()" title="Minimizar painel">−</button>
+                    <button type="button" class="alerta-btn-fechar" onclick="window.confirmarLeituraTodosAlertas()" title="Silenciar todos">Fechar</button>
+                    <button type="button" class="alerta-btn-imprimir" onclick="window.imprimirRelatorioAlertasVencimento()" title="Imprimir">🖨️</button>
+                    <button type="button" class="alerta-btn-exportar" onclick="window.abrirExportarAlertasVencimento()" title="Exportar PDF/Excel">📤</button>
+                    <button type="button" class="alerta-btn-minimizar" onclick="window.togglePainelAlertasMinimizado()" title="Minimizar">−</button>
                 </div>
             </div>
             <div class="alerta-painel-corpo">
