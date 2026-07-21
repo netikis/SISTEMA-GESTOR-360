@@ -5584,7 +5584,9 @@ function separarDataSegura(dataString) {
         if (st === 'pago') {
             let badgeExtra = '';
             if (d.comprovante_pagamento) {
-                badgeExtra = '<br><span style="font-size:10px;color:#28a745;font-weight:700;cursor:pointer;" onclick="abrirFoto(\'' + d.comprovante_pagamento + '\')">📎 Ver comprovante</span>';
+                const idComp = registrarAnexoParaViewer(d.comprovante_pagamento);
+                const rotulo = ehAnexoPdfDataUrl(d.comprovante_pagamento) ? '📄 Ver PDF' : '📎 Ver comprovante';
+                badgeExtra = '<br><span style="font-size:10px;color:#28a745;font-weight:700;cursor:pointer;" onclick="abrirAnexoRegistrado(\'' + idComp + '\')">' + rotulo + '</span>';
             } else if (d.baixa_sem_comprovante) {
                 badgeExtra = '<br><span style="font-size:10px;color:#856404;">Sem comprovante</span>';
             }
@@ -7037,11 +7039,17 @@ function separarDataSegura(dataString) {
     function htmlModalBaixaComprovante() {
         return `
             <div style="text-align:left;font-size:13px;">
-                <p style="margin:0 0 10px;color:#555;line-height:1.45;">Para dar baixa, anexe o <b>comprovante de pagamento</b> (foto, print ou recibo do banco).</p>
+                <p style="margin:0 0 10px;color:#555;line-height:1.45;">Para dar baixa, anexe o <b>comprovante de pagamento</b> (foto, print, recibo do banco ou <b>PDF</b>).</p>
                 <label style="font-weight:700;display:block;margin-bottom:6px;">Comprovante de pagamento</label>
-                <input type="file" id="swal-comprovante-pgto" accept="image/*" capture="environment" style="width:100%;padding:8px;border:1px solid #ddd;border-radius:8px;box-sizing:border-box;background:#fff;">
+                <input type="file" id="swal-comprovante-pgto" accept="image/*,application/pdf,.pdf" style="width:100%;padding:8px;border:1px solid #ddd;border-radius:8px;box-sizing:border-box;background:#fff;">
+                <p style="margin:6px 0 0;font-size:11px;color:#888;">Aceita imagem (JPG/PNG) ou PDF. PDF até ~600 KB.</p>
                 <div id="swal-prev-comprovante" style="margin-top:8px;display:none;text-align:center;">
-                    <img id="swal-prev-comprovante-img" alt="Pré-visualização" style="max-width:100%;max-height:120px;border-radius:8px;border:1px solid #ddd;">
+                    <img id="swal-prev-comprovante-img" alt="Pré-visualização" style="max-width:100%;max-height:120px;border-radius:8px;border:1px solid #ddd;display:none;">
+                    <div id="swal-prev-comprovante-pdf" style="display:none;padding:12px;background:#eef2f5;border:1px solid #d0d7de;border-radius:8px;">
+                        <div style="font-size:28px;line-height:1;">📄</div>
+                        <div id="swal-prev-comprovante-pdf-nome" style="font-size:12px;font-weight:700;color:#1a2a43;margin-top:4px;word-break:break-word;"></div>
+                        <button type="button" id="swal-prev-comprovante-ver" style="margin-top:8px;background:#217346;color:#fff;border:none;border-radius:8px;padding:8px 14px;font-weight:700;cursor:pointer;">👁 Ver PDF anexado</button>
+                    </div>
                 </div>
                 <p style="margin:14px 0 6px;font-size:12px;color:#888;border-top:1px solid #eee;padding-top:10px;">Sem comprovante? Informe o código de autorização:</p>
                 <input type="password" id="swal-codigo-baixa" placeholder="Código (somente se não tiver comprovante)" maxlength="10" class="swal2-input" style="margin:0;width:100%;height:40px;font-size:14px;">
@@ -7049,13 +7057,28 @@ function separarDataSegura(dataString) {
         `;
     }
 
+    function ehAnexoPdfDataUrl(dataUrl) {
+        const s = String(dataUrl || '');
+        return s.startsWith('data:application/pdf') || /mime=application\/pdf/i.test(s);
+    }
+
     function configurarModalBaixaComprovante() {
         window._swalComprovantePgtoBase64 = '';
         const input = document.getElementById('swal-comprovante-pgto');
         const prev = document.getElementById('swal-prev-comprovante');
         const prevImg = document.getElementById('swal-prev-comprovante-img');
+        const prevPdf = document.getElementById('swal-prev-comprovante-pdf');
+        const prevPdfNome = document.getElementById('swal-prev-comprovante-pdf-nome');
+        const btnVerPdf = document.getElementById('swal-prev-comprovante-ver');
         const codigo = document.getElementById('swal-codigo-baixa');
         if (!input) return;
+
+        if (btnVerPdf) {
+            btnVerPdf.onclick = function () {
+                if (window._swalComprovantePgtoBase64) abrirFoto(window._swalComprovantePgtoBase64);
+            };
+        }
+
         input.addEventListener('change', async function () {
             const f = input.files && input.files[0];
             if (!f) {
@@ -7063,13 +7086,53 @@ function separarDataSegura(dataString) {
                 if (prev) prev.style.display = 'none';
                 return;
             }
+            const ehPdf = f.type === 'application/pdf' || /\.pdf$/i.test(f.name || '');
             try {
-                window._swalComprovantePgtoBase64 = await comprimirArquivoImagemParaBase64(f);
-                if (prevImg) prevImg.src = window._swalComprovantePgtoBase64;
-                if (prev) prev.style.display = 'block';
+                if (ehPdf) {
+                    if (typeof DOC_PDF_MAX_FIRESTORE_RAW === 'number' && f.size > DOC_PDF_MAX_FIRESTORE_RAW) {
+                        input.value = '';
+                        window._swalComprovantePgtoBase64 = '';
+                        if (prev) prev.style.display = 'none';
+                        Swal.showValidationMessage('PDF grande demais (máx. ~600 KB). Comprima o arquivo e tente de novo.');
+                        return;
+                    }
+                    const b64 = await new Promise(function (resolve, reject) {
+                        const reader = new FileReader();
+                        reader.onload = function () { resolve(String(reader.result || '')); };
+                        reader.onerror = function () { reject(new Error('leitura')); };
+                        reader.readAsDataURL(f);
+                    });
+                    if (typeof DOC_FIRESTORE_MAX_B64 === 'number' && b64.length > DOC_FIRESTORE_MAX_B64) {
+                        input.value = '';
+                        window._swalComprovantePgtoBase64 = '';
+                        if (prev) prev.style.display = 'none';
+                        Swal.showValidationMessage('PDF grande demais para salvar. Comprima o arquivo (máx. ~600 KB).');
+                        return;
+                    }
+                    window._swalComprovantePgtoBase64 = b64;
+                    if (prevImg) prevImg.style.display = 'none';
+                    if (prevPdf) prevPdf.style.display = 'block';
+                    if (prevPdfNome) prevPdfNome.textContent = f.name || 'comprovante.pdf';
+                    if (prev) prev.style.display = 'block';
+                } else {
+                    window._swalComprovantePgtoBase64 = await comprimirArquivoImagemParaBase64(f);
+                    if (prevPdf) prevPdf.style.display = 'none';
+                    if (prevImg) {
+                        prevImg.src = window._swalComprovantePgtoBase64;
+                        prevImg.style.display = 'inline-block';
+                        prevImg.onclick = function () { abrirFoto(window._swalComprovantePgtoBase64); };
+                        prevImg.title = 'Clique para ampliar';
+                        prevImg.style.cursor = 'pointer';
+                    }
+                    if (prev) prev.style.display = 'block';
+                }
                 if (codigo) codigo.value = '';
             } catch (e) {
-                Swal.showValidationMessage('Não foi possível ler a imagem do comprovante.');
+                window._swalComprovantePgtoBase64 = '';
+                if (prev) prev.style.display = 'none';
+                Swal.showValidationMessage(ehPdf
+                    ? 'Não foi possível ler o PDF do comprovante.'
+                    : 'Não foi possível ler a imagem do comprovante.');
             }
         });
     }
@@ -7087,13 +7150,31 @@ function separarDataSegura(dataString) {
             Swal.showValidationMessage('Código incorreto.');
             return false;
         }
-        Swal.showValidationMessage('Anexe o comprovante ou informe o código de autorização.');
+        Swal.showValidationMessage('Anexe o comprovante (foto ou PDF) ou informe o código de autorização.');
         return false;
     }
 
+    function registrarAnexoParaViewer(dataUrl) {
+        window._anexoViewerPorId = window._anexoViewerPorId || {};
+        window._anexoViewerSeq = (window._anexoViewerSeq || 0) + 1;
+        const id = 'anx' + window._anexoViewerSeq;
+        window._anexoViewerPorId[id] = dataUrl;
+        return id;
+    }
+
+    window.abrirAnexoRegistrado = function (id) {
+        const url = window._anexoViewerPorId && window._anexoViewerPorId[id];
+        if (!url) return Swal.fire('Atenção', 'Anexo não encontrado.', 'info');
+        abrirFoto(url);
+    };
+
     function montarHtmlComprovantePagamento(d) {
         if (d.comprovante_pagamento) {
-            return `<img src="${d.comprovante_pagamento}" onclick="abrirFoto('${d.comprovante_pagamento}')" title="Comprovante de pagamento" style="width: 60px; height: 60px; object-fit: cover; border-radius: 8px; border: 2px solid #28a745; float: right; cursor: pointer; margin-left: 6px;">`;
+            const id = registrarAnexoParaViewer(d.comprovante_pagamento);
+            if (ehAnexoPdfDataUrl(d.comprovante_pagamento)) {
+                return '<span onclick="abrirAnexoRegistrado(\'' + id + '\')" title="Ver comprovante PDF" style="display:inline-flex;align-items:center;justify-content:center;width:60px;height:60px;border-radius:8px;border:2px solid #28a745;float:right;cursor:pointer;margin-left:6px;background:#e8f5e9;font-size:11px;font-weight:800;color:#155724;text-align:center;line-height:1.2;">📄<br>PDF</span>';
+            }
+            return '<img src="' + escapeAttrBasico(d.comprovante_pagamento) + '" onclick="abrirAnexoRegistrado(\'' + id + '\')" title="Comprovante de pagamento" style="width: 60px; height: 60px; object-fit: cover; border-radius: 8px; border: 2px solid #28a745; float: right; cursor: pointer; margin-left: 6px;">';
         }
         if (d.baixa_sem_comprovante) {
             return '<span style="float:right;font-size:10px;background:#fff3cd;color:#856404;padding:4px 6px;border-radius:6px;font-weight:700;margin-left:6px;">Sem comprovante</span>';
@@ -14225,8 +14306,75 @@ window.gerarFolhaPagamento = async function() {
         if (!imgBase64) {
             return Swal.fire('Atenção', 'Nenhuma imagem para exibir.', 'info');
         }
+        const srcRaw = String(imgBase64);
+        const ehPdf = ehAnexoPdfDataUrl(srcRaw) || /\.pdf(\?|$)/i.test(srcRaw);
+
+        function abrirEmNovaAba(url) {
+            try {
+                const w = window.open('', '_blank');
+                if (!w) {
+                    Swal.fire('Atenção', 'O navegador bloqueou a nova aba. Permita pop-ups para este site.', 'warning');
+                    return;
+                }
+                if (ehPdf) {
+                    w.document.write('<!DOCTYPE html><html><head><title>Comprovante PDF</title><meta name="viewport" content="width=device-width,initial-scale=1">'
+                        + '<style>html,body{margin:0;height:100%;background:#111;}iframe{width:100%;height:100%;border:none;}</style></head><body>'
+                        + '<iframe src="' + String(url).replace(/&/g, '&amp;').replace(/"/g, '&quot;') + '"></iframe></body></html>');
+                } else {
+                    const srcEsc = String(url).replace(/&/g, '&amp;').replace(/"/g, '&quot;');
+                    w.document.write('<!DOCTYPE html><html><head><title>Comprovante</title><meta name="viewport" content="width=device-width,initial-scale=1">'
+                        + '<style>body{margin:0;background:#111;display:flex;justify-content:center;}img{max-width:100%;height:auto;}</style></head><body>'
+                        + '<img src="' + srcEsc + '" alt="Comprovante"></body></html>');
+                }
+                w.document.close();
+            } catch (e) {
+                Swal.fire('Erro', 'Não foi possível abrir o anexo em nova aba.', 'error');
+            }
+        }
+
+        if (ehPdf) {
+            let blobUrl = srcRaw;
+            try {
+                if (srcRaw.startsWith('data:')) {
+                    const partes = srcRaw.split(',');
+                    const meta = partes[0] || '';
+                    const b64 = partes.slice(1).join(',');
+                    const bin = atob(b64);
+                    const bytes = new Uint8Array(bin.length);
+                    for (let i = 0; i < bin.length; i += 1) bytes[i] = bin.charCodeAt(i);
+                    blobUrl = URL.createObjectURL(new Blob([bytes], { type: 'application/pdf' }));
+                }
+            } catch (e) {
+                blobUrl = srcRaw;
+            }
+            const srcEsc = String(blobUrl).replace(/&/g, '&amp;').replace(/"/g, '&quot;');
+            Swal.fire({
+                title: 'Comprovante PDF',
+                width: Math.min(window.innerWidth - 16, 960),
+                padding: '1rem',
+                html: ''
+                    + '<p style="margin:0 0 10px 0;font-size:12px;color:#666;text-align:left;">Visualize o PDF abaixo ou abra em nova aba.</p>'
+                    + '<iframe src="' + srcEsc + '" title="PDF" style="width:100%;height:min(72vh,720px);border:none;border-radius:10px;background:#fff;"></iframe>',
+                showDenyButton: true,
+                showCancelButton: false,
+                confirmButtonText: 'Fechar',
+                denyButtonText: 'Abrir em nova aba',
+                confirmButtonColor: '#1a2a43',
+                denyButtonColor: '#217346',
+                focusConfirm: false
+            }).then(function (r) {
+                if (r.isDenied) {
+                    abrirEmNovaAba(srcRaw.startsWith('data:') ? srcRaw : blobUrl);
+                }
+                if (!r.isDenied && blobUrl !== srcRaw && String(blobUrl).startsWith('blob:')) {
+                    try { URL.revokeObjectURL(blobUrl); } catch (_) {}
+                }
+            });
+            return;
+        }
+
         window._fotoViewerZoom = 1;
-        const srcEsc = String(imgBase64).replace(/&/g, '&amp;').replace(/"/g, '&quot;');
+        const srcEsc = srcRaw.replace(/&/g, '&amp;').replace(/"/g, '&quot;');
 
         function aplicarZoomViewer(delta) {
             let z = Number(window._fotoViewerZoom) || 1;
@@ -14266,21 +14414,7 @@ window.gerarFolhaPagamento = async function() {
             denyButtonColor: '#4285F4',
             focusConfirm: false
         }).then(function (r) {
-            if (r.isDenied) {
-                try {
-                    const w = window.open('', '_blank');
-                    if (w) {
-                        w.document.write('<!DOCTYPE html><html><head><title>Comprovante</title><meta name="viewport" content="width=device-width,initial-scale=1">'
-                            + '<style>body{margin:0;background:#111;display:flex;justify-content:center;}img{max-width:100%;height:auto;}</style></head><body>'
-                            + '<img src="' + srcEsc + '" alt="Comprovante"></body></html>');
-                        w.document.close();
-                    } else {
-                        Swal.fire('Atenção', 'O navegador bloqueou a nova aba. Permita pop-ups para este site.', 'warning');
-                    }
-                } catch (e) {
-                    Swal.fire('Erro', 'Não foi possível abrir a imagem em nova aba.', 'error');
-                }
-            }
+            if (r.isDenied) abrirEmNovaAba(srcRaw);
         });
     };
 
