@@ -1507,15 +1507,31 @@
             display: flex;
             flex-wrap: wrap;
             gap: 8px;
-            justify-content: center;
-            align-items: center;
+            justify-content: stretch;
+            align-items: stretch;
         }
 
         .rel-geral-obras-toolbar .btn-enviar,
         .rel-geral-obras-toolbar .btn-pdf-relatorio {
-            margin: 0;
-            flex: 1;
-            min-width: 140px;
+            margin: 0 !important;
+            flex: 1 1 0;
+            min-width: 0;
+            width: auto !important;
+            height: 44px;
+            min-height: 44px;
+            max-height: 44px;
+            padding: 0 12px !important;
+            font-size: 12px !important;
+            font-weight: 700 !important;
+            line-height: 1.15 !important;
+            border-radius: 8px !important;
+            display: inline-flex !important;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            white-space: nowrap;
+            box-sizing: border-box;
+            box-shadow: none !important;
         }
 
         #rel-geral-obras-quadro,
@@ -2389,9 +2405,14 @@
         #alerta-container-global .alerta-painel-header-acoes .alerta-btn-minimizar {
             width: auto;
             min-width: 0;
-            padding: 4px 7px;
-            font-size: 9px;
-            line-height: 1.1;
+            height: 28px;
+            min-height: 28px;
+            padding: 0 8px;
+            font-size: 10px;
+            line-height: 1;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
             box-sizing: border-box;
         }
 
@@ -2495,16 +2516,66 @@
             box-sizing: border-box;
         }
 
-        #alerta-container-global .alerta-barra-minimizada {
-            flex-wrap: wrap;
-            max-width: 100%;
+        #alerta-container-global .alerta-btn-expandir {
+            background: #fff;
+            color: #1a2a43;
+            border: none;
+            border-radius: 6px;
+            padding: 5px 8px;
+            font-weight: 700;
+            font-size: 10px;
+            cursor: pointer;
+            white-space: nowrap;
             box-sizing: border-box;
+        }
+
+        #alerta-container-global .alerta-barra-minimizada {
+            display: flex;
+            flex-wrap: nowrap;
+            align-items: center;
+            gap: 6px;
+            max-width: 100%;
+            width: var(--alerta-painel-largura);
+            box-sizing: border-box;
+            padding: 8px 10px !important;
+        }
+
+        #alerta-container-global .alerta-barra-minimizada > span {
+            flex: 1 1 auto;
+            min-width: 0;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+            line-height: 1.2;
+            font-size: 12px !important;
         }
 
         #alerta-container-global .alerta-barra-minimizada .alerta-btn-imprimir,
         #alerta-container-global .alerta-barra-minimizada .alerta-btn-exportar,
-        #alerta-container-global .alerta-barra-minimizada .alerta-btn-fechar {
-            flex-shrink: 0;
+        #alerta-container-global .alerta-barra-minimizada .alerta-btn-fechar,
+        #alerta-container-global .alerta-barra-minimizada .alerta-btn-expandir {
+            flex: 0 0 auto;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            height: 30px;
+            min-height: 30px;
+            max-height: 30px;
+            padding: 0 10px;
+            margin: 0;
+            font-size: 11px;
+            line-height: 1;
+            border-radius: 6px;
+            box-sizing: border-box;
+            vertical-align: middle;
+        }
+
+        #alerta-container-global .alerta-barra-minimizada .alerta-btn-imprimir,
+        #alerta-container-global .alerta-barra-minimizada .alerta-btn-exportar {
+            min-width: 34px;
+            width: 34px;
+            padding: 0;
+            font-size: 14px;
         }
 
         .preview-contas-pagar-wrap {
@@ -3210,7 +3281,10 @@
             <button onclick="buscarPonto()" style="flex: 1; background: var(--dark-navy); color: white; border: none; border-radius: 10px; cursor: pointer; font-weight:bold;">Buscar</button>
         </div>
         
-        <button id="btnExportarPonto" class="btn-pdf-relatorio" style="display:none;" onclick="exportarEspelhoPontoPDF()">📥 EXPORTAR ESPELHO PDF</button>
+        <div id="ponto-export-toolbar" class="rel-geral-obras-toolbar" style="display:none; margin-top:12px;">
+            <button type="button" id="btnExportarPonto" class="btn-pdf-relatorio" onclick="exportarEspelhoPontoPDF()">📥 Exportar PDF</button>
+        </div>
+        <p class="texto-explicacao" style="margin:8px 0 0 0;">Selecione <b>TODOS OS FUNCIONÁRIOS</b>, clique em <b>Buscar</b> (escolhe o mês) e depois em <b>Exportar PDF</b> — o arquivo de toda a equipe baixa na hora, pronto para o RH.</p>
         <button type="button" class="btn-enviar" style="margin-top:12px; width:100%; background:#2c6f9e; box-shadow:none;" onclick="abrirRegistoPontoManualRH()">➕ Registar batida manual (RH) — caderno / correção</button>
         <button type="button" class="btn-enviar" style="margin-top:8px; width:100%; background:#b02a37; box-shadow:none;" onclick="rhGerirFaltaDia()">🚫 Falta injustificada / atestado (RH)</button>
         <p class="texto-explicacao" style="margin:6px 0 0 0;">Use após escolher o funcionário. <b>Falta injustificada</b> desconta o dia (e DSR, se o RH marcar). <b>Atestado / justificada</b> remove a falta automática (dia sem ponto).</p>
@@ -3627,8 +3701,8 @@
         <div id="rel-geral-obras-acoes" class="rel-geral-obras-toolbar" style="display: none; margin-top: 12px;">
             <button type="button" class="btn-enviar" onclick="toggleSecoesRelGeralObras(true)">▼ Expandir tudo</button>
             <button type="button" class="btn-enviar" onclick="toggleSecoesRelGeralObras(false)">▲ Recolher tudo</button>
-            <button type="button" id="btnExportarRelGeralObrasPdf" class="btn-pdf-relatorio" onclick="exportarPDFRelatorioGeralObras()">🖨️ EXPORTAR ESPELHO PDF (IMPRIMIR)</button>
-            <button type="button" id="btnExportarRelGeralObrasExcel" class="btn-pdf-relatorio" style="background-color:#217346;" onclick="exportarExcelRelatorioGeralObras()">📊 EXPORTAR ESPELHO EXCEL</button>
+            <button type="button" id="btnExportarRelGeralObrasPdf" class="btn-pdf-relatorio" onclick="exportarPDFRelatorioGeralObras()">🖨️ Exportar PDF</button>
+            <button type="button" id="btnExportarRelGeralObrasExcel" class="btn-pdf-relatorio" style="background-color:#217346;" onclick="exportarExcelRelatorioGeralObras()">📊 Exportar Excel</button>
         </div>
 
         <div id="rel-geral-obras-resumo" style="display: none; margin-top: 20px; background: #fff3cd; padding: 15px; border-radius: 10px; text-align: center; border: 1px solid #ffeeba;">
@@ -3674,8 +3748,8 @@
         <div id="rel-geral-nf-acoes" class="rel-geral-obras-toolbar" style="display: none; margin-top: 12px;">
             <button type="button" class="btn-enviar" onclick="toggleSecoesRelGeralNF(true)">▼ Expandir tudo</button>
             <button type="button" class="btn-enviar" onclick="toggleSecoesRelGeralNF(false)">▲ Recolher tudo</button>
-            <button type="button" id="btnExportarRelGeralNfPdf" class="btn-pdf-relatorio" onclick="exportarPDFRelatorioGeralNotasFiscais()">🖨️ EXPORTAR ESPELHO PDF (IMPRIMIR)</button>
-            <button type="button" id="btnExportarRelGeralNfExcel" class="btn-pdf-relatorio" style="background-color:#217346;" onclick="exportarExcelRelatorioGeralNotasFiscais()">📊 EXPORTAR ESPELHO EXCEL</button>
+            <button type="button" id="btnExportarRelGeralNfPdf" class="btn-pdf-relatorio" onclick="exportarPDFRelatorioGeralNotasFiscais()">🖨️ Exportar PDF</button>
+            <button type="button" id="btnExportarRelGeralNfExcel" class="btn-pdf-relatorio" style="background-color:#217346;" onclick="exportarExcelRelatorioGeralNotasFiscais()">📊 Exportar Excel</button>
         </div>
 
         <div id="rel-geral-nf-resumo" style="display: none; margin-top: 20px; background: #fff3cd; padding: 15px; border-radius: 10px; text-align: center; border: 1px solid #ffeeba;">
@@ -8633,17 +8707,157 @@ window.carregarFiltrosDespesas = async function() {
         });
     };
 
+    function chaveMesAnoDeDataStrRelGeral(dataStr) {
+        const s = separarDataSegura(dataStr);
+        if (!s || !s.ano || s.ano === 'Outros' || !s.mes || s.mes === 'Outros') return '';
+        return String(s.mes).padStart(2, '0') + '/' + String(s.ano);
+    }
+
+    /** Mês/ano de referência do item no Relatório Geral de Obras. */
+    function chaveMesAnoItemRelGeralObras(d, tipo) {
+        if (!d) return '';
+        if (tipo === 'terceiro') {
+            return chaveMesAnoDeDataStrRelGeral(d.data || '');
+        }
+        if (tipo === 'pago') {
+            return chaveMesAnoDeDataStrRelGeral(d.data_pagamento || obterDataVencimentoDespesa(d) || d.data || '');
+        }
+        // vencido / a vencer: data de vencimento
+        const venc = formatarVencimentoDespesaExibir(d);
+        if (venc && venc !== '—') return chaveMesAnoDeDataStrRelGeral(venc);
+        return chaveMesAnoDeDataStrRelGeral(obterDataVencimentoDespesa(d) || d.data || '');
+    }
+
+    function listarPeriodosDisponiveisRelGeralObras(pack) {
+        const set = new Set();
+        (pack.vencidas || []).forEach((d) => {
+            const k = chaveMesAnoItemRelGeralObras(d, 'vencido');
+            if (k) set.add(k);
+        });
+        (pack.aVencer || []).forEach((d) => {
+            const k = chaveMesAnoItemRelGeralObras(d, 'avencer');
+            if (k) set.add(k);
+        });
+        (pack.pagasForn || []).forEach((d) => {
+            const k = chaveMesAnoItemRelGeralObras(d, 'pago');
+            if (k) set.add(k);
+        });
+        (pack.terceiros || []).forEach((d) => {
+            const k = chaveMesAnoItemRelGeralObras(d, 'terceiro');
+            if (k) set.add(k);
+        });
+        return Array.from(set).sort((a, b) => {
+            const [ma, aa] = a.split('/');
+            const [mb, ab] = b.split('/');
+            if (aa !== ab) return Number(ab) - Number(aa);
+            return Number(mb) - Number(ma);
+        });
+    }
+
+    function rotuloPeriodoMesAnoRelGeral(chaveMMYYYY) {
+        if (!chaveMMYYYY || chaveMMYYYY === 'todos') return 'Todos os períodos';
+        const partes = String(chaveMMYYYY).split('/');
+        const mes = partes[0];
+        const ano = partes[1];
+        const nome = (nomeMeses && (nomeMeses[mes] || nomeMeses[String(Number(mes))])) || mes;
+        return String(nome) + ' de ' + String(ano);
+    }
+
+    function filtrarPackRelGeralObrasPorPeriodo(pack, periodo) {
+        if (!periodo || periodo === 'todos') {
+            return Object.assign({}, pack, { periodoLabel: 'Todos os períodos', periodoChave: 'todos' });
+        }
+
+        const vencidas = (pack.vencidas || []).filter((d) => chaveMesAnoItemRelGeralObras(d, 'vencido') === periodo);
+        const aVencer = (pack.aVencer || []).filter((d) => chaveMesAnoItemRelGeralObras(d, 'avencer') === periodo);
+        const pagasForn = (pack.pagasForn || []).filter((d) => chaveMesAnoItemRelGeralObras(d, 'pago') === periodo);
+        const terceiros = (pack.terceiros || []).filter((d) => chaveMesAnoItemRelGeralObras(d, 'terceiro') === periodo);
+
+        const somaVencidas = vencidas.reduce((s, d) => s + (Number(d.valor_numero) || parseMoedaLocal(d.valor_string) || 0), 0);
+        const somaAVencer = aVencer.reduce((s, d) => s + (Number(d.valor_numero) || parseMoedaLocal(d.valor_string) || 0), 0);
+        const somaPagasForn = pagasForn.reduce((s, d) => s + (Number(d.valor_numero) || parseMoedaLocal(d.valor_string) || 0), 0);
+        const somaPagasTerc = terceiros.reduce((s, d) => s + (Number(d.valor_numero) || parseMoedaLocal(d.valor_string) || 0), 0);
+        const somaPagas = somaPagasForn + somaPagasTerc;
+
+        return {
+            empresa: pack.empresa,
+            somaVencidas,
+            somaAVencer,
+            somaPagas,
+            somaPagasForn,
+            somaPagasTerc,
+            emAberto: somaVencidas + somaAVencer,
+            totalGeral: somaVencidas + somaAVencer + somaPagas,
+            vencidas,
+            aVencer,
+            pagasForn,
+            terceiros,
+            periodoLabel: rotuloPeriodoMesAnoRelGeral(periodo),
+            periodoChave: periodo
+        };
+    }
+
     async function perguntarOpcoesExportRelGeralObras(pack, config) {
         const cfg = config || {};
         const prefix = cfg.prefix || 'rel-geral-export';
+        const mostrarPeriodo = cfg.mostrarPeriodo !== false;
         const cntVenc = (pack.vencidas || []).length;
         const cntAvencer = (pack.aVencer || []).length;
         const cntPagos = (pack.pagasForn || []).length + (pack.terceiros || []).length;
 
+        const periodos = mostrarPeriodo ? listarPeriodosDisponiveisRelGeralObras(pack) : [];
+        const agora = new Date();
+        const mesAtual = String(agora.getMonth() + 1).padStart(2, '0') + '/' + agora.getFullYear();
+        const periodoPadrao = periodos.includes(mesAtual) ? mesAtual : (periodos[0] || 'todos');
+
+        let htmlPeriodo = '';
+        if (mostrarPeriodo) {
+            let optsPeriodo = '<option value="todos">Todos os períodos</option>';
+            periodos.forEach((p) => {
+                const sel = p === periodoPadrao ? ' selected' : '';
+                optsPeriodo += '<option value="' + escapeAttrBasico(p) + '"' + sel + '>' + escapeHtmlBasico(rotuloPeriodoMesAnoRelGeral(p)) + '</option>';
+            });
+
+            const anosSet = new Set(periodos.map((p) => p.split('/')[1]).filter(Boolean));
+            anosSet.add(String(agora.getFullYear()));
+            anosSet.add(String(agora.getFullYear() - 1));
+            anosSet.add(String(agora.getFullYear() + 1));
+            const anos = Array.from(anosSet).sort((a, b) => Number(b) - Number(a));
+            let optsMes = '';
+            for (let m = 1; m <= 12; m += 1) {
+                const mm = String(m).padStart(2, '0');
+                const nome = (nomeMeses && (nomeMeses[mm] || nomeMeses[String(m)])) || mm;
+                const sel = mm === String(agora.getMonth() + 1).padStart(2, '0') ? ' selected' : '';
+                optsMes += '<option value="' + mm + '"' + sel + '>' + escapeHtmlBasico(String(nome)) + '</option>';
+            }
+            let optsAno = '';
+            anos.forEach((a) => {
+                const sel = String(a) === String(agora.getFullYear()) ? ' selected' : '';
+                optsAno += '<option value="' + escapeAttrBasico(a) + '"' + sel + '>' + escapeHtmlBasico(a) + '</option>';
+            });
+
+            htmlPeriodo = ''
+                + '<div style="text-align:left;margin:0 0 12px 0;padding:12px;border:1px solid #cfe2ff;border-radius:8px;background:#f0f7ff;">'
+                + '<label style="display:block;font-size:12px;font-weight:700;color:#1a2a43;margin-bottom:6px;">📅 Período (mês/ano)</label>'
+                + '<select id="' + prefix + '-periodo" class="swal2-input" style="width:100%;margin:0 0 8px 0;height:40px;font-size:13px;">' + optsPeriodo + '</select>'
+                + '<p style="font-size:11px;color:#666;margin:0 0 8px 0;">Ou escolha manualmente (ex.: Julho de 2026):</p>'
+                + '<div style="display:flex;gap:8px;">'
+                + '<select id="' + prefix + '-mes-manual" class="swal2-input" style="flex:1.4;margin:0;height:40px;font-size:13px;">' + optsMes + '</select>'
+                + '<select id="' + prefix + '-ano-manual" class="swal2-input" style="flex:1;margin:0;height:40px;font-size:13px;">' + optsAno + '</select>'
+                + '</div>'
+                + '<label style="display:flex;align-items:center;gap:8px;margin-top:8px;font-size:12px;cursor:pointer;">'
+                + '<input type="checkbox" id="' + prefix + '-usar-manual" style="width:16px;height:16px;">'
+                + 'Usar mês/ano manual acima'
+                + '</label>'
+                + '<p style="font-size:11px;color:#888;margin:8px 0 0 0;">Pendentes pelo <b>vencimento</b> · Pagos pela <b>data de pagamento</b>.</p>'
+                + '</div>';
+        }
+
         const result = await Swal.fire({
             title: cfg.titulo || 'Exportar espelho',
             html: ''
-                + '<p style="font-size:13px;margin:0 0 14px 0;color:#555;text-align:left;">' + (cfg.textoIntro || 'Marque o que deseja incluir no espelho:') + '</p>'
+                + '<p style="font-size:13px;margin:0 0 10px 0;color:#555;text-align:left;">' + (cfg.textoIntro || 'Marque o que deseja incluir no espelho:') + '</p>'
+                + htmlPeriodo
                 + '<label style="display:flex;align-items:flex-start;gap:10px;margin:10px 0;padding:10px;border:1px solid #f5c6cb;border-radius:8px;background:#fff5f5;cursor:pointer;text-align:left;">'
                 + '<input type="checkbox" id="' + prefix + '-vencido" checked style="width:18px;height:18px;margin-top:2px;flex-shrink:0;">'
                 + '<span><b style="color:#dc3545;">🔴 VENCIDO</b><br><span style="font-size:12px;color:#666;">' + cntVenc + ' item(ns) · ' + formatarMoeda(pack.somaVencidas) + '</span></span>'
@@ -8663,15 +8877,31 @@ window.carregarFiltrosDespesas = async function() {
             confirmButtonColor: cfg.corConfirmar || '#1a2a43',
             cancelButtonColor: '#6c757d',
             focusConfirm: false,
+            width: 480,
             preConfirm: () => {
                 const opcoes = {
                     vencido: !!document.getElementById(prefix + '-vencido')?.checked,
                     aVencer: !!document.getElementById(prefix + '-avencer')?.checked,
-                    pagos: !!document.getElementById(prefix + '-pagos')?.checked
+                    pagos: !!document.getElementById(prefix + '-pagos')?.checked,
+                    periodo: 'todos'
                 };
                 if (!opcoes.vencido && !opcoes.aVencer && !opcoes.pagos) {
                     Swal.showValidationMessage('Selecione pelo menos uma opção (Vencido, A vencer ou Pagos).');
                     return false;
+                }
+                if (mostrarPeriodo) {
+                    const usarManual = !!document.getElementById(prefix + '-usar-manual')?.checked;
+                    if (usarManual) {
+                        const mes = document.getElementById(prefix + '-mes-manual')?.value || '';
+                        const ano = document.getElementById(prefix + '-ano-manual')?.value || '';
+                        if (!mes || !ano) {
+                            Swal.showValidationMessage('Selecione mês e ano.');
+                            return false;
+                        }
+                        opcoes.periodo = mes + '/' + ano;
+                    } else {
+                        opcoes.periodo = document.getElementById(prefix + '-periodo')?.value || 'todos';
+                    }
                 }
                 return opcoes;
             }
@@ -8683,6 +8913,11 @@ window.carregarFiltrosDespesas = async function() {
 
     function sufixoArquivoExportRelGeralObras(opcoes) {
         const sufixos = [];
+        if (opcoes.periodo && opcoes.periodo !== 'todos') {
+            const [mes, ano] = String(opcoes.periodo).split('/');
+            const nome = (nomeMeses && (nomeMeses[mes] || nomeMeses[String(Number(mes))])) || mes;
+            sufixos.push(String(nome).toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '') + '_' + ano);
+        }
         if (opcoes.vencido) sufixos.push('vencido');
         if (opcoes.aVencer) sufixos.push('a_vencer');
         if (opcoes.pagos) sufixos.push('pagos');
@@ -8798,6 +9033,7 @@ window.carregarFiltrosDespesas = async function() {
 
         const resumo = [{
             'Empresa': emp,
+            'Período': pack.periodoLabel || 'Todos os períodos',
             'Gerado em': new Date().toLocaleString('pt-BR'),
             'Vencido (R$)': opcoes.vencido ? Number(pack.somaVencidas || 0) : 0,
             'A vencer (R$)': opcoes.aVencer ? Number(pack.somaAVencer || 0) : 0,
@@ -8805,7 +9041,7 @@ window.carregarFiltrosDespesas = async function() {
             'Total exportado (R$)': totalSelecionado
         }];
         const wsResumo = XLSX.utils.json_to_sheet(resumo);
-        wsResumo['!cols'] = [{ wch: 28 }, { wch: 22 }, { wch: 16 }, { wch: 16 }, { wch: 16 }, { wch: 20 }];
+        wsResumo['!cols'] = [{ wch: 28 }, { wch: 22 }, { wch: 22 }, { wch: 16 }, { wch: 16 }, { wch: 16 }, { wch: 20 }];
         XLSX.utils.book_append_sheet(wb, wsResumo, 'Resumo');
 
         const sufixoArquivo = sufixoArquivoExportRelGeralObras(opcoes);
@@ -8830,11 +9066,23 @@ window.carregarFiltrosDespesas = async function() {
         const opcoes = await perguntarOpcoesExportRelGeralObras(pack, {
             prefix: 'pdf-rel',
             titulo: '🖨️ Exportar espelho PDF',
-            textoIntro: 'Marque o que deseja incluir no PDF para imprimir:',
+            textoIntro: 'Escolha o período e marque o que deseja incluir no PDF:',
             botaoConfirmar: 'Gerar PDF'
         });
         if (!opcoes) return;
-        gerarPdfRelGeralObrasEspelho(pack, opcoes);
+
+        const packFiltrado = filtrarPackRelGeralObrasPorPeriodo(pack, opcoes.periodo);
+        const temItens = (opcoes.vencido && packFiltrado.vencidas.length)
+            || (opcoes.aVencer && packFiltrado.aVencer.length)
+            || (opcoes.pagos && (packFiltrado.pagasForn.length || packFiltrado.terceiros.length));
+        if (!temItens) {
+            return Swal.fire(
+                'Sem registros',
+                'Nenhum lançamento encontrado para <b>' + escapeHtmlBasico(packFiltrado.periodoLabel || rotuloPeriodoMesAnoRelGeral(opcoes.periodo)) + '</b> com as opções marcadas.',
+                'info'
+            );
+        }
+        gerarPdfRelGeralObrasEspelho(packFiltrado, opcoes);
     };
 
     window.exportarExcelRelatorioGeralObras = async function () {
@@ -8846,12 +9094,24 @@ window.carregarFiltrosDespesas = async function() {
         const opcoes = await perguntarOpcoesExportRelGeralObras(pack, {
             prefix: 'xls-rel',
             titulo: '📊 Exportar espelho Excel',
-            textoIntro: 'Marque o que deseja incluir na planilha:',
+            textoIntro: 'Escolha o período e marque o que deseja incluir na planilha:',
             botaoConfirmar: 'Gerar Excel',
             corConfirmar: '#217346'
         });
         if (!opcoes) return;
-        gerarExcelRelGeralObrasEspelho(pack, opcoes);
+
+        const packFiltrado = filtrarPackRelGeralObrasPorPeriodo(pack, opcoes.periodo);
+        const temItens = (opcoes.vencido && packFiltrado.vencidas.length)
+            || (opcoes.aVencer && packFiltrado.aVencer.length)
+            || (opcoes.pagos && (packFiltrado.pagasForn.length || packFiltrado.terceiros.length));
+        if (!temItens) {
+            return Swal.fire(
+                'Sem registros',
+                'Nenhum lançamento encontrado para <b>' + escapeHtmlBasico(packFiltrado.periodoLabel || rotuloPeriodoMesAnoRelGeral(opcoes.periodo)) + '</b> com as opções marcadas.',
+                'info'
+            );
+        }
+        gerarExcelRelGeralObrasEspelho(packFiltrado, opcoes);
     };
 
     function gerarPdfRelGeralObrasEspelho(pack, opcoes) {
@@ -8872,7 +9132,8 @@ window.carregarFiltrosDespesas = async function() {
         doc.setFontSize(9);
         doc.setFont('helvetica', 'normal');
         doc.setTextColor(220, 220, 220);
-        doc.text(emp + '  |  Gerado em: ' + new Date().toLocaleString('pt-BR') + '  |  Gestor 360', 14, 20);
+        const periodoTxt = pack.periodoLabel ? ('  |  Periodo: ' + String(pack.periodoLabel).normalize('NFD').replace(/[\u0300-\u036f]/g, '')) : '';
+        doc.text(emp + '  |  Gerado em: ' + new Date().toLocaleString('pt-BR') + periodoTxt + '  |  Gestor 360', 14, 20);
 
         let xResumo = 14;
         doc.setFontSize(10);
@@ -9670,11 +9931,18 @@ window.carregarFiltrosDespesas = async function() {
         }, {
             prefix: 'pdf-rel-nf',
             titulo: '🖨️ Exportar espelho PDF — Notas Fiscais',
-            textoIntro: 'Marque o que deseja incluir no PDF para imprimir:',
+            textoIntro: 'Escolha o período e marque o que deseja incluir no PDF:',
             botaoConfirmar: 'Gerar PDF'
         });
         if (!opcoes) return;
-        gerarPdfRelGeralNFEspelho(pack, opcoes);
+        const packFiltrado = filtrarPackRelGeralObrasPorPeriodo(pack, opcoes.periodo);
+        const temItens = (opcoes.vencido && packFiltrado.vencidas.length)
+            || (opcoes.aVencer && packFiltrado.aVencer.length)
+            || (opcoes.pagos && packFiltrado.pagasForn.length);
+        if (!temItens) {
+            return Swal.fire('Sem registros', 'Nenhuma NF encontrada para <b>' + escapeHtmlBasico(packFiltrado.periodoLabel) + '</b>.', 'info');
+        }
+        gerarPdfRelGeralNFEspelho(packFiltrado, opcoes);
     };
 
     window.exportarExcelRelatorioGeralNotasFiscais = async function () {
@@ -9694,12 +9962,19 @@ window.carregarFiltrosDespesas = async function() {
         }, {
             prefix: 'xls-rel-nf',
             titulo: '📊 Exportar espelho Excel — Notas Fiscais',
-            textoIntro: 'Marque o que deseja incluir na planilha:',
+            textoIntro: 'Escolha o período e marque o que deseja incluir na planilha:',
             botaoConfirmar: 'Gerar Excel',
             corConfirmar: '#217346'
         });
         if (!opcoes) return;
-        gerarExcelRelGeralNFEspelho(pack, opcoes);
+        const packFiltrado = filtrarPackRelGeralObrasPorPeriodo(pack, opcoes.periodo);
+        const temItens = (opcoes.vencido && packFiltrado.vencidas.length)
+            || (opcoes.aVencer && packFiltrado.aVencer.length)
+            || (opcoes.pagos && packFiltrado.pagasForn.length);
+        if (!temItens) {
+            return Swal.fire('Sem registros', 'Nenhuma NF encontrada para <b>' + escapeHtmlBasico(packFiltrado.periodoLabel) + '</b>.', 'info');
+        }
+        gerarExcelRelGeralNFEspelho(packFiltrado, opcoes);
     };
 
     window.carregarRelatorioGeralNotasFiscais = async function () {
@@ -11604,6 +11879,10 @@ window.exportarPDF = function(tipo) {
             document.querySelectorAll('.lista-funcs').forEach(select => {
                 if (select.id === 'ac-lista-func' || select.id === 'df-lista-func') {
                     select.innerHTML = '<option value="">Todos (empresa)</option>' + opcoesHTML;
+                } else if (select.id === 'pt-func-select') {
+                    select.innerHTML = '<option value="">Selecione o funcionário...</option>'
+                        + '<option value="__TODOS__">👥 TODOS OS FUNCIONÁRIOS</option>'
+                        + opcoesHTML.replace(/^<option value="">Selecione o funcionário\.\.\.<\/option>/, '');
                 } else {
                     select.innerHTML = opcoesHTML;
                 }
@@ -14284,7 +14563,7 @@ window.gerarFolhaPagamento = async function() {
         const ano = pack.ano;
         const mes = String(pack.mes).padStart(2, '0');
         const mesNome = (nomeMeses[mes] || mes).toUpperCase();
-        const chaveMes = ano + '-' + mes;
+        const chaveMes = String(pack.funcId || 'x') + '__' + ano + '-' + mes;
         const he = func.hora_entrada || '07:00';
         const hs = func.hora_saida || '17:00';
         const intMin = func.intervalo_minutos != null ? func.intervalo_minutos : 60;
@@ -14512,10 +14791,251 @@ window.gerarFolhaPagamento = async function() {
         detalhe.innerHTML = html;
     };
 
+    async function perguntarMesAnoEspelhoPonto(titulo) {
+        const agora = new Date();
+        const mesAtual = String(agora.getMonth() + 1).padStart(2, '0');
+        const anoAtual = String(agora.getFullYear());
+        let optsMes = '';
+        for (let m = 1; m <= 12; m += 1) {
+            const mm = String(m).padStart(2, '0');
+            const nome = (nomeMeses[mm] || nomeMeses[String(m)] || mm);
+            optsMes += '<option value="' + mm + '"' + (mm === mesAtual ? ' selected' : '') + '>' + escapeHtmlBasico(String(nome)) + '</option>';
+        }
+        let optsAno = '';
+        for (let a = agora.getFullYear() + 1; a >= agora.getFullYear() - 4; a -= 1) {
+            optsAno += '<option value="' + a + '"' + (String(a) === anoAtual ? ' selected' : '') + '>' + a + '</option>';
+        }
+        const r = await Swal.fire({
+            title: titulo || 'Selecione o mês',
+            html: '<p style="font-size:13px;color:#555;text-align:left;margin:0 0 10px 0;">Escolha o período do espelho de ponto:</p>'
+                + '<div style="display:flex;gap:8px;">'
+                + '<select id="espelho-todos-mes" class="swal2-input" style="flex:1.4;margin:0;height:42px;">' + optsMes + '</select>'
+                + '<select id="espelho-todos-ano" class="swal2-input" style="flex:1;margin:0;height:42px;">' + optsAno + '</select>'
+                + '</div>',
+            showCancelButton: true,
+            confirmButtonText: 'Continuar',
+            cancelButtonText: 'Cancelar',
+            confirmButtonColor: '#1a2a43',
+            preConfirm: () => {
+                const mes = document.getElementById('espelho-todos-mes')?.value;
+                const ano = document.getElementById('espelho-todos-ano')?.value;
+                if (!mes || !ano) {
+                    Swal.showValidationMessage('Selecione mês e ano.');
+                    return false;
+                }
+                return { mes: mes, ano: String(ano) };
+            }
+        });
+        if (!r.isConfirmed || !r.value) return null;
+        return r.value;
+    }
+
+    async function carregarPackEspelhoPontoFuncionario(funcId) {
+        const funcionario = (window.listaFuncionarios && window.listaFuncionarios[funcId]) || {};
+        const q = query(collection(db, 'ponto_registros'), where('funcionario_id', '==', funcId));
+        const querySnapshot = await getDocs(q);
+        const qEvt = query(collection(db, 'ponto_eventos'), where('funcionario_id', '==', funcId));
+        const snapEvt = await getDocs(qEvt);
+
+        const infoCancelamentoPorPonto = new Map();
+        const faltasRhPorMes = {};
+        let totalFaltasRh = 0;
+        snapEvt.forEach((d) => {
+            const ev = d.data();
+            if (!ev) return;
+            if (ev.tipo === 'CANCELAMENTO' && ev.ponto_id) {
+                let tsMs = 0;
+                const t = ev.criado_em;
+                if (t && typeof t.toMillis === 'function') tsMs = t.toMillis();
+                else if (t && typeof t.seconds === 'number') tsMs = t.seconds * 1000;
+                const prev = infoCancelamentoPorPonto.get(ev.ponto_id);
+                if (!prev || tsMs >= prev.tsMs) {
+                    infoCancelamentoPorPonto.set(ev.ponto_id, {
+                        tsMs: tsMs,
+                        motivo: String(ev.motivo || '—').trim()
+                    });
+                }
+                return;
+            }
+            if (ev.tipo !== 'FALTA_INJUSTIFICADA' && ev.tipo !== 'FALTA_JUSTIFICADA') return;
+            let iso = ev.data_iso || '';
+            if (!iso && ev.data_br) {
+                const br = formatarDataBrPadrao(ev.data_br);
+                const s = separarDataSegura(br);
+                if (s.ano !== 'Outros') iso = s.ano + '-' + s.mes + '-' + s.dia;
+            }
+            if (!iso) return;
+            const dataBrF = isoParaDataBr(iso);
+            const partes = separarDataSegura(dataBrF);
+            const anoF = partes.ano;
+            const mesF = partes.mes;
+            if (!faltasRhPorMes[anoF]) faltasRhPorMes[anoF] = {};
+            if (!faltasRhPorMes[anoF][mesF]) faltasRhPorMes[anoF][mesF] = [];
+            faltasRhPorMes[anoF][mesF].push({
+                tipo: ev.tipo,
+                iso: iso,
+                dataBr: dataBrF,
+                motivo: String(ev.motivo || '').trim(),
+                descontarDsr: ev.descontar_dsr !== false
+            });
+            totalFaltasRh += 1;
+        });
+
+        if (querySnapshot.empty && totalFaltasRh === 0) {
+            return null;
+        }
+
+        const pontosPorDia = {};
+        querySnapshot.forEach((docSnap) => {
+            const dados = docSnap.data();
+            const chaveDia = formatarDataBrPadrao(dados.data) || String(dados.data || '');
+            if (!pontosPorDia[chaveDia]) pontosPorDia[chaveDia] = [];
+            const infoCanc = infoCancelamentoPorPonto.get(docSnap.id);
+            pontosPorDia[chaveDia].push(Object.assign({
+                id: docSnap.id,
+                cancelado_em_evento: Boolean(infoCanc),
+                cancelamento_motivo: infoCanc ? infoCanc.motivo : ''
+            }, dados));
+        });
+
+        const idsErroSequencia = new Set();
+        const idsDuplicadosPonto = new Set();
+        const idsCanceladosPonto = new Set(infoCancelamentoPorPonto.keys());
+        Object.keys(pontosPorDia).forEach((diaChave) => {
+            const dedup = deduplicarBatidasPonto(pontosPorDia[diaChave], idsCanceladosPonto);
+            dedup.duplicadosIds.forEach((id) => idsDuplicadosPonto.add(id));
+            detectarErrosSequenciaPontoDia(dedup.validas, idsCanceladosPonto).forEach((er) => {
+                if (er.pontoId) idsErroSequencia.add(er.pontoId);
+            });
+        });
+
+        const agrupado = {};
+        querySnapshot.forEach((docSnap) => {
+            const dados = Object.assign({}, docSnap.data(), { id: docSnap.id });
+            const { ano, mes } = separarDataSegura(dados.data);
+            if (!agrupado[ano]) agrupado[ano] = {};
+            if (!agrupado[ano][mes]) agrupado[ano][mes] = true;
+        });
+        Object.keys(faltasRhPorMes).forEach(function (anoF) {
+            if (!agrupado[anoF]) agrupado[anoF] = {};
+            Object.keys(faltasRhPorMes[anoF]).forEach(function (mesF) {
+                if (!agrupado[anoF][mesF]) agrupado[anoF][mesF] = true;
+            });
+        });
+
+        const holidayByYear = {};
+        Object.keys(agrupado).filter((a) => a !== 'Outros').forEach((a) => {
+            holidayByYear[a] = feriadosNacionaisFixosEspelho(a);
+        });
+        try {
+            const empresaLogada = getEmpresaGestor();
+            if (empresaLogada) {
+                const qFer = query(collection(db, 'feriados'), where('empresa_id', '==', empresaLogada));
+                const snapFer = await getDocs(qFer);
+                snapFer.forEach((docF) => {
+                    const f = docF.data() || {};
+                    const iso = f.data_iso || (f.data ? dataBrParaIsoEspelho(f.data) : '');
+                    if (!iso) return;
+                    const y = iso.slice(0, 4);
+                    if (!holidayByYear[y]) holidayByYear[y] = feriadosNacionaisFixosEspelho(y);
+                    holidayByYear[y].add(iso);
+                });
+            }
+        } catch (_) {}
+
+        return {
+            funcId: funcId,
+            funcionario: funcionario,
+            pontosPorDia: pontosPorDia,
+            idsErroSequencia: idsErroSequencia,
+            idsDuplicadosPonto: idsDuplicadosPonto,
+            idsCanceladosPonto: idsCanceladosPonto,
+            faltasRhPorMes: faltasRhPorMes,
+            holidayByYear: holidayByYear,
+            agrupado: agrupado
+        };
+    }
+
+    function desenharTabelaEspelhoPontoPdf(doc, montado, startY) {
+        const head = [[
+            'Data', '1ª Ent.', '1ª Saí.', '2ª Ent.', '2ª Saí.',
+            'Crédito', 'Débito', 'Intervalo', 'Normais',
+            'HE 50%', 'HE 100%', 'H.T.', 'Saldo', 'Motivo'
+        ]];
+        const body = montado.linhas.map((ln) => [
+            ln.labelData,
+            ln.c1.txt || '',
+            ln.c2.txt || '',
+            ln.c3.txt || '',
+            ln.c4.txt || '',
+            formatarHorasEspelhoHM(ln.credito),
+            formatarHorasEspelhoHM(ln.debito),
+            formatarHorasEspelhoHM(ln.intervaloH),
+            formatarHorasEspelhoHM(ln.horasNormais),
+            formatarHorasEspelhoHM(ln.he50),
+            formatarHorasEspelhoHM(ln.he100),
+            formatarHorasEspelhoHM(ln.ht),
+            formatarHorasEspelhoHM(ln.saldo),
+            ln.motivo || ''
+        ]);
+        const t = montado.totais;
+        body.push([
+            'TOTAL', '', '', '', '',
+            formatarHorasEspelhoHM(t.credito),
+            formatarHorasEspelhoHM(t.debito),
+            formatarHorasEspelhoHM(t.intervaloH),
+            formatarHorasEspelhoHM(t.horasNormais),
+            formatarHorasEspelhoHM(t.he50),
+            formatarHorasEspelhoHM(t.he100),
+            formatarHorasEspelhoHM(t.ht),
+            formatarHorasEspelhoHM(t.saldo),
+            ''
+        ]);
+
+        doc.autoTable({
+            startY: startY,
+            head: head,
+            body: body,
+            theme: 'grid',
+            styles: { fontSize: 7, cellPadding: 1.5, valign: 'middle', halign: 'center' },
+            headStyles: { fillColor: '#1a2a43', textColor: '#ffffff', fontStyle: 'bold', fontSize: 7 },
+            columnStyles: {
+                0: { cellWidth: 28, halign: 'left' },
+                13: { cellWidth: 28, halign: 'left', fontSize: 6 }
+            },
+            didParseCell: function (data) {
+                if (data.section === 'body' && data.row.index === body.length - 1) {
+                    data.cell.styles.fontStyle = 'bold';
+                    data.cell.styles.fillColor = '#eef2f5';
+                }
+            },
+            margin: { left: 10, right: 10 }
+        });
+        return doc.lastAutoTable ? doc.lastAutoTable.finalY : startY;
+    }
+
+    function cabecalhoEspelhoPontoPdf(doc, emp, mesNome, ano, func) {
+        doc.setFillColor(26, 42, 67);
+        doc.rect(0, 0, 297, 28, 'F');
+        doc.setTextColor(255, 255, 255);
+        doc.setFontSize(14);
+        doc.setFont('helvetica', 'bold');
+        doc.text('ESPELHO DE PONTO ELETRONICO', 14, 11);
+        doc.setFontSize(9);
+        doc.setFont('helvetica', 'normal');
+        doc.setTextColor(220, 220, 220);
+        doc.text(String(emp) + '  |  ' + String(mesNome) + '/' + String(ano) + '  |  ' + new Date().toLocaleString('pt-BR'), 14, 19);
+        doc.text(String(func.nome || '') + '  |  CPF: ' + String(func.cpf || '—') + '  |  Turno: ' + String(func.hora_entrada || '07:00') + '-' + String(func.hora_saida || '17:00'), 14, 25);
+    }
+
     window.exportarEspelhoPontoPDF = async function () {
+        // Após busca coletiva, o mesmo botão baixa todos do mês já escolhido
+        if (window._espelhoPontoTodosPeriodo && window._espelhoPontoTodosPeriodo.mes && window._espelhoPontoTodosPeriodo.ano) {
+            return exportarEspelhoPontoTodosPDF();
+        }
         const packExp = window._espelhoPontoExport;
         if (!packExp || !packExp.agrupado) {
-            return Swal.fire('Atenção', 'Busque o ponto do funcionário primeiro.', 'warning');
+            return Swal.fire('Atenção', 'Busque o ponto do funcionário (ou TODOS) primeiro.', 'warning');
         }
 
         const opcoesMes = [];
@@ -14573,237 +15093,216 @@ window.gerarFolhaPagamento = async function() {
         const emp = getEmpresaGestor() || 'Empresa';
         const func = packExp.funcionario || {};
         const mesNome = (nomeMeses[mesPad] || mesPad).toUpperCase();
-
-        doc.setFillColor(26, 42, 67);
-        doc.rect(0, 0, 297, 28, 'F');
-        doc.setTextColor(255, 255, 255);
-        doc.setFontSize(14);
-        doc.setFont('helvetica', 'bold');
-        doc.text('ESPELHO DE PONTO ELETRÔNICO', 14, 11);
-        doc.setFontSize(9);
-        doc.setFont('helvetica', 'normal');
-        doc.setTextColor(220, 220, 220);
-        doc.text(emp + '  |  ' + mesNome + '/' + ano + '  |  ' + new Date().toLocaleString('pt-BR'), 14, 19);
-        doc.text((func.nome || '') + '  |  CPF: ' + (func.cpf || '—') + '  |  Turno: ' + (func.hora_entrada || '07:00') + '-' + (func.hora_saida || '17:00'), 14, 25);
-
-        const head = [[
-            'Data', '1ª Ent.', '1ª Saí.', '2ª Ent.', '2ª Saí.',
-            'Crédito', 'Débito', 'Intervalo', 'Normais',
-            'HE 50%', 'HE 100%', 'H.T.', 'Saldo', 'Motivo'
-        ]];
-        const body = montado.linhas.map((ln) => [
-            ln.labelData,
-            ln.c1.txt || '',
-            ln.c2.txt || '',
-            ln.c3.txt || '',
-            ln.c4.txt || '',
-            formatarHorasEspelhoHM(ln.credito),
-            formatarHorasEspelhoHM(ln.debito),
-            formatarHorasEspelhoHM(ln.intervaloH),
-            formatarHorasEspelhoHM(ln.horasNormais),
-            formatarHorasEspelhoHM(ln.he50),
-            formatarHorasEspelhoHM(ln.he100),
-            formatarHorasEspelhoHM(ln.ht),
-            formatarHorasEspelhoHM(ln.saldo),
-            ln.motivo || ''
-        ]);
-        const t = montado.totais;
-        body.push([
-            'TOTAL', '', '', '', '',
-            formatarHorasEspelhoHM(t.credito),
-            formatarHorasEspelhoHM(t.debito),
-            formatarHorasEspelhoHM(t.intervaloH),
-            formatarHorasEspelhoHM(t.horasNormais),
-            formatarHorasEspelhoHM(t.he50),
-            formatarHorasEspelhoHM(t.he100),
-            formatarHorasEspelhoHM(t.ht),
-            formatarHorasEspelhoHM(t.saldo),
-            ''
-        ]);
-
-        doc.autoTable({
-            startY: 32,
-            head: head,
-            body: body,
-            theme: 'grid',
-            styles: { fontSize: 7, cellPadding: 1.5, valign: 'middle', halign: 'center' },
-            headStyles: { fillColor: '#1a2a43', textColor: '#ffffff', fontStyle: 'bold', fontSize: 7 },
-            columnStyles: {
-                0: { cellWidth: 28, halign: 'left' },
-                13: { cellWidth: 28, halign: 'left', fontSize: 6 }
-            },
-            didParseCell: function (data) {
-                if (data.section === 'body' && data.row.index === body.length - 1) {
-                    data.cell.styles.fontStyle = 'bold';
-                    data.cell.styles.fillColor = '#eef2f5';
-                }
-            },
-            didDrawPage: function (data) {
-                doc.setFontSize(8);
-                doc.setTextColor(150);
-                doc.text('Página ' + doc.internal.getNumberOfPages() + '  |  Gestor 360', data.settings.margin.left, doc.internal.pageSize.height - 8);
-            },
-            margin: { left: 10, right: 10 }
-        });
+        cabecalhoEspelhoPontoPdf(doc, emp, mesNome, ano, func);
+        desenharTabelaEspelhoPontoPdf(doc, montado, 32);
+        doc.setFontSize(8);
+        doc.setTextColor(150);
+        doc.text('Pagina ' + doc.internal.getNumberOfPages() + '  |  Gestor 360', 10, doc.internal.pageSize.height - 8);
 
         const nomeArq = 'espelho_ponto_' + String(func.nome || 'func').replace(/\s+/g, '_') + '_' + mesPad + '_' + ano + '.pdf';
         doc.save(nomeArq);
         Swal.fire({ toast: true, position: 'top-end', icon: 'success', title: 'Espelho PDF gerado!', showConfirmButton: false, timer: 2200 });
     };
 
+    window.exportarEspelhoPontoTodosPDF = async function () {
+        const empresaLogada = getEmpresaGestor();
+        if (!empresaLogada) return Swal.fire('Atenção', 'Empresa não definida.', 'warning');
+
+        const lista = Object.keys(window.listaFuncionarios || {}).map((id) => ({ id: id, ...(window.listaFuncionarios[id] || {}) }));
+        if (!lista.length) {
+            return Swal.fire('Atenção', 'Nenhum funcionário cadastrado. Atualize a lista da equipe.', 'warning');
+        }
+        lista.sort((a, b) => String(a.nome || '').localeCompare(String(b.nome || '')));
+
+        // Usa o mês da busca coletiva (sem perguntar de novo)
+        let periodo = window._espelhoPontoTodosPeriodo;
+        if (!periodo || !periodo.mes || !periodo.ano) {
+            periodo = await perguntarMesAnoEspelhoPonto('Espelho de TODOS — PDF para RH');
+            if (!periodo) return;
+            window._espelhoPontoTodosPeriodo = { mes: periodo.mes, ano: periodo.ano };
+        }
+
+        Swal.fire({
+            title: 'Gerando espelhos...',
+            html: 'Montando o PDF de <b>' + lista.length + '</b> funcionário(s).<br>Isso pode levar alguns segundos.',
+            allowOutsideClick: false,
+            didOpen: () => { Swal.showLoading(); }
+        });
+
+        try {
+            const { jsPDF } = window.jspdf;
+            const doc = new jsPDF('l', 'mm', 'a4');
+            const mesPad = String(periodo.mes).padStart(2, '0');
+            const ano = String(periodo.ano);
+            const mesNome = (nomeMeses[mesPad] || mesPad).toUpperCase();
+            let gerados = 0;
+            let paginaNova = false;
+
+            for (let i = 0; i < lista.length; i += 1) {
+                const func = lista[i];
+                const pack = await carregarPackEspelhoPontoFuncionario(func.id);
+                if (!pack) continue;
+
+                const holidaySet = (pack.holidayByYear && pack.holidayByYear[ano]) || feriadosNacionaisFixosEspelho(ano);
+                const faltasMes = (pack.faltasRhPorMes[ano] && (pack.faltasRhPorMes[ano][mesPad] || pack.faltasRhPorMes[ano][String(Number(mesPad))])) || [];
+                const montado = montarLinhasEspelhoMes({
+                    ano: ano,
+                    mes: mesPad,
+                    funcionario: pack.funcionario,
+                    pontosPorDia: pack.pontosPorDia,
+                    canceladosSet: pack.idsCanceladosPonto,
+                    idsErroSequencia: pack.idsErroSequencia,
+                    idsDuplicadosPonto: pack.idsDuplicadosPonto,
+                    faltasMes: faltasMes,
+                    holidaySet: holidaySet
+                });
+
+                if (paginaNova) doc.addPage();
+                cabecalhoEspelhoPontoPdf(doc, empresaLogada, mesNome, ano, pack.funcionario || func);
+                desenharTabelaEspelhoPontoPdf(doc, montado, 32);
+                gerados += 1;
+                paginaNova = true;
+            }
+
+            if (!gerados) {
+                return Swal.fire('Sem registros', 'Nenhum funcionário com ponto/falta no período ' + mesNome + '/' + ano + '.', 'info');
+            }
+
+            const nomeArq = 'espelho_ponto_TODOS_' + mesPad + '_' + ano + '_' + String(empresaLogada).replace(/\s+/g, '_') + '.pdf';
+            doc.save(nomeArq);
+            Swal.fire('PDF gerado!', gerados + ' espelho(s) no arquivo para enviar ao RH.', 'success');
+        } catch (e) {
+            console.error(e);
+            Swal.fire('Erro', 'Falha ao gerar o PDF de todos os funcionários.', 'error');
+        }
+    };
+
+    window.buscarPontoTodos = async function () {
+        const empresaLogada = getEmpresaGestor();
+        if (!empresaLogada) return Swal.fire('Atenção', 'Empresa não definida.', 'warning');
+
+        const lista = Object.keys(window.listaFuncionarios || {}).map((id) => ({ id: id, ...(window.listaFuncionarios[id] || {}) }));
+        if (!lista.length) {
+            return Swal.fire('Atenção', 'Nenhum funcionário cadastrado.', 'warning');
+        }
+        lista.sort((a, b) => String(a.nome || '').localeCompare(String(b.nome || '')));
+
+        const periodo = await perguntarMesAnoEspelhoPonto('Espelho de TODOS os funcionários');
+        if (!periodo) return;
+
+        const divLista = document.getElementById('lista-ponto-resultados');
+        const toolbar = document.getElementById('ponto-export-toolbar');
+        const btnExportar = document.getElementById('btnExportarPonto');
+
+        divLista.innerHTML = 'Carregando espelhos de ' + lista.length + ' funcionário(s)...';
+        if (toolbar) toolbar.style.display = 'flex';
+        if (btnExportar) {
+            btnExportar.style.display = 'inline-flex';
+            btnExportar.style.backgroundColor = '#217346';
+            btnExportar.textContent = '📥 Exportar PDF (todos — ' + String((nomeMeses[String(periodo.mes).padStart(2, '0')] || periodo.mes)).toUpperCase() + '/' + periodo.ano + ')';
+        }
+
+        window._espelhoPontoPorMes = {};
+        window._espelhoPontoExport = null;
+        window._espelhoPontoTodosPeriodo = { mes: periodo.mes, ano: periodo.ano };
+
+        const mesPad = String(periodo.mes).padStart(2, '0');
+        const ano = String(periodo.ano);
+        const mesNome = (nomeMeses[mesPad] || mesPad).toUpperCase();
+        let htmlFinal = '<div style="background:#eef2f5;border:1px solid #d0d7de;border-radius:10px;padding:12px;margin-bottom:12px;text-align:center;">'
+            + '<b>Espelho coletivo — ' + escapeHtmlBasico(mesNome) + '/' + escapeHtmlBasico(ano) + '</b><br>'
+            + '<span style="font-size:12px;color:#555;">' + lista.length + ' funcionário(s). Clique em <b>Exportar PDF</b> para baixar o arquivo de todos e enviar ao RH.</span>'
+            + '</div>';
+
+        let comDados = 0;
+        for (let i = 0; i < lista.length; i += 1) {
+            const func = lista[i];
+            try {
+                const pack = await carregarPackEspelhoPontoFuncionario(func.id);
+                if (!pack) {
+                    htmlFinal += '<details class="pasta-mes"><summary>' + escapeHtmlBasico(func.nome || 'Funcionário') + ' — sem registros</summary>'
+                        + '<div class="folder-content"><p style="text-align:center;color:#888;padding:10px;">Nenhum ponto neste período.</p></div></details>';
+                    continue;
+                }
+                const holidaySet = (pack.holidayByYear && pack.holidayByYear[ano]) || feriadosNacionaisFixosEspelho(ano);
+                const faltasMes = (pack.faltasRhPorMes[ano] && (pack.faltasRhPorMes[ano][mesPad] || pack.faltasRhPorMes[ano][String(Number(mesPad))])) || [];
+                htmlFinal += '<details class="pasta-mes" ' + (comDados === 0 ? 'open' : '') + '><summary>' + escapeHtmlBasico(func.nome || 'Funcionário') + ' — Espelho ' + escapeHtmlBasico(mesNome) + '/' + escapeHtmlBasico(ano) + '</summary><div class="folder-content">';
+                htmlFinal += htmlTabelaEspelhoPontoMes({
+                    ano: ano,
+                    mes: mesPad,
+                    funcId: func.id,
+                    funcionario: pack.funcionario,
+                    pontosPorDia: pack.pontosPorDia,
+                    canceladosSet: pack.idsCanceladosPonto,
+                    idsErroSequencia: pack.idsErroSequencia,
+                    idsDuplicadosPonto: pack.idsDuplicadosPonto,
+                    faltasMes: faltasMes,
+                    holidaySet: holidaySet
+                });
+                htmlFinal += '</div></details>';
+                comDados += 1;
+            } catch (err) {
+                console.warn('espelho todos', func.id, err);
+                htmlFinal += '<details class="pasta-mes"><summary>' + escapeHtmlBasico(func.nome || 'Funcionário') + ' — erro</summary>'
+                    + '<div class="folder-content"><p style="text-align:center;color:#d9534f;">Falha ao carregar este funcionário.</p></div></details>';
+            }
+        }
+
+        divLista.innerHTML = htmlFinal;
+        Swal.fire({
+            toast: true,
+            position: 'top-end',
+            icon: 'success',
+            title: comDados + ' espelho(s) carregado(s)',
+            showConfirmButton: false,
+            timer: 2500
+        });
+    };
+
     window.buscarPonto = async function() {
         const funcId = document.getElementById('pt-func-select').value;
         if (!funcId) {
-            return Swal.fire('Atenção', 'Selecione um funcionário.', 'warning');
+            return Swal.fire('Atenção', 'Selecione um funcionário (ou TODOS OS FUNCIONÁRIOS).', 'warning');
+        }
+        if (funcId === '__TODOS__') {
+            return buscarPontoTodos();
         }
         
         const divLista = document.getElementById('lista-ponto-resultados'); 
+        const toolbar = document.getElementById('ponto-export-toolbar');
         const btnExportar = document.getElementById('btnExportarPonto');
         
         divLista.innerHTML = "Buscando..."; 
-        btnExportar.style.display = 'none'; 
+        if (toolbar) toolbar.style.display = 'none';
+        if (btnExportar) btnExportar.style.display = 'none';
         window.dadosExportacaoPonto = [];
         window._espelhoPontoPorMes = {};
         window._espelhoPontoExport = null;
+        window._espelhoPontoTodosPeriodo = null;
 
         try {
-            const funcionario = (window.listaFuncionarios && window.listaFuncionarios[funcId]) || {};
             registrarFuncionarioContextoRH(funcId);
-
-            const q = query(collection(db, "ponto_registros"), where("funcionario_id", "==", funcId)); 
-            const querySnapshot = await getDocs(q);
-
-            const qEvt = query(collection(db, "ponto_eventos"), where("funcionario_id", "==", funcId));
-            const snapEvt = await getDocs(qEvt);
-            const infoCancelamentoPorPonto = new Map();
-            const faltasRhPorMes = {};
-            let totalFaltasRh = 0;
-            snapEvt.forEach((d) => {
-                const ev = d.data();
-                if (!ev) return;
-                if (ev.tipo === 'CANCELAMENTO' && ev.ponto_id) {
-                    let tsMs = 0;
-                    const t = ev.criado_em;
-                    if (t && typeof t.toMillis === 'function') tsMs = t.toMillis();
-                    else if (t && typeof t.seconds === 'number') tsMs = t.seconds * 1000;
-                    const prev = infoCancelamentoPorPonto.get(ev.ponto_id);
-                    if (!prev || tsMs >= prev.tsMs) {
-                        infoCancelamentoPorPonto.set(ev.ponto_id, {
-                            tsMs: tsMs,
-                            motivo: String(ev.motivo || '—').trim()
-                        });
-                    }
-                    return;
-                }
-                if (ev.tipo !== 'FALTA_INJUSTIFICADA' && ev.tipo !== 'FALTA_JUSTIFICADA') return;
-                let iso = ev.data_iso || '';
-                if (!iso && ev.data_br) {
-                    const br = formatarDataBrPadrao(ev.data_br);
-                    const s = separarDataSegura(br);
-                    if (s.ano !== 'Outros') iso = `${s.ano}-${s.mes}-${s.dia}`;
-                }
-                if (!iso) return;
-                const dataBrF = isoParaDataBr(iso);
-                const partes = separarDataSegura(dataBrF);
-                const anoF = partes.ano;
-                const mesF = partes.mes;
-                if (!faltasRhPorMes[anoF]) faltasRhPorMes[anoF] = {};
-                if (!faltasRhPorMes[anoF][mesF]) faltasRhPorMes[anoF][mesF] = [];
-                faltasRhPorMes[anoF][mesF].push({
-                    tipo: ev.tipo,
-                    iso: iso,
-                    dataBr: dataBrF,
-                    motivo: String(ev.motivo || '').trim(),
-                    descontarDsr: ev.descontar_dsr !== false
-                });
-                totalFaltasRh += 1;
-            });
-
-            if (querySnapshot.empty && totalFaltasRh === 0) {
+            const pack = await carregarPackEspelhoPontoFuncionario(funcId);
+            if (!pack) {
                 divLista.innerHTML = `<p style="color:#d9534f; text-align:center;">Nenhum registro.</p>`;
                 return;
             }
 
-            const pontosPorDia = {};
-            querySnapshot.forEach((docSnap) => {
-                const dados = docSnap.data();
-                const chaveDia = formatarDataBrPadrao(dados.data) || String(dados.data || '');
-                if (!pontosPorDia[chaveDia]) pontosPorDia[chaveDia] = [];
-                const infoCanc = infoCancelamentoPorPonto.get(docSnap.id);
-                pontosPorDia[chaveDia].push(Object.assign({
-                    id: docSnap.id,
-                    cancelado_em_evento: Boolean(infoCanc),
-                    cancelamento_motivo: infoCanc ? infoCanc.motivo : ''
-                }, dados));
+            window.dadosExportacaoPonto = [];
+            Object.keys(pack.pontosPorDia || {}).forEach((dia) => {
+                (pack.pontosPorDia[dia] || []).forEach((b) => window.dadosExportacaoPonto.push(b));
             });
 
-            const idsErroSequencia = new Set();
-            const idsDuplicadosPonto = new Set();
-            const idsCanceladosPonto = new Set(infoCancelamentoPorPonto.keys());
-            Object.keys(pontosPorDia).forEach((diaChave) => {
-                const dedup = deduplicarBatidasPonto(pontosPorDia[diaChave], idsCanceladosPonto);
-                dedup.duplicadosIds.forEach((id) => idsDuplicadosPonto.add(id));
-                detectarErrosSequenciaPontoDia(dedup.validas, idsCanceladosPonto).forEach((er) => {
-                    if (er.pontoId) idsErroSequencia.add(er.pontoId);
-                });
-            });
-
-            let agrupado = {};
-            querySnapshot.forEach((docSnap) => {
-                const dados = Object.assign({}, docSnap.data(), { id: docSnap.id });
-                const infoCanc = infoCancelamentoPorPonto.get(dados.id);
-                dados.cancelado_em_evento = Boolean(infoCanc);
-                dados.cancelamento_motivo = infoCanc ? infoCanc.motivo : '';
-                window.dadosExportacaoPonto.push(dados);
-                const { ano, mes } = separarDataSegura(dados.data);
-                if (!agrupado[ano]) agrupado[ano] = {};
-                if (!agrupado[ano][mes]) agrupado[ano][mes] = true;
-            });
-
-            Object.keys(faltasRhPorMes).forEach(function (anoF) {
-                if (!agrupado[anoF]) agrupado[anoF] = {};
-                Object.keys(faltasRhPorMes[anoF]).forEach(function (mesF) {
-                    if (!agrupado[anoF][mesF]) agrupado[anoF][mesF] = true;
-                });
-            });
-
-            // Feriados da empresa (anos envolvidos)
-            const holidayByYear = {};
-            const anosLista = Object.keys(agrupado).filter((a) => a !== 'Outros');
-            anosLista.forEach((a) => {
-                holidayByYear[a] = feriadosNacionaisFixosEspelho(a);
-            });
-            try {
-                const empresaLogada = getEmpresaGestor();
-                if (empresaLogada) {
-                    const qFer = query(collection(db, 'feriados'), where('empresa_id', '==', empresaLogada));
-                    const snapFer = await getDocs(qFer);
-                    snapFer.forEach((docF) => {
-                        const f = docF.data() || {};
-                        const iso = f.data_iso || (f.data ? dataBrParaIsoEspelho(f.data) : '');
-                        if (!iso) return;
-                        const y = iso.slice(0, 4);
-                        if (!holidayByYear[y]) holidayByYear[y] = feriadosNacionaisFixosEspelho(y);
-                        holidayByYear[y].add(iso);
-                    });
-                }
-            } catch (_) {}
-
-            btnExportar.style.display = 'block';
-            window._espelhoPontoExport = {
-                funcId,
-                funcionario,
-                pontosPorDia,
-                idsErroSequencia,
-                idsDuplicadosPonto,
-                idsCanceladosPonto,
-                faltasRhPorMes,
-                holidayByYear,
-                agrupado
-            };
+            if (toolbar) toolbar.style.display = 'flex';
+            if (btnExportar) {
+                btnExportar.style.display = 'inline-flex';
+                btnExportar.style.backgroundColor = '';
+                btnExportar.textContent = '📥 Exportar PDF';
+            }
+            window._espelhoPontoExport = pack;
 
             let htmlFinal = '';
-            let chavesAno = Object.keys(agrupado).sort((a, b) => {
+            let chavesAno = Object.keys(pack.agrupado).sort((a, b) => {
                 if (a === 'Outros') return 1;
                 if (b === 'Outros') return -1;
                 return Number(b) - Number(a);
@@ -14811,7 +15310,7 @@ window.gerarFolhaPagamento = async function() {
 
             chavesAno.forEach((ano) => {
                 htmlFinal += `<details class="pasta-ano" open><summary>Ano ${escapeHtmlBasico(ano)}</summary><div class="folder-content">`;
-                let chavesMes = Object.keys(agrupado[ano]).sort((a, b) => {
+                let chavesMes = Object.keys(pack.agrupado[ano]).sort((a, b) => {
                     if (a === 'Outros') return 1;
                     if (b === 'Outros') return -1;
                     return Number(b) - Number(a);
@@ -14825,13 +15324,13 @@ window.gerarFolhaPagamento = async function() {
                         ano: ano,
                         mes: mesPad,
                         funcId: funcId,
-                        funcionario: funcionario,
-                        pontosPorDia: pontosPorDia,
-                        canceladosSet: idsCanceladosPonto,
-                        idsErroSequencia: idsErroSequencia,
-                        idsDuplicadosPonto: idsDuplicadosPonto,
-                        faltasMes: (faltasRhPorMes[ano] && faltasRhPorMes[ano][mes]) ? faltasRhPorMes[ano][mes] : (faltasRhPorMes[ano] && faltasRhPorMes[ano][mesPad] ? faltasRhPorMes[ano][mesPad] : []),
-                        holidaySet: holidayByYear[ano] || feriadosNacionaisFixosEspelho(ano)
+                        funcionario: pack.funcionario,
+                        pontosPorDia: pack.pontosPorDia,
+                        canceladosSet: pack.idsCanceladosPonto,
+                        idsErroSequencia: pack.idsErroSequencia,
+                        idsDuplicadosPonto: pack.idsDuplicadosPonto,
+                        faltasMes: (pack.faltasRhPorMes[ano] && pack.faltasRhPorMes[ano][mes]) ? pack.faltasRhPorMes[ano][mes] : (pack.faltasRhPorMes[ano] && pack.faltasRhPorMes[ano][mesPad] ? pack.faltasRhPorMes[ano][mesPad] : []),
+                        holidaySet: pack.holidayByYear[ano] || feriadosNacionaisFixosEspelho(ano)
                     });
                     htmlFinal += `</div></details>`;
                 });
@@ -17636,20 +18135,20 @@ function renderizarAlertasNoCanto(conteudo, som) {
 
     container.style.display = 'block';
     container.innerHTML = `
-        <div class="alerta-barra-minimizada" style="display:${minimizado ? 'flex' : 'none'}; align-items:center; gap:8px; background:#1a2a43; color:#fff; padding:10px 14px; border-radius:10px; box-shadow:0 6px 20px rgba(0,0,0,0.2);">
-            <span style="font-weight:700; font-size:13px; flex:1; cursor:pointer;" onclick="window.togglePainelAlertasMinimizado()" title="Clique para expandir">🔔 <span class="alerta-contagem-qtd">${qtd}</span> vencimento(s)</span>
-            <button type="button" class="alerta-btn-imprimir" onclick="event.stopPropagation(); window.imprimirRelatorioAlertasVencimento()" title="Imprimir relatório">🖨️</button>
-            <button type="button" class="alerta-btn-exportar" onclick="event.stopPropagation(); window.abrirExportarAlertasVencimento()" title="Exportar relatório por dia">📤</button>
-            <button type="button" class="alerta-btn-fechar" onclick="window.confirmarLeituraTodosAlertas()" title="Silenciar todos">Fechar</button>
-            <button type="button" onclick="window.togglePainelAlertasMinimizado()" style="background:#fff; color:#1a2a43; border:none; border-radius:6px; padding:4px 10px; font-weight:700; font-size:12px; cursor:pointer;">Expandir</button>
+        <div class="alerta-barra-minimizada" style="display:${minimizado ? 'flex' : 'none'}; background:#1a2a43; color:#fff; border-radius:10px; box-shadow:0 6px 20px rgba(0,0,0,0.2);">
+            <span style="font-weight:700; cursor:pointer;" onclick="window.togglePainelAlertasMinimizado()" title="Clique para expandir">🔔 <span class="alerta-contagem-qtd">${qtd}</span> vencimento(s)</span>
+            <button type="button" class="alerta-btn-imprimir" onclick="event.stopPropagation(); window.imprimirRelatorioAlertasVencimento()" title="Imprimir PDF">🖨️</button>
+            <button type="button" class="alerta-btn-exportar" onclick="event.stopPropagation(); window.abrirExportarAlertasVencimento()" title="Exportar Excel/PDF">📊</button>
+            <button type="button" class="alerta-btn-fechar" onclick="event.stopPropagation(); window.confirmarLeituraTodosAlertas()" title="Silenciar todos">Fechar</button>
+            <button type="button" class="alerta-btn-expandir" onclick="event.stopPropagation(); window.togglePainelAlertasMinimizado()" title="Expandir painel">Abrir</button>
         </div>
         <div class="alerta-painel-wrapper" style="display:${minimizado ? 'none' : 'block'};">
             <div class="alerta-painel-header">
                 <span class="alerta-painel-header-titulo">⚠️ Vencimentos (<span class="alerta-contagem-qtd">${qtd}</span>)</span>
                 <div class="alerta-painel-header-acoes">
                     <button type="button" class="alerta-btn-fechar" onclick="window.confirmarLeituraTodosAlertas()" title="Silenciar todos">Fechar</button>
-                    <button type="button" class="alerta-btn-imprimir" onclick="window.imprimirRelatorioAlertasVencimento()" title="Imprimir">🖨️</button>
-                    <button type="button" class="alerta-btn-exportar" onclick="window.abrirExportarAlertasVencimento()" title="Exportar PDF/Excel">📤</button>
+                    <button type="button" class="alerta-btn-imprimir" onclick="window.imprimirRelatorioAlertasVencimento()" title="Imprimir PDF">🖨️</button>
+                    <button type="button" class="alerta-btn-exportar" onclick="window.abrirExportarAlertasVencimento()" title="Exportar Excel/PDF">📊</button>
                     <button type="button" class="alerta-btn-minimizar" onclick="window.togglePainelAlertasMinimizado()" title="Minimizar">−</button>
                 </div>
             </div>
