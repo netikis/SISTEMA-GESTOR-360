@@ -555,10 +555,64 @@
             border-color: #f1c40f;
         }
 
+        .gestor-menu-grupo.grupo-entradas .gestor-menu-grupo-titulo {
+            color: #abebc6;
+        }
+
+        .gestor-menu-grupo.grupo-entradas.has-active .gestor-menu-grupo-titulo {
+            background: rgba(39, 174, 96, 0.35);
+            border-color: #f1c40f;
+        }
+
         .gestor-menu-btn.menu-despesas { color: #f5b7b1; }
         .gestor-menu-btn.menu-despesas.active { background: #c0392b; border-color: #f1c40f; }
         .gestor-menu-btn.menu-documentos { color: #aed6f1; }
         .gestor-menu-btn.menu-documentos.active { background: #2980b9; border-color: #f1c40f; }
+        .gestor-menu-btn.menu-entradas { color: #abebc6; }
+        .gestor-menu-btn.menu-entradas.active { background: #1e8449; border-color: #f1c40f; }
+
+        .bloco-lancamento-entradas {
+            background: #eef2f5;
+            border: 1px solid #d0d7de;
+            border-radius: 12px;
+            padding: 16px;
+            margin-top: 8px;
+        }
+        .row-entradas {
+            display: flex;
+            gap: 12px;
+            flex-wrap: wrap;
+            margin-bottom: 10px;
+        }
+        .col-entradas {
+            flex: 1;
+            min-width: 160px;
+        }
+        .table-responsive-entradas {
+            width: 100%;
+            overflow-x: auto;
+            border: 1px solid #e0e6ed;
+            border-radius: 10px;
+            background: #fff;
+        }
+        .tabela-entradas {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 13px;
+        }
+        .tabela-entradas th {
+            background: #1a2a43;
+            color: #fff;
+            padding: 10px 8px;
+            text-align: left;
+            white-space: nowrap;
+        }
+        .tabela-entradas td {
+            padding: 10px 8px;
+            border-bottom: 1px solid #eef2f5;
+            vertical-align: middle;
+        }
+        .tabela-entradas tr:nth-child(even) td { background: #f8fafc; }
 
         .doc-pasta-panel {
             background: #fff;
@@ -3046,7 +3100,7 @@
                     <button type="button" class="gestor-menu-btn" data-titulo="Cadastrar Funcionário" onclick="mudarAba('cadastrar', this)">➕ Cadastrar Funcionário</button>
                     <button type="button" class="gestor-menu-btn" id="btn-menu-equipe-cadastrada" data-titulo="Equipe Cadastrada" onclick="mudarAba('equipe-cadastrada', this)">👥 Equipe Cadastrada</button>
                     <button type="button" class="gestor-menu-btn" data-titulo="Vales" onclick="mudarAba('criar', this)">💰 Vales</button>
-                    <button type="button" class="gestor-menu-btn" data-titulo="Arquivo" onclick="mudarAba('buscar', this)">📁 Arquivo</button>
+                    <button type="button" class="gestor-menu-btn" data-titulo="Vales Assinados" onclick="mudarAba('buscar', this)">📁 Vales Assinados</button>
                     <button type="button" class="gestor-menu-btn" data-titulo="Ponto" onclick="mudarAba('ponto', this)">📍 Ponto</button>
                     <button type="button" class="gestor-menu-btn" data-titulo="Ajuda de Custo" onclick="mudarAba('ajuda-custo', this)">🧳 Ajuda de Custo</button>
                     <button type="button" class="gestor-menu-btn" data-titulo="Descontos Folha" onclick="mudarAba('descontos-folha', this)">📋 Descontos Folha</button>
@@ -3067,6 +3121,17 @@
                     <button type="button" class="gestor-menu-btn menu-despesas" id="btn-menu-obras-relatorio-geral" data-titulo="Relatório Geral de Obras" onclick="mudarAba('obras-relatorio-geral', this)">📊 Relatório Geral de Obras</button>
                     <button type="button" class="gestor-menu-btn menu-despesas" id="btn-menu-notas-fiscais-geral" data-titulo="Relatório Geral de Notas Fiscais" onclick="mudarAba('notas-fiscais-geral', this)">📑 Relatório Geral de Notas Fiscais</button>
                     <button type="button" class="gestor-menu-btn menu-despesas" id="btn-menu-terceiros" data-titulo="Terceiros" onclick="mudarAba('terceiros', this)">👷 Terceiros</button>
+                </div>
+            </div>
+            <div class="gestor-menu-grupo grupo-entradas" id="grupo-menu-entradas">
+                <button type="button" class="gestor-menu-grupo-titulo" id="btn-grupo-entradas" onclick="toggleGrupoMenuEntradas()" aria-expanded="false">
+                    <span>📥 Entradas / Recebíveis</span>
+                    <span class="gestor-menu-grupo-seta" aria-hidden="true">▼</span>
+                </button>
+                <div class="gestor-menu-sub" id="submenu-entradas">
+                    <button type="button" class="gestor-menu-btn menu-entradas" id="btn-menu-cadastrar-conta" data-titulo="Cadastrar Conta" onclick="mudarAba('cadastrar-conta', this)">➕ Cadastrar Conta</button>
+                    <button type="button" class="gestor-menu-btn menu-entradas" id="btn-menu-contas-receber" data-titulo="Contas a Receber" onclick="mudarAba('contas-receber', this); if(window.renderContasReceber)window.renderContasReceber();">⏳ Contas a Receber</button>
+                    <button type="button" class="gestor-menu-btn menu-entradas" id="btn-menu-recebimentos" data-titulo="Recebimentos" onclick="mudarAba('recebimentos', this); if(window.renderRecebimentos)window.renderRecebimentos();">✅ Recebimentos</button>
                 </div>
             </div>
             <div class="gestor-menu-grupo grupo-documentos" id="grupo-menu-documentos">
@@ -3790,6 +3855,91 @@
         </details>
     </div>
 
+    <div id="aba-cadastrar-conta" class="view-section">
+        <h2 style="color:#2980b9;margin:0 0 8px 0;font-size:18px;">Cadastrar Conta a Receber</h2>
+        <p class="texto-explicacao" style="margin-top:0;">Cadastre o recebível e acompanhe depois em <b>Contas a Receber</b> / <b>Recebimentos</b>.</p>
+        <form id="formContaReceber" onsubmit="event.preventDefault(); window.salvarContaReceber();">
+            <div class="bloco-lancamento-entradas">
+                <div class="row-entradas">
+                    <div class="col-entradas" style="flex:2;">
+                        <label>Cliente / Devedor</label>
+                        <input type="text" id="crCliente" required placeholder="Nome do cliente ou empresa">
+                    </div>
+                    <div class="col-entradas">
+                        <label>Nº Documento / Parcela</label>
+                        <input type="text" id="crDocumento" placeholder="NF, contrato, parcela...">
+                    </div>
+                </div>
+                <div class="row-entradas">
+                    <div class="col-entradas">
+                        <label>Data de Vencimento</label>
+                        <input type="date" id="crVencimento" required>
+                    </div>
+                    <div class="col-entradas">
+                        <label>Valor (R$)</label>
+                        <input type="text" id="crValor" required placeholder="0,00" oninput="mascaraMoeda(this)">
+                    </div>
+                </div>
+                <label>Descrição / Origem da Dívida</label>
+                <input type="text" id="crDescricao" placeholder="Do que se refere este recebível">
+                <button type="submit" class="btn-enviar" style="margin-top:16px;background:#2980b9;box-shadow:none;">💾 REGISTRAR CONTA</button>
+            </div>
+        </form>
+    </div>
+
+    <div id="aba-contas-receber" class="view-section">
+        <h2 style="color:#e67e22;margin:0 0 8px 0;font-size:18px;">Contas a Receber</h2>
+        <p class="texto-explicacao" style="margin-top:0;">Contas <b>pendentes</b>. Use <b>Receber</b> para dar baixa.</p>
+        <div style="display:flex;gap:10px;margin-bottom:12px;flex-wrap:wrap;">
+            <input type="text" id="ent-busca-pendentes" placeholder="Buscar cliente, documento ou descrição..." style="flex:2;min-width:180px;margin:0;" onkeydown="if(event.key==='Enter')renderContasReceber()">
+            <button type="button" onclick="renderContasReceber()" style="flex:1;min-width:120px;background:var(--dark-navy);color:#fff;border:none;border-radius:10px;cursor:pointer;font-weight:bold;">Atualizar</button>
+        </div>
+        <div class="table-responsive-entradas">
+            <table class="tabela-entradas">
+                <thead>
+                    <tr>
+                        <th>Vencimento</th>
+                        <th>Cliente</th>
+                        <th>Documento</th>
+                        <th>Descrição</th>
+                        <th>Total (R$)</th>
+                        <th>Ações</th>
+                    </tr>
+                </thead>
+                <tbody id="tabelaContasReceber">
+                    <tr><td colspan="6" style="text-align:center;color:#888;">Clique em Atualizar para carregar.</td></tr>
+                </tbody>
+            </table>
+        </div>
+        <p style="text-align:right;font-weight:800;color:#b8860b;margin-top:12px;">Total pendente: <span id="ent-total-pendente">R$ 0,00</span></p>
+    </div>
+
+    <div id="aba-recebimentos" class="view-section">
+        <h2 style="color:#27ae60;margin:0 0 8px 0;font-size:18px;">Recebimentos Realizados</h2>
+        <p class="texto-explicacao" style="margin-top:0;">Histórico das contas <b>já recebidas</b>.</p>
+        <div style="display:flex;gap:10px;margin-bottom:12px;flex-wrap:wrap;">
+            <input type="text" id="ent-busca-recebidos" placeholder="Buscar cliente, documento ou descrição..." style="flex:2;min-width:180px;margin:0;" onkeydown="if(event.key==='Enter')renderRecebimentos()">
+            <button type="button" onclick="renderRecebimentos()" style="flex:1;min-width:120px;background:var(--dark-navy);color:#fff;border:none;border-radius:10px;cursor:pointer;font-weight:bold;">Atualizar</button>
+        </div>
+        <div class="table-responsive-entradas">
+            <table class="tabela-entradas">
+                <thead>
+                    <tr>
+                        <th>Data Recebimento</th>
+                        <th>Cliente</th>
+                        <th>Forma de Pagto</th>
+                        <th>Valor Recebido (R$)</th>
+                        <th>Ações</th>
+                    </tr>
+                </thead>
+                <tbody id="tabelaRecebimentos">
+                    <tr><td colspan="5" style="text-align:center;color:#888;">Clique em Atualizar para carregar.</td></tr>
+                </tbody>
+            </table>
+        </div>
+        <p style="text-align:right;font-weight:800;color:#1e8449;margin-top:12px;">Total recebido: <span id="ent-total-recebido">R$ 0,00</span></p>
+    </div>
+
     <div id="aba-despesas-cadastrar" class="view-section">
         <label>Nome da Obra ou Local</label>
         <div class="busca-despesas-wrap busca-cadastro-desp">
@@ -3811,6 +3961,20 @@
         <label>Valor da Fatura (R$)</label>
         <input type="text" id="d-valor" placeholder="0,00" oninput="mascaraMoeda(this)">
         <label>Data de Vencimento</label><input type="date" id="d-vencimento">
+
+        <button type="button" id="btnToggleParcelamento" onclick="toggleParcelamentoDespesa()" style="margin-top:14px;width:100%;padding:12px 14px;border:2px solid #1a2a43;border-radius:10px;background:#eef2f5;color:#1a2a43;font-weight:800;cursor:pointer;font-size:14px;">💳 PARCELAMENTO</button>
+        <p class="texto-explicacao" style="margin:6px 0 0 0;">Use se a nota fiscal for parcelada — abre linhas para informar valor e vencimento de cada parcela.</p>
+
+        <div id="d-parcelamento-box" style="display:none;margin-top:12px;padding:14px;background:#f7f9fb;border:1px solid #d0d7de;border-radius:12px;">
+            <label style="margin:0;">Quantidade de parcelas</label>
+            <div style="display:flex;gap:8px;margin-top:6px;align-items:stretch;">
+                <input type="number" id="d-qtd-parcelas" min="2" max="48" value="2" style="flex:1;margin:0;padding:10px;border:1px solid #ccc;border-radius:8px;">
+                <button type="button" onclick="gerarLinhasParcelasDespesa()" style="flex:1.2;background:#1a2a43;color:#fff;border:none;border-radius:8px;font-weight:700;cursor:pointer;padding:10px;">Gerar linhas</button>
+            </div>
+            <div id="d-parcelas-lista" style="margin-top:12px;"></div>
+            <button type="button" onclick="adicionarLinhaParcelaDespesa()" style="margin-top:8px;width:100%;padding:10px;border:1px dashed #1a2a43;border-radius:8px;background:#fff;color:#1a2a43;font-weight:700;cursor:pointer;">+ Adicionar parcela</button>
+            <p style="margin:10px 0 0 0;text-align:right;font-size:14px;font-weight:700;color:#1a2a43;">Total das parcelas: <span id="d-parcelas-total">R$ 0,00</span></p>
+        </div>
 
         <label>Descrição / Materiais</label>
         <textarea id="d-desc" rows="2" placeholder="Descreva os materiais adquiridos"></textarea>
@@ -4161,6 +4325,11 @@
         Clique na ordem certa. Se errar ou repetir, o sistema bloqueia.<br>
         <b>Não clique várias vezes</b> no mesmo botão. Depois de bater, o botão fica <b>cinza com OK</b> e só libera no dia seguinte.
     </p>
+
+    <div style="text-align:center;margin:16px 0 10px 0;padding:12px 10px;background:#eef2f5;border:2px solid #1a2a43;border-radius:12px;">
+        <div style="font-size:12px;color:#555;font-weight:600;margin-bottom:4px;">Data do registro de ponto</div>
+        <div id="relogio-data-hoje" style="font-size:22px;font-weight:800;color:#1a2a43;letter-spacing:1px;">—</div>
+    </div>
 
     <button type="button" class="btn-entrada btn-ponto-dia" id="btn-ponto-entrada" data-ponto-tipo="Entrada" onclick="baterPonto('Entrada')">🟢 REGISTAR ENTRADA</button>
     <button type="button" class="btn-logout btn-ponto-dia" id="btn-ponto-inicio-intervalo" data-ponto-tipo="Início Intervalo" onclick="baterPonto('Início Intervalo')" style="margin-top: 12px; background: #6c757d; color: white; border: none; box-shadow: none; padding: 16px; border-radius: 12px; font-weight: 700; font-size: 15px;">⏸️ SAIR P/ ALMOÇO (INÍCIO INTERVALO)</button>
@@ -4615,6 +4784,7 @@
         document.title = "PONTO DIGITAL"; 
         document.getElementById('tela-relogio').style.display = 'block';
         document.getElementById('nome-logado').innerText = getSessaoFunc('funcLogadoNome');
+        if (typeof atualizarDataRelogioPonto === 'function') atualizarDataRelogioPonto();
         
         const empFunc = getSessaoFunc('funcLogadoEmpresa');
         if (empFunc) {
@@ -4778,6 +4948,13 @@
         }
         const btnDocumentos = document.getElementById('btn-grupo-documentos');
         if (btnDocumentos) btnDocumentos.setAttribute('aria-expanded', 'false');
+
+        const grupoEntradas = document.getElementById('grupo-menu-entradas');
+        if (grupoEntradas) {
+            grupoEntradas.classList.remove('has-active', 'open');
+        }
+        const btnEntradas = document.getElementById('btn-grupo-entradas');
+        if (btnEntradas) btnEntradas.setAttribute('aria-expanded', 'false');
 
         const tituloEl = document.getElementById('gestor-titulo-aba');
         const empresa = getEmpresaGestor();
@@ -7861,6 +8038,7 @@ window.carregarFiltrosDespesas = async function() {
         limpar('d-desc');
         limpar('d-anexo');
         limpar('d-anexo-base64');
+        limparParcelamentoDespesa();
         const sugObra = document.getElementById('d-obra-sugestoes');
         const sugLoja = document.getElementById('d-loja-sugestoes');
         if (sugObra) sugObra.innerHTML = '';
@@ -7874,6 +8052,194 @@ window.carregarFiltrosDespesas = async function() {
             timer: 1800
         });
     };
+
+    function parcelamentoDespesaAtivo() {
+        const box = document.getElementById('d-parcelamento-box');
+        return Boolean(box && box.style.display !== 'none');
+    }
+
+    function formatarMoedaBrFromNumber(n) {
+        const v = Number(n) || 0;
+        return v.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+    }
+
+    function atualizarTotalParcelasDespesa() {
+        const lista = document.getElementById('d-parcelas-lista');
+        const elTotal = document.getElementById('d-parcelas-total');
+        if (!lista || !elTotal) return;
+        let soma = 0;
+        lista.querySelectorAll('.d-parcela-valor').forEach(function (inp) {
+            soma += parseMoedaLocal(inp.value || '0');
+        });
+        elTotal.textContent = formatarMoedaBrFromNumber(soma);
+    }
+
+    function renumerarLinhasParcelasDespesa() {
+        const lista = document.getElementById('d-parcelas-lista');
+        if (!lista) return;
+        const rows = lista.querySelectorAll('.d-parcela-linha');
+        rows.forEach(function (row, idx) {
+            const lab = row.querySelector('.d-parcela-label');
+            if (lab) lab.textContent = 'Parcela ' + (idx + 1);
+            row.dataset.parcela = String(idx + 1);
+        });
+        const qtd = document.getElementById('d-qtd-parcelas');
+        if (qtd) qtd.value = String(Math.max(rows.length, 2));
+        atualizarTotalParcelasDespesa();
+    }
+
+    function criarLinhaParcelaDespesaHtml(num, valorStr, vencIso) {
+        const wrap = document.createElement('div');
+        wrap.className = 'd-parcela-linha';
+        wrap.dataset.parcela = String(num);
+        wrap.style.cssText = 'display:flex;flex-wrap:wrap;gap:8px;align-items:end;margin-bottom:10px;padding:10px;background:#fff;border:1px solid #e0e6ed;border-radius:10px;';
+        wrap.innerHTML = ''
+            + '<div style="min-width:80px;"><span class="d-parcela-label" style="display:block;font-size:12px;font-weight:800;color:#1a2a43;padding-bottom:8px;">Parcela ' + num + '</span></div>'
+            + '<div style="flex:1;min-width:120px;"><label style="font-size:11px;margin:0;">Valor (R$)</label>'
+            + '<input type="text" class="d-parcela-valor" placeholder="0,00" value="' + String(valorStr || '').replace(/"/g, '&quot;') + '" style="width:100%;margin:4px 0 0 0;padding:8px;border:1px solid #ccc;border-radius:8px;box-sizing:border-box;"></div>'
+            + '<div style="flex:1;min-width:140px;"><label style="font-size:11px;margin:0;">Vencimento</label>'
+            + '<input type="date" class="d-parcela-venc" value="' + String(vencIso || '') + '" style="width:100%;margin:4px 0 0 0;padding:8px;border:1px solid #ccc;border-radius:8px;box-sizing:border-box;"></div>'
+            + '<button type="button" title="Remover parcela" style="height:38px;min-width:40px;margin-bottom:1px;background:#b02a37;color:#fff;border:none;border-radius:8px;font-weight:800;cursor:pointer;">✕</button>';
+
+        const inpValor = wrap.querySelector('.d-parcela-valor');
+        const btnRem = wrap.querySelector('button');
+        if (inpValor) {
+            inpValor.addEventListener('input', function () {
+                mascaraMoeda(inpValor);
+                atualizarTotalParcelasDespesa();
+            });
+        }
+        if (btnRem) {
+            btnRem.addEventListener('click', function () {
+                wrap.remove();
+                renumerarLinhasParcelasDespesa();
+            });
+        }
+        return wrap;
+    }
+
+    window.adicionarLinhaParcelaDespesa = function () {
+        const lista = document.getElementById('d-parcelas-lista');
+        if (!lista) return;
+        const n = lista.querySelectorAll('.d-parcela-linha').length + 1;
+        if (n > 48) {
+            return Swal.fire('Atenção', 'Limite de 48 parcelas.', 'warning');
+        }
+        lista.appendChild(criarLinhaParcelaDespesaHtml(n, '', ''));
+        renumerarLinhasParcelasDespesa();
+    };
+
+    window.gerarLinhasParcelasDespesa = function () {
+        const qtdEl = document.getElementById('d-qtd-parcelas');
+        const lista = document.getElementById('d-parcelas-lista');
+        if (!qtdEl || !lista) return;
+        let qtd = parseInt(qtdEl.value, 10);
+        if (!Number.isFinite(qtd) || qtd < 2) qtd = 2;
+        if (qtd > 48) qtd = 48;
+        qtdEl.value = String(qtd);
+
+        const valorTotalStr = (document.getElementById('d-valor') && document.getElementById('d-valor').value) || '';
+        const totalNum = parseMoedaLocal(valorTotalStr || '0');
+        const vencBase = (document.getElementById('d-vencimento') && document.getElementById('d-vencimento').value) || '';
+
+        lista.innerHTML = '';
+        let somaCentavos = 0;
+        const totalCentavos = Math.round(totalNum * 100);
+        for (let i = 1; i <= qtd; i += 1) {
+            let valorParcela = '';
+            let vencIso = '';
+            if (totalCentavos > 0) {
+                let cents;
+                if (i < qtd) {
+                    cents = Math.floor(totalCentavos / qtd);
+                    somaCentavos += cents;
+                } else {
+                    cents = totalCentavos - somaCentavos;
+                }
+                valorParcela = (cents / 100).toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+            }
+            if (vencBase) {
+                const d = new Date(vencBase + 'T12:00:00');
+                if (!isNaN(d.getTime())) {
+                    d.setMonth(d.getMonth() + (i - 1));
+                    vencIso = d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
+                }
+            }
+            lista.appendChild(criarLinhaParcelaDespesaHtml(i, valorParcela, vencIso));
+        }
+        atualizarTotalParcelasDespesa();
+    };
+
+    window.toggleParcelamentoDespesa = function () {
+        const box = document.getElementById('d-parcelamento-box');
+        const btn = document.getElementById('btnToggleParcelamento');
+        const wrapValor = document.getElementById('d-valor');
+        const wrapVenc = document.getElementById('d-vencimento');
+        if (!box) return;
+        const abrir = box.style.display === 'none' || !box.style.display;
+        if (abrir) {
+            box.style.display = 'block';
+            if (btn) {
+                btn.style.background = '#1a2a43';
+                btn.style.color = '#fff';
+                btn.textContent = '💳 PARCELAMENTO (ativo)';
+            }
+            if (wrapValor) wrapValor.style.opacity = '0.55';
+            if (wrapVenc) wrapVenc.style.opacity = '0.55';
+            const lista = document.getElementById('d-parcelas-lista');
+            if (lista && !lista.querySelector('.d-parcela-linha')) {
+                gerarLinhasParcelasDespesa();
+            }
+        } else {
+            box.style.display = 'none';
+            if (btn) {
+                btn.style.background = '#eef2f5';
+                btn.style.color = '#1a2a43';
+                btn.textContent = '💳 PARCELAMENTO';
+            }
+            if (wrapValor) wrapValor.style.opacity = '1';
+            if (wrapVenc) wrapVenc.style.opacity = '1';
+        }
+    };
+
+    function limparParcelamentoDespesa() {
+        const box = document.getElementById('d-parcelamento-box');
+        const btn = document.getElementById('btnToggleParcelamento');
+        const lista = document.getElementById('d-parcelas-lista');
+        const qtd = document.getElementById('d-qtd-parcelas');
+        const elTotal = document.getElementById('d-parcelas-total');
+        const wrapValor = document.getElementById('d-valor');
+        const wrapVenc = document.getElementById('d-vencimento');
+        if (box) box.style.display = 'none';
+        if (lista) lista.innerHTML = '';
+        if (qtd) qtd.value = '2';
+        if (elTotal) elTotal.textContent = 'R$ 0,00';
+        if (btn) {
+            btn.style.background = '#eef2f5';
+            btn.style.color = '#1a2a43';
+            btn.textContent = '💳 PARCELAMENTO';
+        }
+        if (wrapValor) wrapValor.style.opacity = '1';
+        if (wrapVenc) wrapVenc.style.opacity = '1';
+    }
+
+    function coletarParcelasDespesaForm() {
+        const lista = document.getElementById('d-parcelas-lista');
+        if (!lista) return [];
+        const out = [];
+        lista.querySelectorAll('.d-parcela-linha').forEach(function (row, idx) {
+            const valorStr = (row.querySelector('.d-parcela-valor') && row.querySelector('.d-parcela-valor').value) || '';
+            const venc = (row.querySelector('.d-parcela-venc') && row.querySelector('.d-parcela-venc').value) || '';
+            const valorNum = parseMoedaLocal(valorStr || '0');
+            out.push({
+                numero: idx + 1,
+                valor_string: valorStr,
+                valor_numero: valorNum,
+                data_vencimento: venc
+            });
+        });
+        return out;
+    }
 
   window.salvarDespesaObra = async function() {
         const empresaLogada = getEmpresaGestor();
@@ -7890,8 +8256,23 @@ window.carregarFiltrosDespesas = async function() {
         const valor = document.getElementById('d-valor').value;
         const desc = document.getElementById('d-desc').value;
         const fotoBase64 = document.getElementById('d-anexo-base64').value;
-        
-        if (!obra || !loja || !valor) return Swal.fire('Atenção', 'Preencha a Obra, Loja e o Valor!', 'warning');
+        const ehParcelado = parcelamentoDespesaAtivo();
+        const parcelas = ehParcelado ? coletarParcelasDespesaForm() : [];
+
+        if (!obra || !loja) {
+            return Swal.fire('Atenção', 'Preencha a Obra e a Loja!', 'warning');
+        }
+        if (ehParcelado) {
+            if (!parcelas.length) {
+                return Swal.fire('Atenção', 'Gere as linhas do parcelamento e informe os valores.', 'warning');
+            }
+            const invalidas = parcelas.filter(function (p) { return !(p.valor_numero > 0); });
+            if (invalidas.length) {
+                return Swal.fire('Atenção', 'Informe o valor de todas as parcelas.', 'warning');
+            }
+        } else if (!valor) {
+            return Swal.fire('Atenção', 'Preencha a Obra, Loja e o Valor!', 'warning');
+        }
         
         const btn = document.getElementById('btnConfirmarDespesa') || document.getElementById('btnSalvarDespesa');
         const btnCancel = document.getElementById('btnCancelarDespesa');
@@ -7903,18 +8284,49 @@ window.carregarFiltrosDespesas = async function() {
         const dataAtual = `${String(dataObj.getDate()).padStart(2, '0')}/${String(dataObj.getMonth() + 1).padStart(2, '0')}/${dataObj.getFullYear()}`;
         
         try {
-            await addDoc(collection(db, "despesas_obras"), { 
-                empresa_id: empresaLogada, 
-                obra_nome: obra, obra_lower: normalizarChaveNomeDespesa(obra), 
-                loja_nome: loja, loja_lower: normalizarChaveNomeDespesa(loja), 
-                nota_fiscal: nf,
-                data_vencimento: vencimento,
-                data_vencimento_ts: parseDataVencimentoParaTimestamp(vencimento),
-                valor_string: valor, valor_numero: parseMoedaLocal(valor), 
-                descricao: desc, foto_recibo: fotoBase64, 
-                data: dataAtual, timestamp: dataObj.getTime(), status: "pendente" 
-            });
-            Swal.fire('Sucesso!', 'Despesa cadastrada.', 'success'); 
+            if (ehParcelado) {
+                const totalParcelas = parcelas.length;
+                const grupoId = 'parc_' + dataObj.getTime() + '_' + Math.random().toString(36).slice(2, 8);
+                for (let i = 0; i < parcelas.length; i += 1) {
+                    const p = parcelas[i];
+                    const descParc = (desc ? String(desc).trim() + ' — ' : '') + 'Parcela ' + p.numero + '/' + totalParcelas;
+                    await addDoc(collection(db, "despesas_obras"), {
+                        empresa_id: empresaLogada,
+                        obra_nome: obra,
+                        obra_lower: normalizarChaveNomeDespesa(obra),
+                        loja_nome: loja,
+                        loja_lower: normalizarChaveNomeDespesa(loja),
+                        nota_fiscal: nf,
+                        data_vencimento: p.data_vencimento || '',
+                        data_vencimento_ts: parseDataVencimentoParaTimestamp(p.data_vencimento || ''),
+                        valor_string: p.valor_string,
+                        valor_numero: p.valor_numero,
+                        descricao: descParc,
+                        foto_recibo: fotoBase64,
+                        data: dataAtual,
+                        timestamp: dataObj.getTime() + i,
+                        status: 'pendente',
+                        parcelado: true,
+                        parcela_numero: p.numero,
+                        parcela_total: totalParcelas,
+                        parcelamento_id: grupoId
+                    });
+                }
+                Swal.fire('Sucesso!', totalParcelas + ' parcelas cadastradas.', 'success');
+            } else {
+                await addDoc(collection(db, "despesas_obras"), { 
+                    empresa_id: empresaLogada, 
+                    obra_nome: obra, obra_lower: normalizarChaveNomeDespesa(obra), 
+                    loja_nome: loja, loja_lower: normalizarChaveNomeDespesa(loja), 
+                    nota_fiscal: nf,
+                    data_vencimento: vencimento,
+                    data_vencimento_ts: parseDataVencimentoParaTimestamp(vencimento),
+                    valor_string: valor, valor_numero: parseMoedaLocal(valor), 
+                    descricao: desc, foto_recibo: fotoBase64, 
+                    data: dataAtual, timestamp: dataObj.getTime(), status: "pendente" 
+                });
+                Swal.fire('Sucesso!', 'Despesa cadastrada.', 'success');
+            }
             document.getElementById('d-obra').value = ''; 
             document.getElementById('d-loja').value = ''; 
             if(document.getElementById('d-nf')) document.getElementById('d-nf').value = '';
@@ -7922,13 +8334,427 @@ window.carregarFiltrosDespesas = async function() {
             document.getElementById('d-valor').value = ''; 
             document.getElementById('d-desc').value = ''; 
             document.getElementById('d-anexo').value = ''; 
-            document.getElementById('d-anexo-base64').value = ''; 
+            document.getElementById('d-anexo-base64').value = '';
+            limparParcelamentoDespesa();
             carregarFiltrosDespesas();
         } catch (e) { 
+            console.error(e);
             Swal.fire('Falha Técnica', 'Não foi possível salvar.', 'error'); 
         } finally { 
             if (btn) { btn.innerText = txtOriginal || 'CONFIRMAR'; btn.disabled = false; }
             if (btnCancel) btnCancel.disabled = false;
+        }
+    };
+
+    const COLECAO_CONTAS_RECEBER = 'contas_receber';
+
+    function formatarMoedaEntrada(n) {
+        return (Number(n) || 0).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+    }
+
+    function formatarDataBrEntrada(isoOuBr) {
+        const s = String(isoOuBr || '').trim();
+        if (!s) return '—';
+        if (/^\d{4}-\d{2}-\d{2}/.test(s)) {
+            const [y, m, d] = s.slice(0, 10).split('-');
+            return d + '/' + m + '/' + y;
+        }
+        return s;
+    }
+
+    function statusContaReceberNorm(c) {
+        return String(c && (c.statusPagamento || c.status) || 'PENDENTE').toUpperCase();
+    }
+
+    function saldoDevedorConta(c) {
+        if (c.saldoDevedor != null && Number.isFinite(Number(c.saldoDevedor))) return Number(c.saldoDevedor);
+        if (c.saldo_devedor != null && Number.isFinite(Number(c.saldo_devedor))) return Number(c.saldo_devedor);
+        const st = statusContaReceberNorm(c);
+        if (st === 'PAGO' || st === 'PAGA') return 0;
+        return Number(c.total != null ? c.total : c.valor_numero) || 0;
+    }
+
+    function totalContaReceber(c) {
+        return Number(c.total != null ? c.total : c.valor_numero) || 0;
+    }
+
+    function valorRecebidoConta(c) {
+        if (c.valorRecebidoParcial != null) return Number(c.valorRecebidoParcial) || 0;
+        if (c.valor_recebido_parcial != null) return Number(c.valor_recebido_parcial) || 0;
+        const st = statusContaReceberNorm(c);
+        if (st === 'PAGO' || st === 'PAGA') return totalContaReceber(c);
+        return Math.max(0, totalContaReceber(c) - saldoDevedorConta(c));
+    }
+
+    function listaRecebimentosParciaisConta(c) {
+        const h = c.recebimentosParciais || c.recebimentos_parciais;
+        if (!h) return [];
+        return Array.isArray(h) ? h : Object.values(h);
+    }
+
+    function nomeClienteConta(c) {
+        return c.clienteNome || c.cliente || '—';
+    }
+
+    function docContaReceber(c) {
+        return c.os || c.documento || '';
+    }
+
+    function descContaReceber(c) {
+        return c.observacao || c.descricao || '';
+    }
+
+    window.limparFormContaReceberEntrada = function () {
+        const form = document.getElementById('formContaReceber');
+        if (form) form.reset();
+        ['crCliente', 'crDocumento', 'crVencimento', 'crValor', 'crDescricao'].forEach(function (id) {
+            const el = document.getElementById(id);
+            if (el) el.value = '';
+        });
+    };
+
+    // 1. SALVAR NOVA CONTA A RECEBER (PENDENTE) — Firestore Gestor 360
+    window.salvarContaReceber = async function () {
+        const empresaLogada = getEmpresaGestor();
+        if (!empresaLogada) return Swal.fire('Atenção', 'Empresa não definida.', 'warning');
+
+        const cliente = (document.getElementById('crCliente') && document.getElementById('crCliente').value || '').trim();
+        const docNum = (document.getElementById('crDocumento') && document.getElementById('crDocumento').value || '').trim();
+        const vencimento = (document.getElementById('crVencimento') && document.getElementById('crVencimento').value || '').trim();
+        const valorStr = (document.getElementById('crValor') && document.getElementById('crValor').value || '').trim();
+        const desc = (document.getElementById('crDescricao') && document.getElementById('crDescricao').value || '').trim();
+        const valor = parseMoedaLocal(valorStr || '0');
+
+        if (!cliente || !vencimento || !(valor > 0)) {
+            return Swal.fire('Atenção', 'Informe cliente, vencimento e valor.', 'warning');
+        }
+
+        const agora = Date.now();
+        const payload = {
+            empresa_id: empresaLogada,
+            tipo: 'CONTA_RECEBER',
+            statusPagamento: 'PENDENTE',
+            status: 'PENDENTE',
+            clienteNome: cliente,
+            cliente: cliente,
+            cliente_lower: cliente.toLowerCase(),
+            os: docNum,
+            documento: docNum,
+            vencimento: vencimento,
+            data_vencimento: vencimento,
+            data_vencimento_ts: parseDataVencimentoParaTimestamp(vencimento),
+            total: valor,
+            valor_numero: valor,
+            valor_string: valorStr,
+            saldoDevedor: valor,
+            saldo_devedor: valor,
+            observacao: desc,
+            descricao: desc,
+            valorRecebidoParcial: 0,
+            valor_recebido_parcial: 0,
+            recebimentosParciais: [],
+            dataStr: new Date(agora).toLocaleString('pt-BR'),
+            data_cadastro: new Date(agora).toLocaleDateString('pt-BR'),
+            timestamp: agora,
+            criado_em: serverTimestamp()
+        };
+
+        try {
+            await addDoc(collection(db, COLECAO_CONTAS_RECEBER), payload);
+            limparFormContaReceberEntrada();
+            Swal.fire('Sucesso!', 'Conta registrada em Contas a Receber.', 'success');
+        } catch (e) {
+            console.error(e);
+            Swal.fire('Erro', 'Não foi possível registrar: ' + (e.message || 'falha'), 'error');
+        }
+    };
+    window.salvarContaReceberEntrada = window.salvarContaReceber;
+
+    async function carregarContasReceberEmpresa() {
+        const empresaLogada = getEmpresaGestor();
+        if (!empresaLogada) return [];
+        const q = query(collection(db, COLECAO_CONTAS_RECEBER), where('empresa_id', '==', empresaLogada));
+        const snap = await getDocs(q);
+        const lista = [];
+        snap.forEach(function (d) {
+            lista.push(Object.assign({ id: d.id }, d.data() || {}));
+        });
+        lista.sort(function (a, b) {
+            const ta = a.data_vencimento_ts != null ? Number(a.data_vencimento_ts) : (a.timestamp || 0);
+            const tb = b.data_vencimento_ts != null ? Number(b.data_vencimento_ts) : (b.timestamp || 0);
+            return ta - tb;
+        });
+        return lista;
+    }
+
+    // 2. RENDERIZAR CONTAS A RECEBER (PENDENTE)
+    window.renderContasReceber = async function () {
+        const tbody = document.getElementById('tabelaContasReceber');
+        const elTotal = document.getElementById('ent-total-pendente');
+        if (!tbody) return;
+        tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;color:#888;">Carregando...</td></tr>';
+        try {
+            const busca = ((document.getElementById('ent-busca-pendentes') && document.getElementById('ent-busca-pendentes').value) || '').trim().toLowerCase();
+            const pendentes = (await carregarContasReceberEmpresa()).filter(function (v) {
+                const st = statusContaReceberNorm(v);
+                const saldo = saldoDevedorConta(v);
+                return (st === 'PENDENTE' || st === 'pendente'.toUpperCase()) && saldo > 0.009;
+            }).filter(function (c) {
+                if (!busca) return true;
+                const txt = [nomeClienteConta(c), docContaReceber(c), descContaReceber(c)].join(' ').toLowerCase();
+                return txt.indexOf(busca) !== -1;
+            });
+
+            let soma = 0;
+            if (!pendentes.length) {
+                tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;color:#888;">Nenhuma conta a receber.</td></tr>';
+            } else {
+                let html = '';
+                pendentes.forEach(function (c) {
+                    const saldo = saldoDevedorConta(c);
+                    soma += saldo;
+                    const vencForm = formatarDataBrEntrada(c.vencimento || c.data_vencimento);
+                    html += '<tr>'
+                        + '<td style="font-weight:bold;color:#e74c3c;">' + escapeHtmlBasico(vencForm) + '</td>'
+                        + '<td><b>' + escapeHtmlBasico(nomeClienteConta(c)) + '</b></td>'
+                        + '<td>' + escapeHtmlBasico(docContaReceber(c) || '—') + '</td>'
+                        + '<td>' + escapeHtmlBasico(descContaReceber(c) || '—') + '</td>'
+                        + '<td style="font-weight:bold;white-space:nowrap;">' + formatarMoedaEntrada(saldo) + '</td>'
+                        + '<td class="celula-acoes" style="white-space:nowrap;">'
+                        + '<button type="button" class="btn-acao receber" style="background:#27ae60;color:#fff;border:none;padding:6px 10px;border-radius:6px;font-weight:700;cursor:pointer;margin-right:4px;" onclick="receberContaCaixa(\'' + escapeAttrBasico(c.id) + '\')">💰 Receber</button>'
+                        + '<button type="button" class="btn-excluir" style="padding:6px 8px;" onclick="excluirContaEntrada(\'' + escapeAttrBasico(c.id) + '\')">🗑️</button>'
+                        + '</td></tr>';
+                });
+                tbody.innerHTML = html;
+            }
+            if (elTotal) elTotal.textContent = formatarMoedaEntrada(soma);
+        } catch (e) {
+            console.error(e);
+            tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;color:#d9534f;">Erro ao carregar contas.</td></tr>';
+        }
+    };
+
+    // 3. PROCESSAR RECEBIMENTO (parcial ou total)
+    window.receberContaCaixa = async function (id) {
+        if (!id) return;
+        let conta = null;
+        try {
+            const lista = await carregarContasReceberEmpresa();
+            conta = lista.find(function (x) { return String(x.id) === String(id); });
+        } catch (e) {
+            console.error(e);
+        }
+        if (!conta) return Swal.fire('Atenção', 'Conta não encontrada.', 'warning');
+
+        const saldoAtual = saldoDevedorConta(conta);
+        const conf = await Swal.fire({
+            title: 'Receber conta',
+            html: '<p style="text-align:left;font-size:13px;margin:0 0 8px 0;">Cliente: <b>' + escapeHtmlBasico(nomeClienteConta(conta)) + '</b><br>Saldo: <b>' + formatarMoedaEntrada(saldoAtual) + '</b></p>'
+                + '<label style="display:block;text-align:left;font-size:12px;margin-bottom:4px;">Valor a receber (R$)</label>'
+                + '<input id="cr-valor-receber" class="swal2-input" style="width:100%;margin:0 0 10px 0;" value="' + String(saldoAtual.toFixed(2)).replace('.', ',') + '">'
+                + '<label style="display:block;text-align:left;font-size:12px;margin-bottom:4px;">Forma de pagamento</label>'
+                + '<select id="cr-forma-pagto" class="swal2-input" style="width:100%;margin:0;height:42px;">'
+                + '<option value="PIX">PIX</option>'
+                + '<option value="Dinheiro">Dinheiro</option>'
+                + '<option value="Transferência">Transferência</option>'
+                + '<option value="Cartão">Cartão</option>'
+                + '<option value="Boleto">Boleto</option>'
+                + '<option value="Cheque">Cheque</option>'
+                + '<option value="Outro">Outro</option>'
+                + '</select>',
+            showCancelButton: true,
+            confirmButtonText: 'Confirmar recebimento',
+            cancelButtonText: 'Cancelar',
+            confirmButtonColor: '#27ae60',
+            didOpen: function () {
+                const inp = document.getElementById('cr-valor-receber');
+                if (inp && typeof mascaraMoeda === 'function') {
+                    inp.addEventListener('input', function () { mascaraMoeda(inp); });
+                }
+            },
+            preConfirm: function () {
+                const inp = document.getElementById('cr-valor-receber');
+                const sel = document.getElementById('cr-forma-pagto');
+                const valorRecebido = parseMoedaLocal((inp && inp.value) || '0');
+                if (!(valorRecebido > 0)) {
+                    Swal.showValidationMessage('Informe um valor maior que zero.');
+                    return false;
+                }
+                if (valorRecebido > saldoAtual + 0.009) {
+                    Swal.showValidationMessage('Valor maior que o saldo devedor.');
+                    return false;
+                }
+                return {
+                    valorRecebido: valorRecebido,
+                    formaPgto: (sel && sel.value) || 'PIX'
+                };
+            }
+        });
+        if (!conf.isConfirmed || !conf.value) return;
+
+        const valorRecebido = conf.value.valorRecebido;
+        const formaPgto = conf.value.formaPgto;
+        const saldoRestante = Math.max(0, saldoAtual - valorRecebido);
+        const novoStatus = saldoRestante <= 0.009 ? 'PAGO' : 'PENDENTE';
+        const agora = Date.now();
+        const dataStr = new Date(agora).toLocaleString('pt-BR');
+        const historico = listaRecebimentosParciaisConta(conta).slice();
+        historico.push({
+            valor: valorRecebido,
+            formaPagamento: formaPgto,
+            dataStr: dataStr,
+            timestamp: agora
+        });
+        const valorRecebidoParcial = valorRecebidoConta(conta) + valorRecebido;
+
+        try {
+            await updateDoc(doc(db, COLECAO_CONTAS_RECEBER, id), {
+                statusPagamento: novoStatus,
+                status: novoStatus,
+                saldoDevedor: saldoRestante,
+                saldo_devedor: saldoRestante,
+                formaPagamento: formaPgto,
+                forma_pagamento: formaPgto,
+                recebimentosParciais: historico,
+                recebimentos_parciais: historico,
+                valorRecebidoParcial: valorRecebidoParcial,
+                valor_recebido_parcial: valorRecebidoParcial,
+                dataRecebimentoStr: dataStr,
+                data_pagamento: dataStr,
+                timestampRecebimento: agora,
+                timestamp_pagamento: agora
+            });
+            Swal.fire('Sucesso!', novoStatus === 'PAGO'
+                ? 'Conta quitada e movida para Recebimentos.'
+                : 'Recebimento parcial registrado. Saldo restante: ' + formatarMoedaEntrada(saldoRestante), 'success');
+            renderContasReceber();
+            if (novoStatus === 'PAGO' && typeof renderRecebimentos === 'function') {
+                /* lista de pagos atualiza ao abrir a aba */
+            }
+        } catch (e) {
+            console.error(e);
+            Swal.fire('Erro', 'Falha ao processar recebimento: ' + (e.message || ''), 'error');
+        }
+    };
+    window.receberContaEntrada = window.receberContaCaixa;
+
+    // 4. RENDERIZAR RECEBIMENTOS (PAGO ou com parcial)
+    window.renderRecebimentos = async function () {
+        const tbody = document.getElementById('tabelaRecebimentos');
+        const elTotal = document.getElementById('ent-total-recebido');
+        if (!tbody) return;
+        tbody.innerHTML = '<tr><td colspan="5" style="text-align:center;color:#888;">Carregando...</td></tr>';
+        try {
+            const busca = ((document.getElementById('ent-busca-recebidos') && document.getElementById('ent-busca-recebidos').value) || '').trim().toLowerCase();
+            const recebidos = (await carregarContasReceberEmpresa()).filter(function (v) {
+                const st = statusContaReceberNorm(v);
+                const rec = valorRecebidoConta(v);
+                return st === 'PAGO' || st === 'PAGA' || rec > 0.009;
+            }).filter(function (c) {
+                if (!busca) return true;
+                const txt = [nomeClienteConta(c), docContaReceber(c), descContaReceber(c), c.formaPagamento || c.forma_pagamento].join(' ').toLowerCase();
+                return txt.indexOf(busca) !== -1;
+            }).sort(function (a, b) {
+                return (Number(b.timestampRecebimento || b.timestamp_pagamento) || 0) - (Number(a.timestampRecebimento || a.timestamp_pagamento) || 0);
+            });
+
+            let soma = 0;
+            if (!recebidos.length) {
+                tbody.innerHTML = '<tr><td colspan="5" style="text-align:center;color:#888;">Nenhum recebimento efetuado.</td></tr>';
+            } else {
+                let html = '';
+                recebidos.forEach(function (c) {
+                    const valorRec = valorRecebidoConta(c);
+                    soma += valorRec;
+                    const formaStr = c.formaPagamento || c.forma_pagamento || '—';
+                    const dataRecRaw = c.dataRecebimentoStr || c.data_pagamento || '';
+                    const dataRec = dataRecRaw ? String(dataRecRaw).split(/\s+/)[0].replace(',', '') : '—';
+                    html += '<tr>'
+                        + '<td style="font-weight:bold;color:#2980b9;">' + escapeHtmlBasico(dataRec) + '</td>'
+                        + '<td><b>' + escapeHtmlBasico(nomeClienteConta(c)) + '</b></td>'
+                        + '<td>' + escapeHtmlBasico(formaStr) + '</td>'
+                        + '<td style="font-weight:bold;color:#27ae60;white-space:nowrap;">' + formatarMoedaEntrada(valorRec) + '</td>'
+                        + '<td class="celula-acoes"><button type="button" class="btn-acao" style="background:#e74c3c;color:#fff;border:none;padding:6px 10px;border-radius:6px;font-weight:700;cursor:pointer;" onclick="estornarPagamento(\'' + escapeAttrBasico(c.id) + '\')" title="Desfazer">🔄 Estornar</button></td>'
+                        + '</tr>';
+                });
+                tbody.innerHTML = html;
+            }
+            if (elTotal) elTotal.textContent = formatarMoedaEntrada(soma);
+        } catch (e) {
+            console.error(e);
+            tbody.innerHTML = '<tr><td colspan="5" style="text-align:center;color:#d9534f;">Erro ao carregar recebimentos.</td></tr>';
+        }
+    };
+
+    window.estornarPagamento = async function (id) {
+        if (!id) return;
+        let conta = null;
+        try {
+            const lista = await carregarContasReceberEmpresa();
+            conta = lista.find(function (x) { return String(x.id) === String(id); });
+        } catch (e) {
+            console.error(e);
+        }
+        if (!conta) return Swal.fire('Atenção', 'Conta não encontrada.', 'warning');
+
+        const conf = await Swal.fire({
+            title: 'Estornar recebimento?',
+            html: 'A conta de <b>' + escapeHtmlBasico(nomeClienteConta(conta)) + '</b> volta para Contas a Receber com o valor integral.',
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonText: 'Sim, estornar',
+            cancelButtonText: 'Cancelar',
+            confirmButtonColor: '#c0392b'
+        });
+        if (!conf.isConfirmed) return;
+
+        const total = totalContaReceber(conta);
+        try {
+            await updateDoc(doc(db, COLECAO_CONTAS_RECEBER, id), {
+                statusPagamento: 'PENDENTE',
+                status: 'PENDENTE',
+                saldoDevedor: total,
+                saldo_devedor: total,
+                formaPagamento: null,
+                forma_pagamento: null,
+                recebimentosParciais: [],
+                recebimentos_parciais: [],
+                valorRecebidoParcial: 0,
+                valor_recebido_parcial: 0,
+                dataRecebimentoStr: null,
+                data_pagamento: null,
+                timestampRecebimento: null,
+                timestamp_pagamento: null
+            });
+            Swal.fire({ toast: true, position: 'top-end', icon: 'success', title: 'Recebimento estornado', showConfirmButton: false, timer: 2000 });
+            renderRecebimentos();
+            if (typeof renderContasReceber === 'function') renderContasReceber();
+        } catch (e) {
+            console.error(e);
+            Swal.fire('Erro', 'Não foi possível estornar.', 'error');
+        }
+    };
+    window.estornarContaEntrada = window.estornarPagamento;
+
+    window.excluirContaEntrada = async function (id) {
+        if (!id) return;
+        const conf = await Swal.fire({
+            title: 'Excluir conta?',
+            text: 'Esta ação não pode ser desfeita.',
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonText: 'Excluir',
+            cancelButtonText: 'Cancelar',
+            confirmButtonColor: '#c0392b'
+        });
+        if (!conf.isConfirmed) return;
+        try {
+            await deleteDoc(doc(db, COLECAO_CONTAS_RECEBER, id));
+            Swal.fire({ toast: true, position: 'top-end', icon: 'success', title: 'Conta excluída', showConfirmButton: false, timer: 2000 });
+            renderContasReceber();
+        } catch (e) {
+            console.error(e);
+            Swal.fire('Erro', 'Não foi possível excluir.', 'error');
         }
     };
 
@@ -11662,6 +12488,7 @@ window.exportarPDF = function(tipo) {
 
     const ABAS_GRUPO_EQUIPE = ['cadastrar', 'equipe-cadastrada', 'criar', 'buscar', 'ponto', 'ajuda-custo', 'descontos-folha', 'folha', 'holerites', 'pedidos'];
     const ABAS_GRUPO_OBRAS = ['despesas-cadastrar', 'despesas-relatorio', 'relatorio-despesas', 'obras-relatorio-geral', 'notas-fiscais-geral', 'terceiros'];
+    const ABAS_GRUPO_ENTRADAS = ['cadastrar-conta', 'contas-receber', 'recebimentos'];
     const ABAS_GRUPO_DOCUMENTOS = ['documentos-fh', 'documentos-hallana', 'documentos-felipe', 'documentos-wellington'];
 
     window.abrirGrupoMenuObras = function () {
@@ -11690,6 +12517,22 @@ window.exportarPDF = function(tipo) {
     window.toggleGrupoMenuEquipe = function () {
         const grupo = document.getElementById('grupo-menu-equipe');
         const titulo = document.getElementById('btn-grupo-equipe');
+        if (!grupo) return;
+        grupo.classList.toggle('open');
+        const aberto = grupo.classList.contains('open');
+        if (titulo) titulo.setAttribute('aria-expanded', aberto ? 'true' : 'false');
+    };
+
+    window.abrirGrupoMenuEntradas = function () {
+        const grupo = document.getElementById('grupo-menu-entradas');
+        const titulo = document.getElementById('btn-grupo-entradas');
+        if (grupo) grupo.classList.add('open');
+        if (titulo) titulo.setAttribute('aria-expanded', 'true');
+    };
+
+    window.toggleGrupoMenuEntradas = function () {
+        const grupo = document.getElementById('grupo-menu-entradas');
+        const titulo = document.getElementById('btn-grupo-entradas');
         if (!grupo) return;
         grupo.classList.toggle('open');
         const aberto = grupo.classList.contains('open');
@@ -11747,6 +12590,16 @@ window.exportarPDF = function(tipo) {
                 abrirGrupoMenuDocumentos();
             } else {
                 grupoDocumentos.classList.remove('has-active');
+            }
+        }
+
+        const grupoEntradas = document.getElementById('grupo-menu-entradas');
+        if (grupoEntradas) {
+            if (ABAS_GRUPO_ENTRADAS.includes(aba)) {
+                grupoEntradas.classList.add('has-active');
+                abrirGrupoMenuEntradas();
+            } else {
+                grupoEntradas.classList.remove('has-active');
             }
         }
 
@@ -11811,6 +12664,12 @@ window.exportarPDF = function(tipo) {
         if (aba === 'descontos-folha') {
             initDescontosFolhaDatasPadrao();
             carregarDescontosFolhaLista();
+        }
+        if (aba === 'contas-receber' && typeof window.renderContasReceber === 'function') {
+            window.renderContasReceber();
+        }
+        if (aba === 'recebimentos' && typeof window.renderRecebimentos === 'function') {
+            window.renderRecebimentos();
         }
         if (ABAS_GRUPO_DOCUMENTOS.includes(aba)) {
             const pasta = aba.replace('documentos-', '');
@@ -13462,6 +14321,12 @@ window.gerarFolhaPagamento = async function() {
         return String(d.getDate()).padStart(2, '0') + '/' + String(d.getMonth() + 1).padStart(2, '0') + '/' + d.getFullYear();
     }
 
+    function atualizarDataRelogioPonto() {
+        const el = document.getElementById('relogio-data-hoje');
+        if (!el) return;
+        el.textContent = obterDataHojeBrPonto();
+    }
+
     function estadoPontoVazio() {
         return { lastTipo: null, emIntervalo: false, encerrado: false };
     }
@@ -13535,6 +14400,7 @@ window.gerarFolhaPagamento = async function() {
     window.atualizarUiBotoesPontoDia = async function (forcarNuvem) {
         const tela = document.getElementById('tela-relogio');
         if (!tela || tela.style.display === 'none') return;
+        atualizarDataRelogioPonto();
         const funcId = getSessaoFunc('funcLogadoId');
         if (!funcId) return;
 
