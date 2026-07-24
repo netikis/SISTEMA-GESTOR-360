@@ -3998,6 +3998,7 @@
                 <div id="busca-obra-sugestoes" role="listbox" aria-label="Sugestões de busca"></div>
             </div>
             <button onclick="buscarDespesasObra()" style="flex: 1; background: var(--dark-navy); color: white; border: none; border-radius: 10px; cursor: pointer; font-weight:bold;">Buscar</button>
+            <button type="button" onclick="abrirUnificarObrasDespesas()" title="Mover despesas de uma obra para outra" style="flex: 0 0 auto; background: #856404; color: #fff; border: none; border-radius: 10px; cursor: pointer; font-weight:bold; padding: 0 14px;">Unificar obras</button>
         </div>
 
         <div id="tags-filtros-despesas" class="painel-cadastros-desp">
@@ -7568,6 +7569,7 @@ function separarDataSegura(dataString) {
             + '<div class="painel-cadastros-desp-header">'
             + '<input type="text" id="filtro-lista-cadastros-desp" placeholder="Filtrar obras ou fornecedores..." autocomplete="off" oninput="filtrarListaCadastrosDespesas()">'
             + '</div>'
+            + '<div id="aviso-unificar-obras-desp" style="display:none;"></div>'
             + '<div class="desp-baloes-secao">'
             + '<p class="desp-baloes-titulo">Obras: <span id="contagem-obras-desp" class="desp-cadastro-contagem">0</span></p>'
             + '<div id="lista-cadastros-obras-desp" class="desp-baloes-lista"></div>'
@@ -7576,7 +7578,60 @@ function separarDataSegura(dataString) {
             + '<p class="desp-baloes-titulo">Fornecedores com pendências em <span id="nome-obra-selecionada-desp"></span>: <span id="contagem-lojas-desp" class="desp-cadastro-contagem">0</span></p>'
             + '<div id="lista-cadastros-lojas-desp" class="desp-baloes-lista"></div>'
             + '</div>'
-            + '<p class="texto-explicacao" style="margin:0;padding:8px 12px;font-size:11px;">Clique na etiqueta para buscar. Use <b>×</b> para excluir o cadastro e todas as despesas daquele nome (confirme digitando <b>APAGAR</b>).</p>';
+            + '<p class="texto-explicacao" style="margin:0;padding:8px 12px;font-size:11px;">Clique na etiqueta para buscar. Use <b>×</b> para excluir o cadastro e todas as despesas daquele nome (confirme digitando <b>APAGAR</b>). Use <b>Unificar obras</b> para juntar duas obras iguais.</p>';
+    }
+
+    const PARES_OBRAS_DUPLICADAS = [
+        { origem: 'CMEI RODOVIARIA', destino: 'CRECHE VIDA NOVA' },
+        { origem: 'CMI RODOVIARIA', destino: 'CRECHE VIDA NOVA' },
+        { origem: 'CMEI RODOVIÁRIA', destino: 'CRECHE VIDA NOVA' }
+    ];
+
+    function encontrarParObraDuplicada(obras) {
+        const chaves = new Set((obras || []).map((o) => normalizarChaveNomeDespesa(o)));
+        for (const par of PARES_OBRAS_DUPLICADAS) {
+            const chO = normalizarChaveNomeDespesa(par.origem);
+            const chD = normalizarChaveNomeDespesa(par.destino);
+            if (chaves.has(chO) && chaves.has(chD)) {
+                const origemReal = (obras || []).find((o) => normalizarChaveNomeDespesa(o) === chO) || par.origem;
+                const destinoReal = (obras || []).find((o) => normalizarChaveNomeDespesa(o) === chD) || par.destino;
+                return { origem: origemReal, destino: destinoReal };
+            }
+        }
+        return null;
+    }
+
+    function atualizarAvisoUnificarObrasDuplicadas(obras) {
+        const box = document.getElementById('aviso-unificar-obras-desp');
+        if (!box) return;
+        const par = encontrarParObraDuplicada(obras);
+        if (!par) {
+            box.style.display = 'none';
+            box.innerHTML = '';
+            return;
+        }
+        box.style.display = 'block';
+        box.innerHTML = ''
+            + '<div style="margin:8px 12px 12px;padding:12px 14px;background:#fff3cd;border:2px solid #856404;border-radius:10px;text-align:left;">'
+            + '<p style="margin:0 0 10px 0;font-size:13px;color:#856404;line-height:1.4;">'
+            + '<b>' + escapeHtmlBasico(par.origem) + '</b> e <b>' + escapeHtmlBasico(par.destino) + '</b> ainda aparecem separadas. '
+            + 'São a mesma obra — clique abaixo para juntar tudo em <b>' + escapeHtmlBasico(par.destino) + '</b>.'
+            + '</p>'
+            + '<button type="button" id="btn-juntar-obras-duplicadas" data-origem="' + escapeHtmlBasico(par.origem) + '" data-destino="' + escapeHtmlBasico(par.destino) + '"'
+            + ' style="background:#856404;color:#fff;border:none;border-radius:8px;padding:10px 16px;font-weight:bold;cursor:pointer;font-size:13px;">'
+            + 'Juntar tudo em ' + escapeHtmlBasico(par.destino)
+            + '</button>'
+            + '</div>';
+        const btn = document.getElementById('btn-juntar-obras-duplicadas');
+        if (btn) {
+            btn.addEventListener('click', function (ev) {
+                ev.preventDefault();
+                ev.stopPropagation();
+                const origem = btn.getAttribute('data-origem') || '';
+                const destino = btn.getAttribute('data-destino') || '';
+                if (origem && destino) executarUnificarObraDespesas(origem, destino);
+            });
+        }
     }
 
     window.renderizarPainelCadastrosDespesas = function (filtroDigitado) {
@@ -7614,6 +7669,8 @@ function separarDataSegura(dataString) {
         divObras.innerHTML = obrasF.length
             ? obrasF.map((o) => htmlItemCadastroDespesa(o, 'obra')).join('')
             : '<p class="cadastro-desp-vazio">Nenhuma obra' + (termoBruto ? ' com este filtro' : '') + '.</p>';
+
+        atualizarAvisoUnificarObrasDuplicadas(cache.obras);
 
         if (window._obraSelecionadaCadastros && painelForn && divLojas) {
             const lojasObra = getFornecedoresDaObra(cache, window._obraSelecionadaCadastros, true);
@@ -7735,6 +7792,190 @@ function separarDataSegura(dataString) {
             Swal.fire('Excluído!', `${paraApagar.length} despesa(s) removida(s).`, 'success');
         } catch (e) {
             Swal.fire('Erro', 'Não foi possível excluir o cadastro.', 'error');
+        }
+    };
+
+    async function coletarDocsObraParaUnificar(empresaLogada, chaveOrigem) {
+        const chavesOrigem = new Set([chaveOrigem]);
+        for (const par of PARES_OBRAS_DUPLICADAS) {
+            if (normalizarChaveNomeDespesa(par.origem) === chaveOrigem) {
+                PARES_OBRAS_DUPLICADAS.forEach((p) => {
+                    if (normalizarChaveNomeDespesa(p.destino) === normalizarChaveNomeDespesa(par.destino)) {
+                        chavesOrigem.add(normalizarChaveNomeDespesa(p.origem));
+                    }
+                });
+            }
+        }
+
+        const colecoes = [
+            { nome: 'despesas_obras', campos: { nome: 'obra_nome', lower: 'obra_lower' } },
+            { nome: COLECAO_RELATORIO_DESPESAS, campos: { nome: 'obra_nome', lower: 'obra_lower' } },
+            { nome: 'pagamentos_terceiros', campos: { nome: 'obra', lower: 'obra_lower' } }
+        ];
+        const resultado = [];
+        for (const col of colecoes) {
+            try {
+                const snap = await getDocs(query(collection(db, col.nome), where('empresa_id', '==', empresaLogada)));
+                snap.forEach((docSnap) => {
+                    const d = docSnap.data();
+                    const chave = normalizarChaveNomeDespesa(d[col.campos.nome] || d[col.campos.lower] || '');
+                    if (chavesOrigem.has(chave)) {
+                        resultado.push({ colecao: col.nome, id: docSnap.id, campos: col.campos });
+                    }
+                });
+            } catch (errCol) {
+                console.warn('unificar obra: falha ao ler', col.nome, errCol);
+            }
+        }
+        return resultado;
+    }
+
+    window.abrirUnificarObrasDespesas = async function () {
+        if (!window._cacheNomesDespesas || !window._cacheNomesDespesas.obras || !window._cacheNomesDespesas.obras.length) {
+            await carregarFiltrosDespesas();
+        }
+        const obras = ((window._cacheNomesDespesas && window._cacheNomesDespesas.obras) || []).slice().sort((a, b) => a.localeCompare(b, 'pt-BR'));
+        if (obras.length < 2) {
+            return Swal.fire('Atenção', 'É preciso ter pelo menos duas obras cadastradas para unificar.', 'info');
+        }
+
+        const preferOrigem = 'CMEI RODOVIARIA';
+        const preferDestino = 'CRECHE VIDA NOVA';
+        const chPrefOrig = normalizarChaveNomeDespesa(preferOrigem);
+        const chPrefDest = normalizarChaveNomeDespesa(preferDestino);
+        const temOrig = obras.some((o) => normalizarChaveNomeDespesa(o) === chPrefOrig);
+        const temDest = obras.some((o) => normalizarChaveNomeDespesa(o) === chPrefDest);
+
+        const opts = obras.map((o) => {
+            const esc = escapeHtmlBasico(o);
+            return `<option value="${esc}">${esc}</option>`;
+        }).join('');
+
+        const result = await Swal.fire({
+            title: 'Unificar obras',
+            html: ''
+                + '<p style="text-align:left;font-size:13px;margin:0 0 12px 0;">Tudo cadastrado na obra <b>origem</b> passa para a obra <b>destino</b>. A etiqueta da origem some da lista.</p>'
+                + '<label style="display:block;text-align:left;font-size:12px;margin-bottom:4px;">Obra origem (será esvaziada)</label>'
+                + '<select id="unificar-obra-origem" class="swal2-input" style="width:100%;margin:0 0 12px 0;">' + opts + '</select>'
+                + '<label style="display:block;text-align:left;font-size:12px;margin-bottom:4px;">Obra destino (fica com tudo)</label>'
+                + '<select id="unificar-obra-destino" class="swal2-input" style="width:100%;margin:0;">' + opts + '</select>'
+                + (temOrig && temDest
+                    ? '<p style="text-align:left;font-size:12px;color:#856404;margin:10px 0 0 0;">Sugestão pré-selecionada: <b>CMEI RODOVIARIA</b> → <b>CRECHE VIDA NOVA</b>.</p>'
+                    : ''),
+            showCancelButton: true,
+            confirmButtonText: 'Continuar',
+            cancelButtonText: 'Cancelar',
+            confirmButtonColor: '#856404',
+            didOpen: () => {
+                const selO = document.getElementById('unificar-obra-origem');
+                const selD = document.getElementById('unificar-obra-destino');
+                if (temOrig && selO) selO.value = preferOrigem;
+                if (temDest && selD) selD.value = preferDestino;
+                else if (selD && obras[0]) selD.value = obras.find((o) => o !== (selO && selO.value)) || obras[0];
+            },
+            preConfirm: () => {
+                const origem = formatarNomeCanonicoDespesa(document.getElementById('unificar-obra-origem').value);
+                const destino = formatarNomeCanonicoDespesa(document.getElementById('unificar-obra-destino').value);
+                if (!origem || !destino) {
+                    Swal.showValidationMessage('Selecione origem e destino.');
+                    return false;
+                }
+                if (normalizarChaveNomeDespesa(origem) === normalizarChaveNomeDespesa(destino)) {
+                    Swal.showValidationMessage('Origem e destino devem ser obras diferentes.');
+                    return false;
+                }
+                return { origem, destino };
+            }
+        });
+
+        if (!result.isConfirmed || !result.value) return;
+        await executarUnificarObraDespesas(result.value.origem, result.value.destino);
+    };
+
+    window.executarUnificarObraDespesas = async function (origem, destino) {
+        const empresaLogada = getEmpresaGestor();
+        if (!empresaLogada) {
+            return Swal.fire('Atenção', 'Empresa não identificada. Entre de novo no painel e tente outra vez.', 'warning');
+        }
+        const chaveOrigem = normalizarChaveNomeDespesa(origem);
+        const destinoCanon = formatarNomeCanonicoDespesa(destino);
+        const destinoLower = normalizarChaveNomeDespesa(destinoCanon);
+        if (!chaveOrigem || !destinoLower) {
+            return Swal.fire('Atenção', 'Origem ou destino inválidos.', 'warning');
+        }
+
+        try {
+            Swal.fire({ title: 'Contando registros...', html: 'Aguarde, pode demorar alguns segundos...', allowOutsideClick: false, didOpen: () => Swal.showLoading() });
+
+            const docs = await coletarDocsObraParaUnificar(empresaLogada, chaveOrigem);
+
+            if (!docs.length) {
+                return Swal.fire('Nada encontrado', `Nenhum registro com a obra <b>${escapeHtmlBasico(origem)}</b>.`, 'info');
+            }
+
+            const porColecao = docs.reduce((acc, d) => {
+                acc[d.colecao] = (acc[d.colecao] || 0) + 1;
+                return acc;
+            }, {});
+            const detalhe = Object.keys(porColecao).map((k) => `${porColecao[k]} em ${k}`).join('<br>');
+
+            const confirmacao = await Swal.fire({
+                title: 'Confirmar unificação?',
+                html: ''
+                    + `Mover <b>${docs.length}</b> registro(s) de<br><b>${escapeHtmlBasico(origem)}</b><br>para<br><b>${escapeHtmlBasico(destinoCanon)}</b>?<br><br>`
+                    + `<span style="font-size:12px;text-align:left;display:block;">${detalhe}</span><br>`
+                    + '<span style="color:#d9534f;font-weight:bold;">Digite <b>UNIFICAR</b> para confirmar.</span>',
+                icon: 'warning',
+                input: 'text',
+                inputPlaceholder: 'UNIFICAR',
+                showCancelButton: true,
+                confirmButtonColor: '#856404',
+                confirmButtonText: 'Sim, unificar',
+                cancelButtonText: 'Cancelar',
+                preConfirm: (val) => {
+                    if (String(val || '').trim() !== 'UNIFICAR') {
+                        Swal.showValidationMessage('Digite UNIFICAR em maiúsculas para confirmar.');
+                        return false;
+                    }
+                    return true;
+                }
+            });
+            if (!confirmacao.isConfirmed) return;
+
+            Swal.fire({ title: 'Unificando...', html: 'Atualizando ' + docs.length + ' registro(s)...', allowOutsideClick: false, didOpen: () => Swal.showLoading() });
+
+            for (let i = 0; i < docs.length; i++) {
+                const item = docs[i];
+                const payload = {};
+                payload[item.campos.nome] = destinoCanon;
+                payload[item.campos.lower] = destinoLower;
+                await updateDoc(doc(db, item.colecao, item.id), payload);
+                if (i % 20 === 0) {
+                    Swal.update({ html: 'Atualizando ' + (i + 1) + ' / ' + docs.length + '...' });
+                }
+            }
+
+            const busca = document.getElementById('busca-obra');
+            if (busca && normalizarChaveNomeDespesa(busca.value) === chaveOrigem) {
+                busca.value = destinoCanon;
+            }
+            if (window._obraSelecionadaCadastros && normalizarChaveNomeDespesa(window._obraSelecionadaCadastros) === chaveOrigem) {
+                window._obraSelecionadaCadastros = destinoCanon;
+            }
+            if (window._filtroCadastroDespesa && window._filtroCadastroDespesa.obra
+                && normalizarChaveNomeDespesa(window._filtroCadastroDespesa.obra) === chaveOrigem) {
+                window._filtroCadastroDespesa.obra = destinoCanon;
+            }
+
+            await carregarFiltrosDespesas();
+            if (busca && busca.value) {
+                buscarDespesasObra();
+            }
+
+            Swal.fire('Pronto!', `${docs.length} registro(s) movidos para <b>${escapeHtmlBasico(destinoCanon)}</b>.`, 'success');
+        } catch (e) {
+            console.error(e);
+            Swal.fire('Erro', 'Não foi possível unificar as obras: ' + (e && e.message ? e.message : 'tente novamente.'), 'error');
         }
     };
 
@@ -15754,6 +15995,14 @@ window.gerarFolhaPagamento = async function() {
         const ln = pack.linhas[idx];
         if (!ln) return;
 
+        window._espelhoDiaSelecionado = {
+            chaveMes: chaveMes,
+            idx: idx,
+            iso: ln.iso || '',
+            dataBr: ln.dataBr || '',
+            funcId: pack.funcId || ''
+        };
+
         document.querySelectorAll('.espelho-ponto-tabela tr.espelho-dia-selecionado').forEach((tr) => {
             tr.classList.remove('espelho-dia-selecionado');
         });
@@ -15789,7 +16038,70 @@ window.gerarFolhaPagamento = async function() {
             });
         }
         detalhe.innerHTML = html;
+        try {
+            detalhe.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+        } catch (_) {}
     };
+
+    function garantirAbaPontoAtiva() {
+        const abaPonto = document.getElementById('aba-ponto');
+        if (abaPonto && !abaPonto.classList.contains('active')) {
+            const btn = document.querySelector('.gestor-menu-btn[data-titulo="Ponto"]');
+            if (typeof mudarAba === 'function') mudarAba('ponto', btn || null);
+        }
+    }
+
+    async function recarregarPontoMantendoContexto() {
+        const ctx = window._espelhoDiaSelecionado ? Object.assign({}, window._espelhoDiaSelecionado) : null;
+        const mainGestor = document.querySelector('.gestor-main-content');
+        const scrollAntes = mainGestor ? mainGestor.scrollTop : 0;
+        garantirAbaPontoAtiva();
+        if (typeof buscarPonto === 'function') {
+            await buscarPonto();
+        }
+        garantirAbaPontoAtiva();
+        if (!ctx) {
+            if (mainGestor) mainGestor.scrollTop = scrollAntes;
+            return;
+        }
+        setTimeout(function () {
+            garantirAbaPontoAtiva();
+            let chave = ctx.chaveMes;
+            let idx = ctx.idx;
+            const pack = window._espelhoPontoPorMes && window._espelhoPontoPorMes[chave];
+            if (pack && pack.linhas && Array.isArray(pack.linhas)) {
+                const found = pack.linhas.findIndex(function (ln) {
+                    return (ctx.iso && ln.iso === ctx.iso)
+                        || (ctx.dataBr && String(ln.dataBr || '') === String(ctx.dataBr));
+                });
+                if (found >= 0) idx = found;
+            } else if (ctx.funcId) {
+                // procura chave do mesmo funcionário/mês após rebuild
+                const keys = Object.keys(window._espelhoPontoPorMes || {});
+                for (let i = 0; i < keys.length; i += 1) {
+                    const k = keys[i];
+                    if (String(k).indexOf(String(ctx.funcId) + '__') !== 0) continue;
+                    const p = window._espelhoPontoPorMes[k];
+                    if (!p || !p.linhas) continue;
+                    const found = p.linhas.findIndex(function (ln) {
+                        return (ctx.iso && ln.iso === ctx.iso)
+                            || (ctx.dataBr && String(ln.dataBr || '') === String(ctx.dataBr));
+                    });
+                    if (found >= 0) {
+                        chave = k;
+                        idx = found;
+                        break;
+                    }
+                }
+            }
+            if (typeof selecionarDiaEspelhoPonto === 'function' && chave != null && idx != null) {
+                selecionarDiaEspelhoPonto(chave, idx);
+            }
+            if (mainGestor) {
+                mainGestor.scrollTop = scrollAntes;
+            }
+        }, 80);
+    }
 
     async function perguntarMesAnoEspelhoPonto(titulo) {
         const agora = new Date();
@@ -16387,8 +16699,15 @@ window.gerarFolhaPagamento = async function() {
                 motivo: String(motivo).trim(),
                 criado_em: serverTimestamp()
             });
-            Swal.fire('Registrado!', 'Solicitação registrada. O registro original foi mantido para auditoria.', 'success');
-            buscarPonto();
+            Swal.fire({
+                toast: true,
+                position: 'top-end',
+                icon: 'success',
+                title: 'Cancelamento registrado',
+                showConfirmButton: false,
+                timer: 2200
+            });
+            await recarregarPontoMantendoContexto();
         } catch (e) {
             console.error(e);
             Swal.fire('Erro', 'Não foi possível registrar a solicitação. Verifique permissões do Firestore ou a internet.', 'error');
@@ -16429,8 +16748,15 @@ window.gerarFolhaPagamento = async function() {
                 }
             }
             await deleteDoc(doc(db, 'ponto_registros', pontoId));
-            Swal.fire('Removido', 'O registro de batida e os eventos ligados (ex.: cancelamento) foram apagados.', 'success');
-            buscarPonto();
+            Swal.fire({
+                toast: true,
+                position: 'top-end',
+                icon: 'success',
+                title: 'Batida apagada',
+                showConfirmButton: false,
+                timer: 2200
+            });
+            await recarregarPontoMantendoContexto();
         } catch (e) {
             console.error(e);
             Swal.fire('Erro', 'Não foi possível apagar. Confirme as regras de segurança do Firestore (delete) para ponto_registros e ponto_eventos.', 'error');
@@ -16542,8 +16868,15 @@ window.gerarFolhaPagamento = async function() {
                 nota_rh: v.nota || null
             });
             Swal.close();
-            Swal.fire('Guardado', 'Batida manual registada. Clique em Buscar para ver na lista.', 'success');
-            buscarPonto();
+            Swal.fire({
+                toast: true,
+                position: 'top-end',
+                icon: 'success',
+                title: 'Batida manual registada',
+                showConfirmButton: false,
+                timer: 2200
+            });
+            await recarregarPontoMantendoContexto();
         } catch (e) {
             console.error(e);
             Swal.close();
@@ -16635,12 +16968,15 @@ window.gerarFolhaPagamento = async function() {
             if (val.notaAjuste) patch.ajuste_datahora_rh_nota = val.notaAjuste;
             await updateDoc(doc(db, 'ponto_registros', pontoId), patch);
             Swal.close();
-            Swal.fire(
-                'Atualizado',
-                'Data e hora desta batida foram alteradas.<br><br><small>Se o dia ainda aparecer com poucas horas, confira <b>todas</b> as batidas (principalmente a <b>Saída</b> no horário final). Use <b>Corrigir jornada completa do dia (RH)</b> na folha ou registe as batidas que faltam. Depois, gere a folha de novo.</small>',
-                'success'
-            );
-            buscarPonto();
+            Swal.fire({
+                toast: true,
+                position: 'top-end',
+                icon: 'success',
+                title: 'Data/hora atualizadas',
+                showConfirmButton: false,
+                timer: 2500
+            });
+            await recarregarPontoMantendoContexto();
         } catch (e) {
             console.error(e);
             Swal.close();
