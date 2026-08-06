@@ -10513,15 +10513,131 @@ window.carregarFiltrosDespesas = async function() {
         return String(nome) + ' de ' + String(ano);
     }
 
-    function filtrarPackRelGeralObrasPorPeriodo(pack, periodo) {
-        if (!periodo || periodo === 'todos') {
-            return Object.assign({}, pack, { periodoLabel: 'Todos os períodos', periodoChave: 'todos' });
+    function mesAnoParaIndiceRelGeral(chaveMMYYYY) {
+        const partes = String(chaveMMYYYY || '').split('/');
+        const mes = Number(partes[0]);
+        const ano = Number(partes[1]);
+        if (!Number.isFinite(mes) || !Number.isFinite(ano) || mes < 1 || mes > 12) return null;
+        return ano * 12 + mes;
+    }
+
+    function chaveMesAnoDentroIntervaloRelGeral(chave, inicioMMYYYY, fimMMYYYY) {
+        if (!chave) return false;
+        const n = mesAnoParaIndiceRelGeral(chave);
+        const a = mesAnoParaIndiceRelGeral(inicioMMYYYY);
+        const b = mesAnoParaIndiceRelGeral(fimMMYYYY);
+        if (n == null || a == null || b == null) return false;
+        const min = Math.min(a, b);
+        const max = Math.max(a, b);
+        return n >= min && n <= max;
+    }
+
+    function rotuloPeriodoIntervaloRelGeral(inicioMMYYYY, fimMMYYYY) {
+        if (!inicioMMYYYY && !fimMMYYYY) return 'Todos os períodos';
+        if (inicioMMYYYY && fimMMYYYY && inicioMMYYYY === fimMMYYYY) {
+            return rotuloPeriodoMesAnoRelGeral(inicioMMYYYY);
+        }
+        return 'De ' + rotuloPeriodoMesAnoRelGeral(inicioMMYYYY) + ' até ' + rotuloPeriodoMesAnoRelGeral(fimMMYYYY);
+    }
+
+    function tsDataBrRelGeral(dataStr) {
+        const s = separarDataSegura(dataStr);
+        if (!s || s.ano === 'Outros' || s.mes === 'Outros') return Number.MAX_SAFE_INTEGER;
+        const dia = parseInt(String(s.dia).replace(/\D/g, ''), 10) || 1;
+        const mes = parseInt(s.mes, 10) || 1;
+        const ano = parseInt(s.ano, 10) || 0;
+        if (!ano) return Number.MAX_SAFE_INTEGER;
+        return Date.UTC(ano, mes - 1, Math.min(Math.max(dia, 1), 31));
+    }
+
+    function ordenarListaRelGeralPorData(arr, tipo) {
+        return (arr || []).slice().sort((a, b) => {
+            let da;
+            let db;
+            if (tipo === 'terceiro') {
+                da = tsDataBrRelGeral(a.data);
+                db = tsDataBrRelGeral(b.data);
+            } else if (tipo === 'pago') {
+                da = tsDataBrRelGeral(a.data_pagamento || a.data);
+                db = tsDataBrRelGeral(b.data_pagamento || b.data);
+            } else {
+                da = dataVencimentoTsDespesa(a);
+                db = dataVencimentoTsDespesa(b);
+                if (da == null) da = tsDataBrRelGeral(a.data);
+                if (db == null) db = tsDataBrRelGeral(b.data);
+            }
+            if (da !== db) return da - db;
+            return String(a.obra_nome || a.obra || a.loja_nome || a.nome || '')
+                .localeCompare(String(b.obra_nome || b.obra || b.loja_nome || b.nome || ''), 'pt-BR');
+        });
+    }
+
+    /**
+     * periodoOuOpcoes:
+     * - 'todos' | 'MM/YYYY' (compatível)
+     * - { periodo:'todos'|'MM/YYYY', periodoInicio:'MM/YYYY', periodoFim:'MM/YYYY' }
+     */
+    function filtrarPackRelGeralObrasPorPeriodo(pack, periodoOuOpcoes) {
+        let periodoInicio = null;
+        let periodoFim = null;
+        let periodoChave = 'todos';
+
+        if (periodoOuOpcoes && typeof periodoOuOpcoes === 'object') {
+            if (periodoOuOpcoes.periodoInicio && periodoOuOpcoes.periodoFim) {
+                periodoInicio = periodoOuOpcoes.periodoInicio;
+                periodoFim = periodoOuOpcoes.periodoFim;
+                periodoChave = periodoInicio === periodoFim
+                    ? periodoInicio
+                    : (periodoInicio + '_a_' + periodoFim);
+            } else if (periodoOuOpcoes.periodo && periodoOuOpcoes.periodo !== 'todos') {
+                periodoInicio = periodoFim = periodoOuOpcoes.periodo;
+                periodoChave = periodoOuOpcoes.periodo;
+            }
+        } else if (typeof periodoOuOpcoes === 'string' && periodoOuOpcoes && periodoOuOpcoes !== 'todos') {
+            periodoInicio = periodoFim = periodoOuOpcoes;
+            periodoChave = periodoOuOpcoes;
         }
 
-        const vencidas = (pack.vencidas || []).filter((d) => chaveMesAnoItemRelGeralObras(d, 'vencido') === periodo);
-        const aVencer = (pack.aVencer || []).filter((d) => chaveMesAnoItemRelGeralObras(d, 'avencer') === periodo);
-        const pagasForn = (pack.pagasForn || []).filter((d) => chaveMesAnoItemRelGeralObras(d, 'pago') === periodo);
-        const terceiros = (pack.terceiros || []).filter((d) => chaveMesAnoItemRelGeralObras(d, 'terceiro') === periodo);
+        if (!periodoInicio || !periodoFim) {
+            return Object.assign({}, pack, {
+                periodoLabel: 'Todos os períodos',
+                periodoChave: 'todos',
+                vencidas: ordenarListaRelGeralPorData(pack.vencidas, 'vencido'),
+                aVencer: ordenarListaRelGeralPorData(pack.aVencer, 'avencer'),
+                pagasForn: ordenarListaRelGeralPorData(pack.pagasForn, 'pago'),
+                terceiros: ordenarListaRelGeralPorData(pack.terceiros, 'terceiro')
+            });
+        }
+
+        // Garante ordem cronológica do intervalo (ex.: jan→ago)
+        if (mesAnoParaIndiceRelGeral(periodoInicio) > mesAnoParaIndiceRelGeral(periodoFim)) {
+            const tmp = periodoInicio;
+            periodoInicio = periodoFim;
+            periodoFim = tmp;
+        }
+
+        const passa = (d, tipo) => chaveMesAnoDentroIntervaloRelGeral(
+            chaveMesAnoItemRelGeralObras(d, tipo),
+            periodoInicio,
+            periodoFim
+        );
+
+        const vencidas = ordenarListaRelGeralPorData(
+            (pack.vencidas || []).filter((d) => passa(d, 'vencido')),
+            'vencido'
+        );
+        const aVencer = ordenarListaRelGeralPorData(
+            (pack.aVencer || []).filter((d) => passa(d, 'avencer')),
+            'avencer'
+        );
+        const pagasForn = ordenarListaRelGeralPorData(
+            (pack.pagasForn || []).filter((d) => passa(d, 'pago')),
+            'pago'
+        );
+        const terceiros = ordenarListaRelGeralPorData(
+            (pack.terceiros || []).filter((d) => passa(d, 'terceiro')),
+            'terceiro'
+        );
 
         const somaVencidas = vencidas.reduce((s, d) => s + (Number(d.valor_numero) || parseMoedaLocal(d.valor_string) || 0), 0);
         const somaAVencer = aVencer.reduce((s, d) => s + (Number(d.valor_numero) || parseMoedaLocal(d.valor_string) || 0), 0);
@@ -10542,9 +10658,27 @@ window.carregarFiltrosDespesas = async function() {
             aVencer,
             pagasForn,
             terceiros,
-            periodoLabel: rotuloPeriodoMesAnoRelGeral(periodo),
-            periodoChave: periodo
+            periodoLabel: rotuloPeriodoIntervaloRelGeral(periodoInicio, periodoFim),
+            periodoChave: periodoChave,
+            periodoInicio: periodoInicio,
+            periodoFim: periodoFim
         };
+    }
+
+    function montarOptsMesAnoRelGeral(anos, mesSelecionado, anoSelecionado) {
+        let optsMes = '';
+        for (let m = 1; m <= 12; m += 1) {
+            const mm = String(m).padStart(2, '0');
+            const nome = (nomeMeses && (nomeMeses[mm] || nomeMeses[String(m)])) || mm;
+            const sel = mm === String(mesSelecionado).padStart(2, '0') ? ' selected' : '';
+            optsMes += '<option value="' + mm + '"' + sel + '>' + escapeHtmlBasico(String(nome)) + '</option>';
+        }
+        let optsAno = '';
+        (anos || []).forEach((a) => {
+            const sel = String(a) === String(anoSelecionado) ? ' selected' : '';
+            optsAno += '<option value="' + escapeAttrBasico(a) + '"' + sel + '>' + escapeHtmlBasico(String(a)) + '</option>';
+        });
+        return { optsMes: optsMes, optsAno: optsAno };
     }
 
     async function perguntarOpcoesExportRelGeralObras(pack, config) {
@@ -10557,8 +10691,10 @@ window.carregarFiltrosDespesas = async function() {
 
         const periodos = mostrarPeriodo ? listarPeriodosDisponiveisRelGeralObras(pack) : [];
         const agora = new Date();
-        const mesAtual = String(agora.getMonth() + 1).padStart(2, '0') + '/' + agora.getFullYear();
-        const periodoPadrao = periodos.includes(mesAtual) ? mesAtual : (periodos[0] || 'todos');
+        const mesAtual = String(agora.getMonth() + 1).padStart(2, '0');
+        const anoAtual = String(agora.getFullYear());
+        const mesAnoAtual = mesAtual + '/' + anoAtual;
+        const periodoPadrao = periodos.includes(mesAnoAtual) ? mesAnoAtual : (periodos[0] || mesAnoAtual);
 
         let htmlPeriodo = '';
         if (mostrarPeriodo) {
@@ -10569,56 +10705,85 @@ window.carregarFiltrosDespesas = async function() {
             });
 
             const anosSet = new Set(periodos.map((p) => p.split('/')[1]).filter(Boolean));
-            anosSet.add(String(agora.getFullYear()));
+            anosSet.add(anoAtual);
             anosSet.add(String(agora.getFullYear() - 1));
             anosSet.add(String(agora.getFullYear() + 1));
             const anos = Array.from(anosSet).sort((a, b) => Number(b) - Number(a));
-            let optsMes = '';
-            for (let m = 1; m <= 12; m += 1) {
-                const mm = String(m).padStart(2, '0');
-                const nome = (nomeMeses && (nomeMeses[mm] || nomeMeses[String(m)])) || mm;
-                const sel = mm === String(agora.getMonth() + 1).padStart(2, '0') ? ' selected' : '';
-                optsMes += '<option value="' + mm + '"' + sel + '>' + escapeHtmlBasico(String(nome)) + '</option>';
-            }
-            let optsAno = '';
-            anos.forEach((a) => {
-                const sel = String(a) === String(agora.getFullYear()) ? ' selected' : '';
-                optsAno += '<option value="' + escapeAttrBasico(a) + '"' + sel + '>' + escapeHtmlBasico(a) + '</option>';
-            });
 
+            const dePadrao = periodos.length ? periodos[periodos.length - 1] : ('01/' + anoAtual);
+            const atePadrao = periodoPadrao;
+            const deMes = (dePadrao.split('/')[0] || '01');
+            const deAno = (dePadrao.split('/')[1] || anoAtual);
+            const ateMes = (atePadrao.split('/')[0] || mesAtual);
+            const ateAno = (atePadrao.split('/')[1] || anoAtual);
+            const optsDe = montarOptsMesAnoRelGeral(anos, deMes, deAno);
+            const optsAte = montarOptsMesAnoRelGeral(anos, ateMes, ateAno);
+
+            const selCss = 'width:100%;box-sizing:border-box;margin:0;height:38px;font-size:13px;padding:6px 8px;border:1px solid #ced4da;border-radius:8px;background:#fff;';
             htmlPeriodo = ''
-                + '<div style="text-align:left;margin:0 0 12px 0;padding:12px;border:1px solid #cfe2ff;border-radius:8px;background:#f0f7ff;">'
-                + '<label style="display:block;font-size:12px;font-weight:700;color:#1a2a43;margin-bottom:6px;">📅 Período (mês/ano)</label>'
-                + '<select id="' + prefix + '-periodo" class="swal2-input" style="width:100%;margin:0 0 8px 0;height:40px;font-size:13px;">' + optsPeriodo + '</select>'
-                + '<p style="font-size:11px;color:#666;margin:0 0 8px 0;">Ou escolha manualmente (ex.: Julho de 2026):</p>'
-                + '<div style="display:flex;gap:8px;">'
-                + '<select id="' + prefix + '-mes-manual" class="swal2-input" style="flex:1.4;margin:0;height:40px;font-size:13px;">' + optsMes + '</select>'
-                + '<select id="' + prefix + '-ano-manual" class="swal2-input" style="flex:1;margin:0;height:40px;font-size:13px;">' + optsAno + '</select>'
+                + '<div id="' + prefix + '-box-periodo" class="export-rel-box" style="text-align:left;margin:0 0 12px 0;padding:12px;border:1px solid #cfe2ff;border-radius:10px;background:#f0f7ff;">'
+                + '<div style="font-size:13px;font-weight:700;color:#1a2a43;margin:0 0 10px 0;">📅 Período do relatório</div>'
+                + '<table style="width:100%;border-collapse:collapse;margin:0 0 12px 0;">'
+                + '<tr><td style="width:28px;vertical-align:middle;padding:6px 0;"><input type="radio" name="' + prefix + '-modo-periodo" id="' + prefix + '-modo-todos" value="todos" style="width:18px;height:18px;margin:0;"></td>'
+                + '<td style="vertical-align:middle;padding:6px 0 6px 8px;"><label for="' + prefix + '-modo-todos" style="font-size:13px;cursor:pointer;display:block;">Todos os períodos</label></td></tr>'
+                + '<tr><td style="width:28px;vertical-align:middle;padding:6px 0;"><input type="radio" name="' + prefix + '-modo-periodo" id="' + prefix + '-modo-um" value="um" style="width:18px;height:18px;margin:0;"></td>'
+                + '<td style="vertical-align:middle;padding:6px 0 6px 8px;"><label for="' + prefix + '-modo-um" style="font-size:13px;cursor:pointer;display:block;">Um mês só</label></td></tr>'
+                + '<tr><td style="width:28px;vertical-align:middle;padding:6px 0;"><input type="radio" name="' + prefix + '-modo-periodo" id="' + prefix + '-modo-intervalo" value="intervalo" checked style="width:18px;height:18px;margin:0;"></td>'
+                + '<td style="vertical-align:middle;padding:6px 0 6px 8px;"><label for="' + prefix + '-modo-intervalo" style="font-size:13px;cursor:pointer;display:block;"><b>De um mês até outro</b> <span style="color:#666;font-weight:400;">(ex.: janeiro → agosto)</span></label></td></tr>'
+                + '</table>'
+                + '<div id="' + prefix + '-bloco-um" style="display:none;margin-top:4px;">'
+                + '<div style="font-size:11px;color:#555;margin:0 0 4px 0;">Mês único</div>'
+                + '<select id="' + prefix + '-periodo" style="' + selCss + '">' + optsPeriodo + '</select>'
                 + '</div>'
-                + '<label style="display:flex;align-items:center;gap:8px;margin-top:8px;font-size:12px;cursor:pointer;">'
-                + '<input type="checkbox" id="' + prefix + '-usar-manual" style="width:16px;height:16px;">'
-                + 'Usar mês/ano manual acima'
-                + '</label>'
-                + '<p style="font-size:11px;color:#888;margin:8px 0 0 0;">Pendentes pelo <b>vencimento</b> · Pagos pela <b>data de pagamento</b>.</p>'
+                + '<div id="' + prefix + '-bloco-intervalo" style="margin-top:4px;">'
+                + '<table style="width:100%;border-collapse:separate;border-spacing:0 0;"><tr>'
+                + '<td style="width:50%;padding:0 6px 0 0;vertical-align:top;">'
+                + '<div style="font-size:11px;font-weight:700;color:#1a2a43;margin:0 0 4px 0;">DE</div>'
+                + '<select id="' + prefix + '-mes-de" style="' + selCss + ' margin-bottom:6px;">' + optsDe.optsMes + '</select>'
+                + '<select id="' + prefix + '-ano-de" style="' + selCss + '">' + optsDe.optsAno + '</select>'
+                + '</td>'
+                + '<td style="width:50%;padding:0 0 0 6px;vertical-align:top;">'
+                + '<div style="font-size:11px;font-weight:700;color:#1a2a43;margin:0 0 4px 0;">ATÉ</div>'
+                + '<select id="' + prefix + '-mes-ate" style="' + selCss + ' margin-bottom:6px;">' + optsAte.optsMes + '</select>'
+                + '<select id="' + prefix + '-ano-ate" style="' + selCss + '">' + optsAte.optsAno + '</select>'
+                + '</td></tr></table>'
+                + '<p style="font-size:11px;color:#0c5460;margin:10px 0 0 0;line-height:1.4;">Ex.: <b>Janeiro/2026</b> até <b>Agosto/2026</b> — todos os meses do intervalo, em ordem de data.</p>'
+                + '</div>'
+                + '<p style="font-size:11px;color:#888;margin:10px 0 0 0;line-height:1.4;">Pendentes pelo <b>vencimento</b> · Pagos pela <b>data de pagamento</b>.</p>'
                 + '</div>';
         }
 
         const result = await Swal.fire({
             title: cfg.titulo || 'Exportar espelho',
             html: ''
+                + '<style>'
+                + '.swal2-html-container input[type=radio]{'
+                + 'appearance:radio!important;-webkit-appearance:radio!important;width:18px!important;height:18px!important;'
+                + 'min-width:18px!important;max-width:18px!important;margin:0!important;padding:0!important;'
+                + 'display:inline-block!important;vertical-align:middle!important;box-shadow:none!important;'
+                + 'background:transparent!important;}'
+                + '.swal2-html-container input[type=checkbox]{'
+                + 'appearance:checkbox!important;-webkit-appearance:checkbox!important;width:18px!important;height:18px!important;'
+                + 'min-width:18px!important;max-width:18px!important;margin:0!important;padding:0!important;'
+                + 'display:inline-block!important;vertical-align:middle!important;box-shadow:none!important;'
+                + 'background:transparent!important;flex-shrink:0!important;}'
+                + '.swal2-html-container select{display:block!important;width:100%!important;max-width:100%!important;box-sizing:border-box!important;}'
+                + '.export-opt-card{display:flex!important;align-items:flex-start!important;gap:10px!important;margin:8px 0!important;'
+                + 'padding:10px!important;border-radius:8px!important;cursor:pointer!important;text-align:left!important;}'
+                + '</style>'
                 + '<p style="font-size:13px;margin:0 0 10px 0;color:#555;text-align:left;">' + (cfg.textoIntro || 'Marque o que deseja incluir no espelho:') + '</p>'
                 + htmlPeriodo
-                + '<label style="display:flex;align-items:flex-start;gap:10px;margin:10px 0;padding:10px;border:1px solid #f5c6cb;border-radius:8px;background:#fff5f5;cursor:pointer;text-align:left;">'
+                + '<label class="export-opt-card" for="' + prefix + '-vencido" style="border:1px solid #f5c6cb;background:#fff5f5;">'
                 + '<input type="checkbox" id="' + prefix + '-vencido" checked style="width:18px;height:18px;margin-top:2px;flex-shrink:0;">'
                 + '<span><b style="color:#dc3545;">🔴 VENCIDO</b><br><span style="font-size:12px;color:#666;">' + cntVenc + ' item(ns) · ' + formatarMoeda(pack.somaVencidas) + '</span></span>'
                 + '</label>'
-                + '<label style="display:flex;align-items:flex-start;gap:10px;margin:10px 0;padding:10px;border:1px solid #ffeeba;border-radius:8px;background:#fffdf5;cursor:pointer;text-align:left;">'
+                + '<label class="export-opt-card" for="' + prefix + '-avencer" style="border:1px solid #ffeeba;background:#fffdf5;">'
                 + '<input type="checkbox" id="' + prefix + '-avencer" checked style="width:18px;height:18px;margin-top:2px;flex-shrink:0;">'
                 + '<span><b style="color:#856404;">🟡 A VENCER</b><br><span style="font-size:12px;color:#666;">' + cntAvencer + ' item(ns) · ' + formatarMoeda(pack.somaAVencer) + '</span></span>'
                 + '</label>'
-                + '<label style="display:flex;align-items:flex-start;gap:10px;margin:10px 0;padding:10px;border:1px solid #c3e6cb;border-radius:8px;background:#f4fdf6;cursor:pointer;text-align:left;">'
+                + '<label class="export-opt-card" for="' + prefix + '-pagos" style="border:1px solid #c3e6cb;background:#f4fdf6;">'
                 + '<input type="checkbox" id="' + prefix + '-pagos" checked style="width:18px;height:18px;margin-top:2px;flex-shrink:0;">'
-                + '<span><b style="color:#28a745;">🟢 PAGOS</b> <span style="font-size:11px;color:#888;">(fornecedores + terceiros)</span><br>'
+                + '<span><b style="color:#28a745;">🟢 PAGOS</b> <span style="font-size:11px;color:#888;">(fornecedores + terceiros + parciais)</span><br>'
                 + '<span style="font-size:12px;color:#666;">' + cntPagos + ' item(ns) · ' + formatarMoeda(pack.somaPagas) + '</span></span>'
                 + '</label>',
             showCancelButton: true,
@@ -10627,30 +10792,83 @@ window.carregarFiltrosDespesas = async function() {
             confirmButtonColor: cfg.corConfirmar || '#1a2a43',
             cancelButtonColor: '#6c757d',
             focusConfirm: false,
-            width: 480,
+            width: 540,
+            customClass: { popup: 'swal-export-rel-popup', htmlContainer: 'swal-export-rel-html' },
+            didOpen: () => {
+                // Corrige CSS do SweetAlert2 que estica radio/checkbox como "slider"
+                const root = document.querySelector('.swal2-popup');
+                if (root) {
+                    root.querySelectorAll('input[type="radio"], input[type="checkbox"]').forEach((el) => {
+                        el.style.setProperty('width', '18px', 'important');
+                        el.style.setProperty('height', '18px', 'important');
+                        el.style.setProperty('min-width', '18px', 'important');
+                        el.style.setProperty('max-width', '18px', 'important');
+                        el.style.setProperty('margin', '0', 'important');
+                        el.style.setProperty('padding', '0', 'important');
+                        el.style.setProperty('box-shadow', 'none', 'important');
+                        el.style.setProperty('background', 'transparent', 'important');
+                        el.style.setProperty('display', 'inline-block', 'important');
+                    });
+                    root.querySelectorAll('select').forEach((el) => {
+                        el.classList.remove('swal2-input');
+                        el.style.setProperty('width', '100%', 'important');
+                        el.style.setProperty('margin', '0', 'important');
+                        el.style.setProperty('display', 'block', 'important');
+                    });
+                }
+                if (!mostrarPeriodo) return;
+                const blocoUm = document.getElementById(prefix + '-bloco-um');
+                const blocoInt = document.getElementById(prefix + '-bloco-intervalo');
+                const radios = document.querySelectorAll('input[name="' + prefix + '-modo-periodo"]');
+                function syncModo() {
+                    const modo = (document.querySelector('input[name="' + prefix + '-modo-periodo"]:checked') || {}).value || 'intervalo';
+                    if (blocoUm) blocoUm.style.display = modo === 'um' ? 'block' : 'none';
+                    if (blocoInt) blocoInt.style.display = modo === 'intervalo' ? 'block' : 'none';
+                }
+                radios.forEach((r) => r.addEventListener('change', syncModo));
+                syncModo();
+            },
             preConfirm: () => {
                 const opcoes = {
                     vencido: !!document.getElementById(prefix + '-vencido')?.checked,
                     aVencer: !!document.getElementById(prefix + '-avencer')?.checked,
                     pagos: !!document.getElementById(prefix + '-pagos')?.checked,
-                    periodo: 'todos'
+                    periodo: 'todos',
+                    periodoInicio: null,
+                    periodoFim: null
                 };
                 if (!opcoes.vencido && !opcoes.aVencer && !opcoes.pagos) {
                     Swal.showValidationMessage('Selecione pelo menos uma opção (Vencido, A vencer ou Pagos).');
                     return false;
                 }
                 if (mostrarPeriodo) {
-                    const usarManual = !!document.getElementById(prefix + '-usar-manual')?.checked;
-                    if (usarManual) {
-                        const mes = document.getElementById(prefix + '-mes-manual')?.value || '';
-                        const ano = document.getElementById(prefix + '-ano-manual')?.value || '';
-                        if (!mes || !ano) {
-                            Swal.showValidationMessage('Selecione mês e ano.');
+                    const modo = (document.querySelector('input[name="' + prefix + '-modo-periodo"]:checked') || {}).value || 'todos';
+                    if (modo === 'um') {
+                        const p = document.getElementById(prefix + '-periodo')?.value || 'todos';
+                        opcoes.periodo = p;
+                        if (p && p !== 'todos') {
+                            opcoes.periodoInicio = p;
+                            opcoes.periodoFim = p;
+                        }
+                    } else if (modo === 'intervalo') {
+                        const mesDe = document.getElementById(prefix + '-mes-de')?.value || '';
+                        const anoDe = document.getElementById(prefix + '-ano-de')?.value || '';
+                        const mesAte = document.getElementById(prefix + '-mes-ate')?.value || '';
+                        const anoAte = document.getElementById(prefix + '-ano-ate')?.value || '';
+                        if (!mesDe || !anoDe || !mesAte || !anoAte) {
+                            Swal.showValidationMessage('Selecione mês/ano DE e ATÉ.');
                             return false;
                         }
-                        opcoes.periodo = mes + '/' + ano;
+                        let ini = mesDe + '/' + anoDe;
+                        let fim = mesAte + '/' + anoAte;
+                        if (mesAnoParaIndiceRelGeral(ini) > mesAnoParaIndiceRelGeral(fim)) {
+                            const t = ini; ini = fim; fim = t;
+                        }
+                        opcoes.periodo = ini === fim ? ini : 'intervalo';
+                        opcoes.periodoInicio = ini;
+                        opcoes.periodoFim = fim;
                     } else {
-                        opcoes.periodo = document.getElementById(prefix + '-periodo')?.value || 'todos';
+                        opcoes.periodo = 'todos';
                     }
                 }
                 return opcoes;
@@ -10663,10 +10881,19 @@ window.carregarFiltrosDespesas = async function() {
 
     function sufixoArquivoExportRelGeralObras(opcoes) {
         const sufixos = [];
-        if (opcoes.periodo && opcoes.periodo !== 'todos') {
-            const [mes, ano] = String(opcoes.periodo).split('/');
+        const slugMes = (chave) => {
+            const [mes, ano] = String(chave || '').split('/');
             const nome = (nomeMeses && (nomeMeses[mes] || nomeMeses[String(Number(mes))])) || mes;
-            sufixos.push(String(nome).toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '') + '_' + ano);
+            return String(nome).toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '') + '_' + ano;
+        };
+        if (opcoes.periodoInicio && opcoes.periodoFim) {
+            if (opcoes.periodoInicio === opcoes.periodoFim) {
+                sufixos.push(slugMes(opcoes.periodoInicio));
+            } else {
+                sufixos.push(slugMes(opcoes.periodoInicio) + '_a_' + slugMes(opcoes.periodoFim));
+            }
+        } else if (opcoes.periodo && opcoes.periodo !== 'todos' && opcoes.periodo !== 'intervalo') {
+            sufixos.push(slugMes(opcoes.periodo));
         }
         if (opcoes.vencido) sufixos.push('vencido');
         if (opcoes.aVencer) sufixos.push('a_vencer');
@@ -10715,14 +10942,30 @@ window.carregarFiltrosDespesas = async function() {
     function montarLinhasExcelRelGeralObras(pack, opcoes) {
         const linhas = [];
         if (opcoes.vencido) {
-            (pack.vencidas || []).forEach((d) => linhas.push(linhaExcelDespesaRelGeralObra(d, 'VENCIDO')));
+            ordenarListaRelGeralPorData(pack.vencidas, 'vencido').forEach((d) => {
+                linhas.push(linhaExcelDespesaRelGeralObra(d, 'VENCIDO'));
+            });
         }
         if (opcoes.aVencer) {
-            (pack.aVencer || []).forEach((d) => linhas.push(linhaExcelDespesaRelGeralObra(d, 'A VENCER')));
+            ordenarListaRelGeralPorData(pack.aVencer, 'avencer').forEach((d) => {
+                linhas.push(linhaExcelDespesaRelGeralObra(d, 'A VENCER'));
+            });
         }
         if (opcoes.pagos) {
-            (pack.pagasForn || []).forEach((d) => linhas.push(linhaExcelDespesaRelGeralObra(d, 'PAGO')));
-            (pack.terceiros || []).forEach((d) => linhas.push(linhaExcelTerceiroRelGeralObra(d)));
+            // Mistura fornecedores/parciais + terceiros e ordena pela data de pagamento
+            const pagosMix = [];
+            (pack.pagasForn || []).forEach((d) => pagosMix.push({ tipo: 'forn', d: d, ts: tsDataBrRelGeral(d.data_pagamento || d.data) }));
+            (pack.terceiros || []).forEach((d) => pagosMix.push({ tipo: 'terc', d: d, ts: tsDataBrRelGeral(d.data) }));
+            pagosMix.sort((a, b) => {
+                if (a.ts !== b.ts) return a.ts - b.ts;
+                const na = String((a.d && (a.d.obra_nome || a.d.obra)) || '');
+                const nb = String((b.d && (b.d.obra_nome || b.d.obra)) || '');
+                return na.localeCompare(nb, 'pt-BR');
+            });
+            pagosMix.forEach((x) => {
+                if (x.tipo === 'terc') linhas.push(linhaExcelTerceiroRelGeralObra(x.d));
+                else linhas.push(linhaExcelDespesaRelGeralObra(x.d, 'PAGO'));
+            });
         }
         return linhas;
     }
@@ -10823,14 +11066,14 @@ window.carregarFiltrosDespesas = async function() {
         });
         if (!opcoes) return;
 
-        const packFiltrado = filtrarPackRelGeralObrasPorPeriodo(pack, opcoes.periodo);
+        const packFiltrado = filtrarPackRelGeralObrasPorPeriodo(pack, opcoes);
         const temItens = (opcoes.vencido && packFiltrado.vencidas.length)
             || (opcoes.aVencer && packFiltrado.aVencer.length)
             || (opcoes.pagos && (packFiltrado.pagasForn.length || packFiltrado.terceiros.length));
         if (!temItens) {
             return Swal.fire(
                 'Sem registros',
-                'Nenhum lançamento encontrado para <b>' + escapeHtmlBasico(packFiltrado.periodoLabel || rotuloPeriodoMesAnoRelGeral(opcoes.periodo)) + '</b> com as opções marcadas.',
+                'Nenhum lançamento encontrado para <b>' + escapeHtmlBasico(packFiltrado.periodoLabel || 'o período escolhido') + '</b> com as opções marcadas.',
                 'info'
             );
         }
@@ -10852,14 +11095,14 @@ window.carregarFiltrosDespesas = async function() {
         });
         if (!opcoes) return;
 
-        const packFiltrado = filtrarPackRelGeralObrasPorPeriodo(pack, opcoes.periodo);
+        const packFiltrado = filtrarPackRelGeralObrasPorPeriodo(pack, opcoes);
         const temItens = (opcoes.vencido && packFiltrado.vencidas.length)
             || (opcoes.aVencer && packFiltrado.aVencer.length)
             || (opcoes.pagos && (packFiltrado.pagasForn.length || packFiltrado.terceiros.length));
         if (!temItens) {
             return Swal.fire(
                 'Sem registros',
-                'Nenhum lançamento encontrado para <b>' + escapeHtmlBasico(packFiltrado.periodoLabel || rotuloPeriodoMesAnoRelGeral(opcoes.periodo)) + '</b> com as opções marcadas.',
+                'Nenhum lançamento encontrado para <b>' + escapeHtmlBasico(packFiltrado.periodoLabel || 'o período escolhido') + '</b> com as opções marcadas.',
                 'info'
             );
         }
@@ -11739,7 +11982,7 @@ window.carregarFiltrosDespesas = async function() {
             botaoConfirmar: 'Gerar PDF'
         });
         if (!opcoes) return;
-        const packFiltrado = filtrarPackRelGeralObrasPorPeriodo(pack, opcoes.periodo);
+        const packFiltrado = filtrarPackRelGeralObrasPorPeriodo(pack, opcoes);
         const temItens = (opcoes.vencido && packFiltrado.vencidas.length)
             || (opcoes.aVencer && packFiltrado.aVencer.length)
             || (opcoes.pagos && packFiltrado.pagasForn.length);
@@ -11771,7 +12014,7 @@ window.carregarFiltrosDespesas = async function() {
             corConfirmar: '#217346'
         });
         if (!opcoes) return;
-        const packFiltrado = filtrarPackRelGeralObrasPorPeriodo(pack, opcoes.periodo);
+        const packFiltrado = filtrarPackRelGeralObrasPorPeriodo(pack, opcoes);
         const temItens = (opcoes.vencido && packFiltrado.vencidas.length)
             || (opcoes.aVencer && packFiltrado.aVencer.length)
             || (opcoes.pagos && packFiltrado.pagasForn.length);
