@@ -7584,18 +7584,57 @@ function separarDataSegura(dataString) {
     const PARES_OBRAS_DUPLICADAS = [
         { origem: 'CMEI RODOVIARIA', destino: 'CRECHE VIDA NOVA' },
         { origem: 'CMI RODOVIARIA', destino: 'CRECHE VIDA NOVA' },
-        { origem: 'CMEI RODOVIÁRIA', destino: 'CRECHE VIDA NOVA' }
+        { origem: 'CMEI RODOVIÁRIA', destino: 'CRECHE VIDA NOVA' },
+        { origem: 'BARRACÃO', destino: 'BARRACÃO SP' },
+        { origem: 'BARRACAO', destino: 'BARRACÃO SP' },
+        { origem: 'BARRACÃO PILARES', destino: 'BARRACÃO SP' },
+        { origem: 'BARRACAO PILARES', destino: 'BARRACÃO SP' }
     ];
 
-    function encontrarParObraDuplicada(obras) {
-        const chaves = new Set((obras || []).map((o) => normalizarChaveNomeDespesa(o)));
-        for (const par of PARES_OBRAS_DUPLICADAS) {
-            const chO = normalizarChaveNomeDespesa(par.origem);
-            const chD = normalizarChaveNomeDespesa(par.destino);
-            if (chaves.has(chO) && chaves.has(chD)) {
-                const origemReal = (obras || []).find((o) => normalizarChaveNomeDespesa(o) === chO) || par.origem;
-                const destinoReal = (obras || []).find((o) => normalizarChaveNomeDespesa(o) === chD) || par.destino;
-                return { origem: origemReal, destino: destinoReal };
+    /** Igual normalizarChaveNomeDespesa, mas ignora acentos (BARRACÃO = BARRACAO). */
+    function chaveObraUnificar(nome) {
+        return normalizarChaveNomeDespesa(nome)
+            .normalize('NFD')
+            .replace(/[\u0300-\u036f]/g, '');
+    }
+
+    function encontrarNomeObraPorChave(obras, chaveAlvo) {
+        const ch = chaveObraUnificar(chaveAlvo);
+        return (obras || []).find((o) => chaveObraUnificar(o) === ch) || '';
+    }
+
+    /** Retorna grupo com 1+ origens presentes e o destino presente (ou canônico do par). */
+    function encontrarGrupoObraDuplicada(obras) {
+        const lista = obras || [];
+        const chavesPresentes = new Set(lista.map((o) => chaveObraUnificar(o)));
+        const porDestino = new Map();
+        PARES_OBRAS_DUPLICADAS.forEach((par) => {
+            const chD = chaveObraUnificar(par.destino);
+            if (!porDestino.has(chD)) {
+                porDestino.set(chD, { destinoCanon: formatarNomeCanonicoDespesa(par.destino), origensCanon: [] });
+            }
+            const g = porDestino.get(chD);
+            const chO = chaveObraUnificar(par.origem);
+            if (!g.origensCanon.some((x) => chaveObraUnificar(x) === chO)) {
+                g.origensCanon.push(formatarNomeCanonicoDespesa(par.origem));
+            }
+        });
+
+        for (const [, meta] of porDestino) {
+            const chD = chaveObraUnificar(meta.destinoCanon);
+            const destinoReal = encontrarNomeObraPorChave(lista, meta.destinoCanon) || meta.destinoCanon;
+            const destExiste = chavesPresentes.has(chD);
+            const origensReais = [];
+            meta.origensCanon.forEach((oCanon) => {
+                const chO = chaveObraUnificar(oCanon);
+                if (chO === chD) return;
+                if (chavesPresentes.has(chO)) {
+                    const nomeReal = encontrarNomeObraPorChave(lista, oCanon) || oCanon;
+                    if (!origensReais.some((x) => chaveObraUnificar(x) === chO)) origensReais.push(nomeReal);
+                }
+            });
+            if (destExiste && origensReais.length) {
+                return { origens: origensReais, destino: destinoReal, origem: origensReais[0] };
             }
         }
         return null;
@@ -7604,22 +7643,22 @@ function separarDataSegura(dataString) {
     function atualizarAvisoUnificarObrasDuplicadas(obras) {
         const box = document.getElementById('aviso-unificar-obras-desp');
         if (!box) return;
-        const par = encontrarParObraDuplicada(obras);
-        if (!par) {
+        const grupo = encontrarGrupoObraDuplicada(obras);
+        if (!grupo) {
             box.style.display = 'none';
             box.innerHTML = '';
             return;
         }
+        const listaOrig = grupo.origens.map((o) => '<b>' + escapeHtmlBasico(o) + '</b>').join(' + ');
         box.style.display = 'block';
         box.innerHTML = ''
             + '<div style="margin:8px 12px 12px;padding:12px 14px;background:#fff3cd;border:2px solid #856404;border-radius:10px;text-align:left;">'
             + '<p style="margin:0 0 10px 0;font-size:13px;color:#856404;line-height:1.4;">'
-            + '<b>' + escapeHtmlBasico(par.origem) + '</b> e <b>' + escapeHtmlBasico(par.destino) + '</b> ainda aparecem separadas. '
-            + 'São a mesma obra — clique abaixo para juntar tudo em <b>' + escapeHtmlBasico(par.destino) + '</b>.'
+            + listaOrig + ' → juntar tudo em <b>' + escapeHtmlBasico(grupo.destino) + '</b>.'
             + '</p>'
-            + '<button type="button" id="btn-juntar-obras-duplicadas" data-origem="' + escapeHtmlBasico(par.origem) + '" data-destino="' + escapeHtmlBasico(par.destino) + '"'
+            + '<button type="button" id="btn-juntar-obras-duplicadas" data-origem="' + escapeHtmlBasico(grupo.origem) + '" data-destino="' + escapeHtmlBasico(grupo.destino) + '"'
             + ' style="background:#856404;color:#fff;border:none;border-radius:8px;padding:10px 16px;font-weight:bold;cursor:pointer;font-size:13px;">'
-            + 'Juntar tudo em ' + escapeHtmlBasico(par.destino)
+            + 'Juntar tudo em ' + escapeHtmlBasico(grupo.destino)
             + '</button>'
             + '</div>';
         const btn = document.getElementById('btn-juntar-obras-duplicadas');
@@ -7795,16 +7834,23 @@ function separarDataSegura(dataString) {
         }
     };
 
-    async function coletarDocsObraParaUnificar(empresaLogada, chaveOrigem) {
-        const chavesOrigem = new Set([chaveOrigem]);
+    async function coletarDocsObraParaUnificar(empresaLogada, chaveOrigemOuNome) {
+        const chOrigem = chaveObraUnificar(chaveOrigemOuNome);
+        const chavesOrigem = new Set([chOrigem]);
+        let chDestinoGrupo = '';
         for (const par of PARES_OBRAS_DUPLICADAS) {
-            if (normalizarChaveNomeDespesa(par.origem) === chaveOrigem) {
-                PARES_OBRAS_DUPLICADAS.forEach((p) => {
-                    if (normalizarChaveNomeDespesa(p.destino) === normalizarChaveNomeDespesa(par.destino)) {
-                        chavesOrigem.add(normalizarChaveNomeDespesa(p.origem));
-                    }
-                });
+            if (chaveObraUnificar(par.origem) === chOrigem) {
+                chDestinoGrupo = chaveObraUnificar(par.destino);
+                break;
             }
+        }
+        if (chDestinoGrupo) {
+            PARES_OBRAS_DUPLICADAS.forEach((p) => {
+                if (chaveObraUnificar(p.destino) === chDestinoGrupo) {
+                    const chO = chaveObraUnificar(p.origem);
+                    if (chO !== chDestinoGrupo) chavesOrigem.add(chO);
+                }
+            });
         }
 
         const colecoes = [
@@ -7818,7 +7864,7 @@ function separarDataSegura(dataString) {
                 const snap = await getDocs(query(collection(db, col.nome), where('empresa_id', '==', empresaLogada)));
                 snap.forEach((docSnap) => {
                     const d = docSnap.data();
-                    const chave = normalizarChaveNomeDespesa(d[col.campos.nome] || d[col.campos.lower] || '');
+                    const chave = chaveObraUnificar(d[col.campos.nome] || d[col.campos.lower] || '');
                     if (chavesOrigem.has(chave)) {
                         resultado.push({ colecao: col.nome, id: docSnap.id, campos: col.campos });
                     }
@@ -7839,12 +7885,10 @@ function separarDataSegura(dataString) {
             return Swal.fire('Atenção', 'É preciso ter pelo menos duas obras cadastradas para unificar.', 'info');
         }
 
-        const preferOrigem = 'CMEI RODOVIARIA';
-        const preferDestino = 'CRECHE VIDA NOVA';
-        const chPrefOrig = normalizarChaveNomeDespesa(preferOrigem);
-        const chPrefDest = normalizarChaveNomeDespesa(preferDestino);
-        const temOrig = obras.some((o) => normalizarChaveNomeDespesa(o) === chPrefOrig);
-        const temDest = obras.some((o) => normalizarChaveNomeDespesa(o) === chPrefDest);
+        const grupoSug = encontrarGrupoObraDuplicada(obras);
+        const preferOrigem = grupoSug ? grupoSug.origem : '';
+        const preferDestino = grupoSug ? grupoSug.destino : '';
+        const temSugestao = Boolean(grupoSug);
 
         const opts = obras.map((o) => {
             const esc = escapeHtmlBasico(o);
@@ -7854,13 +7898,15 @@ function separarDataSegura(dataString) {
         const result = await Swal.fire({
             title: 'Unificar obras',
             html: ''
-                + '<p style="text-align:left;font-size:13px;margin:0 0 12px 0;">Tudo cadastrado na obra <b>origem</b> passa para a obra <b>destino</b>. A etiqueta da origem some da lista.</p>'
+                + '<p style="text-align:left;font-size:13px;margin:0 0 12px 0;">Tudo cadastrado na obra <b>origem</b> passa para a obra <b>destino</b>. A etiqueta da origem some da lista. Se for um grupo conhecido (ex.: Barracão), as obras irmãs também são movidas juntas.</p>'
                 + '<label style="display:block;text-align:left;font-size:12px;margin-bottom:4px;">Obra origem (será esvaziada)</label>'
                 + '<select id="unificar-obra-origem" class="swal2-input" style="width:100%;margin:0 0 12px 0;">' + opts + '</select>'
                 + '<label style="display:block;text-align:left;font-size:12px;margin-bottom:4px;">Obra destino (fica com tudo)</label>'
                 + '<select id="unificar-obra-destino" class="swal2-input" style="width:100%;margin:0;">' + opts + '</select>'
-                + (temOrig && temDest
-                    ? '<p style="text-align:left;font-size:12px;color:#856404;margin:10px 0 0 0;">Sugestão pré-selecionada: <b>CMEI RODOVIARIA</b> → <b>CRECHE VIDA NOVA</b>.</p>'
+                + (temSugestao
+                    ? '<p style="text-align:left;font-size:12px;color:#856404;margin:10px 0 0 0;">Sugestão: <b>'
+                        + escapeHtmlBasico(grupoSug.origens.join(' + '))
+                        + '</b> → <b>' + escapeHtmlBasico(preferDestino) + '</b>.</p>'
                     : ''),
             showCancelButton: true,
             confirmButtonText: 'Continuar',
@@ -7869,8 +7915,8 @@ function separarDataSegura(dataString) {
             didOpen: () => {
                 const selO = document.getElementById('unificar-obra-origem');
                 const selD = document.getElementById('unificar-obra-destino');
-                if (temOrig && selO) selO.value = preferOrigem;
-                if (temDest && selD) selD.value = preferDestino;
+                if (temSugestao && selO) selO.value = preferOrigem;
+                if (temSugestao && selD) selD.value = preferDestino;
                 else if (selD && obras[0]) selD.value = obras.find((o) => o !== (selO && selO.value)) || obras[0];
             },
             preConfirm: () => {
@@ -7880,7 +7926,7 @@ function separarDataSegura(dataString) {
                     Swal.showValidationMessage('Selecione origem e destino.');
                     return false;
                 }
-                if (normalizarChaveNomeDespesa(origem) === normalizarChaveNomeDespesa(destino)) {
+                if (chaveObraUnificar(origem) === chaveObraUnificar(destino)) {
                     Swal.showValidationMessage('Origem e destino devem ser obras diferentes.');
                     return false;
                 }
@@ -7897,7 +7943,7 @@ function separarDataSegura(dataString) {
         if (!empresaLogada) {
             return Swal.fire('Atenção', 'Empresa não identificada. Entre de novo no painel e tente outra vez.', 'warning');
         }
-        const chaveOrigem = normalizarChaveNomeDespesa(origem);
+        const chaveOrigem = chaveObraUnificar(origem);
         const destinoCanon = formatarNomeCanonicoDespesa(destino);
         const destinoLower = normalizarChaveNomeDespesa(destinoCanon);
         if (!chaveOrigem || !destinoLower) {
@@ -7907,7 +7953,11 @@ function separarDataSegura(dataString) {
         try {
             Swal.fire({ title: 'Contando registros...', html: 'Aguarde, pode demorar alguns segundos...', allowOutsideClick: false, didOpen: () => Swal.showLoading() });
 
-            const docs = await coletarDocsObraParaUnificar(empresaLogada, chaveOrigem);
+            const docs = await coletarDocsObraParaUnificar(empresaLogada, origem);
+            const grupo = encontrarGrupoObraDuplicada((window._cacheNomesDespesas && window._cacheNomesDespesas.obras) || []);
+            const origensLabel = (grupo && chaveObraUnificar(grupo.destino) === chaveObraUnificar(destinoCanon) && grupo.origens.length)
+                ? grupo.origens.join(' + ')
+                : origem;
 
             if (!docs.length) {
                 return Swal.fire('Nada encontrado', `Nenhum registro com a obra <b>${escapeHtmlBasico(origem)}</b>.`, 'info');
@@ -7922,7 +7972,7 @@ function separarDataSegura(dataString) {
             const confirmacao = await Swal.fire({
                 title: 'Confirmar unificação?',
                 html: ''
-                    + `Mover <b>${docs.length}</b> registro(s) de<br><b>${escapeHtmlBasico(origem)}</b><br>para<br><b>${escapeHtmlBasico(destinoCanon)}</b>?<br><br>`
+                    + `Mover <b>${docs.length}</b> registro(s) de<br><b>${escapeHtmlBasico(origensLabel)}</b><br>para<br><b>${escapeHtmlBasico(destinoCanon)}</b>?<br><br>`
                     + `<span style="font-size:12px;text-align:left;display:block;">${detalhe}</span><br>`
                     + '<span style="color:#d9534f;font-weight:bold;">Digite <b>UNIFICAR</b> para confirmar.</span>',
                 icon: 'warning',
@@ -7956,14 +8006,20 @@ function separarDataSegura(dataString) {
             }
 
             const busca = document.getElementById('busca-obra');
-            if (busca && normalizarChaveNomeDespesa(busca.value) === chaveOrigem) {
+            const chavesMovidas = new Set([chaveOrigem]);
+            PARES_OBRAS_DUPLICADAS.forEach((p) => {
+                if (chaveObraUnificar(p.destino) === chaveObraUnificar(destinoCanon)) {
+                    chavesMovidas.add(chaveObraUnificar(p.origem));
+                }
+            });
+            if (busca && chavesMovidas.has(chaveObraUnificar(busca.value))) {
                 busca.value = destinoCanon;
             }
-            if (window._obraSelecionadaCadastros && normalizarChaveNomeDespesa(window._obraSelecionadaCadastros) === chaveOrigem) {
+            if (window._obraSelecionadaCadastros && chavesMovidas.has(chaveObraUnificar(window._obraSelecionadaCadastros))) {
                 window._obraSelecionadaCadastros = destinoCanon;
             }
             if (window._filtroCadastroDespesa && window._filtroCadastroDespesa.obra
-                && normalizarChaveNomeDespesa(window._filtroCadastroDespesa.obra) === chaveOrigem) {
+                && chavesMovidas.has(chaveObraUnificar(window._filtroCadastroDespesa.obra))) {
                 window._filtroCadastroDespesa.obra = destinoCanon;
             }
 
@@ -8299,6 +8355,31 @@ window.carregarFiltrosDespesas = async function() {
         return Boolean(box && box.style.display !== 'none');
     }
 
+    /** Último dia do mês (mês 0–11), respeitando ano bissexto. */
+    function ultimoDiaDoMesCalendario(ano, mes0) {
+        return new Date(ano, mes0 + 1, 0).getDate();
+    }
+
+    /**
+     * Soma meses no calendário civil sem “pular” o mês.
+     * Ex.: 29/07/2026 + 7 meses → 28/02/2027 (não existe 29/02/2027).
+     * Evita o bug do Date.setMonth, que vira 01/03 e pode zerar o <input type="date">.
+     */
+    function adicionarMesesCalendarioIso(isoBase, mesesAdd) {
+        const m = String(isoBase || '').trim().match(/^(\d{4})-(\d{1,2})-(\d{1,2})/);
+        if (!m) return '';
+        let y = parseInt(m[1], 10);
+        let mo = parseInt(m[2], 10) - 1;
+        const diaOrig = parseInt(m[3], 10);
+        if (!Number.isFinite(y) || !Number.isFinite(mo) || !Number.isFinite(diaOrig) || diaOrig < 1) return '';
+        const add = Number(mesesAdd) || 0;
+        const totalMes = mo + add;
+        y += Math.floor(totalMes / 12);
+        mo = ((totalMes % 12) + 12) % 12;
+        const dia = Math.min(diaOrig, ultimoDiaDoMesCalendario(y, mo));
+        return y + '-' + String(mo + 1).padStart(2, '0') + '-' + String(dia).padStart(2, '0');
+    }
+
     function formatarMoedaBrFromNumber(n) {
         const v = Number(n) || 0;
         return v.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
@@ -8400,11 +8481,7 @@ window.carregarFiltrosDespesas = async function() {
                 valorParcela = (cents / 100).toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
             }
             if (vencBase) {
-                const d = new Date(vencBase + 'T12:00:00');
-                if (!isNaN(d.getTime())) {
-                    d.setMonth(d.getMonth() + (i - 1));
-                    vencIso = d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
-                }
+                vencIso = adicionarMesesCalendarioIso(vencBase, i - 1);
             }
             lista.appendChild(criarLinhaParcelaDespesaHtml(i, valorParcela, vencIso));
         }
@@ -8510,6 +8587,28 @@ window.carregarFiltrosDespesas = async function() {
             const invalidas = parcelas.filter(function (p) { return !(p.valor_numero > 0); });
             if (invalidas.length) {
                 return Swal.fire('Atenção', 'Informe o valor de todas as parcelas.', 'warning');
+            }
+            // Completa vencimentos vazios/inválidos pelo calendário (mesmo dia do mês ou último dia válido)
+            const vencBaseSalvar = (document.getElementById('d-vencimento') && document.getElementById('d-vencimento').value) || '';
+            parcelas.forEach(function (p, idx) {
+                if (p.data_vencimento && /^\d{4}-\d{2}-\d{2}$/.test(p.data_vencimento)) {
+                    const partes = p.data_vencimento.split('-');
+                    const y = parseInt(partes[0], 10);
+                    const mo = parseInt(partes[1], 10) - 1;
+                    const d = parseInt(partes[2], 10);
+                    const maxD = ultimoDiaDoMesCalendario(y, mo);
+                    if (d > maxD) {
+                        p.data_vencimento = y + '-' + String(mo + 1).padStart(2, '0') + '-' + String(maxD).padStart(2, '0');
+                    }
+                    return;
+                }
+                if (vencBaseSalvar) {
+                    p.data_vencimento = adicionarMesesCalendarioIso(vencBaseSalvar, idx);
+                }
+            });
+            const semVenc = parcelas.filter(function (p) { return !p.data_vencimento; });
+            if (semVenc.length) {
+                return Swal.fire('Atenção', 'Informe o vencimento da 1ª parcela (campo Data de Vencimento) ou preencha o vencimento de cada parcela.', 'warning');
             }
         } else if (!valor) {
             return Swal.fire('Atenção', 'Preencha a Obra, Loja e o Valor!', 'warning');
