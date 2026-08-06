@@ -5750,7 +5750,7 @@ function separarDataSegura(dataString) {
         const texto = dia + '/' + mes + '/' + ano;
         const hoje = new Date();
         hoje.setHours(12, 0, 0, 0);
-        const vencida = dt.getTime() < hoje.getTime() && String(d.status || 'pendente') !== 'pago';
+        const vencida = dt.getTime() < hoje.getTime() && !despesaEstaPaga(d);
         if (vencida) {
             return '<span style="font-weight:800;color:#dc3545;">' + escapeHtmlBasico(texto) + '</span>';
         }
@@ -5758,7 +5758,7 @@ function separarDataSegura(dataString) {
     }
 
     function badgeEstadoRelDespesaHtml(d) {
-        const st = d.status === 'pago' ? 'pago' : 'pendente';
+        const st = despesaEstaPaga(d) ? 'pago' : 'pendente';
         if (st === 'pago') {
             let badgeExtra = '';
             if (d.comprovante_pagamento) {
@@ -5768,7 +5768,7 @@ function separarDataSegura(dataString) {
             } else if (d.baixa_sem_comprovante) {
                 badgeExtra = '<br><span style="font-size:10px;color:#856404;">Sem comprovante</span>';
             }
-            return '<span style="background:#d4edda;color:#155724;padding:2px 6px;border-radius:4px;font-weight:bold;">Pago</span><br><span style="font-size:10px;color:#666;">' + escapeHtmlBasico(d.data_pagamento || '') + '</span>' + badgeExtra;
+            return '<span style="background:#d4edda;color:#155724;padding:2px 6px;border-radius:4px;font-weight:bold;">Pago</span><br><span style="font-size:10px;color:#666;">' + escapeHtmlBasico(obterDataPagamentoDespesa(d) || d.data_pagamento || '') + '</span>' + badgeExtra;
         }
         if (despesaEstaVencida(d)) {
             return '<span style="background:#f8d7da;color:#721c24;padding:2px 8px;border-radius:4px;font-weight:bold;">⚠️ VENCIDA</span><br><span style="font-size:10px;color:#dc3545;font-weight:700;">Atrasada — pendente pagamento</span>';
@@ -5789,8 +5789,8 @@ function separarDataSegura(dataString) {
         const m = modo || window._relDespOrdemVenc || 'cronologico';
         if (m === 'vencidos_topo') {
             arr.sort((a, b) => {
-                const pa = a.status === 'pago' ? 2 : (despesaEstaVencida(a) ? 0 : 1);
-                const pb = b.status === 'pago' ? 2 : (despesaEstaVencida(b) ? 0 : 1);
+                const pa = despesaEstaPaga(a) ? 2 : (despesaEstaVencida(a) ? 0 : 1);
+                const pb = despesaEstaPaga(b) ? 2 : (despesaEstaVencida(b) ? 0 : 1);
                 if (pa !== pb) return pa - pb;
                 const ta = dataVencimentoTsDespesa(a);
                 const tb = dataVencimentoTsDespesa(b);
@@ -5832,13 +5832,12 @@ function separarDataSegura(dataString) {
         let somaAVencer = 0;
         let somaPagas = 0;
         (arr || []).forEach((d) => {
-            const valor = Number(d.valor_numero != null ? d.valor_numero : parseMoedaLocal(d.valor_string || 0)) || 0;
-            if (d.status === 'pago') {
-                somaPagas += valor;
-            } else if (despesaEstaVencida(d)) {
-                somaVencidas += valor;
-            } else {
-                somaAVencer += valor;
+            const pagoAcum = valorPagoDespesa(d);
+            const aberto = valorEmAbertoDespesa(d);
+            somaPagas += pagoAcum;
+            if (aberto > 0.009) {
+                if (despesaEstaVencida(d)) somaVencidas += aberto;
+                else somaAVencer += aberto;
             }
         });
         return { somaVencidas, somaAVencer, somaPagas };
@@ -5944,7 +5943,7 @@ function separarDataSegura(dataString) {
         html += '<th style="padding:8px;border:1px solid #152a45;">Acções</th></tr></thead><tbody>';
 
         arr.forEach((d) => {
-            const st = d.status === 'pago' ? 'pago' : 'pendente';
+            const st = despesaEstaPaga(d) ? 'pago' : 'pendente';
             const vencida = st === 'pendente' && despesaEstaVencida(d);
             const trFundo = vencida ? 'background:#fff5f5;border-left:4px solid #dc3545;' : '';
             const badge = badgeEstadoRelDespesaHtml(d);
@@ -5988,11 +5987,154 @@ function separarDataSegura(dataString) {
     }
 
     function despesaEstaVencida(d) {
+        if (despesaEstaPaga(d)) return false;
         const ts = dataVencimentoTsDespesa(d);
         if (ts == null) return false;
         const hoje = new Date();
         hoje.setHours(12, 0, 0, 0);
         return ts < hoje.getTime();
+    }
+
+    /** Data de pagamento preenchida (ignora vazio / N/A). */
+    function obterDataPagamentoDespesa(d) {
+        if (!d) return '';
+        const v = d.data_pagamento != null ? d.data_pagamento : d.dataPagamento;
+        if (v == null) return '';
+        const s = String(v).trim();
+        if (!s) return '';
+        const low = s.toLowerCase();
+        if (low === 'n/a' || low === 'na' || low === 'null' || low === 'undefined' || s === '—') return '';
+        return s;
+    }
+
+    function valorOriginalDespesa(d) {
+        if (!d) return 0;
+        const n = Number(d.valor_numero);
+        if (Number.isFinite(n) && n > 0) return n;
+        return parseMoedaLocal(d.valor_string || '0') || 0;
+    }
+
+    function listaPagamentosParciaisDespesa(d) {
+        if (!d) return [];
+        const arr = d.pagamentos_parciais || d.pagamentosParciais;
+        return Array.isArray(arr) ? arr : [];
+    }
+
+    function valorPagoDespesa(d) {
+        if (!d) return 0;
+        const pars = listaPagamentosParciaisDespesa(d);
+        if (pars.length) {
+            return pars.reduce((s, p) => s + (Number(p.valor) || parseMoedaLocal(p.valor_string) || 0), 0);
+        }
+        if (d.valor_pago_acumulado != null && Number.isFinite(Number(d.valor_pago_acumulado))) {
+            return Math.max(0, Number(d.valor_pago_acumulado));
+        }
+        const st = String(d.status || '').trim().toLowerCase();
+        if (st === 'pago' || st === 'paga' || st === 'quitado' || st === 'quitada' || st === 'baixado' || st === 'baixada') {
+            return valorOriginalDespesa(d);
+        }
+        // Legado: data_pagamento sem parcelas = quitação total
+        if (obterDataPagamentoDespesa(d) && !pars.length) return valorOriginalDespesa(d);
+        return 0;
+    }
+
+    function saldoDevedorDespesa(d) {
+        if (!d) return 0;
+        const orig = valorOriginalDespesa(d);
+        const pago = valorPagoDespesa(d);
+        if (d.saldo_devedor != null && Number.isFinite(Number(d.saldo_devedor)) && listaPagamentosParciaisDespesa(d).length) {
+            return Math.max(0, Number(d.saldo_devedor));
+        }
+        return Math.max(0, Math.round((orig - pago) * 100) / 100);
+    }
+
+    function despesaTemPagamentoParcial(d) {
+        if (!d) return false;
+        if (String(d.status || '').toLowerCase() === 'parcial') return true;
+        return listaPagamentosParciaisDespesa(d).length > 0 && saldoDevedorDespesa(d) > 0.009;
+    }
+
+    /**
+     * Quitada por completo (saldo zero). Pagamento parcial NÃO conta como paga.
+     */
+    function despesaEstaPaga(d) {
+        if (!d) return false;
+        const st = String(d.status || '').trim().toLowerCase();
+        if (st === 'parcial') return false;
+        if (st === 'pago' || st === 'paga' || st === 'quitado' || st === 'quitada' || st === 'baixado' || st === 'baixada') {
+            return true;
+        }
+        if (listaPagamentosParciaisDespesa(d).length) {
+            return saldoDevedorDespesa(d) <= 0.009;
+        }
+        return !!obterDataPagamentoDespesa(d);
+    }
+
+    /** Valor que entra em "em aberto" (vencido / a vencer): o saldo restante. */
+    function valorEmAbertoDespesa(d) {
+        if (despesaEstaPaga(d)) return 0;
+        return saldoDevedorDespesa(d);
+    }
+
+    /** Se tem data_pagamento e status ainda não é pago, alinha o status (memória + Firestore). */
+    async function sincronizarStatusPagoInconsistente(lista, colecaoNome) {
+        const col = colecaoNome || 'despesas_obras';
+        const pendentes = (lista || []).filter((d) => {
+            if (!d || !d.id) return false;
+            if (listaPagamentosParciaisDespesa(d).length) return false; // parcial: não forçar quitação
+            if (String(d.status || '').trim().toLowerCase() === 'parcial') return false;
+            return obterDataPagamentoDespesa(d) && String(d.status || '').trim().toLowerCase() !== 'pago';
+        });
+        if (!pendentes.length) return 0;
+        let ok = 0;
+        for (const d of pendentes) {
+            d.status = 'pago';
+            if (!d.data_pagamento) d.data_pagamento = obterDataPagamentoDespesa(d);
+            try {
+                await updateDoc(doc(db, col, d.id), { status: 'pago' });
+                ok += 1;
+            } catch (e) {
+                console.warn('sincronizarStatusPagoInconsistente', d.id, e);
+            }
+        }
+        return ok;
+    }
+
+    function montarPayloadPagamentoParcial(despesa, valorPago, dataBr, obs, comprovantePayload) {
+        const orig = valorOriginalDespesa(despesa);
+        const pars = listaPagamentosParciaisDespesa(despesa).slice();
+        const idParc = 'pp_' + Date.now() + '_' + Math.random().toString(36).slice(2, 7);
+        const novo = {
+            id: idParc,
+            valor: valorPago,
+            valor_string: formatarMoeda(valorPago).replace(/^R\$\s?/, ''),
+            data: dataBr || dataPagamentoHojeBr(),
+            observacao: obs || '',
+            timestamp: Date.now()
+        };
+        if (comprovantePayload && comprovantePayload.comprovante_pagamento) {
+            novo.comprovante_pagamento = comprovantePayload.comprovante_pagamento;
+        }
+        if (comprovantePayload && comprovantePayload.baixa_sem_comprovante) {
+            novo.baixa_sem_comprovante = true;
+        }
+        pars.push(novo);
+        const totalPago = pars.reduce((s, p) => s + (Number(p.valor) || 0), 0);
+        const saldo = Math.max(0, Math.round((orig - totalPago) * 100) / 100);
+        const quitado = saldo <= 0.009;
+        return {
+            pagamentos_parciais: pars,
+            valor_pago_acumulado: Math.round(totalPago * 100) / 100,
+            saldo_devedor: quitado ? 0 : saldo,
+            status: quitado ? 'pago' : 'parcial',
+            data_pagamento: quitado ? (dataBr || dataPagamentoHojeBr()) : (despesa.data_pagamento || null),
+            comprovante_pagamento: quitado
+                ? (comprovantePayload && comprovantePayload.comprovante_pagamento) || despesa.comprovante_pagamento || null
+                : (despesa.comprovante_pagamento || null),
+            baixa_sem_comprovante: quitado
+                ? !!(comprovantePayload && comprovantePayload.baixa_sem_comprovante)
+                : !!despesa.baixa_sem_comprovante
+        };
     }
 
     /** Ordem cronológica de vencimento (mais antigo primeiro); sem data válida vai para o fim. */
@@ -7214,10 +7356,12 @@ function separarDataSegura(dataString) {
         });
     }
 
-    function htmlModalBaixaComprovante() {
+    function htmlModalBaixaComprovante(opts) {
+        const titulo = (opts && opts.titulo) || 'Para dar baixa, anexe o <b>comprovante de pagamento</b> (foto, print, recibo do banco ou <b>PDF</b>).';
         return `
-            <div style="text-align:left;font-size:13px;">
-                <p style="margin:0 0 10px;color:#555;line-height:1.45;">Para dar baixa, anexe o <b>comprovante de pagamento</b> (foto, print, recibo do banco ou <b>PDF</b>).</p>
+            <div style="text-align:left;font-size:13px;margin-top:12px;padding-top:12px;border-top:2px solid #17a2b8;">
+                <p style="margin:0 0 10px;color:#1a2a43;line-height:1.45;font-weight:700;">📎 Comprovante obrigatório</p>
+                <p style="margin:0 0 10px;color:#555;line-height:1.45;">${titulo}</p>
                 <label style="font-weight:700;display:block;margin-bottom:6px;">Comprovante de pagamento</label>
                 <input type="file" id="swal-comprovante-pgto" accept="image/*,application/pdf,.pdf" style="width:100%;padding:8px;border:1px solid #ddd;border-radius:8px;box-sizing:border-box;background:#fff;">
                 <p style="margin:6px 0 0;font-size:11px;color:#888;">Aceita imagem (JPG/PNG) ou PDF. PDF até ~600 KB.</p>
@@ -7399,8 +7543,9 @@ function separarDataSegura(dataString) {
         const chObra = normalizarChaveNomeDespesa(d.obra_nome || '') || '__sem_obra__';
         const canonLoja = formatarNomeCanonicoDespesa(d.loja_nome);
         const canonObra = formatarNomeCanonicoDespesa(d.obra_nome) || 'SEM OBRA';
-        const valor = d.valor_numero || 0;
-        const status = d.status || 'pendente';
+        const valor = valorEmAbertoDespesa(d) || (despesaEstaPaga(d) ? 0 : valorOriginalDespesa(d));
+        const pago = despesaEstaPaga(d);
+        const pagoParc = valorPagoDespesa(d);
 
         if (!mapa.has(chLoja)) {
             mapa.set(chLoja, { chave: chLoja, canonico: canonLoja, vencido: 0, aVencer: 0, pago: 0, obras: new Map() });
@@ -7411,15 +7556,18 @@ function separarDataSegura(dataString) {
         }
         const obra = forn.obras.get(chObra);
 
-        if (status === 'pago') {
-            forn.pago += valor;
-            obra.pago += valor;
-        } else if (despesaEstaVencida(d)) {
-            forn.vencido += valor;
-            obra.vencido += valor;
-        } else {
-            forn.aVencer += valor;
-            obra.aVencer += valor;
+        if (pagoParc > 0) {
+            forn.pago += pagoParc;
+            obra.pago += pagoParc;
+        }
+        if (!pago && valor > 0) {
+            if (despesaEstaVencida(d)) {
+                forn.vencido += valor;
+                obra.vencido += valor;
+            } else {
+                forn.aVencer += valor;
+                obra.aVencer += valor;
+            }
         }
     }
 
@@ -7439,20 +7587,18 @@ function separarDataSegura(dataString) {
                 if (!mapaObraLojas.has(chObra)) mapaObraLojas.set(chObra, new Map());
                 const lojasDaObra = mapaObraLojas.get(chObra);
                 const canonLoja = formatarNomeCanonicoDespesa(d.loja_nome);
-                const valor = d.valor_numero || 0;
-                const status = d.status || 'pendente';
+                const valor = valorEmAbertoDespesa(d);
+                const pagoParc = valorPagoDespesa(d);
                 if (!lojasDaObra.has(chLoja)) {
                     lojasDaObra.set(chLoja, { canonico: canonLoja, count: 1, vencido: 0, aVencer: 0, pago: 0 });
                 } else {
                     lojasDaObra.get(chLoja).count += 1;
                 }
                 const lojaObra = lojasDaObra.get(chLoja);
-                if (status === 'pago') {
-                    lojaObra.pago += valor;
-                } else if (despesaEstaVencida(d)) {
-                    lojaObra.vencido += valor;
-                } else {
-                    lojaObra.aVencer += valor;
+                if (pagoParc > 0) lojaObra.pago += pagoParc;
+                if (!despesaEstaPaga(d) && valor > 0) {
+                    if (despesaEstaVencida(d)) lojaObra.vencido += valor;
+                    else lojaObra.aVencer += valor;
                 }
             }
         });
@@ -7590,6 +7736,166 @@ function separarDataSegura(dataString) {
         { origem: 'BARRACÃO PILARES', destino: 'BARRACÃO SP' },
         { origem: 'BARRACAO PILARES', destino: 'BARRACÃO SP' }
     ];
+
+    const PARES_FORNECEDORES_DUPLICADOS = [
+        { origem: 'ADILSON CAETANO', destino: 'ADILSON / EMPREITA VIDA NOVA' },
+        { origem: 'ADILSON CAETANO DE OLIVEIRA', destino: 'ADILSON / EMPREITA VIDA NOVA' },
+        { origem: 'ADILSON EMPREITA VIDA NOVA', destino: 'ADILSON / EMPREITA VIDA NOVA' }
+    ];
+
+    function chavesFornecedorEquivalentes(nome) {
+        const ch = chaveObraUnificar(nome);
+        const set = new Set([ch]);
+        if (!ch) return set;
+        PARES_FORNECEDORES_DUPLICADOS.forEach((par) => {
+            const chO = chaveObraUnificar(par.origem);
+            const chD = chaveObraUnificar(par.destino);
+            if (ch === chO || ch === chD) {
+                set.add(chO);
+                set.add(chD);
+            }
+        });
+        return set;
+    }
+
+    function fornecedorEquivalente(nomeA, nomeB) {
+        if (!nomeA || !nomeB) return false;
+        const a = chaveObraUnificar(nomeA);
+        const b = chaveObraUnificar(nomeB);
+        if (a === b) return true;
+        const setA = chavesFornecedorEquivalentes(nomeA);
+        if (setA.has(b)) return true;
+        // Mesmo primeiro nome (ex.: ADILSON CAETANO ≈ ADILSON / EMPREITA…)
+        const tokA = a.split(/[\s\/\-]+/).filter(Boolean)[0] || '';
+        const tokB = b.split(/[\s\/\-]+/).filter(Boolean)[0] || '';
+        if (tokA && tokA === tokB && tokA.length >= 4) return true;
+        return false;
+    }
+
+    function despesaOuTerceiroCasaComBusca(d, filtroAtual, termoBusca, ehTerceiro) {
+        const nomeObraRaw = ehTerceiro ? (d.obra || d.obra_lower || d.obra_nome || '') : (d.obra_nome || d.obra_lower || '');
+        const nomeObra = normalizarChaveNomeDespesa(nomeObraRaw);
+        const nomePessoa = normalizarChaveNomeDespesa(
+            ehTerceiro ? (d.nome || d.loja_nome || '') : (d.loja_nome || d.loja_lower || '')
+        );
+        if (filtroAtual && filtroAtual.obra && filtroAtual.fornecedor) {
+            return obraEquivalenteDespesa(nomeObraRaw, filtroAtual.obra)
+                && fornecedorEquivalente(filtroAtual.fornecedor, ehTerceiro ? (d.nome || d.loja_nome || '') : (d.loja_nome || ''));
+        }
+        if (filtroAtual && filtroAtual.obra) {
+            return obraEquivalenteDespesa(nomeObraRaw, filtroAtual.obra);
+        }
+        if (filtroAtual && filtroAtual.fornecedor) {
+            return fornecedorEquivalente(filtroAtual.fornecedor, ehTerceiro ? (d.nome || d.loja_nome || '') : (d.loja_nome || ''));
+        }
+        if (!termoBusca) return false;
+        return nomeObra.includes(termoBusca) || nomePessoa.includes(termoBusca);
+    }
+
+    function normalizarTerceiroComoDespesaPaga(d) {
+        return {
+            id: d.id,
+            _origem: 'pagamentos_terceiros',
+            status: 'pago',
+            obra_nome: formatarNomeCanonicoDespesa(d.obra || ''),
+            obra_lower: normalizarChaveNomeDespesa(d.obra || d.obra_lower || ''),
+            loja_nome: formatarNomeCanonicoDespesa(d.nome || ''),
+            loja_lower: normalizarChaveNomeDespesa(d.nome || ''),
+            nota_fiscal: '',
+            data_pagamento: d.data || '',
+            data: d.data || '',
+            valor_string: d.valor_string || String(d.valor_numero || 0),
+            valor_numero: Number(d.valor_numero) || parseMoedaLocal(d.valor_string) || 0,
+            descricao: (d.descricao ? String(d.descricao) : '') + (d.descricao ? ' — ' : '') + 'Pagamento a terceiro',
+            foto_recibo: d.foto_recibo || null,
+            timestamp: d.timestamp || 0
+        };
+    }
+
+    function obraEquivalenteDespesa(obraA, obraB) {
+        const a = chaveObraUnificar(obraA);
+        const b = chaveObraUnificar(obraB);
+        if (!a || !b) return false;
+        if (a === b) return true;
+        for (let i = 0; i < PARES_OBRAS_DUPLICADAS.length; i++) {
+            const par = PARES_OBRAS_DUPLICADAS[i];
+            const set = new Set([chaveObraUnificar(par.origem), chaveObraUnificar(par.destino)]);
+            if (set.has(a) && set.has(b)) return true;
+        }
+        return false;
+    }
+
+    function terceiroCasaComDespesaFornecedor(terc, desp) {
+        if (!terc || !desp) return false;
+        const obraT = terc.obra_nome || terc.obra || '';
+        const obraD = desp.obra_nome || desp.obra || '';
+        const fornT = terc.loja_nome || terc.nome || '';
+        const fornD = desp.loja_nome || '';
+        return obraEquivalenteDespesa(obraT, obraD) && fornecedorEquivalente(fornT, fornD);
+    }
+
+    /**
+     * Abate pagamentos a terceiros (mesma obra + fornecedor) no saldo em aberto das despesas.
+     * Só em memória no relatório — não grava no Firestore. Evita contar o mesmo terceiro duas vezes.
+     */
+    function aplicarAbatimentoTerceirosNasDespesas(despesas, terceirosNorm) {
+        const listaDesp = despesas || [];
+        const listaTer = terceirosNorm || [];
+        listaDesp.forEach((d) => {
+            d._abatimento_terceiros = 0;
+            d._terceiros_abatendo = [];
+        });
+        if (!listaDesp.length || !listaTer.length) return;
+
+        const restanteTer = new Map();
+        listaTer.forEach((t) => {
+            const v = Number(t.valor_numero) || parseMoedaLocal(t.valor_string) || valorOriginalDespesa(t) || 0;
+            restanteTer.set(t.id, Math.max(0, v));
+        });
+
+        const pendentes = listaDesp
+            .filter((d) => d && d._origem !== 'pagamentos_terceiros' && !despesaEstaPaga(d) && valorEmAbertoDespesa(d) > 0.009)
+            .slice()
+            .sort((a, b) => {
+                const ta = dataVencimentoTsDespesa(a);
+                const tb = dataVencimentoTsDespesa(b);
+                const va = ta != null ? ta : Number.MAX_SAFE_INTEGER;
+                const vb = tb != null ? tb : Number.MAX_SAFE_INTEGER;
+                if (va !== vb) return va - vb;
+                return (a.timestamp || 0) - (b.timestamp || 0);
+            });
+
+        pendentes.forEach((d) => {
+            let saldoAberto = valorEmAbertoDespesa(d);
+            if (saldoAberto <= 0.009) return;
+            listaTer.forEach((t) => {
+                let rest = restanteTer.get(t.id) || 0;
+                if (rest <= 0.009) return;
+                if (!terceiroCasaComDespesaFornecedor(t, d)) return;
+                const abate = Math.min(rest, saldoAberto);
+                if (abate <= 0.009) return;
+                restanteTer.set(t.id, Math.round((rest - abate) * 100) / 100);
+                saldoAberto = Math.round((saldoAberto - abate) * 100) / 100;
+                d._abatimento_terceiros = Math.round(((d._abatimento_terceiros || 0) + abate) * 100) / 100;
+                d._terceiros_abatendo.push({
+                    id: t.id,
+                    valor: abate,
+                    data: t.data_pagamento || t.data || '',
+                    descricao: t.descricao || 'Pagamento a terceiro'
+                });
+            });
+        });
+    }
+
+    function valorPagoComTerceirosDespesa(d) {
+        return Math.round((valorPagoDespesa(d) + (Number(d && d._abatimento_terceiros) || 0)) * 100) / 100;
+    }
+
+    function valorEmAbertoComTerceirosDespesa(d) {
+        if (!d || despesaEstaPaga(d)) return 0;
+        const aberto = Math.max(0, valorEmAbertoDespesa(d) - (Number(d._abatimento_terceiros) || 0));
+        return Math.round(aberto * 100) / 100;
+    }
 
     /** Igual normalizarChaveNomeDespesa, mas ignora acentos (BARRACÃO = BARRACAO). */
     function chaveObraUnificar(nome) {
@@ -9169,14 +9475,20 @@ window.carregarFiltrosDespesas = async function() {
     };
 
     window.marcarComoPago = async function(id) {
+        const despesa = (window.dadosExportacaoDespesas || []).find((d) => d.id === id);
+        const saldo = despesa ? valorEmAbertoComTerceirosDespesa(despesa) : null;
+        const abatTer = despesa ? (Number(despesa._abatimento_terceiros) || 0) : 0;
         Swal.fire({
-            title: 'Dar baixa — pagamento',
-            html: htmlModalBaixaComprovante(),
+            title: 'Quitar total — pagamento',
+            html: (saldo != null ? '<p style="text-align:left;font-size:13px;margin:0 0 10px 0;">Saldo em aberto: <b>' + formatarMoeda(saldo) + '</b>'
+                + (abatTer > 0 ? ' <span style="color:#0c5460;">(já abatido ' + formatarMoeda(abatTer) + ' de terceiros)</span>' : '')
+                + '. Isso quita o restante de uma vez.</p>' : '')
+                + htmlModalBaixaComprovante(),
             icon: 'info',
             showCancelButton: true,
             confirmButtonColor: '#28a745',
             cancelButtonColor: '#1a2a43',
-            confirmButtonText: 'Confirmar pagamento',
+            confirmButtonText: 'Quitar total',
             cancelButtonText: 'Cancelar',
             didOpen: configurarModalBaixaComprovante,
             preConfirm: validarBaixaComprovantePayload
@@ -9184,29 +9496,179 @@ window.carregarFiltrosDespesas = async function() {
             if (result.isConfirmed && result.value) {
                 try {
                     const dataSegura = dataPagamentoHojeBr();
-                    await updateDoc(doc(db, 'despesas_obras', id), {
+                    const orig = despesa ? valorOriginalDespesa(despesa) : 0;
+                    // Saldo efetivo já desconta o que foi pago em Terceiros
+                    const restante = despesa ? valorEmAbertoComTerceirosDespesa(despesa) : 0;
+                    let payload = {
                         status: 'pago',
                         data_pagamento: dataSegura,
                         comprovante_pagamento: result.value.comprovante_pagamento,
-                        baixa_sem_comprovante: !!result.value.baixa_sem_comprovante
-                    });
+                        baixa_sem_comprovante: !!result.value.baixa_sem_comprovante,
+                        saldo_devedor: 0,
+                        valor_pago_acumulado: orig
+                    };
+                    if (despesa && restante > 0.009) {
+                        const parcialPayload = montarPayloadPagamentoParcial(
+                            despesa,
+                            restante,
+                            dataSegura,
+                            abatTer > 0 ? 'Quitação do saldo (após abatimento de terceiros)' : 'Quitação do saldo restante',
+                            result.value
+                        );
+                        payload = Object.assign({}, parcialPayload, {
+                            status: 'pago',
+                            data_pagamento: dataSegura,
+                            saldo_devedor: 0,
+                            valor_pago_acumulado: orig
+                        });
+                    }
+                    await updateDoc(doc(db, 'despesas_obras', id), payload);
                     const msg = result.value.baixa_sem_comprovante
-                        ? 'Baixa registada sem comprovante (código autorizado).'
-                        : 'Pagamento registado com comprovante anexado.';
+                        ? 'Baixa total registada sem comprovante (código autorizado).'
+                        : 'Pagamento total registado com comprovante anexado.';
                     Swal.fire('Sucesso!', msg, 'success');
                     const busca = document.getElementById('busca-obra');
                     if (busca && busca.value.trim()) buscarDespesasObra();
                 } catch (e) {
+                    console.error(e);
                     Swal.fire('Erro', 'Não foi possível atualizar.', 'error');
                 }
             }
         });
     };
 
+    window.lancarPagamentoParcialDespesa = async function (id) {
+        const despesa = (window.dadosExportacaoDespesas || []).find((d) => d.id === id && d._origem !== 'pagamentos_terceiros');
+        if (!despesa) {
+            return Swal.fire('Atenção', 'Despesa não encontrada nesta busca. Busque novamente e tente.', 'warning');
+        }
+        const orig = valorOriginalDespesa(despesa);
+        const abatTer = Number(despesa._abatimento_terceiros) || 0;
+        const jaPago = valorPagoComTerceirosDespesa(despesa);
+        const saldo = valorEmAbertoComTerceirosDespesa(despesa);
+        if (saldo <= 0.009) {
+            return Swal.fire('Já quitada', 'Esta despesa não tem saldo em aberto'
+                + (abatTer > 0 ? ' (já coberto pelos pagamentos a terceiros).' : '.'), 'info');
+        }
+
+        const hoje = new Date();
+        const hojeIso = hoje.getFullYear() + '-' + String(hoje.getMonth() + 1).padStart(2, '0') + '-' + String(hoje.getDate()).padStart(2, '0');
+
+        const result = await Swal.fire({
+            title: 'Pagamento parcial',
+            html: ''
+                + '<div style="text-align:left;font-size:13px;">'
+                + '<p style="margin:0 0 10px 0;background:#f0f9ff;border:1px solid #bee5eb;border-radius:8px;padding:10px;">'
+                + 'Original: <b>' + formatarMoeda(orig) + '</b><br>'
+                + 'Já pago: <b style="color:#28a745;">' + formatarMoeda(jaPago) + '</b>'
+                + (abatTer > 0 ? ' <span style="color:#0c5460;">(inclui ' + formatarMoeda(abatTer) + ' de terceiros)</span>' : '') + '<br>'
+                + 'Saldo em aberto: <b style="color:#c0392b;">' + formatarMoeda(saldo) + '</b>'
+                + '</p>'
+                + '<label>Valor deste pagamento (R$)</label>'
+                + '<input id="pp-valor" class="swal2-input" style="margin:4px 0 10px 0;width:100%;" placeholder="0,00" value="">'
+                + '<label>Data do pagamento</label>'
+                + '<input type="date" id="pp-data" class="swal2-input" style="margin:4px 0 10px 0;width:100%;" value="' + hojeIso + '">'
+                + '<label>Observação (opcional)</label>'
+                + '<input id="pp-obs" class="swal2-input" style="margin:4px 0 10px 0;width:100%;" placeholder="Ex.: pagamento parcial empreita">'
+                + '<p style="font-size:12px;color:#666;margin:8px 0 0 0;">O valor será abatido do saldo. Se cobrir o restante, a despesa fica <b>PAGA</b>.</p>'
+                + '</div>'
+                + htmlModalBaixaComprovante({
+                    titulo: 'No pagamento parcial também é <b>obrigatório</b> anexar o comprovante (foto/PDF). Sem comprovante, informe o código de autorização.'
+                }),
+            showCancelButton: true,
+            confirmButtonColor: '#17a2b8',
+            cancelButtonColor: '#1a2a43',
+            confirmButtonText: 'Lançar parcial',
+            cancelButtonText: 'Cancelar',
+            didOpen: () => {
+                window._swalComprovantePgtoBase64 = '';
+                configurarModalBaixaComprovante();
+                const inp = document.getElementById('pp-valor');
+                if (inp) {
+                    inp.addEventListener('input', function () { mascaraMoeda(inp); });
+                    inp.focus();
+                }
+            },
+            preConfirm: () => {
+                // Mesma regra da baixa total: comprovante OU código
+                const comp = validarBaixaComprovantePayload();
+                if (comp === false) return false;
+                if (!comp || (!comp.comprovante_pagamento && !comp.baixa_sem_comprovante)) {
+                    Swal.showValidationMessage('Anexe o comprovante (foto ou PDF) ou informe o código de autorização.');
+                    return false;
+                }
+                const valorStr = (document.getElementById('pp-valor') && document.getElementById('pp-valor').value) || '';
+                const valorNum = parseMoedaLocal(valorStr || '0');
+                if (!(valorNum > 0)) {
+                    Swal.showValidationMessage('Informe o valor do pagamento parcial.');
+                    return false;
+                }
+                if (valorNum > saldo + 0.009) {
+                    Swal.showValidationMessage('Valor maior que o saldo em aberto (' + formatarMoeda(saldo) + ').');
+                    return false;
+                }
+                const dataIso = (document.getElementById('pp-data') && document.getElementById('pp-data').value) || hojeIso;
+                const obs = (document.getElementById('pp-obs') && document.getElementById('pp-obs').value) || '';
+                let dataBr = dataPagamentoHojeBr();
+                if (dataIso && /^\d{4}-\d{2}-\d{2}/.test(dataIso)) {
+                    const p = dataIso.split('-');
+                    dataBr = p[2] + '/' + p[1] + '/' + p[0];
+                }
+                return {
+                    valor: valorNum,
+                    dataBr: dataBr,
+                    obs: String(obs).trim(),
+                    comprovante: {
+                        comprovante_pagamento: comp.comprovante_pagamento || null,
+                        baixa_sem_comprovante: !!comp.baixa_sem_comprovante
+                    }
+                };
+            }
+        });
+
+        if (!result.isConfirmed || !result.value) return;
+
+        try {
+            const payload = montarPayloadPagamentoParcial(
+                despesa,
+                result.value.valor,
+                result.value.dataBr,
+                result.value.obs,
+                result.value.comprovante
+            );
+            // Se o restante no banco ainda existe mas já foi coberto por Terceiros, quita
+            const saldoEfetivoApos = Math.max(0, Math.round(((payload.saldo_devedor || 0) - abatTer) * 100) / 100);
+            if (saldoEfetivoApos <= 0.009) {
+                payload.status = 'pago';
+                payload.saldo_devedor = 0;
+                payload.valor_pago_acumulado = orig;
+                payload.data_pagamento = result.value.dataBr || dataPagamentoHojeBr();
+            }
+            await updateDoc(doc(db, 'despesas_obras', id), payload);
+            const quitou = payload.status === 'pago';
+            const semComp = !!(result.value.comprovante && result.value.comprovante.baixa_sem_comprovante);
+            const novoSaldoExibir = quitou ? 0 : saldoEfetivoApos;
+            Swal.fire(
+                quitou ? 'Quitada!' : 'Parcial lançado!',
+                (quitou
+                    ? 'O saldo foi coberto. Despesa marcada como PAGA. '
+                    : 'Abatido ' + formatarMoeda(result.value.valor) + '. Novo saldo: ' + formatarMoeda(novoSaldoExibir) + '. ')
+                + (semComp ? 'Baixa sem comprovante (código autorizado).' : 'Comprovante anexado.'),
+                'success'
+            );
+            const busca = document.getElementById('busca-obra');
+            if (busca && busca.value.trim()) buscarDespesasObra();
+            if (typeof carregarFiltrosDespesas === 'function') carregarFiltrosDespesas();
+        } catch (e) {
+            console.error(e);
+            Swal.fire('Erro', 'Não foi possível lançar o pagamento parcial.', 'error');
+        }
+    };
+
     window.marcarComoPendente = async function (id) {
         Swal.fire({
             title: 'Voltar a pendente?',
-            text: 'A despesa deixa de constar como paga. Use se marcou pago por engano.',
+            text: 'A despesa deixa de constar como paga e os pagamentos parciais são limpos. Use se marcou pago por engano.',
             icon: 'warning',
             showCancelButton: true,
             confirmButtonColor: '#ffc107',
@@ -9216,11 +9678,16 @@ window.carregarFiltrosDespesas = async function() {
         }).then(async (result) => {
             if (result.isConfirmed) {
                 try {
+                    const despesa = (window.dadosExportacaoDespesas || []).find((d) => d.id === id);
+                    const orig = despesa ? valorOriginalDespesa(despesa) : null;
                     await updateDoc(doc(db, 'despesas_obras', id), {
                         status: 'pendente',
                         data_pagamento: null,
                         comprovante_pagamento: null,
-                        baixa_sem_comprovante: false
+                        baixa_sem_comprovante: false,
+                        pagamentos_parciais: [],
+                        valor_pago_acumulado: 0,
+                        saldo_devedor: orig != null ? orig : null
                     });
                     Swal.fire('Atualizado', 'A despesa voltou ao estado pendente.', 'success');
                     const busca = document.getElementById('busca-obra');
@@ -9650,7 +10117,7 @@ window.carregarFiltrosDespesas = async function() {
         const tsLimite = limite.getTime();
 
         return lista.filter((d) => {
-            if (d.status === 'pago') return false;
+            if (despesaEstaPaga(d)) return false;
             const ts = dataVencimentoTsDespesa(d);
             if (ts == null) return false;
             return ts <= tsLimite;
@@ -9736,7 +10203,7 @@ window.carregarFiltrosDespesas = async function() {
             ordenarRelatorioDespesasPorVencimento(copia);
         }
         return copia.map((row) => {
-            const pago = row.status === 'pago';
+            const pago = despesaEstaPaga(row);
             const vencida = !pago && despesaEstaVencida(row);
             const estado = pago ? 'Pago' : (vencida ? 'Vencida' : 'Pendente');
             const valorNum = Number(parseMoedaLocal(row.valor_string) || row.valor_numero || 0);
@@ -9752,7 +10219,7 @@ window.carregarFiltrosDespesas = async function() {
                 'Lançamento': diaLancamentoDespExibir(row),
                 'Valor (R$)': valorNum,
                 'Estado': estado,
-                'Data pagamento': row.data_pagamento || '',
+                'Data pagamento': pago ? (obterDataPagamentoDespesa(row) || '') : '',
                 'Situação': situacao,
                 'Descrição / Materiais': row.descricao || '',
                 'Observação': row.observacao || '',
@@ -9876,7 +10343,7 @@ window.carregarFiltrosDespesas = async function() {
             html += `<details class="secao-despesas-busca secao-avencer"><summary>🟡 Contas a Vencer (No Prazo) — por vencimento <span class="secao-seta">▲</span></summary><div class="secao-despesas-conteudo">${htmlAVencer}</div></details>`;
         }
         if (htmlPagas) {
-            html += `<details class="secao-despesas-busca secao-pagas"><summary>🟢 Histórico de Contas Pagas <span class="secao-seta">▲</span></summary><div class="secao-despesas-conteudo">${htmlPagas}</div></details>`;
+            html += `<details class="secao-despesas-busca secao-pagas" open><summary>🟢 Histórico de Contas Pagas <span class="secao-seta">▲</span></summary><div class="secao-despesas-conteudo">${htmlPagas}</div></details>`;
         }
 
         if (!html) {
@@ -10180,7 +10647,7 @@ window.carregarFiltrosDespesas = async function() {
             'Fornecedor / Profissional': d.loja_nome || '',
             'NF / Referência': d.nota_fiscal || refChequeBoletoDesp(d) || '',
             'Vencimento': formatarVencimentoDespesaExibir(d),
-            'Data pagamento': d.data_pagamento || '',
+            'Data pagamento': despesaEstaPaga(d) ? (obterDataPagamentoDespesa(d) || '') : '',
             'Data lançamento': d.data || '',
             'Valor (R$)': valorNum,
             'Descrição': d.descricao || '',
@@ -10539,8 +11006,11 @@ window.carregarFiltrosDespesas = async function() {
             let somaPagasForn = 0;
             let somaPagasTerc = 0;
 
-            const pendentes = despesas.filter((d) => d.status !== 'pago');
-            const pagas = despesas.filter((d) => d.status === 'pago');
+            const pendentes = despesas.filter((d) => !despesaEstaPaga(d));
+            const pagas = despesas.filter((d) => despesaEstaPaga(d));
+            try {
+                await sincronizarStatusPagoInconsistente(pagas, 'despesas_obras');
+            } catch (eSync) { /* segue */ }
             const listaVencidas = pendentes.filter((d) => despesaEstaVencida(d));
             const listaAVencer = pendentes.filter((d) => !despesaEstaVencida(d));
             ordenarRelatorioDespesasPorVencimento(listaVencidas);
@@ -10561,7 +11031,7 @@ window.carregarFiltrosDespesas = async function() {
             const agrupadoPagas = {};
             pagas.forEach((d) => {
                 somaPagasForn += (d.valor_numero || 0);
-                const ref = separarDataSegura(d.data_pagamento || d.data);
+                const ref = separarDataSegura(obterDataPagamentoDespesa(d) || d.data_pagamento || d.data);
                 if (!agrupadoPagas[ref.ano]) agrupadoPagas[ref.ano] = {};
                 if (!agrupadoPagas[ref.ano][ref.mes]) agrupadoPagas[ref.ano][ref.mes] = [];
                 d.diaFormatado = ref.dia;
@@ -10672,7 +11142,7 @@ window.carregarFiltrosDespesas = async function() {
     };
 
     function despesaEstaPagaNorm(d) {
-        return String(d && d.status != null ? d.status : '').toLowerCase() === 'pago';
+        return despesaEstaPaga(d);
     }
 
     function notaFiscalPreenchida(d) {
@@ -11431,7 +11901,8 @@ window.carregarFiltrosDespesas = async function() {
 
         try {
             const q = query(collection(db, "despesas_obras"), where("empresa_id", "==", empresaLogada));
-            const querySnapshot = await getDocs(q);
+            const qTer = query(collection(db, "pagamentos_terceiros"), where("empresa_id", "==", empresaLogada));
+            const [querySnapshot, snapTer] = await Promise.all([getDocs(q), getDocs(qTer)]);
 
             // Criamos variáveis separadas para Vencidas e A Vencer
             let htmlVencidas = ""; let htmlAVencer = ""; let htmlPagas = "";
@@ -11440,23 +11911,37 @@ window.carregarFiltrosDespesas = async function() {
             let matching = [];
             querySnapshot.forEach(doc => {
                 const d = { id: doc.id, ...doc.data() };
-                const nomeDaObraParaBusca = normalizarChaveNomeDespesa(d.obra_nome || d.obra_lower || '');
-                const nomeDaLojaParaBusca = normalizarChaveNomeDespesa(d.loja_nome || d.loja_lower || '');
-                let match = false;
-                if (filtroAtual && filtroAtual.obra && filtroAtual.fornecedor) {
-                    match = nomeDaObraParaBusca === normalizarChaveNomeDespesa(filtroAtual.obra)
-                        && nomeDaLojaParaBusca === normalizarChaveNomeDespesa(filtroAtual.fornecedor);
-                } else if (filtroAtual && filtroAtual.obra) {
-                    match = nomeDaObraParaBusca === normalizarChaveNomeDespesa(filtroAtual.obra);
-                } else if (filtroAtual && filtroAtual.fornecedor) {
-                    match = nomeDaLojaParaBusca === normalizarChaveNomeDespesa(filtroAtual.fornecedor);
-                } else {
-                    match = nomeDaObraParaBusca.includes(termoBusca) || nomeDaLojaParaBusca.includes(termoBusca);
-                }
-                if (match) matching.push(d);
+                if (despesaOuTerceiroCasaComBusca(d, filtroAtual, termoBusca, false)) matching.push(d);
             });
 
-            if (!matching.length) {
+            // Todos os terceiros da empresa (normalizados)
+            const todosTerceirosNorm = [];
+            snapTer.forEach((docSnap) => {
+                todosTerceirosNorm.push(normalizarTerceiroComoDespesaPaga({ id: docSnap.id, ...docSnap.data() }));
+            });
+
+            // 1) Terceiros que batem com a busca
+            const terceirosMatching = [];
+            const idsTer = new Set();
+            todosTerceirosNorm.forEach((t) => {
+                if (despesaOuTerceiroCasaComBusca(t, filtroAtual, termoBusca, true)) {
+                    terceirosMatching.push(t);
+                    idsTer.add(t.id);
+                }
+            });
+            // 2) Também puxa terceiros ligados às despesas encontradas (mesma obra + fornecedor),
+            //    mesmo que o nome no cadastro de terceiros seja um pouco diferente da busca
+            matching.forEach((desp) => {
+                todosTerceirosNorm.forEach((t) => {
+                    if (idsTer.has(t.id)) return;
+                    if (terceiroCasaComDespesaFornecedor(t, desp)) {
+                        terceirosMatching.push(t);
+                        idsTer.add(t.id);
+                    }
+                });
+            });
+
+            if (!matching.length && !terceirosMatching.length) {
                 ocultarQuadroControlesDespesas();
                 divLista.innerHTML = `<p style="color:#d9534f; text-align:center;">Nenhuma despesa encontrada.</p>`;
                 return;
@@ -11464,18 +11949,70 @@ window.carregarFiltrosDespesas = async function() {
 
             encontrou = true;
             ordenarRelatorioDespesasPorVencimento(matching);
-            window.dadosExportacaoDespesas = matching.slice();
+            try {
+                await sincronizarStatusPagoInconsistente(matching, 'despesas_obras');
+            } catch (eSync) { /* segue mesmo se a correção falhar */ }
 
-            let pendentesArray = matching.filter(d => d.status === 'pendente' || !d.status);
+            // Terceiros da mesma obra+fornecedor abatem o saldo em aberto do contrato
+            aplicarAbatimentoTerceirosNasDespesas(matching, terceirosMatching);
+
+            window.dadosExportacaoDespesas = matching.slice().concat(terceirosMatching);
+
+            let pendentesArray = matching.filter((d) => valorEmAbertoComTerceirosDespesa(d) > 0.009);
             let agrupadoPagas = {};
 
-            matching.filter(d => d.status === 'pago').forEach(d => {
-                somaPagas += (d.valor_numero || 0);
-                const { ano, mes, dia } = separarDataSegura(d.data_pagamento || d.data);
+            function valorPagoTerceiroNorm(t) {
+                const n = Number(t && t.valor_numero);
+                if (Number.isFinite(n) && n > 0) return n;
+                return parseMoedaLocal((t && t.valor_string) || '0') || valorOriginalDespesa(t) || 0;
+            }
+
+            function adicionarPagoNoAgrupamento(d, valorPagoOverride) {
+                const vAdd = valorPagoOverride != null
+                    ? valorPagoOverride
+                    : (d && d._origem === 'pagamentos_terceiros' ? valorPagoTerceiroNorm(d) : valorPagoDespesa(d));
+                if (!(vAdd > 0)) return;
+                somaPagas += vAdd;
+                // Só lista no histórico "Pagas" as quitadas (ou terceiros). Parciais ficam em aberto com badge PARCIAL.
+                if (despesaTemPagamentoParcial(d)) return;
+                const { ano, mes, dia } = separarDataSegura(obterDataPagamentoDespesa(d) || d.data_pagamento || d.data);
                 if (!agrupadoPagas[ano]) agrupadoPagas[ano] = {};
                 if (!agrupadoPagas[ano][mes]) agrupadoPagas[ano][mes] = [];
                 d.diaFormatado = dia;
-                agrupadoPagas[ano][mes].push(d);
+                if (!agrupadoPagas[ano][mes].some((x) => x.id === d.id)) {
+                    agrupadoPagas[ano][mes].push(d);
+                }
+            }
+
+            // Já Pago = quitadas + parciais na despesa + abatimentos de terceiros
+            const tercValorAbatido = new Map();
+            matching.filter((d) => despesaEstaPaga(d)).forEach((d) => adicionarPagoNoAgrupamento(d));
+            matching.forEach((d) => {
+                if (despesaEstaPaga(d)) return;
+                const pagoDoc = valorPagoDespesa(d);
+                const abat = Number(d._abatimento_terceiros) || 0;
+                if (pagoDoc > 0.009) somaPagas += pagoDoc;
+                if (abat > 0.009) {
+                    somaPagas += abat;
+                    (d._terceiros_abatendo || []).forEach((t) => {
+                        if (!t || !t.id) return;
+                        tercValorAbatido.set(t.id, (tercValorAbatido.get(t.id) || 0) + (Number(t.valor) || 0));
+                    });
+                }
+            });
+            // Histórico de todos os terceiros; soma no Já Pago só o que ainda não abateu dívida
+            terceirosMatching.forEach((t) => {
+                const totalT = valorPagoTerceiroNorm(t);
+                const jaAbat = tercValorAbatido.get(t.id) || 0;
+                const resto = Math.max(0, Math.round((totalT - jaAbat) * 100) / 100);
+                const { ano, mes, dia } = separarDataSegura(obterDataPagamentoDespesa(t) || t.data_pagamento || t.data);
+                if (!agrupadoPagas[ano]) agrupadoPagas[ano] = {};
+                if (!agrupadoPagas[ano][mes]) agrupadoPagas[ano][mes] = [];
+                t.diaFormatado = dia;
+                if (!agrupadoPagas[ano][mes].some((x) => x.id === t.id)) {
+                    agrupadoPagas[ano][mes].push(t);
+                }
+                if (resto > 0.009) somaPagas += resto;
             });
 
             let avisoAnosHtml = '';
@@ -11488,35 +12025,78 @@ window.carregarFiltrosDespesas = async function() {
                 const fotoHtml = d.foto_recibo ? `<img src="${d.foto_recibo}" onclick="abrirFoto('${d.foto_recibo}')" style="width: 60px; height: 60px; object-fit: cover; border-radius: 8px; border: 2px solid #e0e6ed; float: right; cursor: pointer;">` : '';
                 const isVencida = despesaEstaVencida(d);
                 const vencTexto = formatarVencimentoDespesaExibirHtml(d);
+                const orig = valorOriginalDespesa(d);
+                const abatTer = Number(d._abatimento_terceiros) || 0;
+                const pagoParc = valorPagoComTerceirosDespesa(d);
+                const saldo = valorEmAbertoComTerceirosDespesa(d);
+                const ehParcial = despesaTemPagamentoParcial(d) || abatTer > 0.009;
 
-                // Ajusta as cores e textos dependendo se está vencida ou não
-                const corBorda = isVencida ? '#dc3545' : '#ffc107'; // Vermelho ou Amarelo
-                const corTexto = isVencida ? '#dc3545' : '#856404';
-                const badgeFundo = isVencida ? '#f8d7da' : '#fff3cd';
-                const textoBadge = isVencida ? '⚠️ VENCIDA' : '⏳ A VENCER';
+                const corBorda = ehParcial ? '#17a2b8' : (isVencida ? '#dc3545' : '#ffc107');
+                const corTexto = ehParcial ? '#0c5460' : (isVencida ? '#dc3545' : '#856404');
+                const badgeFundo = ehParcial ? '#d1ecf1' : (isVencida ? '#f8d7da' : '#fff3cd');
+                const textoBadge = ehParcial ? '💙 PARCIAL' : (isVencida ? '⚠️ VENCIDA' : '⏳ A VENCER');
+
+                let histParcHtml = '';
+                const pars = listaPagamentosParciaisDespesa(d);
+                const ters = Array.isArray(d._terceiros_abatendo) ? d._terceiros_abatendo : [];
+                if (pars.length || ters.length) {
+                    histParcHtml = '<div style="margin-top:8px;padding:8px;background:#f0f9ff;border-radius:8px;font-size:11px;color:#0c5460;">';
+                    if (pars.length) {
+                        histParcHtml += '<b>Pagamentos parciais (' + pars.length + '):</b><ul style="margin:6px 0 0 18px;padding:0;">'
+                            + pars.map(function (p) {
+                                let extra = '';
+                                if (p.comprovante_pagamento) {
+                                    const idComp = registrarAnexoParaViewer(p.comprovante_pagamento);
+                                    const rotulo = ehAnexoPdfDataUrl(p.comprovante_pagamento) ? '📄 Ver PDF' : '📎 Ver comprovante';
+                                    extra = ' <span style="color:#28a745;font-weight:700;cursor:pointer;" onclick="abrirAnexoRegistrado(\'' + idComp + '\')">' + rotulo + '</span>';
+                                } else if (p.baixa_sem_comprovante) {
+                                    extra = ' <span style="color:#856404;">(sem comprovante — código)</span>';
+                                }
+                                return '<li>' + escapeHtmlBasico(p.data || '—') + ' — <b>' + formatarMoeda(p.valor || 0) + '</b>'
+                                    + (p.observacao ? ' <span style="color:#666;">(' + escapeHtmlBasico(p.observacao) + ')</span>' : '')
+                                    + extra
+                                    + '</li>';
+                            }).join('')
+                            + '</ul>';
+                    }
+                    if (ters.length) {
+                        histParcHtml += (pars.length ? '<div style="margin-top:8px;">' : '')
+                            + '<b>Abatido de Terceiros (' + ters.length + '):</b><ul style="margin:6px 0 0 18px;padding:0;">'
+                            + ters.map(function (t) {
+                                return '<li>' + escapeHtmlBasico(t.data || '—') + ' — <b style="color:#28a745;">' + formatarMoeda(t.valor || 0) + '</b>'
+                                    + ' <span style="color:#666;">(pagamento a terceiro)</span></li>';
+                            }).join('')
+                            + '</ul>'
+                            + (pars.length ? '</div>' : '');
+                    }
+                    histParcHtml += '</div>';
+                }
 
                 const cardHtml = `
                     <div class="resultado-item" style="border-left-color: ${corBorda};">
                         ${fotoHtml}
-                        <b style="color: ${corBorda}; font-size: 16px;">R$ ${d.valor_string}</b> <span style="font-size: 10px; background: ${badgeFundo}; color: ${corTexto}; padding: 2px 6px; border-radius: 4px; margin-left: 5px; font-weight: bold;">${textoBadge}</span><br>
-                        <span style="font-size: 13px; color: #555;"><b>Obra:</b> ${d.obra_nome}</span><br>
-                        <span style="font-size: 13px; color: #555;"><b>Fornecedor:</b> ${d.loja_nome}</span><br>
-                        <span style="font-size: 13px; color: #555;"><b>Nota Fiscal:</b> ${d.nota_fiscal || 'Sem NF'}</span><br>
+                        <b style="color: ${corBorda}; font-size: 16px;">${formatarMoeda(saldo)}</b> <span style="font-size: 10px; background: ${badgeFundo}; color: ${corTexto}; padding: 2px 6px; border-radius: 4px; margin-left: 5px; font-weight: bold;">${textoBadge}</span><br>
+                        <span style="font-size:12px;color:#555;">Contrato/original: <b>${formatarMoeda(orig)}</b>${pagoParc > 0 ? ' · Já pago: <b style="color:#28a745;">' + formatarMoeda(pagoParc) + '</b>' + (abatTer > 0 ? ' <span style="color:#0c5460;">(inclui ' + formatarMoeda(abatTer) + ' de terceiros)</span>' : '') + ' · Saldo: <b style="color:#c0392b;">' + formatarMoeda(saldo) + '</b>' : ''}</span><br>
+                        <span style="font-size: 13px; color: #555;"><b>Obra:</b> ${escapeHtmlBasico(d.obra_nome || '')}</span><br>
+                        <span style="font-size: 13px; color: #555;"><b>Fornecedor:</b> ${escapeHtmlBasico(d.loja_nome || '')}</span><br>
+                        <span style="font-size: 13px; color: #555;"><b>Nota Fiscal:</b> ${escapeHtmlBasico(d.nota_fiscal || 'Sem NF')}</span><br>
                         <span style="font-size: 13px; color: ${corTexto};"><b>Vencimento:</b> ${vencTexto}</span><br>
-                        <span style="font-size: 12px; color: #888;">Inserido em: ${d.data}</span>
-                        <div style="font-size: 12px; margin-top: 5px; padding-top: 5px; border-top: 1px solid #eee;">${d.descricao}</div>
-                        <div style="display: flex; gap: 10px; margin-top: 12px; padding-top: 10px; border-top: 1px solid #eee;">
-                            <button onclick="marcarComoPago('${d.id}')" style="background: #28a745; color: white; border: none; padding: 10px; border-radius: 8px; cursor: pointer; width: 100%; font-weight: bold; font-size: 12px; transition: 0.3s;">✅ MARCAR PAGO</button>
-                            <button onclick="editarDespesa('${d.id}')" style="background: #4285F4; color: white; border: none; padding: 10px; border-radius: 8px; cursor: pointer; width: 100%; font-weight: bold; font-size: 12px; transition: 0.3s;">✏️ EDITAR</button>
-                            <button onclick="excluirDespesa('${d.id}')" style="background: #d9534f; color: white; border: none; padding: 10px; border-radius: 8px; cursor: pointer; width: 100%; font-weight: bold; font-size: 12px; transition: 0.3s;">🗑️ EXCLUIR</button>
+                        <span style="font-size: 12px; color: #888;">Inserido em: ${escapeHtmlBasico(d.data || '')}</span>
+                        <div style="font-size: 12px; margin-top: 5px; padding-top: 5px; border-top: 1px solid #eee;">${escapeHtmlBasico(d.descricao || '')}</div>
+                        ${histParcHtml}
+                        <div style="display: flex; gap: 8px; margin-top: 12px; padding-top: 10px; border-top: 1px solid #eee; flex-wrap:wrap;">
+                            <button onclick="lancarPagamentoParcialDespesa('${d.id}')" style="background: #17a2b8; color: white; border: none; padding: 10px; border-radius: 8px; cursor: pointer; flex:1; min-width:140px; font-weight: bold; font-size: 12px;">💰 PAGAMENTO PARCIAL</button>
+                            <button onclick="marcarComoPago('${d.id}')" style="background: #28a745; color: white; border: none; padding: 10px; border-radius: 8px; cursor: pointer; flex:1; min-width:120px; font-weight: bold; font-size: 12px;">✅ QUITAR TOTAL</button>
+                            <button onclick="editarDespesa('${d.id}')" style="background: #4285F4; color: white; border: none; padding: 10px; border-radius: 8px; cursor: pointer; flex:1; min-width:90px; font-weight: bold; font-size: 12px;">✏️ EDITAR</button>
+                            <button onclick="excluirDespesa('${d.id}')" style="background: #d9534f; color: white; border: none; padding: 10px; border-radius: 8px; cursor: pointer; flex:1; min-width:90px; font-weight: bold; font-size: 12px;">🗑️ EXCLUIR</button>
                         </div>
                     </div>`;
 
                 if (isVencida) {
-                    somaVencidas += (d.valor_numero || 0);
+                    somaVencidas += saldo;
                     htmlVencidas += cardHtml;
                 } else {
-                    somaAVencer += (d.valor_numero || 0);
+                    somaAVencer += saldo;
                     htmlAVencer += cardHtml;
                 }
             });
@@ -11530,24 +12110,35 @@ window.carregarFiltrosDespesas = async function() {
                     ordenarRelatorioDespesasPorVencimento(agrupadoPagas[ano][mes]);
                     agrupadoPagas[ano][mes].forEach(d => {
                         const fotoHtml = d.foto_recibo ? `<img src="${d.foto_recibo}" onclick="abrirFoto('${d.foto_recibo}')" style="width: 60px; height: 60px; object-fit: cover; border-radius: 8px; border: 2px solid #e0e6ed; float: right; cursor: pointer;">` : '';
-                        const compPgtoHtml = montarHtmlComprovantePagamento(d);
+                        const compPgtoHtml = typeof montarHtmlComprovantePagamento === 'function' ? montarHtmlComprovantePagamento(d) : '';
+                        const badgeOrigem = d._origem === 'pagamentos_terceiros'
+                            ? '<span style="font-size:10px;background:#1a2a43;color:#fff;padding:2px 6px;border-radius:4px;font-weight:bold;margin-right:4px;">👷 TERCEIRO</span>'
+                            : '<span style="font-size:10px;background:#d4edda;color:#155724;padding:2px 6px;border-radius:4px;font-weight:bold;margin-right:4px;">🏪 FORNECEDOR</span>';
+                        const btnEditar = d._origem === 'pagamentos_terceiros'
+                            ? ''
+                            : `<button onclick="editarDespesa('${d.id}')" style="background: #4285F4; color: white; border: none; padding: 8px; border-radius: 8px; cursor: pointer; width: 100%; font-weight: bold; font-size: 11px; transition: 0.3s;">✏️ EDITAR</button>`;
+                        const btnExcluir = d._origem === 'pagamentos_terceiros'
+                            ? ''
+                            : `<button onclick="excluirDespesa('${d.id}')" style="background: #6c757d; color: white; border: none; padding: 8px; border-radius: 8px; cursor: pointer; width: 100%; font-weight: bold; font-size: 11px; transition: 0.3s;">🗑️ EXCLUIR</button>`;
                         htmlPagas += `
                             <div class="resultado-item" style="border-left-color: #28a745; opacity: 0.85; background: #f4fdf6;">
                                 ${fotoHtml}${compPgtoHtml}
-                                <b style="color: #28a745; font-size: 16px;">R$ ${d.valor_string}</b> <span style="font-size: 10px; background: #d4edda; color: #155724; padding: 2px 6px; border-radius: 4px; margin-left: 5px; font-weight: bold;">PAGO EM: ${d.data_pagamento || 'N/A'}</span><br>
-                                <span style="font-size: 13px; color: #555;"><b>Obra:</b> ${d.obra_nome}</span><br>
-                                <span style="font-size: 13px; color: #555;"><b>Fornecedor:</b> ${d.loja_nome}</span><br>
+                                ${badgeOrigem}
+                                <b style="color: #28a745; font-size: 16px;">R$ ${d.valor_string}</b> <span style="font-size: 10px; background: #d4edda; color: #155724; padding: 2px 6px; border-radius: 4px; margin-left: 5px; font-weight: bold;">PAGO EM: ${obterDataPagamentoDespesa(d) || d.data_pagamento || 'N/A'}</span><br>
+                                <span style="font-size: 13px; color: #555;"><b>Obra:</b> ${d.obra_nome || '—'}</span><br>
+                                <span style="font-size: 13px; color: #555;"><b>Fornecedor:</b> ${d.loja_nome || '—'}</span><br>
                                 <span style="font-size: 13px; color: #555;"><b>Nota Fiscal:</b> ${d.nota_fiscal || 'Sem NF'}</span><br>
-                                <span style="font-size: 12px; color: #888;">Data Fatura: ${d.data}</span>
-                                <div style="font-size: 12px; margin-top: 5px; padding-top: 5px; border-top: 1px solid #eee; color: #666;">${d.descricao}</div>
-                                <div style="display: flex; gap: 10px; margin-top: 12px; padding-top: 10px; border-top: 1px solid #eee;">
-                                    <button onclick="editarDespesa('${d.id}')" style="background: #4285F4; color: white; border: none; padding: 8px; border-radius: 8px; cursor: pointer; width: 100%; font-weight: bold; font-size: 11px; transition: 0.3s;">✏️ EDITAR</button>
-                                    <button onclick="excluirDespesa('${d.id}')" style="background: #6c757d; color: white; border: none; padding: 8px; border-radius: 8px; cursor: pointer; width: 100%; font-weight: bold; font-size: 11px; transition: 0.3s;">🗑️ EXCLUIR</button>
-                                </div>
+                                <span style="font-size: 12px; color: #888;">Data: ${d.data || '—'}</span>
+                                <div style="font-size: 12px; margin-top: 5px; padding-top: 5px; border-top: 1px solid #eee; color: #666;">${d.descricao || ''}</div>
+                                ${btnEditar || btnExcluir ? `<div style="display: flex; gap: 10px; margin-top: 12px; padding-top: 10px; border-top: 1px solid #eee;">${btnEditar}${btnExcluir}</div>` : ''}
                             </div>`;
                     }); htmlPagas += `</div></details>`;
                 }); htmlPagas += `</div></details>`;
             });
+
+            if (!htmlPagas && somaPagas <= 0) {
+                htmlPagas = '<p style="font-size:13px;color:#666;padding:8px 4px;">Nenhum pagamento registado nesta busca. Se o valor foi pago em <b>Terceiros</b> ou só está na descrição, use <b>MARCAR PAGO</b> na despesa pendente.</p>';
+            }
 
             // Atualiza o painel amarelo de resumo dividindo Vencido, a Vencer e Pago
             document.getElementById('total-gasto-display').innerHTML = montarHtmlPainelResumoDespesas(somaVencidas, somaAVencer, somaPagas, 'Total Global da Obra/Loja:');
@@ -11557,6 +12148,11 @@ window.carregarFiltrosDespesas = async function() {
             if (btnExportarExcel) btnExportarExcel.style.display = 'inline-block';
             divLista.innerHTML = '';
             renderizarQuadroControlesDespesas(htmlVencidas, htmlAVencer, htmlPagas, avisoAnosHtml);
+            // Abre a pasta de pagos para o usuário ver o Já Pago
+            try {
+                const secaoPagas = document.querySelector('#quadro-controles-secoes .secao-pagas');
+                if (secaoPagas && somaPagas > 0) secaoPagas.open = true;
+            } catch (eOpen) { /* ignore */ }
 
         } catch (e) {
             ocultarQuadroControlesDespesas();
@@ -11600,8 +12196,8 @@ window.carregarFiltrosDespesas = async function() {
         const nomeLoja = formatarNomeCanonicoDespesa(ordenada[0].loja_nome) || 'Fornecedor';
         let html = '<p style="font-size:12px;color:#666;margin:0 0 12px 0;text-align:left;"><b>' + escapeHtmlBasico(nomeObra) + '</b> — <b>' + escapeHtmlBasico(nomeLoja) + '</b><br>Clique na miniatura para ampliar a nota / recibo.</p>';
         ordenada.forEach((d, idx) => {
-            const st = d.status === 'pago' ? 'Pago' : (despesaEstaVencida(d) ? 'Vencida' : 'Pendente');
-            const corSt = d.status === 'pago' ? '#28a745' : (despesaEstaVencida(d) ? '#dc3545' : '#856404');
+            const st = despesaEstaPaga(d) ? 'Pago' : (despesaEstaVencida(d) ? 'Vencida' : 'Pendente');
+            const corSt = despesaEstaPaga(d) ? '#28a745' : (despesaEstaVencida(d) ? '#dc3545' : '#856404');
             const venc = formatarVencimentoDespesaExibir(d);
             const fotoHtml = d.foto_recibo
                 ? '<img src="' + d.foto_recibo + '" onclick="abrirNotaResumoPorIndice(' + idx + ')" alt="Nota" style="max-width:140px;max-height:100px;object-fit:cover;border-radius:8px;border:2px solid #4285F4;cursor:pointer;margin-top:8px;" title="Clique para ampliar">'
@@ -11929,7 +12525,7 @@ window.exportarPDF = function(tipo) {
             let totalPago = 0, totalPendente = 0;
             dados.forEach(d => {
                 let v = parseFloat(d.valor_numero) || 0;
-                if (d.status === 'pago') totalPago += v;
+                if (despesaEstaPaga(d)) totalPago += v;
                 else totalPendente += v;
             });
             let totalGeral = totalPago + totalPendente;
@@ -11998,7 +12594,7 @@ window.exportarPDF = function(tipo) {
             const dadosOrdenados = dados.slice();
             ordenarRelatorioDespesasPorVencimento(dadosOrdenados);
             dadosOrdenados.forEach(row => {
-                let statusTexto = row.status === 'pago' ? `PAGO\n${row.data_pagamento || ''}` : 'PENDENTE';
+                let statusTexto = despesaEstaPaga(row) ? `PAGO\n${obterDataPagamentoDespesa(row) || row.data_pagamento || ''}` : 'PENDENTE';
                 body.push([
                     statusTexto,
                     formatarVencimentoDespesaExibir(row),
