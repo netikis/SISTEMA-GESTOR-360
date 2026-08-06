@@ -10357,20 +10357,28 @@ window.carregarFiltrosDespesas = async function() {
     }
 
     function htmlCardDespesaRelGeralObra(d, isVencida) {
-        const corBorda = isVencida ? '#dc3545' : '#ffc107';
-        const corTexto = isVencida ? '#dc3545' : '#856404';
-        const badgeFundo = isVencida ? '#f8d7da' : '#fff3cd';
-        const textoBadge = isVencida ? '⚠️ VENCIDA' : '⏳ A VENCER';
+        const orig = d._valor_original != null ? Number(d._valor_original) : valorOriginalDespesa(d);
+        const pagoParc = d._valor_pago != null ? Number(d._valor_pago) : valorPagoComTerceirosDespesa(d);
+        const saldo = d.valor_numero != null ? Number(d.valor_numero) : valorEmAbertoComTerceirosDespesa(d);
+        const ehParcial = pagoParc > 0.009 && saldo > 0.009;
+        const corBorda = ehParcial ? '#17a2b8' : (isVencida ? '#dc3545' : '#ffc107');
+        const corTexto = ehParcial ? '#0c5460' : (isVencida ? '#dc3545' : '#856404');
+        const badgeFundo = ehParcial ? '#d1ecf1' : (isVencida ? '#f8d7da' : '#fff3cd');
+        const textoBadge = ehParcial ? '💙 PARCIAL' : (isVencida ? '⚠️ VENCIDA' : '⏳ A VENCER');
         const vencTexto = formatarVencimentoDespesaExibirHtml(d);
         const fotoHtml = d.foto_recibo
             ? '<img src="' + escapeAttrBasico(d.foto_recibo) + '" onclick="abrirFoto(\'' + String(d.foto_recibo).replace(/'/g, "\\'") + '\')" style="width:60px;height:60px;object-fit:cover;border-radius:8px;border:2px solid #e0e6ed;float:right;cursor:pointer;">'
+            : '';
+        const resumoParc = pagoParc > 0.009
+            ? '<span style="font-size:12px;color:#555;">Contrato: <b>' + formatarMoeda(orig) + '</b> · Já pago: <b style="color:#28a745;">' + formatarMoeda(pagoParc) + '</b> · Saldo: <b style="color:#c0392b;">' + formatarMoeda(saldo) + '</b></span><br>'
             : '';
         return ''
             + '<div class="resultado-item" style="border-left-color:' + corBorda + ';">'
             + fotoHtml
             + '<span style="font-size:10px;background:#e8edf2;color:#1a2a43;padding:2px 6px;border-radius:4px;font-weight:bold;">🏪 FORNECEDOR</span> '
-            + '<b style="color:' + corBorda + ';font-size:16px;">R$ ' + escapeHtmlBasico(String(d.valor_string || '0')) + '</b> '
+            + '<b style="color:' + corBorda + ';font-size:16px;">' + formatarMoeda(saldo) + '</b> '
             + '<span style="font-size:10px;background:' + badgeFundo + ';color:' + corTexto + ';padding:2px 6px;border-radius:4px;margin-left:5px;font-weight:bold;">' + textoBadge + '</span><br>'
+            + resumoParc
             + '<span style="font-size:13px;color:#555;"><b>Obra:</b> ' + escapeHtmlBasico(d.obra_nome || '—') + '</span><br>'
             + '<span style="font-size:13px;color:#555;"><b>Fornecedor:</b> ' + escapeHtmlBasico(d.loja_nome || '—') + '</span><br>'
             + '<span style="font-size:13px;color:#555;"><b>Nota Fiscal:</b> ' + escapeHtmlBasico(d.nota_fiscal || 'Sem NF') + '</span><br>'
@@ -10380,21 +10388,49 @@ window.carregarFiltrosDespesas = async function() {
             + '</div>';
     }
 
+    function itemDePagamentoParcialRelGeral(despesa, parcial) {
+        const valor = Number(parcial && parcial.valor) || parseMoedaLocal((parcial && parcial.valor_string) || '0') || 0;
+        const dataBr = (parcial && parcial.data) || '';
+        return {
+            id: String(despesa.id) + '_pp_' + String((parcial && parcial.id) || (parcial && parcial.timestamp) || valor + '_' + dataBr),
+            _origem: 'pagamento_parcial',
+            _despesa_id: despesa.id,
+            status: 'pago',
+            obra_nome: despesa.obra_nome || '',
+            loja_nome: despesa.loja_nome || '',
+            nota_fiscal: despesa.nota_fiscal || '',
+            data_pagamento: dataBr,
+            data: dataBr || despesa.data || '',
+            valor_numero: valor,
+            valor_string: formatarMoeda(valor).replace(/^R\$\s?/, ''),
+            descricao: ((parcial && parcial.observacao) ? String(parcial.observacao) : 'Pagamento parcial')
+                + ' — contrato ' + formatarMoeda(valorOriginalDespesa(despesa)),
+            comprovante_pagamento: (parcial && parcial.comprovante_pagamento) || null,
+            baixa_sem_comprovante: !!(parcial && parcial.baixa_sem_comprovante),
+            foto_recibo: null,
+            timestamp: (parcial && parcial.timestamp) || 0
+        };
+    }
+
     function htmlCardDespesaPagaRelGeralObra(d) {
+        const ehParcial = d && d._origem === 'pagamento_parcial';
         const compPgtoHtml = typeof montarHtmlComprovantePagamento === 'function' ? montarHtmlComprovantePagamento(d) : '';
         const fotoHtml = d.foto_recibo
             ? '<img src="' + escapeAttrBasico(d.foto_recibo) + '" onclick="abrirFoto(\'' + String(d.foto_recibo).replace(/'/g, "\\'") + '\')" style="width:60px;height:60px;object-fit:cover;border-radius:8px;border:2px solid #e0e6ed;float:right;cursor:pointer;">'
             : '';
+        const badge = ehParcial
+            ? '<span style="font-size:10px;background:#17a2b8;color:#fff;padding:2px 6px;border-radius:4px;font-weight:bold;">💙 PAGAMENTO PARCIAL</span> '
+            : '<span style="font-size:10px;background:#d4edda;color:#155724;padding:2px 6px;border-radius:4px;font-weight:bold;">🏪 FORNECEDOR</span> ';
         return ''
-            + '<div class="resultado-item" style="border-left-color:#28a745;opacity:0.9;background:#f4fdf6;">'
+            + '<div class="resultado-item" style="border-left-color:' + (ehParcial ? '#17a2b8' : '#28a745') + ';opacity:0.9;background:' + (ehParcial ? '#f0f9ff' : '#f4fdf6') + ';">'
             + fotoHtml + compPgtoHtml
-            + '<span style="font-size:10px;background:#d4edda;color:#155724;padding:2px 6px;border-radius:4px;font-weight:bold;">🏪 FORNECEDOR</span> '
+            + badge
             + '<b style="color:#28a745;font-size:16px;">R$ ' + escapeHtmlBasico(String(d.valor_string || '0')) + '</b> '
             + '<span style="font-size:10px;background:#d4edda;color:#155724;padding:2px 6px;border-radius:4px;margin-left:5px;font-weight:bold;">PAGO EM: ' + escapeHtmlBasico(d.data_pagamento || 'N/A') + '</span><br>'
             + '<span style="font-size:13px;color:#555;"><b>Obra:</b> ' + escapeHtmlBasico(d.obra_nome || '—') + '</span><br>'
             + '<span style="font-size:13px;color:#555;"><b>Fornecedor:</b> ' + escapeHtmlBasico(d.loja_nome || '—') + '</span><br>'
             + '<span style="font-size:13px;color:#555;"><b>Nota Fiscal:</b> ' + escapeHtmlBasico(d.nota_fiscal || 'Sem NF') + '</span><br>'
-            + '<span style="font-size:12px;color:#888;">Data Fatura: ' + escapeHtmlBasico(d.data || '—') + '</span>'
+            + '<span style="font-size:12px;color:#888;">Data: ' + escapeHtmlBasico(d.data || '—') + '</span>'
             + (d.descricao ? '<div style="font-size:12px;margin-top:5px;padding-top:5px;border-top:1px solid #eee;color:#666;">' + escapeHtmlBasico(String(d.descricao)) + '</div>' : '')
             + '</div>';
     }
@@ -10640,14 +10676,16 @@ window.carregarFiltrosDespesas = async function() {
 
     function linhaExcelDespesaRelGeralObra(d, situacao) {
         const valorNum = Number(d.valor_numero != null ? d.valor_numero : (parseMoedaLocal(d.valor_string) || 0));
+        const ehParcial = d && d._origem === 'pagamento_parcial';
+        const sit = ehParcial ? 'PAGO PARCIAL' : situacao;
         return {
-            'Situação': situacao,
-            'Tipo': 'Fornecedor',
+            'Situação': sit,
+            'Tipo': ehParcial ? 'Pagamento parcial' : 'Fornecedor',
             'Obra': d.obra_nome || '',
             'Fornecedor / Profissional': d.loja_nome || '',
             'NF / Referência': d.nota_fiscal || refChequeBoletoDesp(d) || '',
-            'Vencimento': formatarVencimentoDespesaExibir(d),
-            'Data pagamento': despesaEstaPaga(d) ? (obterDataPagamentoDespesa(d) || '') : '',
+            'Vencimento': ehParcial ? '' : formatarVencimentoDespesaExibir(d),
+            'Data pagamento': obterDataPagamentoDespesa(d) || d.data_pagamento || (ehParcial ? (d.data || '') : ''),
             'Data lançamento': d.data || '',
             'Valor (R$)': valorNum,
             'Descrição': d.descricao || '',
@@ -10902,6 +10940,7 @@ window.carregarFiltrosDespesas = async function() {
             const raw = String(data.cell.raw || '');
             if (raw.indexOf('VENCID') >= 0) data.cell.styles.textColor = '#dc3545';
             else if (raw.indexOf('A VENCER') >= 0) data.cell.styles.textColor = '#856404';
+            else if (raw.indexOf('PARCIAL') >= 0) data.cell.styles.textColor = '#17a2b8';
             else if (raw.indexOf('PAGO') >= 0) data.cell.styles.textColor = '#28a745';
             data.cell.styles.fontStyle = 'bold';
         }
@@ -10941,8 +10980,13 @@ window.carregarFiltrosDespesas = async function() {
         }
 
         if (opcoes.pagos) {
-            const bodyPagasForn = (pack.pagasForn || []).map((d) => linhaDespesaPdf(d, 'PAGO ' + (d.data_pagamento || '')));
-            startY = blocoSecao('JÁ PAGO — DESPESAS DE FORNECEDORES', [40, 167, 69], bodyPagasForn, headDesp, corEstado);
+            const bodyPagasForn = (pack.pagasForn || []).map((d) => {
+                const rotulo = d && d._origem === 'pagamento_parcial'
+                    ? ('PARCIAL ' + (d.data_pagamento || d.data || ''))
+                    : ('PAGO ' + (d.data_pagamento || ''));
+                return linhaDespesaPdf(d, rotulo);
+            });
+            startY = blocoSecao('JÁ PAGO — FORNECEDORES E PARCIAIS', [40, 167, 69], bodyPagasForn, headDesp, corEstado);
 
             const bodyTerc = (pack.terceiros || []).map((d) => [
                 'TERCEIRO',
@@ -10997,6 +11041,9 @@ window.carregarFiltrosDespesas = async function() {
             snapTer.forEach((docSnap) => terceiros.push({ id: docSnap.id, ...docSnap.data() }));
             terceiros.sort((a, b) => (b.timestamp || 0) - (a.timestamp || 0));
 
+            const terceirosNorm = terceiros.map((t) => normalizarTerceiroComoDespesaPaga(t));
+            aplicarAbatimentoTerceirosNasDespesas(despesas, terceirosNorm);
+
             let htmlVencidas = '';
             let htmlAVencer = '';
             let htmlPagasForn = '';
@@ -11005,32 +11052,67 @@ window.carregarFiltrosDespesas = async function() {
             let somaAVencer = 0;
             let somaPagasForn = 0;
             let somaPagasTerc = 0;
+            let somaPagasParciais = 0;
 
-            const pendentes = despesas.filter((d) => !despesaEstaPaga(d));
-            const pagas = despesas.filter((d) => despesaEstaPaga(d));
             try {
-                await sincronizarStatusPagoInconsistente(pagas, 'despesas_obras');
+                await sincronizarStatusPagoInconsistente(despesas.filter((d) => despesaEstaPaga(d)), 'despesas_obras');
             } catch (eSync) { /* segue */ }
-            const listaVencidas = pendentes.filter((d) => despesaEstaVencida(d));
-            const listaAVencer = pendentes.filter((d) => !despesaEstaVencida(d));
+
+            // Em aberto = saldo (já desconta parcial + terceiros abatidos)
+            const pendentesViews = [];
+            despesas.forEach((d) => {
+                if (despesaEstaPaga(d)) return;
+                const saldo = valorEmAbertoComTerceirosDespesa(d);
+                if (saldo <= 0.009) return;
+                pendentesViews.push(Object.assign({}, d, {
+                    valor_numero: saldo,
+                    valor_string: formatarMoeda(saldo).replace(/^R\$\s?/, ''),
+                    _valor_original: valorOriginalDespesa(d),
+                    _valor_pago: valorPagoComTerceirosDespesa(d)
+                }));
+            });
+            const listaVencidas = pendentesViews.filter((d) => despesaEstaVencida(d));
+            const listaAVencer = pendentesViews.filter((d) => !despesaEstaVencida(d));
             ordenarRelatorioDespesasPorVencimento(listaVencidas);
             ordenarRelatorioDespesasPorVencimento(listaAVencer);
 
             listaVencidas.forEach((d) => {
-                const valor = d.valor_numero || 0;
-                somaVencidas += valor;
+                somaVencidas += Number(d.valor_numero) || 0;
                 htmlVencidas += htmlCardDespesaRelGeralObra(d, true);
             });
-
             listaAVencer.forEach((d) => {
-                const valor = d.valor_numero || 0;
-                somaAVencer += valor;
+                somaAVencer += Number(d.valor_numero) || 0;
                 htmlAVencer += htmlCardDespesaRelGeralObra(d, false);
             });
 
+            // Já Pago fornecedor: quitadas sem histórico parcial + cada pagamento parcial individual
+            const itensPagoForn = [];
+            despesas.forEach((d) => {
+                const pars = listaPagamentosParciaisDespesa(d);
+                if (pars.length) {
+                    pars.forEach((p) => {
+                        const item = itemDePagamentoParcialRelGeral(d, p);
+                        if ((item.valor_numero || 0) > 0.009) {
+                            itensPagoForn.push(item);
+                            somaPagasParciais += item.valor_numero;
+                        }
+                    });
+                    return;
+                }
+                if (despesaEstaPaga(d)) {
+                    const v = valorPagoDespesa(d) || valorOriginalDespesa(d) || Number(d.valor_numero) || 0;
+                    if (v > 0.009) {
+                        itensPagoForn.push(Object.assign({}, d, {
+                            valor_numero: v,
+                            valor_string: d.valor_string || formatarMoeda(v).replace(/^R\$\s?/, '')
+                        }));
+                    }
+                }
+            });
+            somaPagasForn = itensPagoForn.reduce((s, d) => s + (Number(d.valor_numero) || 0), 0);
+
             const agrupadoPagas = {};
-            pagas.forEach((d) => {
-                somaPagasForn += (d.valor_numero || 0);
+            itensPagoForn.forEach((d) => {
                 const ref = separarDataSegura(obterDataPagamentoDespesa(d) || d.data_pagamento || d.data);
                 if (!agrupadoPagas[ref.ano]) agrupadoPagas[ref.ano] = {};
                 if (!agrupadoPagas[ref.ano][ref.mes]) agrupadoPagas[ref.ano][ref.mes] = [];
@@ -11053,8 +11135,11 @@ window.carregarFiltrosDespesas = async function() {
                 chavesMes.forEach((mes) => {
                     const nomeDoMes = nomeMeses[mes] || mes;
                     htmlPagasForn += '<details class="pasta-mes"><summary>' + escapeHtmlBasico(String(nomeDoMes)) + '</summary><div class="folder-content">';
-                    ordenarRelatorioDespesasPorVencimento(agrupadoPagas[ano][mes]);
-                    agrupadoPagas[ano][mes].forEach((d) => {
+                    (agrupadoPagas[ano][mes] || []).sort((a, b) => {
+                        const ta = Number(String(a.diaFormatado || '0').replace(/\D/g, '')) || 0;
+                        const tb = Number(String(b.diaFormatado || '0').replace(/\D/g, '')) || 0;
+                        return tb - ta;
+                    }).forEach((d) => {
                         htmlPagasForn += htmlCardDespesaPagaRelGeralObra(d);
                     });
                     htmlPagasForn += '</div></details>';
@@ -11063,7 +11148,7 @@ window.carregarFiltrosDespesas = async function() {
             });
 
             terceiros.forEach((d) => {
-                somaPagasTerc += (d.valor_numero || 0);
+                somaPagasTerc += (Number(d.valor_numero) || parseMoedaLocal(d.valor_string) || 0);
                 htmlPagasTerc += htmlCardTerceiroRelGeralObra(d);
             });
 
@@ -11076,7 +11161,8 @@ window.carregarFiltrosDespesas = async function() {
             }
             if (divDetalhe) {
                 divDetalhe.innerHTML = 'Em aberto (vencido + a vencer): <b>' + formatarMoeda(emAberto) + '</b>'
-                    + ' · Fornecedores pagos: <b>' + formatarMoeda(somaPagasForn) + '</b>'
+                    + ' · Fornecedores / parciais: <b>' + formatarMoeda(somaPagasForn) + '</b>'
+                    + (somaPagasParciais > 0 ? ' <span style="color:#0c5460;">(parciais: ' + formatarMoeda(somaPagasParciais) + ')</span>' : '')
                     + ' · Terceiros pagos: <b>' + formatarMoeda(somaPagasTerc) + '</b>'
                     + ' · <b>' + despesas.length + '</b> despesa(s) · <b>' + terceiros.length + '</b> terceiro(s) · Total geral: <b>' + formatarMoeda(totalGeral) + '</b>';
             }
@@ -11090,17 +11176,19 @@ window.carregarFiltrosDespesas = async function() {
                 somaPagas,
                 somaPagasForn,
                 somaPagasTerc,
+                somaPagasParciais,
                 emAberto,
                 totalGeral,
                 vencidas: listaVencidas.slice(),
                 aVencer: listaAVencer.slice(),
-                pagasForn: pagas.slice(),
+                pagasForn: itensPagoForn.slice(),
                 terceiros: terceiros.slice()
             };
 
             let htmlSecoes = '';
             const cntVenc = listaVencidas.length;
             const cntAvencer = listaAVencer.length;
+            const cntPagosForn = itensPagoForn.length;
 
             htmlSecoes += '<div id="rel-geral-obras-quadro">';
 
@@ -11116,12 +11204,12 @@ window.carregarFiltrosDespesas = async function() {
                 + (htmlAVencer || '<p style="text-align:center;color:#888;padding:12px;">Nenhuma despesa a vencer.</p>')
                 + '</div></details>';
 
-            htmlSecoes += '<details class="secao-despesas-busca secao-pagas">'
-                + '<summary>🟢 Já pago (' + (pagas.length + terceiros.length) + ') — ' + formatarMoeda(somaPagas) + ' <span class="secao-seta">▲</span></summary>'
+            htmlSecoes += '<details class="secao-despesas-busca secao-pagas" open>'
+                + '<summary>🟢 Já pago (' + (cntPagosForn + terceiros.length) + ') — ' + formatarMoeda(somaPagas) + ' <span class="secao-seta">▲</span></summary>'
                 + '<div class="secao-despesas-conteudo">';
 
-            htmlSecoes += '<details class="pasta-ano"><summary>🏪 Despesas de fornecedores (' + pagas.length + ') — ' + formatarMoeda(somaPagasForn) + '</summary><div class="folder-content">'
-                + (htmlPagasForn || '<p style="text-align:center;color:#888;padding:12px;">Nenhuma despesa de fornecedor paga.</p>')
+            htmlSecoes += '<details class="pasta-ano" open><summary>🏪 Fornecedores e pagamentos parciais (' + cntPagosForn + ') — ' + formatarMoeda(somaPagasForn) + '</summary><div class="folder-content">'
+                + (htmlPagasForn || '<p style="text-align:center;color:#888;padding:12px;">Nenhum pagamento de fornecedor / parcial.</p>')
                 + '</div></details>';
 
             htmlSecoes += '<details class="pasta-ano"><summary>👷 Pagamentos a terceiros (' + terceiros.length + ') — ' + formatarMoeda(somaPagasTerc) + '</summary><div class="folder-content">'
@@ -11129,7 +11217,6 @@ window.carregarFiltrosDespesas = async function() {
                 + '</div></details>';
 
             htmlSecoes += '</div></details></div>';
-
             if (!despesas.length && !terceiros.length) {
                 divSecoes.innerHTML = '<p style="text-align:center;color:#888;padding:20px;">Nenhum registro encontrado para esta empresa.</p>';
             } else {
