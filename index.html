@@ -5958,7 +5958,16 @@ function separarDataSegura(dataString) {
             html += '<td style="padding:6px;border:1px solid #eee;">' + refDoc + '</td>';
             html += '<td style="padding:6px;border:1px solid #eee;font-weight:600;white-space:nowrap;">' + formatarVencimentoDespesaExibirHtml(d) + '</td>';
             html += '<td style="padding:6px;border:1px solid #eee;">' + escapeHtmlBasico(diaLancamentoDespExibir(d)) + '</td>';
-            html += '<td style="padding:6px;border:1px solid #eee;white-space:nowrap;"><b>R$ ' + escapeHtmlBasico(String(d.valor_string || '0')) + '</b></td>';
+            const valorPagoLinha = d.valor_pago != null ? Number(d.valor_pago) : null;
+            const valorNotaLinha = Number(d.valor_numero) || parseMoedaLocal(d.valor_string) || 0;
+            let celValor = '<b>R$ ' + escapeHtmlBasico(String(d.valor_string || '0')) + '</b>';
+            if (st === 'pago' && valorPagoLinha != null && Number.isFinite(valorPagoLinha) && Math.abs(valorPagoLinha - valorNotaLinha) > 0.009) {
+                celValor += '<br><span style="font-size:10px;color:#28a745;font-weight:700;">Pago: ' + formatarMoeda(valorPagoLinha) + '</span>';
+                if (d.valor_juros > 0.009) {
+                    celValor += '<br><span style="font-size:10px;color:#856404;">Juros: ' + formatarMoeda(d.valor_juros) + '</span>';
+                }
+            }
+            html += '<td style="padding:6px;border:1px solid #eee;white-space:nowrap;">' + celValor + '</td>';
             html += '<td style="padding:6px;border:1px solid #eee;">' + badge + '</td>';
             html += '<td style="padding:6px;border:1px solid #eee;max-width:220px;font-size:11px;color:#444;" title="' + titleObs + '">' + (obsShort || '—') + '</td>';
             html += '<td style="padding:6px;border:1px solid #eee;min-width:128px;">';
@@ -6102,16 +6111,26 @@ function separarDataSegura(dataString) {
 
     function montarPayloadPagamentoParcial(despesa, valorPago, dataBr, obs, comprovantePayload) {
         const orig = valorOriginalDespesa(despesa);
+        const pagoAntes = valorPagoDespesa(despesa);
+        const saldoAntes = Math.max(0, Math.round((orig - pagoAntes) * 100) / 100);
+        const valorLancado = Math.round((Number(valorPago) || 0) * 100) / 100;
+        const juros = Math.max(0, Math.round((valorLancado - saldoAntes) * 100) / 100);
         const pars = listaPagamentosParciaisDespesa(despesa).slice();
         const idParc = 'pp_' + Date.now() + '_' + Math.random().toString(36).slice(2, 7);
+        let obsFinal = obs || '';
+        if (juros > 0.009) {
+            const extra = 'inclui juros/acréscimo de ' + formatarMoeda(juros);
+            obsFinal = obsFinal ? (obsFinal + ' — ' + extra) : extra;
+        }
         const novo = {
             id: idParc,
-            valor: valorPago,
-            valor_string: formatarMoeda(valorPago).replace(/^R\$\s?/, ''),
+            valor: valorLancado,
+            valor_string: formatarMoeda(valorLancado).replace(/^R\$\s?/, ''),
             data: dataBr || dataPagamentoHojeBr(),
-            observacao: obs || '',
+            observacao: obsFinal,
             timestamp: Date.now()
         };
+        if (juros > 0.009) novo.valor_juros = juros;
         if (comprovantePayload && comprovantePayload.comprovante_pagamento) {
             novo.comprovante_pagamento = comprovantePayload.comprovante_pagamento;
         }
@@ -6120,12 +6139,13 @@ function separarDataSegura(dataString) {
         }
         pars.push(novo);
         const totalPago = pars.reduce((s, p) => s + (Number(p.valor) || 0), 0);
-        const saldo = Math.max(0, Math.round((orig - totalPago) * 100) / 100);
-        const quitado = saldo <= 0.009;
+        // Juros não deixam saldo negativo: quita se cobriu o saldo em aberto (mesmo pagando a mais)
+        const quitado = valorLancado >= saldoAntes - 0.009 || totalPago >= orig - 0.009;
+        const saldo = quitado ? 0 : Math.max(0, Math.round((orig - Math.min(totalPago, orig)) * 100) / 100);
         return {
             pagamentos_parciais: pars,
             valor_pago_acumulado: Math.round(totalPago * 100) / 100,
-            saldo_devedor: quitado ? 0 : saldo,
+            saldo_devedor: saldo,
             status: quitado ? 'pago' : 'parcial',
             data_pagamento: quitado ? (dataBr || dataPagamentoHojeBr()) : (despesa.data_pagamento || null),
             comprovante_pagamento: quitado
@@ -6133,7 +6153,8 @@ function separarDataSegura(dataString) {
                 : (despesa.comprovante_pagamento || null),
             baixa_sem_comprovante: quitado
                 ? !!(comprovantePayload && comprovantePayload.baixa_sem_comprovante)
-                : !!despesa.baixa_sem_comprovante
+                : !!despesa.baixa_sem_comprovante,
+            valor_pago_com_juros: juros > 0.009 ? Math.round(totalPago * 100) / 100 : null
         };
     }
 
@@ -7356,12 +7377,31 @@ function separarDataSegura(dataString) {
         });
     }
 
+    function formatarValorInputMoeda(n) {
+        return (Number(n) || 0).toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+    }
+
     function htmlModalBaixaComprovante(opts) {
         const titulo = (opts && opts.titulo) || 'Para dar baixa, anexe o <b>comprovante de pagamento</b> (foto, print, recibo do banco ou <b>PDF</b>).';
+        const mostrarValor = !(opts && opts.mostrarValorPago === false);
+        const valorSug = (opts && opts.valorPagoSugerido != null && Number.isFinite(Number(opts.valorPagoSugerido)))
+            ? Number(opts.valorPagoSugerido)
+            : null;
+        const valorHtml = mostrarValor
+            ? ''
+                + '<div style="margin:0 0 14px 0;padding:10px;background:#f0f9ff;border:1px solid #bee5eb;border-radius:8px;">'
+                + '<label style="font-weight:700;display:block;margin-bottom:6px;color:#1a2a43;">Valor pago (R$)</label>'
+                + '<input type="text" id="swal-valor-pago" inputmode="decimal" placeholder="0,00" value="'
+                + (valorSug != null ? escapeAttrBasico(formatarValorInputMoeda(valorSug)) : '')
+                + '" style="width:100%;padding:10px;border:1px solid #ddd;border-radius:8px;box-sizing:border-box;font-size:15px;font-weight:700;background:#fff;">'
+                + '<p style="margin:6px 0 0;font-size:11px;color:#0c5460;line-height:1.4;">Pode alterar se pagou <b>com juros</b> ou valor diferente do saldo. O valor lançado é o que realmente saiu da conta.</p>'
+                + '</div>'
+            : '';
         return `
             <div style="text-align:left;font-size:13px;margin-top:12px;padding-top:12px;border-top:2px solid #17a2b8;">
                 <p style="margin:0 0 10px;color:#1a2a43;line-height:1.45;font-weight:700;">📎 Comprovante obrigatório</p>
                 <p style="margin:0 0 10px;color:#555;line-height:1.45;">${titulo}</p>
+                ${valorHtml}
                 <label style="font-weight:700;display:block;margin-bottom:6px;">Comprovante de pagamento</label>
                 <input type="file" id="swal-comprovante-pgto" accept="image/*,application/pdf,.pdf" style="width:100%;padding:8px;border:1px solid #ddd;border-radius:8px;box-sizing:border-box;background:#fff;">
                 <p style="margin:6px 0 0;font-size:11px;color:#888;">Aceita imagem (JPG/PNG) ou PDF. PDF até ~600 KB.</p>
@@ -7393,6 +7433,12 @@ function separarDataSegura(dataString) {
         const prevPdfNome = document.getElementById('swal-prev-comprovante-pdf-nome');
         const btnVerPdf = document.getElementById('swal-prev-comprovante-ver');
         const codigo = document.getElementById('swal-codigo-baixa');
+        const inpValor = document.getElementById('swal-valor-pago');
+        if (inpValor && typeof mascaraMoeda === 'function') {
+            inpValor.addEventListener('input', function () { mascaraMoeda(inpValor); });
+            inpValor.focus();
+            try { inpValor.select(); } catch (eSel) { /* ignore */ }
+        }
         if (!input) return;
 
         if (btnVerPdf) {
@@ -7459,21 +7505,53 @@ function separarDataSegura(dataString) {
         });
     }
 
-    function validarBaixaComprovantePayload() {
+    function lerValorPagoModalBaixa(fallback) {
+        const el = document.getElementById('swal-valor-pago');
+        if (!el) {
+            const fb = Number(fallback);
+            return Number.isFinite(fb) ? fb : null;
+        }
+        const raw = String(el.value || '').replace(/R\$\s?/gi, '').trim();
+        const n = parseMoedaLocal(raw || '0');
+        return n;
+    }
+
+    function validarBaixaComprovantePayload(opts) {
         const comprovante = window._swalComprovantePgtoBase64 || '';
         const codigo = (document.getElementById('swal-codigo-baixa') && document.getElementById('swal-codigo-baixa').value || '').trim();
+        const elValor = document.getElementById('swal-valor-pago');
+        let valorPago = null;
+        if (elValor) {
+            valorPago = lerValorPagoModalBaixa(opts && opts.valorPagoSugerido);
+            if (!(valorPago > 0)) {
+                Swal.showValidationMessage('Informe o valor pago (use o saldo ou o valor com juros).');
+                return false;
+            }
+        }
+
+        let base = null;
         if (comprovante) {
-            return { comprovante_pagamento: comprovante, baixa_sem_comprovante: false };
-        }
-        if (codigo === CODIGO_BAIXA_SEM_COMPROVANTE) {
-            return { comprovante_pagamento: null, baixa_sem_comprovante: true };
-        }
-        if (codigo) {
+            base = { comprovante_pagamento: comprovante, baixa_sem_comprovante: false };
+        } else if (codigo === CODIGO_BAIXA_SEM_COMPROVANTE) {
+            base = { comprovante_pagamento: null, baixa_sem_comprovante: true };
+        } else if (codigo) {
             Swal.showValidationMessage('Código incorreto.');
             return false;
+        } else {
+            Swal.showValidationMessage('Anexe o comprovante (foto ou PDF) ou informe o código de autorização.');
+            return false;
         }
-        Swal.showValidationMessage('Anexe o comprovante (foto ou PDF) ou informe o código de autorização.');
-        return false;
+
+        if (valorPago != null) {
+            base.valor_pago = Math.round(valorPago * 100) / 100;
+            const sug = opts && opts.valorPagoSugerido != null ? Number(opts.valorPagoSugerido) : null;
+            if (sug != null && Number.isFinite(sug) && base.valor_pago > sug + 0.009) {
+                base.valor_juros = Math.round((base.valor_pago - sug) * 100) / 100;
+            } else {
+                base.valor_juros = 0;
+            }
+        }
+        return base;
     }
 
     function registrarAnexoParaViewer(dataUrl) {
@@ -9478,12 +9556,16 @@ window.carregarFiltrosDespesas = async function() {
         const despesa = (window.dadosExportacaoDespesas || []).find((d) => d.id === id);
         const saldo = despesa ? valorEmAbertoComTerceirosDespesa(despesa) : null;
         const abatTer = despesa ? (Number(despesa._abatimento_terceiros) || 0) : 0;
+        const optsBaixa = {
+            valorPagoSugerido: saldo != null ? saldo : undefined,
+            titulo: 'Anexe o comprovante. Informe o <b>valor pago</b> (pode ser maior que o saldo se houver juros).'
+        };
         Swal.fire({
             title: 'Quitar total — pagamento',
             html: (saldo != null ? '<p style="text-align:left;font-size:13px;margin:0 0 10px 0;">Saldo em aberto: <b>' + formatarMoeda(saldo) + '</b>'
                 + (abatTer > 0 ? ' <span style="color:#0c5460;">(já abatido ' + formatarMoeda(abatTer) + ' de terceiros)</span>' : '')
-                + '. Isso quita o restante de uma vez.</p>' : '')
-                + htmlModalBaixaComprovante(),
+                + '. Informe abaixo o valor que realmente pagou.</p>' : '')
+                + htmlModalBaixaComprovante(optsBaixa),
             icon: 'info',
             showCancelButton: true,
             confirmButtonColor: '#28a745',
@@ -9491,41 +9573,51 @@ window.carregarFiltrosDespesas = async function() {
             confirmButtonText: 'Quitar total',
             cancelButtonText: 'Cancelar',
             didOpen: configurarModalBaixaComprovante,
-            preConfirm: validarBaixaComprovantePayload
+            preConfirm: () => validarBaixaComprovantePayload(optsBaixa)
         }).then(async (result) => {
             if (result.isConfirmed && result.value) {
                 try {
                     const dataSegura = dataPagamentoHojeBr();
                     const orig = despesa ? valorOriginalDespesa(despesa) : 0;
-                    // Saldo efetivo já desconta o que foi pago em Terceiros
                     const restante = despesa ? valorEmAbertoComTerceirosDespesa(despesa) : 0;
+                    const valorPago = (result.value.valor_pago != null && result.value.valor_pago > 0)
+                        ? result.value.valor_pago
+                        : restante;
+                    const juros = result.value.valor_juros || Math.max(0, Math.round((valorPago - restante) * 100) / 100);
+                    let obsQuit = 'Quitação do saldo restante';
+                    if (abatTer > 0) obsQuit = 'Quitação do saldo (após abatimento de terceiros)';
+                    if (juros > 0.009) obsQuit += ' (pago com juros)';
+
                     let payload = {
                         status: 'pago',
                         data_pagamento: dataSegura,
                         comprovante_pagamento: result.value.comprovante_pagamento,
                         baixa_sem_comprovante: !!result.value.baixa_sem_comprovante,
                         saldo_devedor: 0,
-                        valor_pago_acumulado: orig
+                        valor_pago_acumulado: Math.max(orig, valorPago)
                     };
-                    if (despesa && restante > 0.009) {
+                    if (despesa && valorPago > 0.009) {
                         const parcialPayload = montarPayloadPagamentoParcial(
                             despesa,
-                            restante,
+                            valorPago,
                             dataSegura,
-                            abatTer > 0 ? 'Quitação do saldo (após abatimento de terceiros)' : 'Quitação do saldo restante',
+                            obsQuit,
                             result.value
                         );
                         payload = Object.assign({}, parcialPayload, {
                             status: 'pago',
                             data_pagamento: dataSegura,
                             saldo_devedor: 0,
-                            valor_pago_acumulado: orig
+                            valor_pago_acumulado: parcialPayload.valor_pago_acumulado
                         });
                     }
                     await updateDoc(doc(db, 'despesas_obras', id), payload);
-                    const msg = result.value.baixa_sem_comprovante
+                    let msg = result.value.baixa_sem_comprovante
                         ? 'Baixa total registada sem comprovante (código autorizado).'
                         : 'Pagamento total registado com comprovante anexado.';
+                    if (juros > 0.009) {
+                        msg += ' Valor lançado: ' + formatarMoeda(valorPago) + ' (juros/acréscimo ' + formatarMoeda(juros) + ').';
+                    }
                     Swal.fire('Sucesso!', msg, 'success');
                     const busca = document.getElementById('busca-obra');
                     if (busca && busca.value.trim()) buscarDespesasObra();
@@ -9569,11 +9661,12 @@ window.carregarFiltrosDespesas = async function() {
                 + '<label>Data do pagamento</label>'
                 + '<input type="date" id="pp-data" class="swal2-input" style="margin:4px 0 10px 0;width:100%;" value="' + hojeIso + '">'
                 + '<label>Observação (opcional)</label>'
-                + '<input id="pp-obs" class="swal2-input" style="margin:4px 0 10px 0;width:100%;" placeholder="Ex.: pagamento parcial empreita">'
-                + '<p style="font-size:12px;color:#666;margin:8px 0 0 0;">O valor será abatido do saldo. Se cobrir o restante, a despesa fica <b>PAGA</b>.</p>'
+                + '<input id="pp-obs" class="swal2-input" style="margin:4px 0 10px 0;width:100%;" placeholder="Ex.: pagamento parcial / com juros">'
+                + '<p style="font-size:12px;color:#666;margin:8px 0 0 0;">O valor abate o saldo. Se for <b>maior que o saldo</b> (juros), a despesa fica <b>PAGA</b> e o acréscimo fica registado.</p>'
                 + '</div>'
                 + htmlModalBaixaComprovante({
-                    titulo: 'No pagamento parcial também é <b>obrigatório</b> anexar o comprovante (foto/PDF). Sem comprovante, informe o código de autorização.'
+                    titulo: 'No pagamento parcial também é <b>obrigatório</b> anexar o comprovante (foto/PDF). Sem comprovante, informe o código de autorização.',
+                    mostrarValorPago: false
                 }),
             showCancelButton: true,
             confirmButtonColor: '#17a2b8',
@@ -9598,15 +9691,12 @@ window.carregarFiltrosDespesas = async function() {
                     return false;
                 }
                 const valorStr = (document.getElementById('pp-valor') && document.getElementById('pp-valor').value) || '';
-                const valorNum = parseMoedaLocal(valorStr || '0');
+                const valorNum = parseMoedaLocal(String(valorStr || '0').replace(/R\$\s?/gi, ''));
                 if (!(valorNum > 0)) {
                     Swal.showValidationMessage('Informe o valor do pagamento parcial.');
                     return false;
                 }
-                if (valorNum > saldo + 0.009) {
-                    Swal.showValidationMessage('Valor maior que o saldo em aberto (' + formatarMoeda(saldo) + ').');
-                    return false;
-                }
+                // Permite valor > saldo (juros). Só bloqueia se for absurdo (<= 0 já tratado).
                 const dataIso = (document.getElementById('pp-data') && document.getElementById('pp-data').value) || hojeIso;
                 const obs = (document.getElementById('pp-obs') && document.getElementById('pp-obs').value) || '';
                 let dataBr = dataPagamentoHojeBr();
@@ -9641,18 +9731,20 @@ window.carregarFiltrosDespesas = async function() {
             if (saldoEfetivoApos <= 0.009) {
                 payload.status = 'pago';
                 payload.saldo_devedor = 0;
-                payload.valor_pago_acumulado = orig;
+                payload.valor_pago_acumulado = payload.valor_pago_acumulado || Math.max(orig, result.value.valor);
                 payload.data_pagamento = result.value.dataBr || dataPagamentoHojeBr();
             }
             await updateDoc(doc(db, 'despesas_obras', id), payload);
             const quitou = payload.status === 'pago';
             const semComp = !!(result.value.comprovante && result.value.comprovante.baixa_sem_comprovante);
             const novoSaldoExibir = quitou ? 0 : saldoEfetivoApos;
+            const juros = Math.max(0, Math.round((result.value.valor - saldo) * 100) / 100);
             Swal.fire(
                 quitou ? 'Quitada!' : 'Parcial lançado!',
                 (quitou
                     ? 'O saldo foi coberto. Despesa marcada como PAGA. '
-                    : 'Abatido ' + formatarMoeda(result.value.valor) + '. Novo saldo: ' + formatarMoeda(novoSaldoExibir) + '. ')
+                    : 'Abatido ' + formatarMoeda(Math.min(result.value.valor, saldo)) + '. Novo saldo: ' + formatarMoeda(novoSaldoExibir) + '. ')
+                + (juros > 0.009 ? 'Juros/acréscimo: ' + formatarMoeda(juros) + '. ' : '')
                 + (semComp ? 'Baixa sem comprovante (código autorizado).' : 'Comprovante anexado.'),
                 'success'
             );
@@ -9865,9 +9957,20 @@ window.carregarFiltrosDespesas = async function() {
     };
 
     window.marcarComoPagoRelatorio = async function (id) {
+        const lista = window._relDespDadosFiltrados || window._relDespDadosCompletos || [];
+        const linha = (lista || []).find((d) => d && d.id === id)
+            || ((window.dadosExportacaoDespesas || []).find((d) => d && d.id === id));
+        const valorNota = linha ? (Number(linha.valor_numero) || parseMoedaLocal(linha.valor_string) || 0) : 0;
+        const optsBaixa = {
+            valorPagoSugerido: valorNota > 0 ? valorNota : undefined,
+            titulo: 'Anexe o comprovante e informe o <b>valor pago</b> (pode incluir juros).'
+        };
         Swal.fire({
             title: 'Dar baixa — pagamento',
-            html: htmlModalBaixaComprovante(),
+            html: (valorNota > 0
+                ? '<p style="text-align:left;font-size:13px;margin:0 0 10px 0;">Valor da nota: <b>' + formatarMoeda(valorNota) + '</b>. Se pagou com juros, altere o valor abaixo.</p>'
+                : '')
+                + htmlModalBaixaComprovante(optsBaixa),
             icon: 'info',
             showCancelButton: true,
             confirmButtonColor: '#28a745',
@@ -9875,20 +9978,38 @@ window.carregarFiltrosDespesas = async function() {
             confirmButtonText: 'Confirmar pagamento',
             cancelButtonText: 'Cancelar',
             didOpen: configurarModalBaixaComprovante,
-            preConfirm: validarBaixaComprovantePayload
+            preConfirm: () => validarBaixaComprovantePayload(optsBaixa)
         }).then(async (result) => {
             if (result.isConfirmed && result.value) {
                 try {
                     const dataSegura = dataPagamentoHojeBr();
-                    await updateDoc(doc(db, COLECAO_RELATORIO_DESPESAS, id), {
+                    const valorPago = (result.value.valor_pago != null && result.value.valor_pago > 0)
+                        ? result.value.valor_pago
+                        : valorNota;
+                    const juros = result.value.valor_juros || Math.max(0, Math.round((valorPago - valorNota) * 100) / 100);
+                    const payload = {
                         status: 'pago',
                         data_pagamento: dataSegura,
                         comprovante_pagamento: result.value.comprovante_pagamento,
-                        baixa_sem_comprovante: !!result.value.baixa_sem_comprovante
-                    });
-                    const msg = result.value.baixa_sem_comprovante
+                        baixa_sem_comprovante: !!result.value.baixa_sem_comprovante,
+                        valor_pago: valorPago,
+                        valor_pago_string: formatarMoeda(valorPago).replace(/^R\$\s?/, '')
+                    };
+                    if (juros > 0.009) {
+                        payload.valor_juros = juros;
+                        const obsAntiga = linha && linha.observacao ? String(linha.observacao) : '';
+                        const extra = 'Pago com juros/acréscimo de ' + formatarMoeda(juros) + ' (total ' + formatarMoeda(valorPago) + ')';
+                        payload.observacao = obsAntiga
+                            ? (obsAntiga + ' | ' + extra)
+                            : extra;
+                    }
+                    await updateDoc(doc(db, COLECAO_RELATORIO_DESPESAS, id), payload);
+                    let msg = result.value.baixa_sem_comprovante
                         ? 'Baixa registada sem comprovante (código autorizado).'
                         : 'Pagamento registado com comprovante anexado.';
+                    if (juros > 0.009) {
+                        msg += ' Valor pago: ' + formatarMoeda(valorPago) + '.';
+                    }
                     Swal.fire('Sucesso!', msg, 'success');
                     recarregarRelatorioDespesasTabularSeCarregado();
                 } catch (e) {
@@ -11328,10 +11449,35 @@ window.carregarFiltrosDespesas = async function() {
                 htmlAVencer += htmlCardDespesaRelGeralObra(d, false);
             });
 
-            // Já Pago fornecedor: quitadas sem histórico parcial + cada pagamento parcial individual
+            // Já Pago fornecedor:
+            // - Conta QUITADA (pago total) → 1 linha "PAGO / FORNECEDOR" (não como parcial)
+            // - Conta ainda em aberto com parciais → lista cada pagamento parcial
             const itensPagoForn = [];
             despesas.forEach((d) => {
                 const pars = listaPagamentosParciaisDespesa(d);
+                if (despesaEstaPaga(d)) {
+                    const v = valorPagoDespesa(d) || valorOriginalDespesa(d) || Number(d.valor_numero) || 0;
+                    if (!(v > 0.009)) return;
+                    const dataPg = obterDataPagamentoDespesa(d)
+                        || (pars.length ? (pars[pars.length - 1].data || '') : '')
+                        || d.data
+                        || '';
+                    let desc = String(d.descricao || '').trim();
+                    // Remove texto interno de quitação parcial que confundia o Excel
+                    if (/quita[cç][aã]o do saldo/i.test(desc) || /^pagamento parcial/i.test(desc)) {
+                        desc = '';
+                    }
+                    itensPagoForn.push(Object.assign({}, d, {
+                        _origem: 'despesas_obras',
+                        status: 'pago',
+                        valor_numero: v,
+                        valor_string: d.valor_string || formatarMoeda(v).replace(/^R\$\s?/, ''),
+                        data_pagamento: dataPg,
+                        data: dataPg || d.data || '',
+                        descricao: desc
+                    }));
+                    return;
+                }
                 if (pars.length) {
                     pars.forEach((p) => {
                         const item = itemDePagamentoParcialRelGeral(d, p);
@@ -11340,16 +11486,6 @@ window.carregarFiltrosDespesas = async function() {
                             somaPagasParciais += item.valor_numero;
                         }
                     });
-                    return;
-                }
-                if (despesaEstaPaga(d)) {
-                    const v = valorPagoDespesa(d) || valorOriginalDespesa(d) || Number(d.valor_numero) || 0;
-                    if (v > 0.009) {
-                        itensPagoForn.push(Object.assign({}, d, {
-                            valor_numero: v,
-                            valor_string: d.valor_string || formatarMoeda(v).replace(/^R\$\s?/, '')
-                        }));
-                    }
                 }
             });
             somaPagasForn = itensPagoForn.reduce((s, d) => s + (Number(d.valor_numero) || 0), 0);
