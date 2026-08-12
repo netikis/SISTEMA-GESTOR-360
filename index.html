@@ -3894,6 +3894,10 @@
             <input type="text" id="ent-busca-pendentes" placeholder="Buscar cliente, documento ou descrição..." style="flex:2;min-width:180px;margin:0;" onkeydown="if(event.key==='Enter')renderContasReceber()">
             <button type="button" onclick="renderContasReceber()" style="flex:1;min-width:120px;background:var(--dark-navy);color:#fff;border:none;border-radius:10px;cursor:pointer;font-weight:bold;">Atualizar</button>
         </div>
+        <div class="rel-geral-obras-toolbar" style="display:flex;margin-bottom:12px;flex-wrap:wrap;gap:8px;">
+            <button type="button" class="btn-pdf-relatorio" onclick="exportarPDFContasReceber()">🖨️ Exportar PDF</button>
+            <button type="button" class="btn-pdf-relatorio" style="background-color:#217346;" onclick="exportarExcelContasReceber()">📊 Exportar Excel</button>
+        </div>
         <div class="table-responsive-entradas">
             <table class="tabela-entradas">
                 <thead>
@@ -3920,6 +3924,10 @@
         <div style="display:flex;gap:10px;margin-bottom:12px;flex-wrap:wrap;">
             <input type="text" id="ent-busca-recebidos" placeholder="Buscar cliente, documento ou descrição..." style="flex:2;min-width:180px;margin:0;" onkeydown="if(event.key==='Enter')renderRecebimentos()">
             <button type="button" onclick="renderRecebimentos()" style="flex:1;min-width:120px;background:var(--dark-navy);color:#fff;border:none;border-radius:10px;cursor:pointer;font-weight:bold;">Atualizar</button>
+        </div>
+        <div class="rel-geral-obras-toolbar" style="display:flex;margin-bottom:12px;flex-wrap:wrap;gap:8px;">
+            <button type="button" class="btn-pdf-relatorio" onclick="exportarPDFContasReceber()">🖨️ Exportar PDF</button>
+            <button type="button" class="btn-pdf-relatorio" style="background-color:#217346;" onclick="exportarExcelContasReceber()">📊 Exportar Excel</button>
         </div>
         <div class="table-responsive-entradas">
             <table class="tabela-entradas">
@@ -9407,6 +9415,411 @@ window.carregarFiltrosDespesas = async function() {
         } catch (e) {
             console.error(e);
             tbody.innerHTML = '<tr><td colspan="5" style="text-align:center;color:#d9534f;">Erro ao carregar recebimentos.</td></tr>';
+        }
+    };
+
+    function chaveMesAnoContaReceberDeIsoOuBr(dataStr) {
+        const s = String(dataStr || '').trim();
+        if (!s) return '';
+        if (/^\d{4}-\d{2}-\d{2}/.test(s)) {
+            const [y, m] = s.slice(0, 10).split('-');
+            return m + '/' + y;
+        }
+        const sep = separarDataSegura(s);
+        if (!sep || !sep.ano || sep.ano === 'Outros' || !sep.mes || sep.mes === 'Outros') return '';
+        return String(sep.mes).padStart(2, '0') + '/' + String(sep.ano);
+    }
+
+    function tsDataBrContasReceber(dataStr) {
+        const s = String(dataStr || '').trim();
+        if (!s) return 0;
+        if (/^\d{4}-\d{2}-\d{2}/.test(s)) {
+            const [y, m, d] = s.slice(0, 10).split('-').map(Number);
+            return new Date(y, m - 1, d).getTime();
+        }
+        const sep = separarDataSegura(s);
+        if (!sep || !sep.ano || sep.ano === 'Outros') return 0;
+        const mes = parseInt(sep.mes, 10);
+        const dia = parseInt(sep.dia, 10) || 1;
+        const ano = parseInt(sep.ano, 10);
+        if (!mes || !ano) return 0;
+        return new Date(ano, mes - 1, dia).getTime();
+    }
+
+    function montarPackExportContasReceber(lista) {
+        const pendentes = [];
+        const recebidos = [];
+        (lista || []).forEach(function (c) {
+            const st = statusContaReceberNorm(c);
+            const saldo = saldoDevedorConta(c);
+            const rec = valorRecebidoConta(c);
+            if ((st === 'PENDENTE' || st === 'pendente'.toUpperCase()) && saldo > 0.009) {
+                pendentes.push(c);
+            }
+            if (st === 'PAGO' || st === 'PAGA' || rec > 0.009) {
+                recebidos.push(c);
+            }
+        });
+        return { pendentes: pendentes, recebidos: recebidos, todos: lista || [] };
+    }
+
+    function expandirLinhasRecebidosContasReceber(lista) {
+        const linhas = [];
+        (lista || []).forEach(function (c) {
+            const hist = listaRecebimentosParciaisConta(c);
+            if (hist.length) {
+                hist.forEach(function (h, idx) {
+                    const dataStr = h.dataStr || h.data || c.dataRecebimentoStr || c.data_pagamento || '';
+                    linhas.push({
+                        conta: c,
+                        dataRecebimento: dataStr ? String(dataStr).split(/\s+/)[0].replace(',', '') : '—',
+                        formaPagamento: h.formaPagamento || h.forma_pagamento || c.formaPagamento || c.forma_pagamento || '—',
+                        valor: Number(h.valor) || 0,
+                        chaveMes: chaveMesAnoContaReceberDeIsoOuBr(dataStr),
+                        ts: Number(h.timestamp) || tsDataBrContasReceber(dataStr),
+                        idx: idx
+                    });
+                });
+            } else {
+                const dataStr = c.dataRecebimentoStr || c.data_pagamento || c.data_cadastro || '';
+                const valorRec = valorRecebidoConta(c);
+                linhas.push({
+                    conta: c,
+                    dataRecebimento: dataStr ? String(dataStr).split(/\s+/)[0].replace(',', '') : '—',
+                    formaPagamento: c.formaPagamento || c.forma_pagamento || '—',
+                    valor: valorRec,
+                    chaveMes: chaveMesAnoContaReceberDeIsoOuBr(dataStr),
+                    ts: Number(c.timestampRecebimento || c.timestamp_pagamento) || tsDataBrContasReceber(dataStr),
+                    idx: 0
+                });
+            }
+        });
+        linhas.sort(function (a, b) { return (a.ts || 0) - (b.ts || 0); });
+        return linhas;
+    }
+
+    function mesAnoParaIndiceContasReceber(mesAno) {
+        const p = String(mesAno || '').trim().split('/');
+        if (p.length !== 2) return -1;
+        const mes = parseInt(p[0], 10);
+        const ano = parseInt(p[1], 10);
+        if (!mes || !ano) return -1;
+        return ano * 12 + mes;
+    }
+
+    function filtrarPackContasReceberPorPeriodo(pack, opcoes) {
+        if (!pack) return { pendentes: [], recebidos: [], linhasRecebidos: [] };
+        const modo = (opcoes && opcoes.modoPeriodo) || 'todos';
+        const mesUnico = (opcoes && opcoes.mesAno) || '';
+        const ini = (opcoes && opcoes.periodoInicio) || '';
+        const fim = (opcoes && opcoes.periodoFim) || '';
+
+        function passaMesAno(chave) {
+            if (!chave) return modo === 'todos';
+            if (modo === 'todos') return true;
+            if (modo === 'mes') return chave === mesUnico;
+            if (modo === 'intervalo') {
+                const idx = mesAnoParaIndiceContasReceber(chave);
+                const i0 = mesAnoParaIndiceContasReceber(ini);
+                const i1 = mesAnoParaIndiceContasReceber(fim);
+                if (idx < 0 || i0 < 0 || i1 < 0) return false;
+                const a = Math.min(i0, i1);
+                const b = Math.max(i0, i1);
+                return idx >= a && idx <= b;
+            }
+            return true;
+        }
+
+        const pendentes = (pack.pendentes || []).filter(function (c) {
+            const chave = chaveMesAnoContaReceberDeIsoOuBr(c.vencimento || c.data_vencimento);
+            return passaMesAno(chave);
+        }).sort(function (a, b) {
+            return tsDataBrContasReceber(a.vencimento || a.data_vencimento) - tsDataBrContasReceber(b.vencimento || b.data_vencimento);
+        });
+
+        const linhasRecebidos = expandirLinhasRecebidosContasReceber(pack.recebidos).filter(function (ln) {
+            return passaMesAno(ln.chaveMes);
+        });
+
+        const idsRecebidos = {};
+        linhasRecebidos.forEach(function (ln) { idsRecebidos[ln.conta.id] = true; });
+        const recebidos = (pack.recebidos || []).filter(function (c) { return !!idsRecebidos[c.id]; });
+
+        return { pendentes: pendentes, recebidos: recebidos, linhasRecebidos: linhasRecebidos };
+    }
+
+    async function carregarPackContasReceberExport() {
+        const lista = await carregarContasReceberEmpresa();
+        const pack = montarPackExportContasReceber(lista);
+        window._contasReceberExport = pack;
+        return pack;
+    }
+
+    async function perguntarOpcoesExportContasReceber(pack) {
+        const meses = [];
+        const setMes = {};
+        (pack.pendentes || []).forEach(function (c) {
+            const k = chaveMesAnoContaReceberDeIsoOuBr(c.vencimento || c.data_vencimento);
+            if (k && !setMes[k]) { setMes[k] = true; meses.push(k); }
+        });
+        expandirLinhasRecebidosContasReceber(pack.recebidos).forEach(function (ln) {
+            if (ln.chaveMes && !setMes[ln.chaveMes]) { setMes[ln.chaveMes] = true; meses.push(ln.chaveMes); }
+        });
+        meses.sort(function (a, b) {
+            return mesAnoParaIndiceContasReceber(a) - mesAnoParaIndiceContasReceber(b);
+        });
+        const mesAtual = (function () {
+            const d = new Date();
+            return String(d.getMonth() + 1).padStart(2, '0') + '/' + d.getFullYear();
+        })();
+        const optsMes = meses.length
+            ? meses.map(function (m) { return '<option value="' + escapeAttrBasico(m) + '">' + escapeHtmlBasico(m) + '</option>'; }).join('')
+            : '<option value="' + escapeAttrBasico(mesAtual) + '">' + escapeHtmlBasico(mesAtual) + '</option>';
+
+        const html = ''
+            + '<p style="text-align:left;font-size:13px;margin:0 0 10px 0;">Escolha o que incluir e o <b>período</b> (vencimento para pendentes; data de recebimento para recebidos).</p>'
+            + '<div style="text-align:left;margin-bottom:12px;">'
+            + '<label style="display:flex;align-items:center;gap:8px;margin:6px 0;cursor:pointer;"><input type="checkbox" id="exp-cr-pendente" checked> 🟡 A receber (pendentes)</label>'
+            + '<label style="display:flex;align-items:center;gap:8px;margin:6px 0;cursor:pointer;"><input type="checkbox" id="exp-cr-recebido" checked> 🟢 Recebidos</label>'
+            + '</div>'
+            + '<p style="text-align:left;font-size:12px;font-weight:bold;margin:0 0 6px 0;">Período:</p>'
+            + '<table style="width:100%;border-collapse:collapse;font-size:13px;text-align:left;margin-bottom:8px;" class="exp-cr-periodo-tbl">'
+            + '<tr><td style="padding:4px 8px 4px 0;vertical-align:middle;width:1%;white-space:nowrap;"><label style="display:inline-flex;align-items:center;gap:6px;margin:0;cursor:pointer;font-weight:normal;"><input type="radio" name="exp-cr-periodo" value="todos" checked style="margin:0;flex-shrink:0;"> Todos os meses</label></td></tr>'
+            + '<tr><td style="padding:4px 8px 4px 0;vertical-align:middle;"><label style="display:inline-flex;align-items:center;gap:6px;margin:0;cursor:pointer;font-weight:normal;"><input type="radio" name="exp-cr-periodo" value="mes" style="margin:0;flex-shrink:0;"> Apenas um mês:</label> <select id="exp-cr-mes-unico" style="margin-left:4px;padding:4px 8px;border-radius:6px;border:1px solid #ccc;max-width:120px;">' + optsMes + '</select></td></tr>'
+            + '<tr><td style="padding:4px 8px 4px 0;vertical-align:middle;"><label style="display:inline-flex;align-items:center;gap:6px;margin:0;cursor:pointer;font-weight:normal;"><input type="radio" name="exp-cr-periodo" value="intervalo" style="margin:0;flex-shrink:0;"> De</label> <select id="exp-cr-mes-ini" style="margin:0 4px;padding:4px 8px;border-radius:6px;border:1px solid #ccc;max-width:120px;">' + optsMes + '</select> <span>até</span> <select id="exp-cr-mes-fim" style="margin-left:4px;padding:4px 8px;border-radius:6px;border:1px solid #ccc;max-width:120px;">' + optsMes + '</select></td></tr>'
+            + '</table>';
+
+        const result = await Swal.fire({
+            title: 'Exportar Contas a Receber',
+            html: html,
+            width: Math.min(window.innerWidth - 24, 460),
+            showCancelButton: true,
+            confirmButtonText: 'Exportar',
+            cancelButtonText: 'Cancelar',
+            confirmButtonColor: '#1a2a43',
+            focusConfirm: false,
+            didOpen: function () {
+                const popup = Swal.getPopup();
+                if (!popup) return;
+                popup.querySelectorAll('input[type="radio"], input[type="checkbox"]').forEach(function (el) {
+                    el.style.width = 'auto';
+                    el.style.height = 'auto';
+                    el.style.margin = '0';
+                    el.style.flexShrink = '0';
+                });
+            },
+            preConfirm: function () {
+                const incPend = !!document.getElementById('exp-cr-pendente') && document.getElementById('exp-cr-pendente').checked;
+                const incRec = !!document.getElementById('exp-cr-recebido') && document.getElementById('exp-cr-recebido').checked;
+                if (!incPend && !incRec) {
+                    Swal.showValidationMessage('Marque ao menos uma seção.');
+                    return false;
+                }
+                const radio = document.querySelector('input[name="exp-cr-periodo"]:checked');
+                const modo = (radio && radio.value) || 'todos';
+                const mesAno = (document.getElementById('exp-cr-mes-unico') && document.getElementById('exp-cr-mes-unico').value) || mesAtual;
+                const periodoInicio = (document.getElementById('exp-cr-mes-ini') && document.getElementById('exp-cr-mes-ini').value) || mesAtual;
+                const periodoFim = (document.getElementById('exp-cr-mes-fim') && document.getElementById('exp-cr-mes-fim').value) || mesAtual;
+                return {
+                    incluirPendentes: incPend,
+                    incluirRecebidos: incRec,
+                    modoPeriodo: modo,
+                    mesAno: mesAno,
+                    periodoInicio: periodoInicio,
+                    periodoFim: periodoFim
+                };
+            }
+        });
+        return result.isConfirmed ? result.value : null;
+    }
+
+    function labelPeriodoExportContasReceber(op) {
+        if (!op || op.modoPeriodo === 'todos') return 'Todos os meses';
+        if (op.modoPeriodo === 'mes') return 'Mês ' + (op.mesAno || '');
+        const a = op.periodoInicio || '';
+        const b = op.periodoFim || '';
+        const i0 = mesAnoParaIndiceContasReceber(a);
+        const i1 = mesAnoParaIndiceContasReceber(b);
+        if (i0 >= 0 && i1 >= 0 && i0 > i1) return 'De ' + b + ' até ' + a;
+        return 'De ' + a + ' até ' + b;
+    }
+
+    function gerarExcelContasReceberEspelho(packFiltrado, opcoes) {
+        const linhas = [];
+        let totalPend = 0;
+        let totalRec = 0;
+
+        if (opcoes.incluirPendentes && packFiltrado.pendentes.length) {
+            linhas.push({ 'Seção': '—— A RECEBER (PENDENTES) ——', 'Vencimento / Data': '', 'Cliente': '', 'Documento': '', 'Descrição': '', 'Forma Pagto': '', 'Valor (R$)': '' });
+            packFiltrado.pendentes.forEach(function (c) {
+                const saldo = saldoDevedorConta(c);
+                totalPend += saldo;
+                linhas.push({
+                    'Seção': 'A RECEBER',
+                    'Vencimento / Data': formatarDataBrEntrada(c.vencimento || c.data_vencimento),
+                    'Cliente': nomeClienteConta(c),
+                    'Documento': docContaReceber(c) || '—',
+                    'Descrição': descContaReceber(c) || '—',
+                    'Forma Pagto': '',
+                    'Valor (R$)': saldo
+                });
+            });
+            linhas.push({ 'Seção': '', 'Vencimento / Data': '', 'Cliente': 'Subtotal pendentes', 'Documento': '', 'Descrição': '', 'Forma Pagto': '', 'Valor (R$)': totalPend });
+            linhas.push({});
+        }
+
+        if (opcoes.incluirRecebidos && packFiltrado.linhasRecebidos.length) {
+            linhas.push({ 'Seção': '—— RECEBIDOS ——', 'Vencimento / Data': '', 'Cliente': '', 'Documento': '', 'Descrição': '', 'Forma Pagto': '', 'Valor (R$)': '' });
+            packFiltrado.linhasRecebidos.forEach(function (ln) {
+                const c = ln.conta;
+                totalRec += ln.valor || 0;
+                linhas.push({
+                    'Seção': 'RECEBIDO',
+                    'Vencimento / Data': ln.dataRecebimento,
+                    'Cliente': nomeClienteConta(c),
+                    'Documento': docContaReceber(c) || '—',
+                    'Descrição': descContaReceber(c) || '—',
+                    'Forma Pagto': ln.formaPagamento,
+                    'Valor (R$)': ln.valor
+                });
+            });
+            linhas.push({ 'Seção': '', 'Vencimento / Data': '', 'Cliente': 'Subtotal recebidos', 'Documento': '', 'Descrição': '', 'Forma Pagto': '', 'Valor (R$)': totalRec });
+        }
+
+        return { linhas: linhas, totalPend: totalPend, totalRec: totalRec };
+    }
+
+    function gerarPdfContasReceberEspelho(packFiltrado, opcoes, labelPeriodo) {
+        function limparPdf(s) {
+            return String(s == null ? '' : s).replace(/[\u{1F300}-\u{1FAFF}\u{2600}-\u{27BF}]/gu, '').trim();
+        }
+        const { jsPDF } = window.jspdf;
+        const doc = new jsPDF('l', 'mm', 'a4');
+        const empresa = limparPdf(getEmpresaGestor() || 'Empresa');
+        doc.setFontSize(11);
+        doc.setFont('helvetica', 'bold');
+        doc.text(empresa, 14, 12);
+        doc.setFontSize(10);
+        doc.text('Contas a Receber', 14, 18);
+        doc.setFont('helvetica', 'normal');
+        doc.setFontSize(8);
+        doc.text('Periodo: ' + limparPdf(labelPeriodo) + '  |  Gerado: ' + new Date().toLocaleString('pt-BR'), 14, 23);
+
+        const head = [['Secao', 'Venc./Receb.', 'Cliente', 'Documento', 'Descricao', 'Forma', 'Valor R$']];
+        const body = [];
+        let totalPend = 0;
+        let totalRec = 0;
+        let startY = 28;
+
+        if (opcoes.incluirPendentes && packFiltrado.pendentes.length) {
+            body.push(['A RECEBER (PENDENTES)', '', '', '', '', '', '']);
+            packFiltrado.pendentes.forEach(function (c) {
+                const saldo = saldoDevedorConta(c);
+                totalPend += saldo;
+                body.push([
+                    'Pendente',
+                    limparPdf(formatarDataBrEntrada(c.vencimento || c.data_vencimento)),
+                    limparPdf(nomeClienteConta(c)).slice(0, 28),
+                    limparPdf(docContaReceber(c) || '—').slice(0, 14),
+                    limparPdf(descContaReceber(c) || '—').slice(0, 22),
+                    '',
+                    limparPdf(formatarMoedaEntrada(saldo))
+                ]);
+            });
+            body.push(['', '', 'Subtotal pendentes', '', '', '', limparPdf(formatarMoedaEntrada(totalPend))]);
+        }
+
+        if (opcoes.incluirRecebidos && packFiltrado.linhasRecebidos.length) {
+            body.push(['RECEBIDOS', '', '', '', '', '', '']);
+            packFiltrado.linhasRecebidos.forEach(function (ln) {
+                const c = ln.conta;
+                totalRec += ln.valor || 0;
+                body.push([
+                    'Recebido',
+                    limparPdf(ln.dataRecebimento),
+                    limparPdf(nomeClienteConta(c)).slice(0, 28),
+                    limparPdf(docContaReceber(c) || '—').slice(0, 14),
+                    limparPdf(descContaReceber(c) || '—').slice(0, 22),
+                    limparPdf(ln.formaPagamento).slice(0, 12),
+                    limparPdf(formatarMoedaEntrada(ln.valor))
+                ]);
+            });
+            body.push(['', '', 'Subtotal recebidos', '', '', '', limparPdf(formatarMoedaEntrada(totalRec))]);
+        }
+
+        if (!body.length) return null;
+
+        doc.autoTable({
+            startY: startY,
+            head: head,
+            body: body,
+            theme: 'grid',
+            styles: { fontSize: 7, cellPadding: 1.8, valign: 'middle' },
+            headStyles: { fillColor: [230, 126, 34], textColor: [255, 255, 255], fontStyle: 'bold' },
+            columnStyles: { 6: { halign: 'right', cellWidth: 24 } },
+            margin: { left: 10, right: 10 }
+        });
+
+        const yFinal = doc.lastAutoTable.finalY + 6;
+        doc.setFont('helvetica', 'bold');
+        doc.setFontSize(9);
+        if (opcoes.incluirPendentes) doc.text('Total a receber: ' + formatarMoedaEntrada(totalPend), 14, yFinal);
+        if (opcoes.incluirRecebidos) doc.text('Total recebido: ' + formatarMoedaEntrada(totalRec), 14, yFinal + (opcoes.incluirPendentes ? 5 : 0));
+
+        return doc;
+    }
+
+    window.exportarExcelContasReceber = async function () {
+        if (!window.XLSX) return Swal.fire('Erro', 'Biblioteca Excel não carregada. Recarregue a página.', 'error');
+        Swal.fire({ title: 'Carregando...', allowOutsideClick: false, didOpen: function () { Swal.showLoading(); } });
+        try {
+            const pack = await carregarPackContasReceberExport();
+            Swal.close();
+            const opcoes = await perguntarOpcoesExportContasReceber(pack);
+            if (!opcoes) return;
+            const filtrado = filtrarPackContasReceberPorPeriodo(pack, opcoes);
+            const temPend = opcoes.incluirPendentes && filtrado.pendentes.length;
+            const temRec = opcoes.incluirRecebidos && filtrado.linhasRecebidos.length;
+            if (!temPend && !temRec) {
+                return Swal.fire('Atenção', 'Nenhum registro no período selecionado.', 'info');
+            }
+            const espelho = gerarExcelContasReceberEspelho(filtrado, opcoes);
+            const ws = XLSX.utils.json_to_sheet(espelho.linhas);
+            const wb = XLSX.utils.book_new();
+            XLSX.utils.book_append_sheet(wb, ws, 'Contas a Receber');
+            const empresa = String(getEmpresaGestor() || 'Empresa').replace(/\s+/g, '_');
+            const sufixo = labelPeriodoExportContasReceber(opcoes).replace(/\s+/g, '_').replace(/\//g, '-');
+            XLSX.writeFile(wb, 'contas_a_receber_' + empresa + '_' + sufixo + '.xlsx');
+            Swal.fire({ toast: true, position: 'top-end', icon: 'success', title: 'Excel gerado!', showConfirmButton: false, timer: 2200 });
+        } catch (e) {
+            console.error(e);
+            Swal.fire('Erro', 'Falha ao exportar Excel.', 'error');
+        }
+    };
+
+    window.exportarPDFContasReceber = async function () {
+        Swal.fire({ title: 'Carregando...', allowOutsideClick: false, didOpen: function () { Swal.showLoading(); } });
+        try {
+            const pack = await carregarPackContasReceberExport();
+            Swal.close();
+            const opcoes = await perguntarOpcoesExportContasReceber(pack);
+            if (!opcoes) return;
+            const filtrado = filtrarPackContasReceberPorPeriodo(pack, opcoes);
+            const temPend = opcoes.incluirPendentes && filtrado.pendentes.length;
+            const temRec = opcoes.incluirRecebidos && filtrado.linhasRecebidos.length;
+            if (!temPend && !temRec) {
+                return Swal.fire('Atenção', 'Nenhum registro no período selecionado.', 'info');
+            }
+            const labelPeriodo = labelPeriodoExportContasReceber(opcoes);
+            const doc = gerarPdfContasReceberEspelho(filtrado, opcoes, labelPeriodo);
+            if (!doc) return Swal.fire('Atenção', 'Nenhum dado para exportar.', 'info');
+            const empresa = String(getEmpresaGestor() || 'Empresa').replace(/\s+/g, '_');
+            const sufixo = labelPeriodo.replace(/\s+/g, '_').replace(/\//g, '-');
+            doc.save('contas_a_receber_' + empresa + '_' + sufixo + '.pdf');
+            Swal.fire({ toast: true, position: 'top-end', icon: 'success', title: 'PDF gerado!', showConfirmButton: false, timer: 2200 });
+        } catch (e) {
+            console.error(e);
+            Swal.fire('Erro', 'Falha ao exportar PDF.', 'error');
         }
     };
 
