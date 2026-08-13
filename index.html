@@ -3889,7 +3889,7 @@
 
     <div id="aba-contas-receber" class="view-section">
         <h2 style="color:#e67e22;margin:0 0 8px 0;font-size:18px;">Contas a Receber</h2>
-        <p class="texto-explicacao" style="margin-top:0;">Contas <b>pendentes</b>. Use <b>Receber</b> para dar baixa.</p>
+        <p class="texto-explicacao" style="margin-top:0;">Contas <b>pendentes</b>. Use <b>Parcial</b> para receber uma parte e ir abatendo o saldo, ou <b>Receber total</b> para quitar o restante de uma vez.</p>
         <div style="display:flex;gap:10px;margin-bottom:12px;flex-wrap:wrap;">
             <input type="text" id="ent-busca-pendentes" placeholder="Buscar cliente, documento ou descrição..." style="flex:2;min-width:180px;margin:0;" onkeydown="if(event.key==='Enter')renderContasReceber()">
             <button type="button" onclick="renderContasReceber()" style="flex:1;min-width:120px;background:var(--dark-navy);color:#fff;border:none;border-radius:10px;cursor:pointer;font-weight:bold;">Atualizar</button>
@@ -3906,7 +3906,7 @@
                         <th>Cliente</th>
                         <th>Documento</th>
                         <th>Descrição</th>
-                        <th>Total (R$)</th>
+                        <th>Valores</th>
                         <th>Ações</th>
                     </tr>
                 </thead>
@@ -3920,7 +3920,7 @@
 
     <div id="aba-recebimentos" class="view-section">
         <h2 style="color:#27ae60;margin:0 0 8px 0;font-size:18px;">Recebimentos Realizados</h2>
-        <p class="texto-explicacao" style="margin-top:0;">Histórico das contas <b>já recebidas</b>.</p>
+        <p class="texto-explicacao" style="margin-top:0;">Histórico das contas <b>já recebidas</b> (incluindo recebimentos parciais).</p>
         <div style="display:flex;gap:10px;margin-bottom:12px;flex-wrap:wrap;">
             <input type="text" id="ent-busca-recebidos" placeholder="Buscar cliente, documento ou descrição..." style="flex:2;min-width:180px;margin:0;" onkeydown="if(event.key==='Enter')renderRecebimentos()">
             <button type="button" onclick="renderRecebimentos()" style="flex:1;min-width:120px;background:var(--dark-navy);color:#fff;border:none;border-radius:10px;cursor:pointer;font-weight:bold;">Atualizar</button>
@@ -9098,6 +9098,12 @@ window.carregarFiltrosDespesas = async function() {
         return String(c && (c.statusPagamento || c.status) || 'PENDENTE').toUpperCase();
     }
 
+    function contaReceberEmAberto(c) {
+        const st = statusContaReceberNorm(c);
+        if (st === 'PAGO' || st === 'PAGA') return false;
+        return saldoDevedorConta(c) > 0.009;
+    }
+
     function saldoDevedorConta(c) {
         if (c.saldoDevedor != null && Number.isFinite(Number(c.saldoDevedor))) return Number(c.saldoDevedor);
         if (c.saldo_devedor != null && Number.isFinite(Number(c.saldo_devedor))) return Number(c.saldo_devedor);
@@ -9122,6 +9128,37 @@ window.carregarFiltrosDespesas = async function() {
         const h = c.recebimentosParciais || c.recebimentos_parciais;
         if (!h) return [];
         return Array.isArray(h) ? h : Object.values(h);
+    }
+
+    function htmlSelectFormaPagtoConta(idSel) {
+        return '<select id="' + idSel + '" class="swal2-input" style="width:100%;margin:0;height:42px;">'
+            + '<option value="PIX">PIX</option>'
+            + '<option value="Dinheiro">Dinheiro</option>'
+            + '<option value="Transferência">Transferência</option>'
+            + '<option value="Cartão">Cartão</option>'
+            + '<option value="Boleto">Boleto</option>'
+            + '<option value="Cheque">Cheque</option>'
+            + '<option value="Outro">Outro</option>'
+            + '</select>';
+    }
+
+    function htmlHistRecebimentosParciaisConta(c) {
+        const hist = listaRecebimentosParciaisConta(c);
+        if (!hist.length) return '';
+        return '<div style="margin-top:6px;padding:6px 8px;background:#f0f9ff;border-radius:8px;font-size:11px;color:#0c5460;">'
+            + '<b>Recebimentos parciais (' + hist.length + '):</b>'
+            + '<ul style="margin:4px 0 0 16px;padding:0;">'
+            + hist.map(function (h) {
+                const dataStr = h.dataStr || h.data || '';
+                const dataCurta = dataStr ? String(dataStr).split(/\s+/)[0].replace(',', '') : '—';
+                const forma = h.formaPagamento || h.forma_pagamento || '';
+                const obs = h.observacao || h.obs || '';
+                return '<li>' + escapeHtmlBasico(dataCurta) + ' — <b>' + formatarMoedaEntrada(h.valor || 0) + '</b>'
+                    + (forma ? ' · ' + escapeHtmlBasico(forma) : '')
+                    + (obs ? ' <span style="color:#666;">(' + escapeHtmlBasico(obs) + ')</span>' : '')
+                    + '</li>';
+            }).join('')
+            + '</ul></div>';
     }
 
     function nomeClienteConta(c) {
@@ -9219,7 +9256,7 @@ window.carregarFiltrosDespesas = async function() {
         return lista;
     }
 
-    // 2. RENDERIZAR CONTAS A RECEBER (PENDENTE)
+    // 2. RENDERIZAR CONTAS A RECEBER (PENDENTE / PARCIAL)
     window.renderContasReceber = async function () {
         const tbody = document.getElementById('tabelaContasReceber');
         const elTotal = document.getElementById('ent-total-pendente');
@@ -9228,9 +9265,7 @@ window.carregarFiltrosDespesas = async function() {
         try {
             const busca = ((document.getElementById('ent-busca-pendentes') && document.getElementById('ent-busca-pendentes').value) || '').trim().toLowerCase();
             const pendentes = (await carregarContasReceberEmpresa()).filter(function (v) {
-                const st = statusContaReceberNorm(v);
-                const saldo = saldoDevedorConta(v);
-                return (st === 'PENDENTE' || st === 'pendente'.toUpperCase()) && saldo > 0.009;
+                return contaReceberEmAberto(v);
             }).filter(function (c) {
                 if (!busca) return true;
                 const txt = [nomeClienteConta(c), docContaReceber(c), descContaReceber(c)].join(' ').toLowerCase();
@@ -9243,18 +9278,32 @@ window.carregarFiltrosDespesas = async function() {
             } else {
                 let html = '';
                 pendentes.forEach(function (c) {
+                    const total = totalContaReceber(c);
+                    const jaRec = valorRecebidoConta(c);
                     const saldo = saldoDevedorConta(c);
                     soma += saldo;
                     const vencForm = formatarDataBrEntrada(c.vencimento || c.data_vencimento);
+                    const ehParcial = jaRec > 0.009;
+                    const badge = ehParcial
+                        ? '<span style="display:inline-block;margin-top:4px;font-size:10px;background:#17a2b8;color:#fff;padding:2px 6px;border-radius:4px;font-weight:800;">PARCIAL</span>'
+                        : '';
                     html += '<tr>'
-                        + '<td style="font-weight:bold;color:#e74c3c;">' + escapeHtmlBasico(vencForm) + '</td>'
+                        + '<td style="font-weight:bold;color:#e74c3c;white-space:nowrap;">' + escapeHtmlBasico(vencForm) + '</td>'
                         + '<td><b>' + escapeHtmlBasico(nomeClienteConta(c)) + '</b></td>'
                         + '<td>' + escapeHtmlBasico(docContaReceber(c) || '—') + '</td>'
-                        + '<td>' + escapeHtmlBasico(descContaReceber(c) || '—') + '</td>'
-                        + '<td style="font-weight:bold;white-space:nowrap;">' + formatarMoedaEntrada(saldo) + '</td>'
+                        + '<td>' + escapeHtmlBasico(descContaReceber(c) || '—') + htmlHistRecebimentosParciaisConta(c) + '</td>'
+                        + '<td style="white-space:nowrap;font-size:12px;">'
+                        + '<div>Total: <b>' + formatarMoedaEntrada(total) + '</b></div>'
+                        + (ehParcial ? '<div style="color:#1e8449;">Já recebido: <b>' + formatarMoedaEntrada(jaRec) + '</b></div>' : '')
+                        + '<div style="color:#c0392b;">Saldo: <b>' + formatarMoedaEntrada(saldo) + '</b></div>'
+                        + badge
+                        + '</td>'
                         + '<td class="celula-acoes" style="white-space:nowrap;">'
-                        + '<button type="button" class="btn-acao receber" style="background:#27ae60;color:#fff;border:none;padding:6px 10px;border-radius:6px;font-weight:700;cursor:pointer;margin-right:4px;" onclick="receberContaCaixa(\'' + escapeAttrBasico(c.id) + '\')">💰 Receber</button>'
+                        + '<div style="display:flex;flex-direction:column;gap:6px;min-width:140px;">'
+                        + '<button type="button" style="background:#17a2b8;color:#fff;border:none;padding:7px 10px;border-radius:6px;font-weight:800;cursor:pointer;font-size:11px;" onclick="lancarRecebimentoParcialConta(\'' + escapeAttrBasico(c.id) + '\')">💰 PARCIAL</button>'
+                        + '<button type="button" class="btn-acao receber" style="background:#27ae60;color:#fff;border:none;padding:7px 10px;border-radius:6px;font-weight:800;cursor:pointer;font-size:11px;" onclick="receberContaCaixa(\'' + escapeAttrBasico(c.id) + '\')">✅ RECEBER TOTAL</button>'
                         + '<button type="button" class="btn-excluir" style="padding:6px 8px;" onclick="excluirContaEntrada(\'' + escapeAttrBasico(c.id) + '\')">🗑️</button>'
+                        + '</div>'
                         + '</td></tr>';
                 });
                 tbody.innerHTML = html;
@@ -9266,36 +9315,188 @@ window.carregarFiltrosDespesas = async function() {
         }
     };
 
-    // 3. PROCESSAR RECEBIMENTO (parcial ou total)
+    async function buscarContaReceberPorId(id) {
+        const lista = await carregarContasReceberEmpresa();
+        return lista.find(function (x) { return String(x.id) === String(id); }) || null;
+    }
+
+    function dataIsoHojeContaReceber() {
+        const hoje = new Date();
+        return hoje.getFullYear() + '-' + String(hoje.getMonth() + 1).padStart(2, '0') + '-' + String(hoje.getDate()).padStart(2, '0');
+    }
+
+    function dataBrDeIsoContaReceber(dataIso, fallback) {
+        if (dataIso && /^\d{4}-\d{2}-\d{2}/.test(dataIso)) {
+            const p = dataIso.split('-');
+            return p[2] + '/' + p[1] + '/' + p[0];
+        }
+        return fallback || new Date().toLocaleDateString('pt-BR');
+    }
+
+    async function gravarRecebimentoConta(id, conta, opts) {
+        const valorRecebido = Number(opts.valorRecebido) || 0;
+        const formaPgto = opts.formaPgto || 'PIX';
+        const dataBr = opts.dataBr || new Date().toLocaleDateString('pt-BR');
+        const obs = String(opts.obs || '').trim();
+        const saldoAtual = saldoDevedorConta(conta);
+        const juros = Math.max(0, Math.round((valorRecebido - saldoAtual) * 100) / 100);
+        const abate = Math.min(valorRecebido, saldoAtual);
+        const saldoRestante = Math.max(0, Math.round((saldoAtual - abate) * 100) / 100);
+        const quitou = saldoRestante <= 0.009;
+        const novoStatus = quitou ? 'PAGO' : 'PARCIAL';
+        const agora = Date.now();
+        const dataStr = dataBr + ' ' + new Date(agora).toLocaleTimeString('pt-BR');
+        const historico = listaRecebimentosParciaisConta(conta).slice();
+        historico.push({
+            id: 'rec_' + agora,
+            valor: valorRecebido,
+            valor_abatido: abate,
+            valor_juros: juros,
+            formaPagamento: formaPgto,
+            forma_pagamento: formaPgto,
+            dataStr: dataStr,
+            data: dataBr,
+            observacao: obs || (quitou && juros > 0.009 ? 'Quitação com juros' : (quitou ? 'Quitação do saldo restante' : 'Recebimento parcial')),
+            timestamp: agora
+        });
+        const valorRecebidoParcial = Math.round((valorRecebidoConta(conta) + valorRecebido) * 100) / 100;
+
+        await updateDoc(doc(db, COLECAO_CONTAS_RECEBER, id), {
+            statusPagamento: novoStatus,
+            status: novoStatus,
+            saldoDevedor: quitou ? 0 : saldoRestante,
+            saldo_devedor: quitou ? 0 : saldoRestante,
+            formaPagamento: formaPgto,
+            forma_pagamento: formaPgto,
+            recebimentosParciais: historico,
+            recebimentos_parciais: historico,
+            valorRecebidoParcial: valorRecebidoParcial,
+            valor_recebido_parcial: valorRecebidoParcial,
+            dataRecebimentoStr: dataStr,
+            data_pagamento: dataStr,
+            timestampRecebimento: agora,
+            timestamp_pagamento: agora
+        });
+
+        return { quitou: quitou, saldoRestante: quitou ? 0 : saldoRestante, juros: juros, abate: abate };
+    }
+
+    // 3. RECEBIMENTO PARCIAL
+    window.lancarRecebimentoParcialConta = async function (id) {
+        if (!id) return;
+        let conta = null;
+        try { conta = await buscarContaReceberPorId(id); } catch (e) { console.error(e); }
+        if (!conta) return Swal.fire('Atenção', 'Conta não encontrada.', 'warning');
+
+        const total = totalContaReceber(conta);
+        const jaRec = valorRecebidoConta(conta);
+        const saldoAtual = saldoDevedorConta(conta);
+        if (saldoAtual <= 0.009) {
+            return Swal.fire('Já quitada', 'Esta conta não tem saldo em aberto.', 'info');
+        }
+
+        const hojeIso = dataIsoHojeContaReceber();
+        const conf = await Swal.fire({
+            title: 'Recebimento parcial',
+            html: '<div style="text-align:left;font-size:13px;">'
+                + '<p style="margin:0 0 10px 0;background:#f0f9ff;border:1px solid #bee5eb;border-radius:8px;padding:10px;">'
+                + 'Cliente: <b>' + escapeHtmlBasico(nomeClienteConta(conta)) + '</b><br>'
+                + 'Original: <b>' + formatarMoedaEntrada(total) + '</b><br>'
+                + 'Já recebido: <b style="color:#28a745;">' + formatarMoedaEntrada(jaRec) + '</b><br>'
+                + 'Saldo em aberto: <b style="color:#c0392b;">' + formatarMoedaEntrada(saldoAtual) + '</b>'
+                + '</p>'
+                + '<label style="display:block;font-size:12px;margin-bottom:4px;">Valor deste recebimento (R$)</label>'
+                + '<input id="cr-valor-receber" class="swal2-input" style="width:100%;margin:0 0 10px 0;" placeholder="0,00" value="">'
+                + '<label style="display:block;font-size:12px;margin-bottom:4px;">Data do recebimento</label>'
+                + '<input type="date" id="cr-data-receber" class="swal2-input" style="width:100%;margin:0 0 10px 0;" value="' + hojeIso + '">'
+                + '<label style="display:block;font-size:12px;margin-bottom:4px;">Forma de pagamento</label>'
+                + htmlSelectFormaPagtoConta('cr-forma-pagto')
+                + '<label style="display:block;font-size:12px;margin:10px 0 4px 0;">Observação (opcional)</label>'
+                + '<input id="cr-obs-receber" class="swal2-input" style="width:100%;margin:0;" placeholder="Ex.: entrada / parcial">'
+                + '<p style="font-size:12px;color:#666;margin:8px 0 0 0;">Informe um valor <b>menor que o saldo</b> para receber só uma parte. Se cobrir o saldo (ou mais, com juros), a conta fica <b>quitada</b>.</p>'
+                + '</div>',
+            showCancelButton: true,
+            confirmButtonText: 'Lançar parcial',
+            cancelButtonText: 'Cancelar',
+            confirmButtonColor: '#17a2b8',
+            didOpen: function () {
+                const inp = document.getElementById('cr-valor-receber');
+                if (inp && typeof mascaraMoeda === 'function') {
+                    inp.addEventListener('input', function () { mascaraMoeda(inp); });
+                    inp.focus();
+                }
+            },
+            preConfirm: function () {
+                const valorRecebido = parseMoedaLocal((document.getElementById('cr-valor-receber') && document.getElementById('cr-valor-receber').value) || '0');
+                if (!(valorRecebido > 0)) {
+                    Swal.showValidationMessage('Informe o valor do recebimento parcial.');
+                    return false;
+                }
+                const sel = document.getElementById('cr-forma-pagto');
+                const dataIso = (document.getElementById('cr-data-receber') && document.getElementById('cr-data-receber').value) || hojeIso;
+                const obs = (document.getElementById('cr-obs-receber') && document.getElementById('cr-obs-receber').value) || '';
+                return {
+                    valorRecebido: valorRecebido,
+                    formaPgto: (sel && sel.value) || 'PIX',
+                    dataBr: dataBrDeIsoContaReceber(dataIso),
+                    obs: String(obs).trim()
+                };
+            }
+        });
+        if (!conf.isConfirmed || !conf.value) return;
+
+        try {
+            const res = await gravarRecebimentoConta(id, conta, conf.value);
+            Swal.fire(
+                res.quitou ? 'Quitada!' : 'Parcial lançado!',
+                (res.quitou
+                    ? 'O saldo foi coberto. Conta movida para Recebimentos.'
+                    : 'Recebido ' + formatarMoedaEntrada(res.abate) + '. Novo saldo: ' + formatarMoedaEntrada(res.saldoRestante) + '.')
+                + (res.juros > 0.009 ? ' Juros/acréscimo: ' + formatarMoedaEntrada(res.juros) + '.' : ''),
+                'success'
+            );
+            renderContasReceber();
+            if (typeof renderRecebimentos === 'function') renderRecebimentos();
+        } catch (e) {
+            console.error(e);
+            Swal.fire('Erro', 'Falha ao lançar recebimento parcial: ' + (e.message || ''), 'error');
+        }
+    };
+
+    // 3b. RECEBER TOTAL (quita o saldo restante)
     window.receberContaCaixa = async function (id) {
         if (!id) return;
         let conta = null;
-        try {
-            const lista = await carregarContasReceberEmpresa();
-            conta = lista.find(function (x) { return String(x.id) === String(id); });
-        } catch (e) {
-            console.error(e);
-        }
+        try { conta = await buscarContaReceberPorId(id); } catch (e) { console.error(e); }
         if (!conta) return Swal.fire('Atenção', 'Conta não encontrada.', 'warning');
 
+        const total = totalContaReceber(conta);
+        const jaRec = valorRecebidoConta(conta);
         const saldoAtual = saldoDevedorConta(conta);
+        if (saldoAtual <= 0.009) {
+            return Swal.fire('Já quitada', 'Esta conta não tem saldo em aberto.', 'info');
+        }
+
+        const hojeIso = dataIsoHojeContaReceber();
         const conf = await Swal.fire({
-            title: 'Receber conta',
-            html: '<p style="text-align:left;font-size:13px;margin:0 0 8px 0;">Cliente: <b>' + escapeHtmlBasico(nomeClienteConta(conta)) + '</b><br>Saldo: <b>' + formatarMoedaEntrada(saldoAtual) + '</b></p>'
-                + '<label style="display:block;text-align:left;font-size:12px;margin-bottom:4px;">Valor a receber (R$)</label>'
+            title: 'Receber total',
+            html: '<div style="text-align:left;font-size:13px;">'
+                + '<p style="margin:0 0 10px 0;background:#f4fdf6;border:1px solid #c3e6cb;border-radius:8px;padding:10px;">'
+                + 'Cliente: <b>' + escapeHtmlBasico(nomeClienteConta(conta)) + '</b><br>'
+                + 'Original: <b>' + formatarMoedaEntrada(total) + '</b><br>'
+                + (jaRec > 0.009 ? 'Já recebido: <b style="color:#28a745;">' + formatarMoedaEntrada(jaRec) + '</b><br>' : '')
+                + 'Saldo a quitar: <b style="color:#c0392b;">' + formatarMoedaEntrada(saldoAtual) + '</b>'
+                + '</p>'
+                + '<label style="display:block;font-size:12px;margin-bottom:4px;">Valor recebido (R$)</label>'
                 + '<input id="cr-valor-receber" class="swal2-input" style="width:100%;margin:0 0 10px 0;" value="' + String(saldoAtual.toFixed(2)).replace('.', ',') + '">'
-                + '<label style="display:block;text-align:left;font-size:12px;margin-bottom:4px;">Forma de pagamento</label>'
-                + '<select id="cr-forma-pagto" class="swal2-input" style="width:100%;margin:0;height:42px;">'
-                + '<option value="PIX">PIX</option>'
-                + '<option value="Dinheiro">Dinheiro</option>'
-                + '<option value="Transferência">Transferência</option>'
-                + '<option value="Cartão">Cartão</option>'
-                + '<option value="Boleto">Boleto</option>'
-                + '<option value="Cheque">Cheque</option>'
-                + '<option value="Outro">Outro</option>'
-                + '</select>',
+                + '<label style="display:block;font-size:12px;margin-bottom:4px;">Data do recebimento</label>'
+                + '<input type="date" id="cr-data-receber" class="swal2-input" style="width:100%;margin:0 0 10px 0;" value="' + hojeIso + '">'
+                + '<label style="display:block;font-size:12px;margin-bottom:4px;">Forma de pagamento</label>'
+                + htmlSelectFormaPagtoConta('cr-forma-pagto')
+                + '<p style="font-size:12px;color:#666;margin:8px 0 0 0;">O valor padrão é o saldo. Se receber <b>a mais</b> (juros), a conta também fica quitada.</p>'
+                + '</div>',
             showCancelButton: true,
-            confirmButtonText: 'Confirmar recebimento',
+            confirmButtonText: 'Quitar saldo',
             cancelButtonText: 'Cancelar',
             confirmButtonColor: '#27ae60',
             didOpen: function () {
@@ -9305,64 +9506,35 @@ window.carregarFiltrosDespesas = async function() {
                 }
             },
             preConfirm: function () {
-                const inp = document.getElementById('cr-valor-receber');
-                const sel = document.getElementById('cr-forma-pagto');
-                const valorRecebido = parseMoedaLocal((inp && inp.value) || '0');
+                const valorRecebido = parseMoedaLocal((document.getElementById('cr-valor-receber') && document.getElementById('cr-valor-receber').value) || '0');
                 if (!(valorRecebido > 0)) {
                     Swal.showValidationMessage('Informe um valor maior que zero.');
                     return false;
                 }
-                if (valorRecebido > saldoAtual + 0.009) {
-                    Swal.showValidationMessage('Valor maior que o saldo devedor.');
-                    return false;
-                }
+                const sel = document.getElementById('cr-forma-pagto');
+                const dataIso = (document.getElementById('cr-data-receber') && document.getElementById('cr-data-receber').value) || hojeIso;
                 return {
                     valorRecebido: valorRecebido,
-                    formaPgto: (sel && sel.value) || 'PIX'
+                    formaPgto: (sel && sel.value) || 'PIX',
+                    dataBr: dataBrDeIsoContaReceber(dataIso),
+                    obs: valorRecebido + 0.009 < saldoAtual ? 'Recebimento parcial' : 'Quitação do saldo restante'
                 };
             }
         });
         if (!conf.isConfirmed || !conf.value) return;
 
-        const valorRecebido = conf.value.valorRecebido;
-        const formaPgto = conf.value.formaPgto;
-        const saldoRestante = Math.max(0, saldoAtual - valorRecebido);
-        const novoStatus = saldoRestante <= 0.009 ? 'PAGO' : 'PENDENTE';
-        const agora = Date.now();
-        const dataStr = new Date(agora).toLocaleString('pt-BR');
-        const historico = listaRecebimentosParciaisConta(conta).slice();
-        historico.push({
-            valor: valorRecebido,
-            formaPagamento: formaPgto,
-            dataStr: dataStr,
-            timestamp: agora
-        });
-        const valorRecebidoParcial = valorRecebidoConta(conta) + valorRecebido;
-
         try {
-            await updateDoc(doc(db, COLECAO_CONTAS_RECEBER, id), {
-                statusPagamento: novoStatus,
-                status: novoStatus,
-                saldoDevedor: saldoRestante,
-                saldo_devedor: saldoRestante,
-                formaPagamento: formaPgto,
-                forma_pagamento: formaPgto,
-                recebimentosParciais: historico,
-                recebimentos_parciais: historico,
-                valorRecebidoParcial: valorRecebidoParcial,
-                valor_recebido_parcial: valorRecebidoParcial,
-                dataRecebimentoStr: dataStr,
-                data_pagamento: dataStr,
-                timestampRecebimento: agora,
-                timestamp_pagamento: agora
-            });
-            Swal.fire('Sucesso!', novoStatus === 'PAGO'
-                ? 'Conta quitada e movida para Recebimentos.'
-                : 'Recebimento parcial registrado. Saldo restante: ' + formatarMoedaEntrada(saldoRestante), 'success');
+            const res = await gravarRecebimentoConta(id, conta, conf.value);
+            Swal.fire(
+                res.quitou ? 'Sucesso!' : 'Parcial lançado!',
+                (res.quitou
+                    ? 'Conta quitada e movida para Recebimentos.'
+                    : 'Recebimento parcial registrado. Saldo restante: ' + formatarMoedaEntrada(res.saldoRestante) + '.')
+                + (res.juros > 0.009 ? ' Juros/acréscimo: ' + formatarMoedaEntrada(res.juros) + '.' : ''),
+                'success'
+            );
             renderContasReceber();
-            if (novoStatus === 'PAGO' && typeof renderRecebimentos === 'function') {
-                /* lista de pagos atualiza ao abrir a aba */
-            }
+            if (typeof renderRecebimentos === 'function') renderRecebimentos();
         } catch (e) {
             console.error(e);
             Swal.fire('Erro', 'Falha ao processar recebimento: ' + (e.message || ''), 'error');
@@ -9379,9 +9551,8 @@ window.carregarFiltrosDespesas = async function() {
         try {
             const busca = ((document.getElementById('ent-busca-recebidos') && document.getElementById('ent-busca-recebidos').value) || '').trim().toLowerCase();
             const recebidos = (await carregarContasReceberEmpresa()).filter(function (v) {
-                const st = statusContaReceberNorm(v);
                 const rec = valorRecebidoConta(v);
-                return st === 'PAGO' || st === 'PAGA' || rec > 0.009;
+                return rec > 0.009;
             }).filter(function (c) {
                 if (!busca) return true;
                 const txt = [nomeClienteConta(c), docContaReceber(c), descContaReceber(c), c.formaPagamento || c.forma_pagamento].join(' ').toLowerCase();
@@ -9397,13 +9568,18 @@ window.carregarFiltrosDespesas = async function() {
                 let html = '';
                 recebidos.forEach(function (c) {
                     const valorRec = valorRecebidoConta(c);
+                    const saldo = saldoDevedorConta(c);
+                    const emAberto = contaReceberEmAberto(c);
                     soma += valorRec;
                     const formaStr = c.formaPagamento || c.forma_pagamento || '—';
                     const dataRecRaw = c.dataRecebimentoStr || c.data_pagamento || '';
                     const dataRec = dataRecRaw ? String(dataRecRaw).split(/\s+/)[0].replace(',', '') : '—';
+                    const badge = emAberto
+                        ? '<div style="margin-top:4px;"><span style="font-size:10px;background:#17a2b8;color:#fff;padding:2px 6px;border-radius:4px;font-weight:800;">PARCIAL</span> <span style="font-size:11px;color:#c0392b;">Saldo: ' + formatarMoedaEntrada(saldo) + '</span></div>'
+                        : '<div style="margin-top:4px;"><span style="font-size:10px;background:#d4edda;color:#155724;padding:2px 6px;border-radius:4px;font-weight:800;">QUITADO</span></div>';
                     html += '<tr>'
-                        + '<td style="font-weight:bold;color:#2980b9;">' + escapeHtmlBasico(dataRec) + '</td>'
-                        + '<td><b>' + escapeHtmlBasico(nomeClienteConta(c)) + '</b></td>'
+                        + '<td style="font-weight:bold;color:#2980b9;">' + escapeHtmlBasico(dataRec) + htmlHistRecebimentosParciaisConta(c) + '</td>'
+                        + '<td><b>' + escapeHtmlBasico(nomeClienteConta(c)) + '</b>' + badge + '</td>'
                         + '<td>' + escapeHtmlBasico(formaStr) + '</td>'
                         + '<td style="font-weight:bold;color:#27ae60;white-space:nowrap;">' + formatarMoedaEntrada(valorRec) + '</td>'
                         + '<td class="celula-acoes"><button type="button" class="btn-acao" style="background:#e74c3c;color:#fff;border:none;padding:6px 10px;border-radius:6px;font-weight:700;cursor:pointer;" onclick="estornarPagamento(\'' + escapeAttrBasico(c.id) + '\')" title="Desfazer">🔄 Estornar</button></td>'
@@ -9453,7 +9629,7 @@ window.carregarFiltrosDespesas = async function() {
             const st = statusContaReceberNorm(c);
             const saldo = saldoDevedorConta(c);
             const rec = valorRecebidoConta(c);
-            if ((st === 'PENDENTE' || st === 'pendente'.toUpperCase()) && saldo > 0.009) {
+            if ((st === 'PENDENTE' || st === 'PARCIAL' || contaReceberEmAberto(c)) && saldo > 0.009) {
                 pendentes.push(c);
             }
             if (st === 'PAGO' || st === 'PAGA' || rec > 0.009) {
@@ -9836,7 +10012,7 @@ window.carregarFiltrosDespesas = async function() {
 
         const conf = await Swal.fire({
             title: 'Estornar recebimento?',
-            html: 'A conta de <b>' + escapeHtmlBasico(nomeClienteConta(conta)) + '</b> volta para Contas a Receber com o valor integral.',
+            html: 'Os recebimentos de <b>' + escapeHtmlBasico(nomeClienteConta(conta)) + '</b> serão desfeitos. A conta volta para Contas a Receber com o valor integral.',
             icon: 'warning',
             showCancelButton: true,
             confirmButtonText: 'Sim, estornar',
@@ -10167,6 +10343,137 @@ window.carregarFiltrosDespesas = async function() {
         } catch (e) {
             console.error(e);
             Swal.fire('Erro', 'Não foi possível lançar o pagamento parcial.', 'error');
+        }
+    };
+
+    function montarPayloadParciaisAtualizados(despesa, pars) {
+        const orig = valorOriginalDespesa(despesa);
+        const totalPago = Math.round(pars.reduce(function (s, p) {
+            return s + (Number(p.valor) || parseMoedaLocal(p.valor_string) || 0);
+        }, 0) * 100) / 100;
+        const quitado = totalPago >= orig - 0.009;
+        const saldo = quitado ? 0 : Math.max(0, Math.round((orig - Math.min(totalPago, orig)) * 100) / 100);
+        const ultimaData = pars.length ? (pars[pars.length - 1].data || '') : '';
+        return {
+            pagamentos_parciais: pars,
+            valor_pago_acumulado: totalPago,
+            saldo_devedor: saldo,
+            status: quitado ? 'pago' : (pars.length ? 'parcial' : 'pendente'),
+            data_pagamento: quitado ? (ultimaData || despesa.data_pagamento || dataPagamentoHojeBr()) : (despesa.data_pagamento || null)
+        };
+    }
+
+    function recarregarTelasAposEditarParcial() {
+        const busca = document.getElementById('busca-obra');
+        if (busca && busca.value.trim() && typeof buscarDespesasObra === 'function') buscarDespesasObra();
+        if (typeof carregarFiltrosDespesas === 'function') carregarFiltrosDespesas();
+        if (typeof carregarRelatorioGeralObras === 'function' && (window._relGeralObrasExport || document.getElementById('rel-geral-obras-quadro'))) {
+            carregarRelatorioGeralObras();
+        }
+    }
+
+    window.editarPagamentoParcialDespesa = async function (despesaId, parcialIdEnc) {
+        if (!despesaId) return;
+        const chaveParc = decodeURIComponent(String(parcialIdEnc || ''));
+        let despesa = null;
+        try {
+            const snap = await getDoc(doc(db, 'despesas_obras', despesaId));
+            if (snap.exists()) despesa = Object.assign({ id: snap.id }, snap.data() || {});
+        } catch (e) {
+            console.error(e);
+        }
+        if (!despesa) {
+            despesa = (window.dadosExportacaoDespesas || []).find(function (d) {
+                return d && String(d.id) === String(despesaId) && d._origem !== 'pagamentos_terceiros';
+            });
+        }
+        if (!despesa) return Swal.fire('Atenção', 'Despesa não encontrada. Atualize o relatório e tente de novo.', 'warning');
+
+        const pars = listaPagamentosParciaisDespesa(despesa).slice();
+        let idx = -1;
+        for (let i = 0; i < pars.length; i++) {
+            if (idEstavelPagamentoParcial(pars[i], i) === chaveParc) { idx = i; break; }
+        }
+        if (idx < 0) return Swal.fire('Atenção', 'Pagamento parcial não encontrado.', 'warning');
+
+        const atual = pars[idx];
+        const valorAtual = Number(atual.valor) || parseMoedaLocal(atual.valor_string) || 0;
+        const orig = valorOriginalDespesa(despesa);
+        const jaPago = valorPagoDespesa(despesa);
+        const dataIso = dataVencimentoParaInputDateIso(atual.data || '') || '';
+
+        const conf = await Swal.fire({
+            title: 'Editar valor recebido',
+            html: '<div style="text-align:left;font-size:13px;">'
+                + '<p style="margin:0 0 10px 0;background:#f0f9ff;border:1px solid #bee5eb;border-radius:8px;padding:10px;">'
+                + 'Fornecedor: <b>' + escapeHtmlBasico(despesa.loja_nome || '—') + '</b><br>'
+                + 'Contrato: <b>' + formatarMoeda(orig) + '</b><br>'
+                + 'Já pago (todos os parciais): <b style="color:#28a745;">' + formatarMoeda(jaPago) + '</b><br>'
+                + 'Valor deste lançamento: <b>' + formatarMoeda(valorAtual) + '</b>'
+                + '</p>'
+                + '<label style="display:block;font-size:12px;margin-bottom:4px;">Novo valor recebido (R$)</label>'
+                + '<input id="ep-valor" class="swal2-input" style="width:100%;margin:0 0 10px 0;" value="' + String(valorAtual.toFixed(2)).replace('.', ',') + '">'
+                + '<label style="display:block;font-size:12px;margin-bottom:4px;">Data do pagamento</label>'
+                + '<input type="date" id="ep-data" class="swal2-input" style="width:100%;margin:0 0 10px 0;" value="' + escapeAttrBasico(dataIso) + '">'
+                + '<label style="display:block;font-size:12px;margin-bottom:4px;">Observação (opcional)</label>'
+                + '<input id="ep-obs" class="swal2-input" style="width:100%;margin:0;" value="' + escapeAttrBasico(atual.observacao || '') + '">'
+                + '<p style="font-size:12px;color:#666;margin:8px 0 0 0;">O <b>Já pago</b> e o <b>saldo</b> da despesa são recalculados com o novo valor.</p>'
+                + '</div>',
+            showCancelButton: true,
+            confirmButtonText: 'Salvar correção',
+            cancelButtonText: 'Cancelar',
+            confirmButtonColor: '#4285F4',
+            didOpen: function () {
+                const inp = document.getElementById('ep-valor');
+                if (inp && typeof mascaraMoeda === 'function') {
+                    inp.addEventListener('input', function () { mascaraMoeda(inp); });
+                    inp.focus();
+                    inp.select();
+                }
+            },
+            preConfirm: function () {
+                const valorNum = parseMoedaLocal((document.getElementById('ep-valor') && document.getElementById('ep-valor').value) || '0');
+                if (!(valorNum > 0)) {
+                    Swal.showValidationMessage('Informe um valor maior que zero.');
+                    return false;
+                }
+                const dataIsoNovo = (document.getElementById('ep-data') && document.getElementById('ep-data').value) || dataIso;
+                let dataBr = atual.data || dataPagamentoHojeBr();
+                if (dataIsoNovo && /^\d{4}-\d{2}-\d{2}/.test(dataIsoNovo)) {
+                    const p = dataIsoNovo.split('-');
+                    dataBr = p[2] + '/' + p[1] + '/' + p[0];
+                }
+                return {
+                    valor: valorNum,
+                    dataBr: dataBr,
+                    obs: String((document.getElementById('ep-obs') && document.getElementById('ep-obs').value) || '').trim()
+                };
+            }
+        });
+        if (!conf.isConfirmed || !conf.value) return;
+
+        try {
+            const editado = Object.assign({}, atual, {
+                id: atual.id || idEstavelPagamentoParcial(atual, idx),
+                valor: conf.value.valor,
+                valor_string: formatarMoeda(conf.value.valor).replace(/^R\$\s?/, ''),
+                data: conf.value.dataBr,
+                observacao: conf.value.obs,
+                timestamp: atual.timestamp || Date.now()
+            });
+            pars[idx] = editado;
+            const payload = montarPayloadParciaisAtualizados(despesa, pars);
+            await updateDoc(doc(db, 'despesas_obras', despesaId), payload);
+            Swal.fire(
+                'Valor corrigido!',
+                'Este lançamento ficou em ' + formatarMoeda(conf.value.valor) + '. Já pago agora: ' + formatarMoeda(payload.valor_pago_acumulado)
+                    + (payload.status === 'pago' ? '. A despesa foi quitada.' : '. Saldo: ' + formatarMoeda(payload.saldo_devedor) + '.'),
+                'success'
+            );
+            recarregarTelasAposEditarParcial();
+        } catch (e) {
+            console.error(e);
+            Swal.fire('Erro', 'Não foi possível salvar a correção.', 'error');
         }
     };
 
@@ -10922,13 +11229,21 @@ window.carregarFiltrosDespesas = async function() {
             + '</div>';
     }
 
-    function itemDePagamentoParcialRelGeral(despesa, parcial) {
+    function idEstavelPagamentoParcial(p, idx) {
+        if (p && p.id) return String(p.id);
+        if (p && p.timestamp) return 'ts_' + String(p.timestamp);
+        return 'i_' + String(idx) + '_' + String((p && p.valor) || 0) + '_' + String((p && p.data) || '');
+    }
+
+    function itemDePagamentoParcialRelGeral(despesa, parcial, idx) {
         const valor = Number(parcial && parcial.valor) || parseMoedaLocal((parcial && parcial.valor_string) || '0') || 0;
         const dataBr = (parcial && parcial.data) || '';
+        const parcialId = idEstavelPagamentoParcial(parcial, idx);
         return {
-            id: String(despesa.id) + '_pp_' + String((parcial && parcial.id) || (parcial && parcial.timestamp) || valor + '_' + dataBr),
+            id: String(despesa.id) + '_pp_' + parcialId,
             _origem: 'pagamento_parcial',
             _despesa_id: despesa.id,
+            _parcial_id: parcialId,
             status: 'pago',
             obra_nome: despesa.obra_nome || '',
             loja_nome: despesa.loja_nome || '',
@@ -10966,6 +11281,11 @@ window.carregarFiltrosDespesas = async function() {
             + '<span style="font-size:13px;color:#555;"><b>Nota Fiscal:</b> ' + escapeHtmlBasico(d.nota_fiscal || 'Sem NF') + '</span><br>'
             + '<span style="font-size:12px;color:#888;">Data: ' + escapeHtmlBasico(d.data || '—') + '</span>'
             + (d.descricao ? '<div style="font-size:12px;margin-top:5px;padding-top:5px;border-top:1px solid #eee;color:#666;">' + escapeHtmlBasico(String(d.descricao)) + '</div>' : '')
+            + (ehParcial && d._despesa_id && d._parcial_id
+                ? '<div style="margin-top:10px;padding-top:8px;border-top:1px solid #d6eaf8;">'
+                    + '<button type="button" onclick="editarPagamentoParcialDespesa(\'' + escapeAttrBasico(d._despesa_id) + '\',\'' + encodeURIComponent(d._parcial_id) + '\')" style="background:#4285F4;color:#fff;border:none;padding:8px 12px;border-radius:8px;cursor:pointer;font-weight:800;font-size:12px;">✏️ Editar valor recebido</button>'
+                    + '</div>'
+                : '')
             + '</div>';
     }
 
@@ -11892,8 +12212,8 @@ window.carregarFiltrosDespesas = async function() {
                     return;
                 }
                 if (pars.length) {
-                    pars.forEach((p) => {
-                        const item = itemDePagamentoParcialRelGeral(d, p);
+                    pars.forEach((p, idxParc) => {
+                        const item = itemDePagamentoParcialRelGeral(d, p, idxParc);
                         if ((item.valor_numero || 0) > 0.009) {
                             itensPagoForn.push(item);
                             somaPagasParciais += item.valor_numero;
@@ -12922,7 +13242,7 @@ window.carregarFiltrosDespesas = async function() {
                     histParcHtml = '<div style="margin-top:8px;padding:8px;background:#f0f9ff;border-radius:8px;font-size:11px;color:#0c5460;">';
                     if (pars.length) {
                         histParcHtml += '<b>Pagamentos parciais (' + pars.length + '):</b><ul style="margin:6px 0 0 18px;padding:0;">'
-                            + pars.map(function (p) {
+                            + pars.map(function (p, idxParc) {
                                 let extra = '';
                                 if (p.comprovante_pagamento) {
                                     const idComp = registrarAnexoParaViewer(p.comprovante_pagamento);
@@ -12931,6 +13251,7 @@ window.carregarFiltrosDespesas = async function() {
                                 } else if (p.baixa_sem_comprovante) {
                                     extra = ' <span style="color:#856404;">(sem comprovante — código)</span>';
                                 }
+                                extra += ' <span style="color:#4285F4;font-weight:800;cursor:pointer;" onclick="editarPagamentoParcialDespesa(\'' + escapeAttrBasico(d.id) + '\',\'' + encodeURIComponent(idEstavelPagamentoParcial(p, idxParc)) + '\')">✏️ Editar</span>';
                                 return '<li>' + escapeHtmlBasico(p.data || '—') + ' — <b>' + formatarMoeda(p.valor || 0) + '</b>'
                                     + (p.observacao ? ' <span style="color:#666;">(' + escapeHtmlBasico(p.observacao) + ')</span>' : '')
                                     + extra
