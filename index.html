@@ -3146,6 +3146,7 @@
                     <button type="button" class="gestor-menu-btn menu-documentos" data-titulo="Wellington" onclick="mudarAba('documentos-wellington', this)">📄 WELLINGTON</button>
                 </div>
             </div>
+            <button type="button" class="gestor-menu-btn menu-arquivamento" id="btn-menu-arquivamento-contas" data-titulo="Arquivamento de Contas" onclick="mudarAba('arquivamento-contas', this)">🗄️ Arquivamento de Contas</button>
             <button type="button" class="gestor-menu-btn" data-titulo="Calendário" onclick="mudarAba('calendario', this)">📅 Calendário</button>
             <button type="button" class="gestor-menu-btn menu-backup" data-titulo="Backup" onclick="mudarAba('backup', this)">💾 Backup</button>
         </nav>
@@ -4185,6 +4186,19 @@
         </div>
     </div>
 
+    <div id="aba-arquivamento-contas" class="view-section">
+        <div class="doc-pasta-panel">
+            <h3>🗄️ Arquivamento de Contas Pagas</h3>
+            <p class="texto-explicacao" style="margin:0 0 12px 0;">Contas <b>totalmente pagas</b> que você arquivar saem dos relatórios ativos e ficam guardadas aqui por <b>Ano → Mês → Dia</b>, com a nota/recibo e o comprovante do pagamento para consultar o histórico depois.</p>
+            <div class="rel-geral-obras-toolbar" style="display:flex;margin-bottom:12px;flex-wrap:wrap;gap:8px;">
+                <button type="button" class="btn-enviar" style="margin:0;" onclick="carregarArquivamentoContas()">🔄 Atualizar arquivo</button>
+                <input type="text" id="arq-contas-busca" placeholder="Buscar obra, fornecedor, NF..." style="flex:1;min-width:180px;margin:0;padding:10px;border:1px solid #ccc;border-radius:8px;" onkeydown="if(event.key==='Enter')carregarArquivamentoContas()">
+            </div>
+            <div id="arq-contas-resumo" style="display:none;margin-bottom:12px;padding:12px;background:#fff3cd;border:1px solid #ffeeba;border-radius:10px;text-align:center;color:#856404;font-weight:700;"></div>
+            <div id="arq-contas-lista"><p style="text-align:center;color:#888;">Clique em Atualizar arquivo ou abra este menu para carregar.</p></div>
+        </div>
+    </div>
+
     <div id="aba-documentos-wellington" class="view-section">
         <div class="doc-pasta-panel">
             <h3>📁 Documentos — Wellington</h3>
@@ -4444,7 +4458,7 @@
 
 <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-    import { getFirestore, collection, addDoc, doc, getDoc, updateDoc, deleteDoc, query, where, getDocs, orderBy, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+    import { getFirestore, collection, addDoc, doc, getDoc, setDoc, updateDoc, deleteDoc, query, where, getDocs, orderBy, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
     import { getAuth, onAuthStateChanged, signInAnonymously } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
     
     const LOGOS_EMPRESAS = {
@@ -6157,15 +6171,83 @@ function separarDataSegura(dataString) {
             saldo_devedor: saldo,
             status: quitado ? 'pago' : 'parcial',
             data_pagamento: quitado ? (dataBr || dataPagamentoHojeBr()) : (despesa.data_pagamento || null),
-            comprovante_pagamento: quitado
-                ? (comprovantePayload && comprovantePayload.comprovante_pagamento) || despesa.comprovante_pagamento || null
-                : (despesa.comprovante_pagamento || null),
+            // NÃO duplicar o PDF/foto no documento da despesa (estoura o limite de 1 MB do Firestore).
+            comprovante_pagamento: despesa.comprovante_pagamento || null,
             baixa_sem_comprovante: quitado
                 ? !!(comprovantePayload && comprovantePayload.baixa_sem_comprovante)
                 : !!despesa.baixa_sem_comprovante,
             valor_pago_com_juros: juros > 0.009 ? Math.round(totalPago * 100) / 100 : null
         };
     }
+
+    const COLECAO_COMPROVANTES_PAG = 'comprovantes_pagamento';
+
+    function comprovanteDeveIrParaSidecar(b64) {
+        const s = String(b64 || '');
+        if (!s) return false;
+        return s.length > 120000 || ehAnexoPdfDataUrl(s);
+    }
+
+    function idSidecarComprovante(despesaId, chave) {
+        return String(despesaId || '') + '__' + String(chave || 'comp');
+    }
+
+    async function gravarComprovanteSidecar(despesaId, chave, b64) {
+        if (!b64) return null;
+        const id = idSidecarComprovante(despesaId, chave);
+        await setDoc(doc(db, COLECAO_COMPROVANTES_PAG, id), {
+            empresa_id: getEmpresaGestor() || '',
+            despesa_id: despesaId,
+            chave: chave,
+            comprovante_pagamento: b64,
+            timestamp: Date.now()
+        });
+        return id;
+    }
+
+    async function externalizarComprovantesDoPayload(despesaId, payload) {
+        if (!payload || !despesaId) return payload;
+        const pars = Array.isArray(payload.pagamentos_parciais) ? payload.pagamentos_parciais : [];
+        for (let i = 0; i < pars.length; i++) {
+            const p = pars[i];
+            const b64 = p && p.comprovante_pagamento;
+            if (!b64 || !comprovanteDeveIrParaSidecar(b64)) continue;
+            const chave = p.grupo_comprovante || p.id || ('i' + i);
+            await gravarComprovanteSidecar(despesaId, chave, b64);
+            p.comprovante_ref = idSidecarComprovante(despesaId, chave);
+            delete p.comprovante_pagamento;
+        }
+        if (payload.comprovante_pagamento && comprovanteDeveIrParaSidecar(payload.comprovante_pagamento)) {
+            await gravarComprovanteSidecar(despesaId, 'despesa', payload.comprovante_pagamento);
+            payload.comprovante_ref = idSidecarComprovante(despesaId, 'despesa');
+            payload.comprovante_pagamento = null;
+        }
+        return payload;
+    }
+
+    function mensagemErroUpdateDespesa(e) {
+        const msg = String((e && (e.message || e.code)) || '');
+        if (/exceed|too (large|big)|bigger than|1048576|invalid-argument/i.test(msg)) {
+            return 'O comprovante (PDF) ficou grande demais para gravar junto da nota. Tente de novo: o sistema agora guarda o PDF à parte. Se persistir, anexe uma foto ou use o código 0308.';
+        }
+        return 'Não foi possível atualizar' + (msg ? ': ' + msg : '.');
+    }
+
+    window.abrirComprovantePagamentoRef = async function (refId) {
+        const id = decodeURIComponent(String(refId || ''));
+        if (!id) return Swal.fire('Atenção', 'Comprovante não encontrado.', 'info');
+        try {
+            Swal.fire({ title: 'Abrindo comprovante...', allowOutsideClick: false, didOpen: function () { Swal.showLoading(); } });
+            const snap = await getDoc(doc(db, COLECAO_COMPROVANTES_PAG, id));
+            Swal.close();
+            const b64 = snap.exists() ? (snap.data() || {}).comprovante_pagamento : '';
+            if (!b64) return Swal.fire('Atenção', 'Comprovante não encontrado.', 'info');
+            abrirFoto(b64);
+        } catch (e) {
+            console.error(e);
+            Swal.fire('Erro', 'Não foi possível abrir o comprovante.', 'error');
+        }
+    };
 
     function idNovoPagamentoParcial(sufixo) {
         return 'pp_' + Date.now() + '_' + Math.random().toString(36).slice(2, 8) + (sufixo != null ? '_' + sufixo : '');
@@ -6252,7 +6334,11 @@ function separarDataSegura(dataString) {
     }
 
     function valorTotalComprovanteParcialInput() {
-        return parseMoedaLocal((document.getElementById('pp-valor') && document.getElementById('pp-valor').value) || '0');
+        const a = document.getElementById('pp-valor');
+        if (a && String(a.value || '').trim()) return parseMoedaLocal(a.value || '0');
+        const b = document.getElementById('swal-valor-pago');
+        if (b) return parseMoedaLocal(b.value || '0');
+        return 0;
     }
 
     function somaLinhasDiscriminacaoParcial() {
@@ -6372,6 +6458,7 @@ function separarDataSegura(dataString) {
         const box = document.getElementById('pp-disc-box');
         const btnAdd = document.getElementById('pp-disc-add');
         const inpTotal = document.getElementById('pp-valor');
+        const inpTotalSwal = document.getElementById('swal-valor-pago');
         function garantirLinhas() {
             const lista = document.getElementById('pp-disc-linhas');
             if (lista && !lista.children.length) {
@@ -6399,6 +6486,7 @@ function separarDataSegura(dataString) {
             };
         }
         if (inpTotal) inpTotal.addEventListener('input', atualizarResumoDiscriminacaoParcial);
+        if (inpTotalSwal) inpTotalSwal.addEventListener('input', atualizarResumoDiscriminacaoParcial);
         atualizarResumoDiscriminacaoParcial();
     }
 
@@ -7813,6 +7901,14 @@ function separarDataSegura(dataString) {
     };
 
     function montarHtmlComprovantePagamento(d) {
+        const refParcial = (listaPagamentosParciaisDespesa(d).slice().reverse().find(function (p) {
+            return p && p.comprovante_ref;
+        }) || {}).comprovante_ref;
+        const ref = d && (d.comprovante_ref || d.comprovante_pagamento_id || refParcial);
+        if (ref) {
+            const ehPdf = true;
+            return '<span onclick="abrirComprovantePagamentoRef(\'' + encodeURIComponent(ref) + '\')" title="Ver comprovante" style="display:inline-flex;align-items:center;justify-content:center;width:60px;height:60px;border-radius:8px;border:2px solid #28a745;float:right;cursor:pointer;margin-left:6px;background:#e8f5e9;font-size:11px;font-weight:800;color:#155724;text-align:center;line-height:1.2;">📄<br>Ver</span>';
+        }
         if (d.comprovante_pagamento) {
             const id = registrarAnexoParaViewer(d.comprovante_pagamento);
             if (ehAnexoPdfDataUrl(d.comprovante_pagamento)) {
@@ -10390,15 +10486,27 @@ window.carregarFiltrosDespesas = async function() {
             html: (saldo != null ? '<p style="text-align:left;font-size:13px;margin:0 0 10px 0;">Saldo em aberto: <b>' + formatarMoeda(saldo) + '</b>'
                 + (abatTer > 0 ? ' <span style="color:#0c5460;">(já abatido ' + formatarMoeda(abatTer) + ' de terceiros)</span>' : '')
                 + '. Informe abaixo o valor que realmente pagou.</p>' : '')
+                + htmlBlocoDiscriminacaoParcial()
                 + htmlModalBaixaComprovante(optsBaixa),
             icon: 'info',
+            width: Math.min(window.innerWidth - 24, 560),
             showCancelButton: true,
             confirmButtonColor: '#28a745',
             cancelButtonColor: '#1a2a43',
             confirmButtonText: 'Quitar total',
             cancelButtonText: 'Cancelar',
-            didOpen: configurarModalBaixaComprovante,
-            preConfirm: () => validarBaixaComprovantePayload(optsBaixa)
+            didOpen: function () {
+                configurarModalBaixaComprovante();
+                configurarDiscriminacaoParcial();
+            },
+            preConfirm: function () {
+                const comp = validarBaixaComprovantePayload(optsBaixa);
+                if (comp === false) return false;
+                const linhas = validarLinhasDiscriminacaoParcial(comp.valor_pago);
+                if (linhas === false) return false;
+                comp.linhas = linhas || [];
+                return comp;
+            }
         }).then(async (result) => {
             if (result.isConfirmed && result.value) {
                 try {
@@ -10413,42 +10521,57 @@ window.carregarFiltrosDespesas = async function() {
                     if (abatTer > 0) obsQuit = 'Quitação do saldo (após abatimento de terceiros)';
                     if (juros > 0.009) obsQuit += ' (pago com juros)';
 
-                    let payload = {
-                        status: 'pago',
-                        data_pagamento: dataSegura,
-                        comprovante_pagamento: result.value.comprovante_pagamento,
-                        baixa_sem_comprovante: !!result.value.baixa_sem_comprovante,
-                        saldo_devedor: 0,
-                        valor_pago_acumulado: Math.max(orig, valorPago)
-                    };
-                    if (despesa && valorPago > 0.009) {
-                        const parcialPayload = montarPayloadPagamentoParcial(
+                    let payload;
+                    const linhas = result.value.linhas || [];
+                    if (linhas.length && despesa) {
+                        const novos = montarItensParciaisDoGrupo(linhas, dataSegura, result.value, valorPago);
+                        payload = montarPayloadParciaisAtualizados(
                             despesa,
-                            valorPago,
-                            dataSegura,
-                            obsQuit,
-                            result.value
+                            listaPagamentosParciaisDespesa(despesa).concat(novos)
                         );
-                        payload = Object.assign({}, parcialPayload, {
+                        payload.status = 'pago';
+                        payload.saldo_devedor = 0;
+                        payload.data_pagamento = dataSegura;
+                    } else {
+                        payload = {
                             status: 'pago',
                             data_pagamento: dataSegura,
+                            baixa_sem_comprovante: !!result.value.baixa_sem_comprovante,
                             saldo_devedor: 0,
-                            valor_pago_acumulado: parcialPayload.valor_pago_acumulado
-                        });
+                            valor_pago_acumulado: Math.max(orig, valorPago)
+                        };
+                        if (despesa && valorPago > 0.009) {
+                            const parcialPayload = montarPayloadPagamentoParcial(
+                                despesa,
+                                valorPago,
+                                dataSegura,
+                                obsQuit,
+                                result.value
+                            );
+                            payload = Object.assign({}, parcialPayload, {
+                                status: 'pago',
+                                data_pagamento: dataSegura,
+                                saldo_devedor: 0,
+                                valor_pago_acumulado: parcialPayload.valor_pago_acumulado
+                            });
+                        }
                     }
+                    await externalizarComprovantesDoPayload(id, payload);
                     await updateDoc(doc(db, 'despesas_obras', id), payload);
                     let msg = result.value.baixa_sem_comprovante
                         ? 'Baixa total registada sem comprovante (código autorizado).'
                         : 'Pagamento total registado com comprovante anexado.';
+                    if (linhas.length) msg += ' ' + linhas.length + ' linhas discriminadas no mesmo comprovante.';
                     if (juros > 0.009) {
                         msg += ' Valor lançado: ' + formatarMoeda(valorPago) + ' (juros/acréscimo ' + formatarMoeda(juros) + ').';
                     }
                     Swal.fire('Sucesso!', msg, 'success');
                     const busca = document.getElementById('busca-obra');
                     if (busca && busca.value.trim()) buscarDespesasObra();
+                    if (typeof recarregarTelasAposEditarParcial === 'function') recarregarTelasAposEditarParcial();
                 } catch (e) {
                     console.error(e);
-                    Swal.fire('Erro', 'Não foi possível atualizar.', 'error');
+                    Swal.fire('Erro', mensagemErroUpdateDespesa(e), 'error');
                 }
             }
         });
@@ -10579,6 +10702,7 @@ window.carregarFiltrosDespesas = async function() {
                 payload.valor_pago_acumulado = payload.valor_pago_acumulado || Math.max(orig, result.value.valor);
                 payload.data_pagamento = result.value.dataBr || dataPagamentoHojeBr();
             }
+            await externalizarComprovantesDoPayload(id, payload);
             await updateDoc(doc(db, 'despesas_obras', id), payload);
             const quitou = payload.status === 'pago';
             const semComp = !!(result.value.comprovante && result.value.comprovante.baixa_sem_comprovante);
@@ -10600,7 +10724,7 @@ window.carregarFiltrosDespesas = async function() {
             if (typeof carregarFiltrosDespesas === 'function') carregarFiltrosDespesas();
         } catch (e) {
             console.error(e);
-            Swal.fire('Erro', 'Não foi possível lançar o pagamento parcial.', 'error');
+            Swal.fire('Erro', mensagemErroUpdateDespesa(e), 'error');
         }
     };
 
@@ -10955,6 +11079,7 @@ window.carregarFiltrosDespesas = async function() {
             const juntos = pars.slice(0, idx).concat(novos).concat(pars.slice(idx));
             preservarComprovanteNosGrupos(listaPagamentosParciaisDespesa(despesa).concat(novos), juntos);
             const payload = montarPayloadParciaisAtualizados(despesa, juntos);
+            await externalizarComprovantesDoPayload(despesaId, payload);
             await updateDoc(doc(db, 'despesas_obras', despesaId), payload);
             Swal.fire(
                 'Discriminado!',
@@ -11752,6 +11877,14 @@ window.carregarFiltrosDespesas = async function() {
                 + extraGrupo
                 + ' — contrato ' + formatarMoeda(valorOriginalDespesa(despesa)),
             comprovante_pagamento: compGrupo || null,
+            comprovante_ref: (parcial && parcial.comprovante_ref) || (function () {
+                const gid = parcial && parcial.grupo_comprovante;
+                if (!gid) return '';
+                const irmao = listaPagamentosParciaisDespesa(despesa).find(function (x) {
+                    return x && x.grupo_comprovante === gid && x.comprovante_ref;
+                });
+                return (irmao && irmao.comprovante_ref) || '';
+            })(),
             baixa_sem_comprovante: !!(parcial && parcial.baixa_sem_comprovante),
             foto_recibo: null,
             timestamp: (parcial && parcial.timestamp) || 0
@@ -13755,10 +13888,15 @@ window.carregarFiltrosDespesas = async function() {
                                 const rotulo = (p.data || '—') + ' — ' + formatarMoeda(p.valor || 0);
                                 let extra = '';
                                 const compMostrar = p.comprovante_pagamento || comprovanteDoGrupoParcial(d, p);
+                                const refComp = p.comprovante_ref || (p.grupo_comprovante && (listaPagamentosParciaisDespesa(d).find(function (x) {
+                                    return x && x.grupo_comprovante === p.grupo_comprovante && x.comprovante_ref;
+                                }) || {}).comprovante_ref);
                                 if (compMostrar) {
                                     const idComp = registrarAnexoParaViewer(compMostrar);
                                     const rotuloComp = ehAnexoPdfDataUrl(compMostrar) ? '📄 Ver PDF' : '📎 Ver comprovante';
                                     extra = ' <span style="color:#28a745;font-weight:700;cursor:pointer;" onclick="abrirAnexoRegistrado(\'' + idComp + '\')">' + rotuloComp + '</span>';
+                                } else if (refComp) {
+                                    extra = ' <span style="color:#28a745;font-weight:700;cursor:pointer;" onclick="abrirComprovantePagamentoRef(\'' + encodeURIComponent(refComp) + '\')">📄 Ver comprovante</span>';
                                 } else if (p.baixa_sem_comprovante) {
                                     extra = ' <span style="color:#856404;">(sem comprovante — código)</span>';
                                 }
@@ -13836,6 +13974,9 @@ window.carregarFiltrosDespesas = async function() {
                         const btnEditar = d._origem === 'pagamentos_terceiros'
                             ? ''
                             : `<button onclick="editarDespesa('${d.id}')" style="background: #4285F4; color: white; border: none; padding: 8px; border-radius: 8px; cursor: pointer; width: 100%; font-weight: bold; font-size: 11px; transition: 0.3s;">✏️ EDITAR</button>`;
+                        const btnArquivar = d._origem === 'pagamentos_terceiros'
+                            ? ''
+                            : `<button onclick="arquivarDespesaPaga('${d.id}')" style="background: #856404; color: white; border: none; padding: 8px; border-radius: 8px; cursor: pointer; width: 100%; font-weight: bold; font-size: 11px; transition: 0.3s;">🗄️ ARQUIVAR</button>`;
                         const btnExcluir = d._origem === 'pagamentos_terceiros'
                             ? ''
                             : `<button onclick="excluirDespesa('${d.id}')" style="background: #6c757d; color: white; border: none; padding: 8px; border-radius: 8px; cursor: pointer; width: 100%; font-weight: bold; font-size: 11px; transition: 0.3s;">🗑️ EXCLUIR</button>`;
@@ -13849,7 +13990,7 @@ window.carregarFiltrosDespesas = async function() {
                                 <span style="font-size: 13px; color: #555;"><b>Nota Fiscal:</b> ${d.nota_fiscal || 'Sem NF'}</span><br>
                                 <span style="font-size: 12px; color: #888;">Data: ${d.data || '—'}</span>
                                 <div style="font-size: 12px; margin-top: 5px; padding-top: 5px; border-top: 1px solid #eee; color: #666;">${d.descricao || ''}</div>
-                                ${btnEditar || btnExcluir ? `<div style="display: flex; gap: 10px; margin-top: 12px; padding-top: 10px; border-top: 1px solid #eee;">${btnEditar}${btnExcluir}</div>` : ''}
+                                ${btnEditar || btnArquivar || btnExcluir ? `<div style="display: flex; gap: 10px; margin-top: 12px; padding-top: 10px; border-top: 1px solid #eee;">${btnEditar}${btnArquivar}${btnExcluir}</div>` : ''}
                             </div>`;
                     }); htmlPagas += `</div></details>`;
                 }); htmlPagas += `</div></details>`;
@@ -13880,17 +14021,312 @@ window.carregarFiltrosDespesas = async function() {
     };
 
         window.excluirDespesa = async function(id) {
-        Swal.fire({ title: 'Apagar?', text: "Remover permanentemente?", icon: 'warning', showCancelButton: true, confirmButtonColor: '#d9534f', confirmButtonText: 'Sim, apagar!' }).then(async (result) => {
-            if (result.isConfirmed) {
-                try {
-                    await deleteDoc(doc(db, "despesas_obras", id));
-                    Swal.fire('Apagado!', 'Removido.', 'success');
-                    const busca = document.getElementById('busca-obra');
-                    if (busca && busca.value.trim()) buscarDespesasObra();
-                    carregarFiltrosDespesas();
-                } catch (e) { Swal.fire('Erro', 'Não foi possível apagar.', 'error'); }
+        const despesa = (window.dadosExportacaoDespesas || []).find((d) => d && d.id === id && d._origem !== 'pagamentos_terceiros');
+        const paga = despesa ? despesaEstaPaga(despesa) : false;
+
+        if (paga) {
+            const conf = await Swal.fire({
+                title: 'Conta paga',
+                html: '<p style="text-align:left;font-size:13px;margin:0;">Esta conta está <b>quitada</b>. O ideal é <b>arquivar</b>: ela sai dos relatórios ativos e fica em <b>Arquivamento de Contas</b> (Ano → Mês → Dia), com nota e comprovante.</p>'
+                    + '<p style="text-align:left;font-size:12px;color:#666;margin:10px 0 0 0;">Apagar permanente remove do sistema sem histórico.</p>',
+                icon: 'question',
+                showDenyButton: true,
+                showCancelButton: true,
+                confirmButtonText: '🗄️ Arquivar',
+                denyButtonText: '🗑️ Apagar permanente',
+                cancelButtonText: 'Cancelar',
+                confirmButtonColor: '#856404',
+                denyButtonColor: '#c0392b'
+            });
+            if (conf.isConfirmed) {
+                return arquivarDespesaPaga(id);
             }
+            if (!conf.isDenied) return;
+        } else {
+            const conf = await Swal.fire({
+                title: 'Apagar?',
+                text: 'Remover permanentemente?',
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#d9534f',
+                confirmButtonText: 'Sim, apagar!'
+            });
+            if (!conf.isConfirmed) return;
+        }
+
+        try {
+            await deleteDoc(doc(db, 'despesas_obras', id));
+            Swal.fire('Apagado!', 'Removido do sistema.', 'success');
+            const busca = document.getElementById('busca-obra');
+            if (busca && busca.value.trim()) buscarDespesasObra();
+            if (typeof carregarFiltrosDespesas === 'function') carregarFiltrosDespesas();
+            if (typeof carregarRelatorioGeralObras === 'function' && document.getElementById('rel-geral-obras-quadro')) {
+                carregarRelatorioGeralObras();
+            }
+        } catch (e) {
+            console.error(e);
+            Swal.fire('Erro', 'Não foi possível apagar.', 'error');
+        }
+    };
+
+    const COLECAO_CONTAS_ARQUIVADAS = 'contas_arquivadas';
+
+    function pastaArquivoDeDataPagamento(dataBr) {
+        const sep = separarDataSegura(dataBr || '');
+        const ano = (sep && sep.ano && sep.ano !== 'Outros') ? String(sep.ano) : String(new Date().getFullYear());
+        const mes = (sep && sep.mes && sep.mes !== 'Outros') ? String(sep.mes).padStart(2, '0') : String(new Date().getMonth() + 1).padStart(2, '0');
+        const dia = (sep && sep.dia && sep.dia !== 'Outros') ? String(sep.dia).padStart(2, '0') : String(new Date().getDate()).padStart(2, '0');
+        return { ano: ano, mes: mes, dia: dia, label: dia + '/' + mes + '/' + ano };
+    }
+
+    function limparParciaisParaArquivo(pars) {
+        return (Array.isArray(pars) ? pars : []).map(function (p) {
+            const copia = Object.assign({}, p || {});
+            if (copia.comprovante_pagamento && (copia.comprovante_ref || String(copia.comprovante_pagamento).length > 80000)) {
+                delete copia.comprovante_pagamento;
+            }
+            return copia;
         });
+    }
+
+    async function montarPayloadArquivoDespesa(despesa) {
+        const dataPg = obterDataPagamentoDespesa(despesa) || despesa.data_pagamento || despesa.data || dataPagamentoHojeBr();
+        const pasta = pastaArquivoDeDataPagamento(dataPg);
+        const pars = limparParciaisParaArquivo(listaPagamentosParciaisDespesa(despesa));
+        const payload = {
+            empresa_id: despesa.empresa_id || getEmpresaGestor() || '',
+            origem_colecao: 'despesas_obras',
+            origem_id: despesa.id || null,
+            obra_nome: despesa.obra_nome || '',
+            loja_nome: despesa.loja_nome || '',
+            nota_fiscal: despesa.nota_fiscal || '',
+            descricao: despesa.descricao || '',
+            observacao: despesa.observacao || '',
+            valor_string: despesa.valor_string || '',
+            valor_numero: Number(despesa.valor_numero) || valorOriginalDespesa(despesa) || 0,
+            valor_pago_acumulado: valorPagoDespesa(despesa) || valorOriginalDespesa(despesa) || 0,
+            data_vencimento: obterDataVencimentoDespesa(despesa) || '',
+            data_pagamento: dataPg,
+            data: despesa.data || '',
+            status: 'arquivado',
+            status_origem: despesa.status || 'pago',
+            foto_recibo: despesa.foto_recibo || null,
+            comprovante_pagamento: null,
+            comprovante_ref: despesa.comprovante_ref || null,
+            baixa_sem_comprovante: !!despesa.baixa_sem_comprovante,
+            pagamentos_parciais: pars,
+            pasta_ano: pasta.ano,
+            pasta_mes: pasta.mes,
+            pasta_dia: pasta.dia,
+            pasta_label: pasta.label,
+            arquivado_em: Date.now(),
+            arquivado_em_str: new Date().toLocaleString('pt-BR'),
+            timestamp: despesa.timestamp || Date.now()
+        };
+
+        // Se ainda houver comprovante embutido na despesa, guarda no sidecar
+        if (despesa.comprovante_pagamento) {
+            if (comprovanteDeveIrParaSidecar(despesa.comprovante_pagamento)) {
+                const chave = 'arq_' + (despesa.id || Date.now());
+                await gravarComprovanteSidecar(despesa.id || ('tmp_' + Date.now()), chave, despesa.comprovante_pagamento);
+                payload.comprovante_ref = idSidecarComprovante(despesa.id || ('tmp_' + Date.now()), chave);
+            } else {
+                payload.comprovante_pagamento = despesa.comprovante_pagamento;
+            }
+        } else if (!payload.comprovante_ref) {
+            const comParc = pars.slice().reverse().find(function (p) { return p && p.comprovante_ref; });
+            if (comParc) payload.comprovante_ref = comParc.comprovante_ref;
+        }
+
+        // Evita estourar 1 MB: se foto for enorme, não copia (raro)
+        if (payload.foto_recibo && String(payload.foto_recibo).length > 700000) {
+            payload.foto_recibo = null;
+            payload.foto_recibo_omitida = true;
+        }
+        return payload;
+    }
+
+    window.arquivarDespesaPaga = async function (id) {
+        if (!id) return;
+        let despesa = (window.dadosExportacaoDespesas || []).find(function (d) {
+            return d && String(d.id) === String(id) && d._origem !== 'pagamentos_terceiros';
+        });
+        if (!despesa) {
+            try {
+                const snap = await getDoc(doc(db, 'despesas_obras', id));
+                if (snap.exists()) despesa = Object.assign({ id: snap.id }, snap.data() || {});
+            } catch (e) { console.error(e); }
+        }
+        if (!despesa) return Swal.fire('Atenção', 'Despesa não encontrada.', 'warning');
+        if (!despesaEstaPaga(despesa)) {
+            return Swal.fire('Atenção', 'Só é possível arquivar conta totalmente paga. Conta em aberto use Excluir com cuidado.', 'info');
+        }
+
+        Swal.fire({ title: 'Arquivando...', allowOutsideClick: false, didOpen: function () { Swal.showLoading(); } });
+        try {
+            const payload = await montarPayloadArquivoDespesa(despesa);
+            await addDoc(collection(db, COLECAO_CONTAS_ARQUIVADAS), payload);
+            await deleteDoc(doc(db, 'despesas_obras', id));
+            Swal.fire(
+                'Arquivada!',
+                'Conta guardada em Arquivamento → ' + payload.pasta_ano + ' → ' + (nomeMeses[payload.pasta_mes] || payload.pasta_mes) + ' → dia ' + payload.pasta_dia + '.',
+                'success'
+            );
+            const busca = document.getElementById('busca-obra');
+            if (busca && busca.value.trim()) buscarDespesasObra();
+            if (typeof carregarFiltrosDespesas === 'function') carregarFiltrosDespesas();
+            if (typeof carregarRelatorioGeralObras === 'function' && document.getElementById('rel-geral-obras-quadro')) {
+                carregarRelatorioGeralObras();
+            }
+        } catch (e) {
+            console.error(e);
+            Swal.fire('Erro', mensagemErroUpdateDespesa(e), 'error');
+        }
+    };
+
+    function htmlCardContaArquivada(a) {
+        const valor = formatarMoeda(a.valor_pago_acumulado || a.valor_numero || 0);
+        const fotoHtml = a.foto_recibo
+            ? '<img src="' + escapeAttrBasico(a.foto_recibo) + '" onclick="abrirFoto(\'' + String(a.foto_recibo).replace(/'/g, "\\'") + '\')" style="width:56px;height:56px;object-fit:cover;border-radius:8px;border:2px solid #e0e6ed;float:right;cursor:pointer;" title="Ver nota/recibo">'
+            : '';
+        const compHtml = typeof montarHtmlComprovantePagamento === 'function' ? montarHtmlComprovantePagamento(a) : '';
+        const pars = Array.isArray(a.pagamentos_parciais) ? a.pagamentos_parciais : [];
+        let hist = '';
+        if (pars.length) {
+            hist = '<div style="margin-top:8px;font-size:11px;color:#0c5460;background:#f0f9ff;padding:6px 8px;border-radius:8px;">'
+                + '<b>Parciais / discriminação:</b><ul style="margin:4px 0 0 16px;padding:0;">'
+                + pars.map(function (p) {
+                    return '<li>' + escapeHtmlBasico(p.data || '—') + ' — <b>' + formatarMoeda(p.valor || 0) + '</b>'
+                        + (p.observacao ? ' <span style="color:#666;">(' + escapeHtmlBasico(p.observacao) + ')</span>' : '')
+                        + '</li>';
+                }).join('')
+                + '</ul></div>';
+        }
+        return ''
+            + '<div class="resultado-item" style="border-left-color:#856404;background:#fffdf5;">'
+            + fotoHtml + compHtml
+            + '<span style="font-size:10px;background:#856404;color:#fff;padding:2px 6px;border-radius:4px;font-weight:bold;">🗄️ ARQUIVADA</span> '
+            + '<b style="color:#856404;font-size:16px;">' + escapeHtmlBasico(valor) + '</b> '
+            + '<span style="font-size:10px;background:#fff3cd;color:#856404;padding:2px 6px;border-radius:4px;margin-left:4px;font-weight:bold;">PAGO EM: ' + escapeHtmlBasico(a.data_pagamento || a.pasta_label || '—') + '</span><br>'
+            + '<span style="font-size:13px;color:#555;"><b>Obra:</b> ' + escapeHtmlBasico(a.obra_nome || '—') + '</span><br>'
+            + '<span style="font-size:13px;color:#555;"><b>Fornecedor:</b> ' + escapeHtmlBasico(a.loja_nome || '—') + '</span><br>'
+            + '<span style="font-size:13px;color:#555;"><b>Nota Fiscal:</b> ' + escapeHtmlBasico(a.nota_fiscal || 'Sem NF') + '</span><br>'
+            + '<span style="font-size:12px;color:#888;">Arquivada em: ' + escapeHtmlBasico(a.arquivado_em_str || '—') + '</span>'
+            + (a.descricao ? '<div style="font-size:12px;margin-top:5px;padding-top:5px;border-top:1px solid #eee;color:#666;">' + escapeHtmlBasico(String(a.descricao)) + '</div>' : '')
+            + hist
+            + '<div style="display:flex;gap:8px;margin-top:10px;flex-wrap:wrap;">'
+            + '<button type="button" onclick="excluirContaArquivada(\'' + escapeAttrBasico(a.id) + '\')" style="background:#c0392b;color:#fff;border:none;padding:8px 12px;border-radius:8px;cursor:pointer;font-weight:800;font-size:12px;">🗑️ Apagar do arquivo</button>'
+            + '</div></div>';
+    }
+
+    window.carregarArquivamentoContas = async function () {
+        const listaEl = document.getElementById('arq-contas-lista');
+        const resumoEl = document.getElementById('arq-contas-resumo');
+        const empresa = getEmpresaGestor();
+        if (!listaEl) return;
+        if (!empresa) return Swal.fire('Atenção', 'Empresa não definida.', 'warning');
+        listaEl.innerHTML = '<p style="text-align:center;color:#888;">Carregando arquivo...</p>';
+        if (resumoEl) resumoEl.style.display = 'none';
+        try {
+            const busca = ((document.getElementById('arq-contas-busca') && document.getElementById('arq-contas-busca').value) || '').trim().toLowerCase();
+            const q = query(collection(db, COLECAO_CONTAS_ARQUIVADAS), where('empresa_id', '==', empresa));
+            const snap = await getDocs(q);
+            let itens = [];
+            snap.forEach(function (d) { itens.push(Object.assign({ id: d.id }, d.data() || {})); });
+            if (busca) {
+                itens = itens.filter(function (a) {
+                    const txt = [a.obra_nome, a.loja_nome, a.nota_fiscal, a.descricao, a.data_pagamento].join(' ').toLowerCase();
+                    return txt.indexOf(busca) !== -1;
+                });
+            }
+            itens.sort(function (a, b) {
+                const ka = String(a.pasta_ano || '') + String(a.pasta_mes || '') + String(a.pasta_dia || '');
+                const kb = String(b.pasta_ano || '') + String(b.pasta_mes || '') + String(b.pasta_dia || '');
+                if (ka !== kb) return kb.localeCompare(ka);
+                return (Number(b.arquivado_em) || 0) - (Number(a.arquivado_em) || 0);
+            });
+
+            window._contasArquivadasCache = itens;
+            const total = itens.reduce(function (s, a) { return s + (Number(a.valor_pago_acumulado || a.valor_numero) || 0); }, 0);
+            if (resumoEl) {
+                resumoEl.style.display = 'block';
+                resumoEl.innerHTML = itens.length + ' conta(s) arquivada(s) · Total histórico: <b>' + formatarMoeda(total) + '</b>';
+            }
+            if (!itens.length) {
+                listaEl.innerHTML = '<p style="text-align:center;color:#888;padding:16px;">Nenhuma conta arquivada ainda. Nas contas <b>pagas</b>, use <b>Arquivar</b> (ou Excluir → Arquivar).</p>';
+                return;
+            }
+
+            const arvore = {};
+            itens.forEach(function (a) {
+                const ano = a.pasta_ano || 'Outros';
+                const mes = a.pasta_mes || 'Outros';
+                const dia = a.pasta_dia || 'Outros';
+                if (!arvore[ano]) arvore[ano] = {};
+                if (!arvore[ano][mes]) arvore[ano][mes] = {};
+                if (!arvore[ano][mes][dia]) arvore[ano][mes][dia] = [];
+                arvore[ano][mes][dia].push(a);
+            });
+
+            let html = '';
+            Object.keys(arvore).sort(function (a, b) {
+                if (a === 'Outros') return 1;
+                if (b === 'Outros') return -1;
+                return Number(b) - Number(a);
+            }).forEach(function (ano) {
+                const qtdAno = Object.keys(arvore[ano]).reduce(function (s, m) {
+                    return s + Object.keys(arvore[ano][m]).reduce(function (s2, d) { return s2 + arvore[ano][m][d].length; }, 0);
+                }, 0);
+                html += '<details class="pasta-ano" open><summary>📁 Ano ' + escapeHtmlBasico(ano) + ' (' + qtdAno + ')</summary><div class="folder-content">';
+                Object.keys(arvore[ano]).sort(function (a, b) {
+                    if (a === 'Outros') return 1;
+                    if (b === 'Outros') return -1;
+                    return Number(b) - Number(a);
+                }).forEach(function (mes) {
+                    const nomeMes = nomeMeses[mes] || mes;
+                    const qtdMes = Object.keys(arvore[ano][mes]).reduce(function (s, d) { return s + arvore[ano][mes][d].length; }, 0);
+                    html += '<details class="pasta-mes"><summary>📂 ' + escapeHtmlBasico(String(nomeMes)) + ' (' + qtdMes + ')</summary><div class="folder-content">';
+                    Object.keys(arvore[ano][mes]).sort(function (a, b) {
+                        if (a === 'Outros') return 1;
+                        if (b === 'Outros') return -1;
+                        return Number(b) - Number(a);
+                    }).forEach(function (dia) {
+                        const listaDia = arvore[ano][mes][dia];
+                        html += '<details class="pasta-mes" open><summary>🗓️ Dia ' + escapeHtmlBasico(dia) + '/' + escapeHtmlBasico(mes) + '/' + escapeHtmlBasico(ano) + ' (' + listaDia.length + ')</summary><div class="folder-content">';
+                        listaDia.forEach(function (item) { html += htmlCardContaArquivada(item); });
+                        html += '</div></details>';
+                    });
+                    html += '</div></details>';
+                });
+                html += '</div></details>';
+            });
+            listaEl.innerHTML = html;
+        } catch (e) {
+            console.error(e);
+            listaEl.innerHTML = '<p style="text-align:center;color:#d9534f;">Erro ao carregar o arquivamento.</p>';
+        }
+    };
+
+    window.excluirContaArquivada = async function (id) {
+        if (!id) return;
+        const conf = await Swal.fire({
+            title: 'Apagar do arquivo?',
+            text: 'Remove definitivamente do Arquivamento. Não volta para os relatórios ativos.',
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonText: 'Sim, apagar',
+            cancelButtonText: 'Cancelar',
+            confirmButtonColor: '#c0392b'
+        });
+        if (!conf.isConfirmed) return;
+        try {
+            await deleteDoc(doc(db, COLECAO_CONTAS_ARQUIVADAS, id));
+            Swal.fire({ toast: true, position: 'top-end', icon: 'success', title: 'Removida do arquivo', showConfirmButton: false, timer: 2000 });
+            carregarArquivamentoContas();
+        } catch (e) {
+            console.error(e);
+            Swal.fire('Erro', 'Não foi possível apagar do arquivo.', 'error');
+        }
     };
 
     window.abrirNotaResumoPorIndice = function (indice) {
@@ -15308,6 +15744,9 @@ window.exportarPDF = function(tipo) {
             if (typeof buscarHoleritesAssinatura === 'function') {
                 // lista só após escolher funcionário; mantém select atualizado
             }
+        }
+        if (aba === 'arquivamento-contas' && typeof window.carregarArquivamentoContas === 'function') {
+            window.carregarArquivamentoContas();
         }
         if (aba === 'calendario') {
             carregarFeriados();
