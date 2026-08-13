@@ -3768,6 +3768,7 @@
             <button type="button" class="btn-enviar" onclick="toggleSecoesRelGeralObras(false)">▲ Recolher tudo</button>
             <button type="button" id="btnExportarRelGeralObrasPdf" class="btn-pdf-relatorio" onclick="exportarPDFRelatorioGeralObras()">🖨️ Exportar PDF</button>
             <button type="button" id="btnExportarRelGeralObrasExcel" class="btn-pdf-relatorio" style="background-color:#217346;" onclick="exportarExcelRelatorioGeralObras()">📊 Exportar Excel</button>
+            <button type="button" class="btn-pdf-relatorio" style="background-color:#c0392b;" onclick="excluirPagamentosParciaisSelecionados()">🗑️ Excluir parciais selecionados</button>
         </div>
 
         <div id="rel-geral-obras-resumo" style="display: none; margin-top: 20px; background: #fff3cd; padding: 15px; border-radius: 10px; text-align: center; border: 1px solid #ffeeba;">
@@ -6164,6 +6165,241 @@ function separarDataSegura(dataString) {
                 : !!despesa.baixa_sem_comprovante,
             valor_pago_com_juros: juros > 0.009 ? Math.round(totalPago * 100) / 100 : null
         };
+    }
+
+    function idNovoPagamentoParcial(sufixo) {
+        return 'pp_' + Date.now() + '_' + Math.random().toString(36).slice(2, 8) + (sufixo != null ? '_' + sufixo : '');
+    }
+
+    function comprovanteDoGrupoParcial(despesa, parcial) {
+        if (parcial && parcial.comprovante_pagamento) return parcial.comprovante_pagamento;
+        const gid = parcial && parcial.grupo_comprovante;
+        if (!gid || !despesa) return null;
+        const irmao = listaPagamentosParciaisDespesa(despesa).find(function (p) {
+            return p && p.grupo_comprovante === gid && p.comprovante_pagamento;
+        });
+        return irmao ? irmao.comprovante_pagamento : null;
+    }
+
+    function preservarComprovanteNosGrupos(parsOriginais, parsNovos) {
+        const porGrupo = {};
+        (parsOriginais || []).forEach(function (p) {
+            if (p && p.grupo_comprovante && p.comprovante_pagamento) {
+                porGrupo[p.grupo_comprovante] = p.comprovante_pagamento;
+            }
+        });
+        const jaTem = {};
+        (parsNovos || []).forEach(function (p) {
+            if (p && p.grupo_comprovante && p.comprovante_pagamento) jaTem[p.grupo_comprovante] = true;
+        });
+        (parsNovos || []).forEach(function (p) {
+            if (!p || !p.grupo_comprovante || jaTem[p.grupo_comprovante]) return;
+            if (porGrupo[p.grupo_comprovante]) {
+                p.comprovante_pagamento = porGrupo[p.grupo_comprovante];
+                jaTem[p.grupo_comprovante] = true;
+            }
+        });
+        return parsNovos;
+    }
+
+    function montarItensParciaisDoGrupo(linhas, dataBr, comprovantePayload, valorComprovante, grupoIdExistente) {
+        const grupoId = grupoIdExistente || ('gc_' + Date.now() + '_' + Math.random().toString(36).slice(2, 7));
+        const totalComp = Math.round((Number(valorComprovante) || 0) * 100) / 100;
+        return (linhas || []).map(function (ln, i) {
+            const valor = Math.round((Number(ln.valor) || 0) * 100) / 100;
+            const item = {
+                id: idNovoPagamentoParcial(i),
+                valor: valor,
+                valor_string: formatarMoeda(valor).replace(/^R\$\s?/, ''),
+                data: dataBr || dataPagamentoHojeBr(),
+                observacao: ln.descricao || ('Item ' + (i + 1) + ' do comprovante'),
+                timestamp: Date.now() + i,
+                grupo_comprovante: grupoId,
+                valor_comprovante: totalComp
+            };
+            if (i === 0 && comprovantePayload && comprovantePayload.comprovante_pagamento) {
+                item.comprovante_pagamento = comprovantePayload.comprovante_pagamento;
+            }
+            if (comprovantePayload && comprovantePayload.baixa_sem_comprovante) {
+                item.baixa_sem_comprovante = true;
+            }
+            return item;
+        });
+    }
+
+    function htmlLinhaDiscriminacaoParcial(valorFmt, desc) {
+        return '<div class="pp-disc-linha" style="display:flex;gap:6px;align-items:center;margin-bottom:6px;flex-wrap:wrap;">'
+            + '<input type="text" class="pp-disc-valor" placeholder="0,00" value="' + escapeAttrBasico(valorFmt || '') + '" style="width:110px;max-width:110px;padding:8px;border:1px solid #ccc;border-radius:8px;font-weight:700;box-sizing:border-box;">'
+            + '<input type="text" class="pp-disc-desc" placeholder="O que estou pagando" value="' + escapeAttrBasico(desc || '') + '" style="flex:1;min-width:140px;padding:8px;border:1px solid #ccc;border-radius:8px;box-sizing:border-box;">'
+            + '<button type="button" class="pp-disc-resto" title="Preencher o que falta nesta linha" style="padding:7px 8px;border:none;border-radius:8px;background:#17a2b8;color:#fff;font-weight:800;cursor:pointer;font-size:10px;white-space:nowrap;">Restante</button>'
+            + '<button type="button" class="pp-disc-del" style="padding:7px 10px;border:none;border-radius:8px;background:#c0392b;color:#fff;cursor:pointer;font-weight:800;">✕</button>'
+            + '</div>';
+    }
+
+    function htmlBlocoDiscriminacaoParcial(opts) {
+        const jaOn = !!(opts && opts.ligado);
+        return ''
+            + '<div id="pp-disc-wrap" style="margin-top:12px;padding:10px;background:#fff8e6;border:1px solid #ffe08a;border-radius:8px;text-align:left;">'
+            + '<label style="display:flex;align-items:center;gap:8px;cursor:pointer;font-weight:800;color:#856404;margin:0;">'
+            + '<input type="checkbox" id="pp-disc-on"' + (jaOn ? ' checked' : '') + ' style="width:16px;height:16px;margin:0;flex-shrink:0;"> Discriminar este comprovante em várias linhas'
+            + '</label>'
+            + '<p style="margin:6px 0 0;font-size:11px;color:#856404;line-height:1.4;">O valor de cima é o <b>total do comprovante</b>. Crie linhas dizendo o que está pagando até fechar esse total. Cada linha abate o saldo.</p>'
+            + '<div id="pp-disc-box" style="display:' + (jaOn ? 'block' : 'none') + ';margin-top:10px;">'
+            + '<div id="pp-disc-linhas"></div>'
+            + '<button type="button" id="pp-disc-add" style="margin-top:8px;width:100%;padding:8px;border:1px dashed #856404;border-radius:8px;background:#fff;color:#856404;font-weight:800;cursor:pointer;">+ Adicionar linha</button>'
+            + '<p id="pp-disc-resumo" style="margin:8px 0 0;font-size:12px;font-weight:800;text-align:right;"></p>'
+            + '</div></div>';
+    }
+
+    function valorTotalComprovanteParcialInput() {
+        return parseMoedaLocal((document.getElementById('pp-valor') && document.getElementById('pp-valor').value) || '0');
+    }
+
+    function somaLinhasDiscriminacaoParcial() {
+        let s = 0;
+        document.querySelectorAll('#pp-disc-linhas .pp-disc-valor').forEach(function (el) {
+            s += parseMoedaLocal(el.value || '0');
+        });
+        return Math.round(s * 100) / 100;
+    }
+
+    function atualizarResumoDiscriminacaoParcial() {
+        const el = document.getElementById('pp-disc-resumo');
+        if (!el) return;
+        const total = valorTotalComprovanteParcialInput();
+        const soma = somaLinhasDiscriminacaoParcial();
+        const falta = Math.round((total - soma) * 100) / 100;
+        if (!(total > 0)) {
+            el.style.color = '#856404';
+            el.textContent = 'Informe primeiro o valor total do comprovante.';
+            return;
+        }
+        if (Math.abs(falta) <= 0.009) {
+            el.style.color = '#155724';
+            el.textContent = 'Fechado: ' + formatarMoeda(soma) + ' = comprovante ' + formatarMoeda(total);
+        } else if (falta > 0) {
+            el.style.color = '#c0392b';
+            el.textContent = 'Discriminado ' + formatarMoeda(soma) + ' de ' + formatarMoeda(total) + ' — falta ' + formatarMoeda(falta);
+        } else {
+            el.style.color = '#c0392b';
+            el.textContent = 'Discriminado ' + formatarMoeda(soma) + ' — passou ' + formatarMoeda(Math.abs(falta)) + ' do comprovante';
+        }
+    }
+
+    function lerLinhasDiscriminacaoParcial() {
+        const linhas = [];
+        document.querySelectorAll('#pp-disc-linhas .pp-disc-linha').forEach(function (row) {
+            const valor = parseMoedaLocal((row.querySelector('.pp-disc-valor') && row.querySelector('.pp-disc-valor').value) || '0');
+            const desc = String((row.querySelector('.pp-disc-desc') && row.querySelector('.pp-disc-desc').value) || '').trim();
+            if (valor > 0 || desc) linhas.push({ valor: valor, descricao: desc });
+        });
+        return linhas;
+    }
+
+    function validarLinhasDiscriminacaoParcial(valorTotal) {
+        const chk = document.getElementById('pp-disc-on');
+        if (!chk || !chk.checked) return [];
+        const linhas = lerLinhasDiscriminacaoParcial();
+        if (!linhas.length) {
+            Swal.showValidationMessage('Adicione as linhas da discriminação ou desmarque a opção.');
+            return false;
+        }
+        for (let i = 0; i < linhas.length; i++) {
+            if (!(linhas[i].valor > 0)) {
+                Swal.showValidationMessage('Informe o valor da linha ' + (i + 1) + '.');
+                return false;
+            }
+            if (!linhas[i].descricao) {
+                Swal.showValidationMessage('Descreva o que está pagando na linha ' + (i + 1) + '.');
+                return false;
+            }
+        }
+        const soma = Math.round(linhas.reduce(function (s, ln) { return s + ln.valor; }, 0) * 100) / 100;
+        const total = Math.round((Number(valorTotal) || 0) * 100) / 100;
+        const falta = Math.round((total - soma) * 100) / 100;
+        if (Math.abs(falta) > 0.009) {
+            Swal.showValidationMessage(falta > 0
+                ? 'Ainda falta discriminar ' + formatarMoeda(falta) + ' para fechar o comprovante.'
+                : 'A discriminação passou ' + formatarMoeda(Math.abs(falta)) + ' do valor do comprovante.');
+            return false;
+        }
+        return linhas;
+    }
+
+    function adicionarLinhaDiscriminacaoParcial(valorFmt, desc) {
+        const lista = document.getElementById('pp-disc-linhas');
+        if (!lista) return;
+        lista.insertAdjacentHTML('beforeend', htmlLinhaDiscriminacaoParcial(valorFmt, desc));
+        const row = lista.lastElementChild;
+        const inpV = row && row.querySelector('.pp-disc-valor');
+        if (inpV && typeof mascaraMoeda === 'function') {
+            inpV.addEventListener('input', function () {
+                mascaraMoeda(inpV);
+                atualizarResumoDiscriminacaoParcial();
+            });
+        }
+        const inpD = row && row.querySelector('.pp-disc-desc');
+        if (inpD) inpD.addEventListener('input', atualizarResumoDiscriminacaoParcial);
+        const btnDel = row && row.querySelector('.pp-disc-del');
+        if (btnDel) {
+            btnDel.onclick = function () {
+                row.remove();
+                atualizarResumoDiscriminacaoParcial();
+            };
+        }
+        const btnResto = row && row.querySelector('.pp-disc-resto');
+        if (btnResto) {
+            btnResto.onclick = function () {
+                const total = valorTotalComprovanteParcialInput();
+                let outros = 0;
+                document.querySelectorAll('#pp-disc-linhas .pp-disc-valor').forEach(function (el) {
+                    if (el !== inpV) outros += parseMoedaLocal(el.value || '0');
+                });
+                const resto = Math.max(0, Math.round((total - outros) * 100) / 100);
+                if (inpV) {
+                    inpV.value = (typeof formatarValorInputMoeda === 'function')
+                        ? formatarValorInputMoeda(resto)
+                        : String(resto.toFixed(2)).replace('.', ',');
+                    atualizarResumoDiscriminacaoParcial();
+                }
+            };
+        }
+        atualizarResumoDiscriminacaoParcial();
+    }
+
+    function configurarDiscriminacaoParcial(linhasIniciais) {
+        const chk = document.getElementById('pp-disc-on');
+        const box = document.getElementById('pp-disc-box');
+        const btnAdd = document.getElementById('pp-disc-add');
+        const inpTotal = document.getElementById('pp-valor');
+        function garantirLinhas() {
+            const lista = document.getElementById('pp-disc-linhas');
+            if (lista && !lista.children.length) {
+                const ini = Array.isArray(linhasIniciais) && linhasIniciais.length ? linhasIniciais : [{ valorFmt: '', desc: '' }, { valorFmt: '', desc: '' }];
+                ini.forEach(function (ln) {
+                    adicionarLinhaDiscriminacaoParcial(ln.valorFmt || '', ln.desc || '');
+                });
+            }
+        }
+        if (chk && box) {
+            if (chk.checked) {
+                box.style.display = 'block';
+                garantirLinhas();
+            }
+            chk.addEventListener('change', function () {
+                box.style.display = chk.checked ? 'block' : 'none';
+                if (chk.checked) garantirLinhas();
+                atualizarResumoDiscriminacaoParcial();
+            });
+        }
+        if (btnAdd) {
+            btnAdd.onclick = function (ev) {
+                ev.preventDefault();
+                adicionarLinhaDiscriminacaoParcial('', '');
+            };
+        }
+        if (inpTotal) inpTotal.addEventListener('input', atualizarResumoDiscriminacaoParcial);
+        atualizarResumoDiscriminacaoParcial();
     }
 
     /** Ordem cronológica de vencimento (mais antigo primeiro); sem data válida vai para o fim. */
@@ -10245,18 +10481,20 @@ window.carregarFiltrosDespesas = async function() {
                 + (abatTer > 0 ? ' <span style="color:#0c5460;">(inclui ' + formatarMoeda(abatTer) + ' de terceiros)</span>' : '') + '<br>'
                 + 'Saldo em aberto: <b style="color:#c0392b;">' + formatarMoeda(saldo) + '</b>'
                 + '</p>'
-                + '<label>Valor deste pagamento (R$)</label>'
+                + '<label>Valor total do comprovante (R$)</label>'
                 + '<input id="pp-valor" class="swal2-input" style="margin:4px 0 10px 0;width:100%;" placeholder="0,00" value="">'
                 + '<label>Data do pagamento</label>'
                 + '<input type="date" id="pp-data" class="swal2-input" style="margin:4px 0 10px 0;width:100%;" value="' + hojeIso + '">'
-                + '<label>Observação (opcional)</label>'
+                + '<label>Observação (opcional, se não discriminar)</label>'
                 + '<input id="pp-obs" class="swal2-input" style="margin:4px 0 10px 0;width:100%;" placeholder="Ex.: pagamento parcial / com juros">'
+                + htmlBlocoDiscriminacaoParcial()
                 + '<p style="font-size:12px;color:#666;margin:8px 0 0 0;">O valor abate o saldo. Se for <b>maior que o saldo</b> (juros), a despesa fica <b>PAGA</b> e o acréscimo fica registado.</p>'
                 + '</div>'
                 + htmlModalBaixaComprovante({
                     titulo: 'No pagamento parcial também é <b>obrigatório</b> anexar o comprovante (foto/PDF). Sem comprovante, informe o código de autorização.',
                     mostrarValorPago: false
                 }),
+            width: Math.min(window.innerWidth - 24, 560),
             showCancelButton: true,
             confirmButtonColor: '#17a2b8',
             cancelButtonColor: '#1a2a43',
@@ -10265,6 +10503,7 @@ window.carregarFiltrosDespesas = async function() {
             didOpen: () => {
                 window._swalComprovantePgtoBase64 = '';
                 configurarModalBaixaComprovante();
+                configurarDiscriminacaoParcial();
                 const inp = document.getElementById('pp-valor');
                 if (inp) {
                     inp.addEventListener('input', function () { mascaraMoeda(inp); });
@@ -10282,10 +10521,11 @@ window.carregarFiltrosDespesas = async function() {
                 const valorStr = (document.getElementById('pp-valor') && document.getElementById('pp-valor').value) || '';
                 const valorNum = parseMoedaLocal(String(valorStr || '0').replace(/R\$\s?/gi, ''));
                 if (!(valorNum > 0)) {
-                    Swal.showValidationMessage('Informe o valor do pagamento parcial.');
+                    Swal.showValidationMessage('Informe o valor total do comprovante.');
                     return false;
                 }
-                // Permite valor > saldo (juros). Só bloqueia se for absurdo (<= 0 já tratado).
+                const linhas = validarLinhasDiscriminacaoParcial(valorNum);
+                if (linhas === false) return false;
                 const dataIso = (document.getElementById('pp-data') && document.getElementById('pp-data').value) || hojeIso;
                 const obs = (document.getElementById('pp-obs') && document.getElementById('pp-obs').value) || '';
                 let dataBr = dataPagamentoHojeBr();
@@ -10297,6 +10537,7 @@ window.carregarFiltrosDespesas = async function() {
                     valor: valorNum,
                     dataBr: dataBr,
                     obs: String(obs).trim(),
+                    linhas: linhas,
                     comprovante: {
                         comprovante_pagamento: comp.comprovante_pagamento || null,
                         baixa_sem_comprovante: !!comp.baixa_sem_comprovante
@@ -10308,13 +10549,28 @@ window.carregarFiltrosDespesas = async function() {
         if (!result.isConfirmed || !result.value) return;
 
         try {
-            const payload = montarPayloadPagamentoParcial(
-                despesa,
-                result.value.valor,
-                result.value.dataBr,
-                result.value.obs,
-                result.value.comprovante
-            );
+            let payload;
+            const nLinhas = (result.value.linhas && result.value.linhas.length) || 0;
+            if (nLinhas) {
+                const novos = montarItensParciaisDoGrupo(
+                    result.value.linhas,
+                    result.value.dataBr,
+                    result.value.comprovante,
+                    result.value.valor
+                );
+                payload = montarPayloadParciaisAtualizados(
+                    despesa,
+                    listaPagamentosParciaisDespesa(despesa).concat(novos)
+                );
+            } else {
+                payload = montarPayloadPagamentoParcial(
+                    despesa,
+                    result.value.valor,
+                    result.value.dataBr,
+                    result.value.obs,
+                    result.value.comprovante
+                );
+            }
             // Se o restante no banco ainda existe mas já foi coberto por Terceiros, quita
             const saldoEfetivoApos = Math.max(0, Math.round(((payload.saldo_devedor || 0) - abatTer) * 100) / 100);
             if (saldoEfetivoApos <= 0.009) {
@@ -10328,11 +10584,13 @@ window.carregarFiltrosDespesas = async function() {
             const semComp = !!(result.value.comprovante && result.value.comprovante.baixa_sem_comprovante);
             const novoSaldoExibir = quitou ? 0 : saldoEfetivoApos;
             const juros = Math.max(0, Math.round((result.value.valor - saldo) * 100) / 100);
+            const nLinhasDisc = (result.value.linhas && result.value.linhas.length) || 0;
             Swal.fire(
                 quitou ? 'Quitada!' : 'Parcial lançado!',
                 (quitou
                     ? 'O saldo foi coberto. Despesa marcada como PAGA. '
                     : 'Abatido ' + formatarMoeda(Math.min(result.value.valor, saldo)) + '. Novo saldo: ' + formatarMoeda(novoSaldoExibir) + '. ')
+                + (nLinhasDisc ? nLinhasDisc + ' linhas discriminadas no mesmo comprovante. ' : '')
                 + (juros > 0.009 ? 'Juros/acréscimo: ' + formatarMoeda(juros) + '. ' : '')
                 + (semComp ? 'Baixa sem comprovante (código autorizado).' : 'Comprovante anexado.'),
                 'success'
@@ -10348,6 +10606,15 @@ window.carregarFiltrosDespesas = async function() {
 
     function montarPayloadParciaisAtualizados(despesa, pars) {
         const orig = valorOriginalDespesa(despesa);
+        if (!pars.length) {
+            return {
+                pagamentos_parciais: [],
+                valor_pago_acumulado: 0,
+                saldo_devedor: orig,
+                status: 'pendente',
+                data_pagamento: null
+            };
+        }
         const totalPago = Math.round(pars.reduce(function (s, p) {
             return s + (Number(p.valor) || parseMoedaLocal(p.valor_string) || 0);
         }, 0) * 100) / 100;
@@ -10358,9 +10625,58 @@ window.carregarFiltrosDespesas = async function() {
             pagamentos_parciais: pars,
             valor_pago_acumulado: totalPago,
             saldo_devedor: saldo,
-            status: quitado ? 'pago' : (pars.length ? 'parcial' : 'pendente'),
-            data_pagamento: quitado ? (ultimaData || despesa.data_pagamento || dataPagamentoHojeBr()) : (despesa.data_pagamento || null)
+            status: quitado ? 'pago' : 'parcial',
+            data_pagamento: quitado ? (ultimaData || despesa.data_pagamento || dataPagamentoHojeBr()) : null
         };
+    }
+
+    async function obterDespesaObraPorId(despesaId) {
+        try {
+            const snap = await getDoc(doc(db, 'despesas_obras', despesaId));
+            if (snap.exists()) return Object.assign({ id: snap.id }, snap.data() || {});
+        } catch (e) {
+            console.error(e);
+        }
+        return (window.dadosExportacaoDespesas || []).find(function (d) {
+            return d && String(d.id) === String(despesaId) && d._origem !== 'pagamentos_terceiros';
+        }) || null;
+    }
+
+    function coletarParciaisSelecionadosTela() {
+        const itens = [];
+        document.querySelectorAll('.chk-parcial-sel:checked').forEach(function (el) {
+            const despesaId = el.getAttribute('data-despesa-id');
+            const parcialId = el.getAttribute('data-parcial-id');
+            if (despesaId && parcialId) {
+                itens.push({
+                    despesaId: despesaId,
+                    parcialId: parcialId,
+                    rotulo: el.getAttribute('data-rotulo') || ''
+                });
+            }
+        });
+        return itens;
+    }
+
+    async function removerParciaisDasDespesas(itens) {
+        const porDespesa = {};
+        (itens || []).forEach(function (it) {
+            if (!porDespesa[it.despesaId]) porDespesa[it.despesaId] = [];
+            porDespesa[it.despesaId].push(decodeURIComponent(String(it.parcialId || '')));
+        });
+        const ids = Object.keys(porDespesa);
+        for (let i = 0; i < ids.length; i++) {
+            const despesaId = ids[i];
+            const chaves = porDespesa[despesaId];
+            const despesa = await obterDespesaObraPorId(despesaId);
+            if (!despesa) throw new Error('Despesa não encontrada.');
+            const pars = listaPagamentosParciaisDespesa(despesa).filter(function (p, idx) {
+                return chaves.indexOf(idEstavelPagamentoParcial(p, idx)) === -1;
+            });
+            preservarComprovanteNosGrupos(listaPagamentosParciaisDespesa(despesa), pars);
+            const payload = montarPayloadParciaisAtualizados(despesa, pars);
+            await updateDoc(doc(db, 'despesas_obras', despesaId), payload);
+        }
     }
 
     function recarregarTelasAposEditarParcial() {
@@ -10474,6 +10790,181 @@ window.carregarFiltrosDespesas = async function() {
         } catch (e) {
             console.error(e);
             Swal.fire('Erro', 'Não foi possível salvar a correção.', 'error');
+        }
+    };
+
+    window.excluirPagamentoParcialDespesa = async function (despesaId, parcialIdEnc) {
+        if (!despesaId) return;
+        const chaveParc = decodeURIComponent(String(parcialIdEnc || ''));
+        const despesa = await obterDespesaObraPorId(despesaId);
+        if (!despesa) return Swal.fire('Atenção', 'Despesa não encontrada. Atualize o relatório e tente de novo.', 'warning');
+
+        const pars = listaPagamentosParciaisDespesa(despesa);
+        let idx = -1;
+        for (let i = 0; i < pars.length; i++) {
+            if (idEstavelPagamentoParcial(pars[i], i) === chaveParc) { idx = i; break; }
+        }
+        if (idx < 0) return Swal.fire('Atenção', 'Pagamento parcial não encontrado.', 'warning');
+
+        const atual = pars[idx];
+        const valorAtual = Number(atual.valor) || parseMoedaLocal(atual.valor_string) || 0;
+        const conf = await Swal.fire({
+            title: 'Excluir este parcial?',
+            html: '<p style="text-align:left;font-size:13px;margin:0;">Será apagado <b>somente</b> este lançamento:</p>'
+                + '<p style="text-align:left;font-size:13px;background:#fdecea;border:1px solid #f5c6cb;border-radius:8px;padding:10px;margin:10px 0 0 0;">'
+                + escapeHtmlBasico(atual.data || '—') + ' — <b>' + formatarMoeda(valorAtual) + '</b>'
+                + (atual.observacao ? '<br>' + escapeHtmlBasico(atual.observacao) : '')
+                + '</p>'
+                + '<p style="text-align:left;font-size:12px;color:#666;margin:10px 0 0 0;">A despesa e os outros parciais <b>permanecem</b>. O saldo volta a incluir este valor.</p>',
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonText: 'Sim, excluir este',
+            cancelButtonText: 'Cancelar',
+            confirmButtonColor: '#c0392b'
+        });
+        if (!conf.isConfirmed) return;
+
+        try {
+            await removerParciaisDasDespesas([{ despesaId: despesaId, parcialId: encodeURIComponent(chaveParc) }]);
+            Swal.fire('Excluído', 'O pagamento parcial de ' + formatarMoeda(valorAtual) + ' foi removido.', 'success');
+            recarregarTelasAposEditarParcial();
+        } catch (e) {
+            console.error(e);
+            Swal.fire('Erro', 'Não foi possível excluir este parcial.', 'error');
+        }
+    };
+
+    window.excluirPagamentosParciaisSelecionados = async function () {
+        const itens = coletarParciaisSelecionadosTela();
+        if (!itens.length) {
+            return Swal.fire('Atenção', 'Selecione pelo menos um pagamento parcial para excluir.', 'info');
+        }
+        const listaHtml = itens.map(function (it) {
+            return '<li>' + escapeHtmlBasico(it.rotulo || 'Parcial selecionado') + '</li>';
+        }).join('');
+        const conf = await Swal.fire({
+            title: 'Excluir parciais selecionados?',
+            html: '<p style="text-align:left;font-size:13px;margin:0 0 8px 0;">Serão apagados <b>somente</b> estes lançamentos (' + itens.length + '). A despesa permanece.</p>'
+                + '<ul style="text-align:left;font-size:13px;margin:0;padding-left:18px;">' + listaHtml + '</ul>',
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonText: 'Excluir selecionados',
+            cancelButtonText: 'Cancelar',
+            confirmButtonColor: '#c0392b'
+        });
+        if (!conf.isConfirmed) return;
+        try {
+            await removerParciaisDasDespesas(itens);
+            Swal.fire('Excluído', itens.length === 1 ? 'O pagamento parcial selecionado foi removido.' : itens.length + ' pagamentos parciais foram removidos.', 'success');
+            recarregarTelasAposEditarParcial();
+        } catch (e) {
+            console.error(e);
+            Swal.fire('Erro', 'Não foi possível excluir os parciais selecionados.', 'error');
+        }
+    };
+
+    window.discriminarPagamentoParcialDespesa = async function (despesaId, parcialIdEnc) {
+        if (!despesaId) return;
+        const chaveParc = decodeURIComponent(String(parcialIdEnc || ''));
+        const despesa = await obterDespesaObraPorId(despesaId);
+        if (!despesa) return Swal.fire('Atenção', 'Despesa não encontrada. Atualize o relatório e tente de novo.', 'warning');
+
+        const pars = listaPagamentosParciaisDespesa(despesa).slice();
+        let idx = -1;
+        for (let i = 0; i < pars.length; i++) {
+            if (idEstavelPagamentoParcial(pars[i], i) === chaveParc) { idx = i; break; }
+        }
+        if (idx < 0) return Swal.fire('Atenção', 'Pagamento parcial não encontrado.', 'warning');
+
+        const atual = pars[idx];
+        const valorAtual = Number(atual.valor) || parseMoedaLocal(atual.valor_string) || 0;
+        if (!(valorAtual > 0.009)) {
+            return Swal.fire('Atenção', 'Este lançamento não tem valor para discriminar.', 'warning');
+        }
+        const dataIso = dataVencimentoParaInputDateIso(atual.data || '') || '';
+        const valorFmt = (typeof formatarValorInputMoeda === 'function')
+            ? formatarValorInputMoeda(valorAtual)
+            : String(valorAtual.toFixed(2)).replace('.', ',');
+
+        const conf = await Swal.fire({
+            title: 'Discriminar comprovante',
+            html: '<div style="text-align:left;font-size:13px;">'
+                + '<p style="margin:0 0 10px 0;background:#fff8e6;border:1px solid #ffe08a;border-radius:8px;padding:10px;">'
+                + 'O comprovante continua o <b>mesmo</b>. Você só detalha o que esse valor pagou, em linhas, até fechar <b>' + formatarMoeda(valorAtual) + '</b>.'
+                + '</p>'
+                + '<label>Valor total do comprovante (R$)</label>'
+                + '<input id="pp-valor" class="swal2-input" style="margin:4px 0 10px 0;width:100%;" value="' + escapeAttrBasico(valorFmt) + '">'
+                + '<label>Data do pagamento</label>'
+                + '<input type="date" id="pp-data" class="swal2-input" style="margin:4px 0 10px 0;width:100%;" value="' + escapeAttrBasico(dataIso) + '">'
+                + htmlBlocoDiscriminacaoParcial({ ligado: true })
+                + '</div>',
+            width: Math.min(window.innerWidth - 24, 560),
+            showCancelButton: true,
+            confirmButtonText: 'Salvar discriminação',
+            cancelButtonText: 'Cancelar',
+            confirmButtonColor: '#856404',
+            didOpen: function () {
+                const inp = document.getElementById('pp-valor');
+                if (inp && typeof mascaraMoeda === 'function') {
+                    inp.addEventListener('input', function () { mascaraMoeda(inp); });
+                }
+                configurarDiscriminacaoParcial([
+                    { valorFmt: '', desc: atual.observacao || '' },
+                    { valorFmt: '', desc: '' }
+                ]);
+            },
+            preConfirm: function () {
+                const valorNum = parseMoedaLocal((document.getElementById('pp-valor') && document.getElementById('pp-valor').value) || '0');
+                if (!(valorNum > 0)) {
+                    Swal.showValidationMessage('Informe o valor total do comprovante.');
+                    return false;
+                }
+                const chk = document.getElementById('pp-disc-on');
+                if (chk && !chk.checked) chk.checked = true;
+                const linhas = validarLinhasDiscriminacaoParcial(valorNum);
+                if (linhas === false) return false;
+                if (!linhas.length) {
+                    Swal.showValidationMessage('Crie as linhas até fechar o valor do comprovante.');
+                    return false;
+                }
+                const dataIsoNovo = (document.getElementById('pp-data') && document.getElementById('pp-data').value) || dataIso;
+                let dataBr = atual.data || dataPagamentoHojeBr();
+                if (dataIsoNovo && /^\d{4}-\d{2}-\d{2}/.test(dataIsoNovo)) {
+                    const p = dataIsoNovo.split('-');
+                    dataBr = p[2] + '/' + p[1] + '/' + p[0];
+                }
+                return { valor: valorNum, dataBr: dataBr, linhas: linhas };
+            }
+        });
+        if (!conf.isConfirmed || !conf.value) return;
+
+        try {
+            const comprovantePayload = {
+                comprovante_pagamento: atual.comprovante_pagamento || comprovanteDoGrupoParcial(despesa, atual) || null,
+                baixa_sem_comprovante: !!atual.baixa_sem_comprovante
+            };
+            const grupoId = atual.grupo_comprovante || null;
+            const novos = montarItensParciaisDoGrupo(
+                conf.value.linhas,
+                conf.value.dataBr,
+                comprovantePayload,
+                atual.valor_comprovante || conf.value.valor,
+                grupoId
+            );
+            pars.splice(idx, 1);
+            const juntos = pars.slice(0, idx).concat(novos).concat(pars.slice(idx));
+            preservarComprovanteNosGrupos(listaPagamentosParciaisDespesa(despesa).concat(novos), juntos);
+            const payload = montarPayloadParciaisAtualizados(despesa, juntos);
+            await updateDoc(doc(db, 'despesas_obras', despesaId), payload);
+            Swal.fire(
+                'Discriminado!',
+                conf.value.linhas.length + ' linhas no mesmo comprovante de ' + formatarMoeda(conf.value.valor) + '. O Já pago permanece; só o detalhe mudou.',
+                'success'
+            );
+            recarregarTelasAposEditarParcial();
+        } catch (e) {
+            console.error(e);
+            Swal.fire('Erro', 'Não foi possível salvar a discriminação.', 'error');
         }
     };
 
@@ -11239,11 +11730,16 @@ window.carregarFiltrosDespesas = async function() {
         const valor = Number(parcial && parcial.valor) || parseMoedaLocal((parcial && parcial.valor_string) || '0') || 0;
         const dataBr = (parcial && parcial.data) || '';
         const parcialId = idEstavelPagamentoParcial(parcial, idx);
+        const compGrupo = (parcial && parcial.comprovante_pagamento) || comprovanteDoGrupoParcial(despesa, parcial);
+        const extraGrupo = (parcial && parcial.grupo_comprovante)
+            ? ' · mesmo comprovante' + (parcial.valor_comprovante ? ' ' + formatarMoeda(parcial.valor_comprovante) : '')
+            : '';
         return {
             id: String(despesa.id) + '_pp_' + parcialId,
             _origem: 'pagamento_parcial',
             _despesa_id: despesa.id,
             _parcial_id: parcialId,
+            _grupo_comprovante: (parcial && parcial.grupo_comprovante) || '',
             status: 'pago',
             obra_nome: despesa.obra_nome || '',
             loja_nome: despesa.loja_nome || '',
@@ -11253,8 +11749,9 @@ window.carregarFiltrosDespesas = async function() {
             valor_numero: valor,
             valor_string: formatarMoeda(valor).replace(/^R\$\s?/, ''),
             descricao: ((parcial && parcial.observacao) ? String(parcial.observacao) : 'Pagamento parcial')
+                + extraGrupo
                 + ' — contrato ' + formatarMoeda(valorOriginalDespesa(despesa)),
-            comprovante_pagamento: (parcial && parcial.comprovante_pagamento) || null,
+            comprovante_pagamento: compGrupo || null,
             baixa_sem_comprovante: !!(parcial && parcial.baixa_sem_comprovante),
             foto_recibo: null,
             timestamp: (parcial && parcial.timestamp) || 0
@@ -11283,8 +11780,14 @@ window.carregarFiltrosDespesas = async function() {
             + (d.descricao ? '<div style="font-size:12px;margin-top:5px;padding-top:5px;border-top:1px solid #eee;color:#666;">' + escapeHtmlBasico(String(d.descricao)) + '</div>' : '')
             + (ehParcial && d._despesa_id && d._parcial_id
                 ? '<div style="margin-top:10px;padding-top:8px;border-top:1px solid #d6eaf8;">'
-                    + '<button type="button" onclick="editarPagamentoParcialDespesa(\'' + escapeAttrBasico(d._despesa_id) + '\',\'' + encodeURIComponent(d._parcial_id) + '\')" style="background:#4285F4;color:#fff;border:none;padding:8px 12px;border-radius:8px;cursor:pointer;font-weight:800;font-size:12px;">✏️ Editar valor recebido</button>'
-                    + '</div>'
+                    + '<label style="display:flex;align-items:center;gap:6px;font-size:12px;font-weight:700;color:#0c5460;cursor:pointer;margin:0 0 8px 0;">'
+                    + '<input type="checkbox" class="chk-parcial-sel" data-despesa-id="' + escapeAttrBasico(d._despesa_id) + '" data-parcial-id="' + encodeURIComponent(d._parcial_id) + '" data-rotulo="' + escapeAttrBasico((d.data_pagamento || d.data || '') + ' — R$ ' + String(d.valor_string || '0') + ' · ' + (d.loja_nome || '')) + '" style="width:16px;height:16px;margin:0;flex-shrink:0;"> Selecionar este parcial'
+                    + '</label>'
+                    + '<div style="display:flex;gap:8px;flex-wrap:wrap;">'
+                    + '<button type="button" onclick="editarPagamentoParcialDespesa(\'' + escapeAttrBasico(d._despesa_id) + '\',\'' + encodeURIComponent(d._parcial_id) + '\')" style="background:#4285F4;color:#fff;border:none;padding:8px 12px;border-radius:8px;cursor:pointer;font-weight:800;font-size:12px;flex:1;min-width:120px;">✏️ Editar valor</button>'
+                    + '<button type="button" onclick="discriminarPagamentoParcialDespesa(\'' + escapeAttrBasico(d._despesa_id) + '\',\'' + encodeURIComponent(d._parcial_id) + '\')" style="background:#856404;color:#fff;border:none;padding:8px 12px;border-radius:8px;cursor:pointer;font-weight:800;font-size:12px;flex:1;min-width:140px;">📋 Discriminar</button>'
+                    + '<button type="button" onclick="excluirPagamentoParcialDespesa(\'' + escapeAttrBasico(d._despesa_id) + '\',\'' + encodeURIComponent(d._parcial_id) + '\')" style="background:#c0392b;color:#fff;border:none;padding:8px 12px;border-radius:8px;cursor:pointer;font-weight:800;font-size:12px;flex:1;min-width:120px;">🗑️ Excluir este</button>'
+                    + '</div></div>'
                 : '')
             + '</div>';
     }
@@ -12321,6 +12824,7 @@ window.carregarFiltrosDespesas = async function() {
                 + '<div class="secao-despesas-conteudo">';
 
             htmlSecoes += '<details class="pasta-ano" open><summary>🏪 Fornecedores e pagamentos parciais (' + cntPagosForn + ') — ' + formatarMoeda(somaPagasForn) + '</summary><div class="folder-content">'
+                + '<p style="font-size:12px;color:#555;margin:0 0 10px 0;">Marque o <b>pagamento parcial</b> errado e clique em <b>Excluir parciais selecionados</b> (no topo) ou use <b>Excluir este</b> no card. Só aquele lançamento sai; a despesa e os outros parciais ficam.</p>'
                 + (htmlPagasForn || '<p style="text-align:center;color:#888;padding:12px;">Nenhum pagamento de fornecedor / parcial.</p>')
                 + '</div></details>';
 
@@ -13241,21 +13745,36 @@ window.carregarFiltrosDespesas = async function() {
                 if (pars.length || ters.length) {
                     histParcHtml = '<div style="margin-top:8px;padding:8px;background:#f0f9ff;border-radius:8px;font-size:11px;color:#0c5460;">';
                     if (pars.length) {
-                        histParcHtml += '<b>Pagamentos parciais (' + pars.length + '):</b><ul style="margin:6px 0 0 18px;padding:0;">'
+                        histParcHtml += '<div style="display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:4px;">'
+                            + '<b>Pagamentos parciais (' + pars.length + '):</b>'
+                            + '<button type="button" onclick="excluirPagamentosParciaisSelecionados()" style="background:#c0392b;color:#fff;border:none;padding:4px 8px;border-radius:6px;cursor:pointer;font-weight:800;font-size:10px;">🗑️ Excluir selecionados</button>'
+                            + '</div>'
+                            + '<ul style="margin:6px 0 0 0;padding:0;list-style:none;">'
                             + pars.map(function (p, idxParc) {
+                                const idParc = idEstavelPagamentoParcial(p, idxParc);
+                                const rotulo = (p.data || '—') + ' — ' + formatarMoeda(p.valor || 0);
                                 let extra = '';
-                                if (p.comprovante_pagamento) {
-                                    const idComp = registrarAnexoParaViewer(p.comprovante_pagamento);
-                                    const rotulo = ehAnexoPdfDataUrl(p.comprovante_pagamento) ? '📄 Ver PDF' : '📎 Ver comprovante';
-                                    extra = ' <span style="color:#28a745;font-weight:700;cursor:pointer;" onclick="abrirAnexoRegistrado(\'' + idComp + '\')">' + rotulo + '</span>';
+                                const compMostrar = p.comprovante_pagamento || comprovanteDoGrupoParcial(d, p);
+                                if (compMostrar) {
+                                    const idComp = registrarAnexoParaViewer(compMostrar);
+                                    const rotuloComp = ehAnexoPdfDataUrl(compMostrar) ? '📄 Ver PDF' : '📎 Ver comprovante';
+                                    extra = ' <span style="color:#28a745;font-weight:700;cursor:pointer;" onclick="abrirAnexoRegistrado(\'' + idComp + '\')">' + rotuloComp + '</span>';
                                 } else if (p.baixa_sem_comprovante) {
                                     extra = ' <span style="color:#856404;">(sem comprovante — código)</span>';
                                 }
-                                extra += ' <span style="color:#4285F4;font-weight:800;cursor:pointer;" onclick="editarPagamentoParcialDespesa(\'' + escapeAttrBasico(d.id) + '\',\'' + encodeURIComponent(idEstavelPagamentoParcial(p, idxParc)) + '\')">✏️ Editar</span>';
-                                return '<li>' + escapeHtmlBasico(p.data || '—') + ' — <b>' + formatarMoeda(p.valor || 0) + '</b>'
+                                extra += ' <span style="color:#4285F4;font-weight:800;cursor:pointer;" onclick="editarPagamentoParcialDespesa(\'' + escapeAttrBasico(d.id) + '\',\'' + encodeURIComponent(idParc) + '\')">✏️ Editar</span>';
+                                extra += ' <span style="color:#856404;font-weight:800;cursor:pointer;" onclick="discriminarPagamentoParcialDespesa(\'' + escapeAttrBasico(d.id) + '\',\'' + encodeURIComponent(idParc) + '\')">📋 Discriminar</span>';
+                                extra += ' <span style="color:#c0392b;font-weight:800;cursor:pointer;" onclick="excluirPagamentoParcialDespesa(\'' + escapeAttrBasico(d.id) + '\',\'' + encodeURIComponent(idParc) + '\')">🗑️ Excluir</span>';
+                                const badgeGrupo = p.grupo_comprovante
+                                    ? ' <span style="font-size:10px;background:#fff3cd;color:#856404;padding:1px 5px;border-radius:4px;font-weight:800;">mesmo comprovante</span>'
+                                    : '';
+                                return '<li style="display:flex;align-items:flex-start;gap:6px;margin:4px 0;">'
+                                    + '<input type="checkbox" class="chk-parcial-sel" data-despesa-id="' + escapeAttrBasico(d.id) + '" data-parcial-id="' + encodeURIComponent(idParc) + '" data-rotulo="' + escapeAttrBasico(rotulo + ' · ' + (d.loja_nome || '')) + '" style="width:16px;height:16px;margin:2px 0 0 0;flex-shrink:0;">'
+                                    + '<span>' + escapeHtmlBasico(p.data || '—') + ' — <b>' + formatarMoeda(p.valor || 0) + '</b>'
+                                    + badgeGrupo
                                     + (p.observacao ? ' <span style="color:#666;">(' + escapeHtmlBasico(p.observacao) + ')</span>' : '')
                                     + extra
-                                    + '</li>';
+                                    + '</span></li>';
                             }).join('')
                             + '</ul>';
                     }
