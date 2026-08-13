@@ -4188,13 +4188,15 @@
 
     <div id="aba-arquivamento-contas" class="view-section">
         <div class="doc-pasta-panel">
-            <h3>🗄️ Arquivamento de Contas Pagas</h3>
-            <p class="texto-explicacao" style="margin:0 0 12px 0;">Contas <b>totalmente pagas</b> que você arquivar saem dos relatórios ativos e ficam guardadas aqui por <b>Ano → Mês → Dia</b>, com a nota/recibo e o comprovante do pagamento para consultar o histórico depois.</p>
+            <h3>🗄️ Arquivamento de Contas</h3>
+            <p class="texto-explicacao" style="margin:0 0 12px 0;">Pastas por <b>nome da obra</b> (balões). Clique no balão para abrir o histórico em <b>Ano → Mês → Dia</b>, com nota e comprovantes.</p>
             <div class="rel-geral-obras-toolbar" style="display:flex;margin-bottom:12px;flex-wrap:wrap;gap:8px;">
                 <button type="button" class="btn-enviar" style="margin:0;" onclick="carregarArquivamentoContas()">🔄 Atualizar arquivo</button>
                 <input type="text" id="arq-contas-busca" placeholder="Buscar obra, fornecedor, NF..." style="flex:1;min-width:180px;margin:0;padding:10px;border:1px solid #ccc;border-radius:8px;" onkeydown="if(event.key==='Enter')carregarArquivamentoContas()">
             </div>
             <div id="arq-contas-resumo" style="display:none;margin-bottom:12px;padding:12px;background:#fff3cd;border:1px solid #ffeeba;border-radius:10px;text-align:center;color:#856404;font-weight:700;"></div>
+            <div id="arq-contas-baloes" class="desp-baloes-lista" style="margin-bottom:14px;"></div>
+            <div id="arq-contas-pasta-titulo" style="display:none;margin-bottom:10px;font-size:14px;font-weight:800;color:#1a2a43;"></div>
             <div id="arq-contas-lista"><p style="text-align:center;color:#888;">Clique em Atualizar arquivo ou abra este menu para carregar.</p></div>
         </div>
     </div>
@@ -8102,7 +8104,7 @@ function separarDataSegura(dataString) {
         }
         return '<span class="badge-tag-wrap' + selClass + '">'
             + '<span role="button" tabindex="0" class="badge-tag badge-tag-desp" data-nome="' + n + '" data-tipo="' + t + '"' + obraAttr + ' title="Buscar: ' + n + '">' + n + '</span>'
-            + '<button type="button" class="badge-tag-excluir" data-nome="' + n + '" data-tipo="' + t + '"' + delObraAttr + ' title="Excluir cadastro">×</button>'
+            + '<button type="button" class="badge-tag-excluir" data-nome="' + n + '" data-tipo="' + t + '"' + delObraAttr + ' title="Arquivar cadastro e histórico">×</button>'
             + '</span>';
     }
 
@@ -8118,7 +8120,7 @@ function separarDataSegura(dataString) {
         }
         return '<span class="badge-tag-wrap' + selClass + '">'
             + '<span role="button" tabindex="0" class="badge-tag badge-tag-desp" data-nome="' + nome + '" data-tipo="loja" data-obra="' + obra + '" title="Buscar: ' + nome + '">' + nome + extra + '</span>'
-            + '<button type="button" class="badge-tag-excluir" data-nome="' + nome + '" data-tipo="loja" data-obra="' + obra + '" title="Excluir cadastro">×</button>'
+            + '<button type="button" class="badge-tag-excluir" data-nome="' + nome + '" data-tipo="loja" data-obra="' + obra + '" title="Arquivar fornecedor e histórico">×</button>'
             + '</span>';
     }
 
@@ -8142,7 +8144,7 @@ function separarDataSegura(dataString) {
             + '<p class="desp-baloes-titulo">Fornecedores com pendências em <span id="nome-obra-selecionada-desp"></span>: <span id="contagem-lojas-desp" class="desp-cadastro-contagem">0</span></p>'
             + '<div id="lista-cadastros-lojas-desp" class="desp-baloes-lista"></div>'
             + '</div>'
-            + '<p class="texto-explicacao" style="margin:0;padding:8px 12px;font-size:11px;">Clique na etiqueta para buscar. Use <b>×</b> para excluir o cadastro e todas as despesas daquele nome (confirme digitando <b>APAGAR</b>). Use <b>Unificar obras</b> para juntar duas obras iguais.</p>';
+            + '<p class="texto-explicacao" style="margin:0;padding:8px 12px;font-size:11px;">Clique na etiqueta para buscar. Use <b>×</b> para <b>arquivar</b> a obra/fornecedor e todo o histórico (pasta com o nome da obra em Arquivamento de Contas). Digite <b>ARQUIVAR</b> para confirmar. Use <b>Unificar obras</b> para juntar duas obras iguais.</p>';
     }
 
     const PARES_OBRAS_DUPLICADAS = [
@@ -8471,50 +8473,97 @@ function separarDataSegura(dataString) {
         const chaveAlvo = normalizarChaveNomeDespesa(nome);
         if (!chaveAlvo) return;
         const empresaLogada = getEmpresaGestor();
-        const tipoLabel = tipo === 'obra' ? 'Obra' : 'Loja';
+        const tipoLabel = tipo === 'obra' ? 'Obra' : 'Loja / Fornecedor';
         const nomeExibir = formatarNomeCanonicoDespesa(nome);
         const chObraCtx = obraContexto ? normalizarChaveNomeDespesa(obraContexto) : '';
 
-        Swal.fire({ title: 'Verificando despesas...', allowOutsideClick: false });
+        Swal.fire({ title: 'Verificando histórico...', allowOutsideClick: false });
         Swal.showLoading();
 
         try {
             const q = query(collection(db, 'despesas_obras'), where('empresa_id', '==', empresaLogada));
             const snap = await getDocs(q);
-            const paraApagar = [];
+            const paraArquivar = [];
             snap.forEach((docSnap) => {
-                const data = docSnap.data();
+                const data = Object.assign({ id: docSnap.id }, docSnap.data() || {});
                 if (tipo === 'loja' && chObraCtx) {
                     if (despesaCombinaNomeCadastro(data, chaveAlvo, 'loja')
                         && normalizarChaveNomeDespesa(data.obra_nome || data.obra_lower || '') === chObraCtx) {
-                        paraApagar.push(docSnap.id);
+                        paraArquivar.push(data);
                     }
                 } else if (despesaCombinaNomeCadastro(data, chaveAlvo, tipo)) {
-                    paraApagar.push(docSnap.id);
+                    paraArquivar.push(data);
                 }
             });
 
+            // Terceiros + linhas do relatório de despesas (só quando arquivar obra)
+            const terceirosArquivar = [];
+            const relatorioArquivar = [];
+            if (tipo === 'obra') {
+                try {
+                    const snapTer = await getDocs(query(collection(db, 'pagamentos_terceiros'), where('empresa_id', '==', empresaLogada)));
+                    snapTer.forEach((docSnap) => {
+                        const t = Object.assign({ id: docSnap.id }, docSnap.data() || {});
+                        if (normalizarChaveNomeDespesa(t.obra || t.obra_lower || '') === chaveAlvo) {
+                            terceirosArquivar.push(t);
+                        }
+                    });
+                } catch (eTer) {
+                    console.warn(eTer);
+                }
+                try {
+                    const snapRel = await getDocs(query(collection(db, COLECAO_RELATORIO_DESPESAS), where('empresa_id', '==', empresaLogada)));
+                    snapRel.forEach((docSnap) => {
+                        const r = Object.assign({ id: docSnap.id }, docSnap.data() || {});
+                        if (normalizarChaveNomeDespesa(r.obra_nome || r.obra_lower || '') === chaveAlvo) {
+                            relatorioArquivar.push(r);
+                        }
+                    });
+                } catch (eRel) {
+                    console.warn(eRel);
+                }
+            } else if (tipo === 'loja') {
+                try {
+                    const snapRel = await getDocs(query(collection(db, COLECAO_RELATORIO_DESPESAS), where('empresa_id', '==', empresaLogada)));
+                    snapRel.forEach((docSnap) => {
+                        const r = Object.assign({ id: docSnap.id }, docSnap.data() || {});
+                        const mesmaLoja = normalizarChaveNomeDespesa(r.loja_nome || r.loja_lower || '') === chaveAlvo;
+                        const mesmaObra = !chObraCtx || normalizarChaveNomeDespesa(r.obra_nome || r.obra_lower || '') === chObraCtx;
+                        if (mesmaLoja && mesmaObra) relatorioArquivar.push(r);
+                    });
+                } catch (eRel) {
+                    console.warn(eRel);
+                }
+            }
+
             Swal.close();
-            if (!paraApagar.length) {
-                return Swal.fire('Nada a apagar', 'Nenhuma despesa encontrada com este nome.', 'info');
+            const totalItens = paraArquivar.length + terceirosArquivar.length + relatorioArquivar.length;
+            if (!totalItens) {
+                return Swal.fire('Nada a arquivar', 'Nenhum lançamento encontrado com este nome.', 'info');
             }
 
             const escopoHtml = (tipo === 'loja' && obraContexto)
-                ? `<br>Escopo: fornecedor <b>${escapeHtmlBasico(nomeExibir)}</b> na obra <b>${escapeHtmlBasico(formatarNomeCanonicoDespesa(obraContexto))}</b>.`
+                ? '<br>Escopo: fornecedor <b>' + escapeHtmlBasico(nomeExibir) + '</b> na obra <b>' + escapeHtmlBasico(formatarNomeCanonicoDespesa(obraContexto)) + '</b>.'
                 : '';
             const confirmacao = await Swal.fire({
-                title: 'Excluir cadastro?',
-                html: `Excluir o cadastro <b>${escapeHtmlBasico(nomeExibir)}</b> (${tipoLabel})?${escopoHtml}<br><br>Serão apagadas <b>${paraApagar.length}</b> despesa(s) vinculadas.<br><span style="color:#d9534f;font-weight:bold;">Esta ação não pode ser desfeita.</span><br><br>Digite <b>APAGAR</b> para confirmar.`,
-                icon: 'warning',
+                title: 'Arquivar ' + (tipo === 'obra' ? 'obra' : 'fornecedor') + '?',
+                html: 'Arquivar o cadastro <b>' + escapeHtmlBasico(nomeExibir) + '</b> (' + tipoLabel + ')?' + escopoHtml
+                    + '<br><br>Serão enviados ao <b>Arquivamento de Contas</b> (Ano → Mês → Dia):'
+                    + '<br>• <b>' + paraArquivar.length + '</b> despesa(s)/conta(s)'
+                    + (terceirosArquivar.length ? '<br>• <b>' + terceirosArquivar.length + '</b> pagamento(s) a terceiros' : '')
+                    + (relatorioArquivar.length ? '<br>• <b>' + relatorioArquivar.length + '</b> linha(s) do relatório de despesas' : '')
+                    + '<br><br>Eles <b>saem</b> dos relatórios ativos, mas o histórico e os comprovantes ficam guardados.'
+                    + '<br><br>Digite <b>ARQUIVAR</b> para confirmar.',
+                icon: 'question',
                 input: 'text',
-                inputPlaceholder: 'APAGAR',
+                inputPlaceholder: 'ARQUIVAR',
                 showCancelButton: true,
-                confirmButtonColor: '#d9534f',
-                confirmButtonText: 'Sim, excluir tudo',
+                confirmButtonColor: '#856404',
+                confirmButtonText: 'Sim, arquivar tudo',
                 cancelButtonText: 'Cancelar',
                 preConfirm: (val) => {
-                    if (String(val || '').trim() !== 'APAGAR') {
-                        Swal.showValidationMessage('Digite APAGAR em maiúsculas para confirmar.');
+                    if (String(val || '').trim().toUpperCase() !== 'ARQUIVAR') {
+                        Swal.showValidationMessage('Digite ARQUIVAR para confirmar.');
                         return false;
                     }
                     return true;
@@ -8523,11 +8572,39 @@ function separarDataSegura(dataString) {
 
             if (!confirmacao.isConfirmed) return;
 
-            Swal.fire({ title: 'A apagar...', allowOutsideClick: false });
+            Swal.fire({ title: 'Arquivando histórico...', allowOutsideClick: false });
             Swal.showLoading();
 
-            for (const id of paraApagar) {
-                await deleteDoc(doc(db, 'despesas_obras', id));
+            const motivoLote = tipo === 'obra' ? ('Exclusão da obra ' + nomeExibir) : ('Exclusão do fornecedor ' + nomeExibir);
+            const loteId = 'cadastro_' + tipo + '_' + Date.now();
+            let ok = 0;
+            for (let i = 0; i < paraArquivar.length; i++) {
+                const d = paraArquivar[i];
+                const payload = await montarPayloadArquivoDespesa(d);
+                payload.motivo_arquivo = motivoLote;
+                payload.lote_arquivo = loteId;
+                await addDoc(collection(db, COLECAO_CONTAS_ARQUIVADAS), payload);
+                await deleteDoc(doc(db, 'despesas_obras', d.id));
+                ok += 1;
+            }
+            for (let i = 0; i < terceirosArquivar.length; i++) {
+                const t = terceirosArquivar[i];
+                const payload = montarPayloadArquivoTerceiro(t, motivoLote);
+                payload.lote_arquivo = loteId;
+                await addDoc(collection(db, COLECAO_CONTAS_ARQUIVADAS), payload);
+                await deleteDoc(doc(db, 'pagamentos_terceiros', t.id));
+                ok += 1;
+            }
+            for (let i = 0; i < relatorioArquivar.length; i++) {
+                const r = relatorioArquivar[i];
+                const payload = await montarPayloadArquivoDespesa(r);
+                payload.origem_colecao = COLECAO_RELATORIO_DESPESAS;
+                payload.tipo_arquivo = 'relatorio_despesa';
+                payload.motivo_arquivo = motivoLote;
+                payload.lote_arquivo = loteId;
+                await addDoc(collection(db, COLECAO_CONTAS_ARQUIVADAS), payload);
+                await deleteDoc(doc(db, COLECAO_RELATORIO_DESPESAS, r.id));
+                ok += 1;
             }
 
             const busca = document.getElementById('busca-obra');
@@ -8552,9 +8629,14 @@ function separarDataSegura(dataString) {
             }
 
             await carregarFiltrosDespesas();
-            Swal.fire('Excluído!', `${paraApagar.length} despesa(s) removida(s).`, 'success');
+            Swal.fire(
+                'Arquivado!',
+                ok + ' lançamento(s) da ' + (tipo === 'obra' ? 'obra' : 'loja') + ' <b>' + escapeHtmlBasico(nomeExibir) + '</b> foram para o Arquivamento de Contas.',
+                'success'
+            );
         } catch (e) {
-            Swal.fire('Erro', 'Não foi possível excluir o cadastro.', 'error');
+            console.error(e);
+            Swal.fire('Erro', 'Não foi possível arquivar o cadastro: ' + (e.message || ''), 'error');
         }
     };
 
@@ -14090,13 +14172,19 @@ window.carregarFiltrosDespesas = async function() {
     }
 
     async function montarPayloadArquivoDespesa(despesa) {
-        const dataPg = obterDataPagamentoDespesa(despesa) || despesa.data_pagamento || despesa.data || dataPagamentoHojeBr();
+        const dataPg = obterDataPagamentoDespesa(despesa)
+            || despesa.data_pagamento
+            || obterDataVencimentoDespesa(despesa)
+            || despesa.data
+            || dataPagamentoHojeBr();
         const pasta = pastaArquivoDeDataPagamento(dataPg);
         const pars = limparParciaisParaArquivo(listaPagamentosParciaisDespesa(despesa));
+        const paga = typeof despesaEstaPaga === 'function' ? despesaEstaPaga(despesa) : false;
         const payload = {
             empresa_id: despesa.empresa_id || getEmpresaGestor() || '',
             origem_colecao: 'despesas_obras',
             origem_id: despesa.id || null,
+            tipo_arquivo: 'despesa',
             obra_nome: despesa.obra_nome || '',
             loja_nome: despesa.loja_nome || '',
             nota_fiscal: despesa.nota_fiscal || '',
@@ -14104,12 +14192,14 @@ window.carregarFiltrosDespesas = async function() {
             observacao: despesa.observacao || '',
             valor_string: despesa.valor_string || '',
             valor_numero: Number(despesa.valor_numero) || valorOriginalDespesa(despesa) || 0,
-            valor_pago_acumulado: valorPagoDespesa(despesa) || valorOriginalDespesa(despesa) || 0,
+            valor_pago_acumulado: paga
+                ? (valorPagoDespesa(despesa) || valorOriginalDespesa(despesa) || 0)
+                : (valorPagoDespesa(despesa) || 0),
             data_vencimento: obterDataVencimentoDespesa(despesa) || '',
             data_pagamento: dataPg,
             data: despesa.data || '',
             status: 'arquivado',
-            status_origem: despesa.status || 'pago',
+            status_origem: paga ? 'pago' : (despesa.status || 'pendente'),
             foto_recibo: despesa.foto_recibo || null,
             comprovante_pagamento: null,
             comprovante_ref: despesa.comprovante_ref || null,
@@ -14144,6 +14234,46 @@ window.carregarFiltrosDespesas = async function() {
             payload.foto_recibo_omitida = true;
         }
         return payload;
+    }
+
+    function montarPayloadArquivoTerceiro(t, motivo) {
+        const dataPg = t.data || dataPagamentoHojeBr();
+        const pasta = pastaArquivoDeDataPagamento(dataPg);
+        const valor = Number(t.valor_numero) || parseMoedaLocal(t.valor_string || '0') || 0;
+        return {
+            empresa_id: t.empresa_id || getEmpresaGestor() || '',
+            origem_colecao: 'pagamentos_terceiros',
+            origem_id: t.id || null,
+            tipo_arquivo: 'terceiro',
+            obra_nome: t.obra || '',
+            loja_nome: t.nome || '',
+            nota_fiscal: '',
+            descricao: t.descricao || 'Pagamento a terceiro',
+            observacao: t.observacao || '',
+            valor_string: t.valor_string || formatarMoeda(valor).replace(/^R\$\s?/, ''),
+            valor_numero: valor,
+            valor_pago_acumulado: valor,
+            data_vencimento: '',
+            data_pagamento: dataPg,
+            data: t.data || '',
+            status: 'arquivado',
+            status_origem: 'terceiro',
+            foto_recibo: null,
+            comprovante_pagamento: null,
+            comprovante_ref: null,
+            baixa_sem_comprovante: false,
+            pagamentos_parciais: [],
+            cpf: t.cpf || '',
+            tel: t.tel || '',
+            pasta_ano: pasta.ano,
+            pasta_mes: pasta.mes,
+            pasta_dia: pasta.dia,
+            pasta_label: pasta.label,
+            motivo_arquivo: motivo || 'Arquivamento de obra',
+            arquivado_em: Date.now(),
+            arquivado_em_str: new Date().toLocaleString('pt-BR'),
+            timestamp: t.timestamp || Date.now()
+        };
     }
 
     window.arquivarDespesaPaga = async function (id) {
@@ -14206,12 +14336,22 @@ window.carregarFiltrosDespesas = async function() {
             + '<div class="resultado-item" style="border-left-color:#856404;background:#fffdf5;">'
             + fotoHtml + compHtml
             + '<span style="font-size:10px;background:#856404;color:#fff;padding:2px 6px;border-radius:4px;font-weight:bold;">🗄️ ARQUIVADA</span> '
+            + (a.tipo_arquivo === 'terceiro'
+                ? '<span style="font-size:10px;background:#1a2a43;color:#fff;padding:2px 6px;border-radius:4px;font-weight:bold;margin-left:4px;">👷 TERCEIRO</span> '
+                : '')
+            + (a.tipo_arquivo === 'relatorio_despesa'
+                ? '<span style="font-size:10px;background:#334155;color:#fff;padding:2px 6px;border-radius:4px;font-weight:bold;margin-left:4px;">📋 RELATÓRIO</span> '
+                : '')
+            + (a.status_origem && a.status_origem !== 'pago' && a.tipo_arquivo !== 'terceiro'
+                ? '<span style="font-size:10px;background:#fff3cd;color:#856404;padding:2px 6px;border-radius:4px;font-weight:bold;margin-left:4px;">' + escapeHtmlBasico(String(a.status_origem).toUpperCase()) + '</span> '
+                : '')
             + '<b style="color:#856404;font-size:16px;">' + escapeHtmlBasico(valor) + '</b> '
             + '<span style="font-size:10px;background:#fff3cd;color:#856404;padding:2px 6px;border-radius:4px;margin-left:4px;font-weight:bold;">PAGO EM: ' + escapeHtmlBasico(a.data_pagamento || a.pasta_label || '—') + '</span><br>'
             + '<span style="font-size:13px;color:#555;"><b>Obra:</b> ' + escapeHtmlBasico(a.obra_nome || '—') + '</span><br>'
             + '<span style="font-size:13px;color:#555;"><b>Fornecedor:</b> ' + escapeHtmlBasico(a.loja_nome || '—') + '</span><br>'
             + '<span style="font-size:13px;color:#555;"><b>Nota Fiscal:</b> ' + escapeHtmlBasico(a.nota_fiscal || 'Sem NF') + '</span><br>'
             + '<span style="font-size:12px;color:#888;">Arquivada em: ' + escapeHtmlBasico(a.arquivado_em_str || '—') + '</span>'
+            + (a.motivo_arquivo ? '<br><span style="font-size:11px;color:#856404;"><b>Motivo:</b> ' + escapeHtmlBasico(a.motivo_arquivo) + '</span>' : '')
             + (a.descricao ? '<div style="font-size:12px;margin-top:5px;padding-top:5px;border-top:1px solid #eee;color:#666;">' + escapeHtmlBasico(String(a.descricao)) + '</div>' : '')
             + hist
             + '<div style="display:flex;gap:8px;margin-top:10px;flex-wrap:wrap;">'
@@ -14219,13 +14359,149 @@ window.carregarFiltrosDespesas = async function() {
             + '</div></div>';
     }
 
+    function nomePastaArquivoConta(a) {
+        const n = String((a && a.obra_nome) || '').trim();
+        if (n) return formatarNomeCanonicoDespesa ? formatarNomeCanonicoDespesa(n) : n.toUpperCase();
+        const m = String((a && a.motivo_arquivo) || '');
+        const match = m.match(/obra\s+(.+)$/i);
+        if (match && match[1]) {
+            const nome = match[1].trim();
+            return formatarNomeCanonicoDespesa ? formatarNomeCanonicoDespesa(nome) : nome.toUpperCase();
+        }
+        return 'SEM OBRA';
+    }
+
+    function montarArvoreAnoMesDiaArquivo(itens) {
+        const arvore = {};
+        itens.forEach(function (a) {
+            const ano = a.pasta_ano || 'Outros';
+            const mes = a.pasta_mes || 'Outros';
+            const dia = a.pasta_dia || 'Outros';
+            if (!arvore[ano]) arvore[ano] = {};
+            if (!arvore[ano][mes]) arvore[ano][mes] = {};
+            if (!arvore[ano][mes][dia]) arvore[ano][mes][dia] = [];
+            arvore[ano][mes][dia].push(a);
+        });
+        return arvore;
+    }
+
+    function htmlPastasAnoMesDiaArquivo(itens) {
+        const arvore = montarArvoreAnoMesDiaArquivo(itens);
+        let html = '';
+        Object.keys(arvore).sort(function (a, b) {
+            if (a === 'Outros') return 1;
+            if (b === 'Outros') return -1;
+            return Number(b) - Number(a);
+        }).forEach(function (ano) {
+            const qtdAno = Object.keys(arvore[ano]).reduce(function (s, m) {
+                return s + Object.keys(arvore[ano][m]).reduce(function (s2, d) { return s2 + arvore[ano][m][d].length; }, 0);
+            }, 0);
+            html += '<details class="pasta-ano" open><summary>📁 Ano ' + escapeHtmlBasico(ano) + ' (' + qtdAno + ')</summary><div class="folder-content">';
+            Object.keys(arvore[ano]).sort(function (a, b) {
+                if (a === 'Outros') return 1;
+                if (b === 'Outros') return -1;
+                return Number(b) - Number(a);
+            }).forEach(function (mes) {
+                const nomeMes = nomeMeses[mes] || mes;
+                const qtdMes = Object.keys(arvore[ano][mes]).reduce(function (s, d) { return s + arvore[ano][mes][d].length; }, 0);
+                html += '<details class="pasta-mes" open><summary>📂 ' + escapeHtmlBasico(String(nomeMes)) + ' (' + qtdMes + ')</summary><div class="folder-content">';
+                Object.keys(arvore[ano][mes]).sort(function (a, b) {
+                    if (a === 'Outros') return 1;
+                    if (b === 'Outros') return -1;
+                    return Number(b) - Number(a);
+                }).forEach(function (dia) {
+                    const listaDia = arvore[ano][mes][dia];
+                    html += '<details class="pasta-mes" open><summary>🗓️ Dia ' + escapeHtmlBasico(dia) + '/' + escapeHtmlBasico(mes) + '/' + escapeHtmlBasico(ano) + ' (' + listaDia.length + ')</summary><div class="folder-content">';
+                    listaDia.forEach(function (item) { html += htmlCardContaArquivada(item); });
+                    html += '</div></details>';
+                });
+                html += '</div></details>';
+            });
+            html += '</div></details>';
+        });
+        return html;
+    }
+
+    function renderBaloesArquivamentoContas(itens) {
+        const baloesEl = document.getElementById('arq-contas-baloes');
+        if (!baloesEl) return;
+        const porPasta = {};
+        itens.forEach(function (a) {
+            const nome = nomePastaArquivoConta(a);
+            if (!porPasta[nome]) porPasta[nome] = { nome: nome, qtd: 0, total: 0 };
+            porPasta[nome].qtd += 1;
+            porPasta[nome].total += Number(a.valor_pago_acumulado || a.valor_numero) || 0;
+        });
+        const pastas = Object.keys(porPasta).map(function (k) { return porPasta[k]; })
+            .sort(function (a, b) { return a.nome.localeCompare(b.nome, 'pt-BR'); });
+
+        window._pastasArquivoContas = pastas;
+        window._itensArquivoPorPasta = porPasta;
+
+        if (!pastas.length) {
+            baloesEl.innerHTML = '';
+            return;
+        }
+
+        const sel = window._pastaArquivoSelecionada || '';
+        let html = '<div class="desp-baloes-secao" style="margin:0;">'
+            + '<p class="desp-baloes-titulo" style="margin:0 0 8px 0;">Pastas arquivadas: <span class="desp-cadastro-contagem">' + pastas.length + '</span></p>'
+            + '<div class="desp-baloes-lista">';
+        pastas.forEach(function (p) {
+            const n = escapeHtmlBasico(p.nome);
+            const selClass = (sel && normalizarChaveNomeDespesa(sel) === normalizarChaveNomeDespesa(p.nome))
+                ? ' badge-tag-selecionado'
+                : '';
+            html += '<span class="badge-tag-wrap' + selClass + '" style="margin:0 6px 6px 0;">'
+                + '<span role="button" tabindex="0" class="badge-tag badge-tag-desp" '
+                + 'onclick="selecionarPastaArquivamento(\'' + String(p.nome).replace(/'/g, "\\'") + '\')" '
+                + 'title="Abrir pasta: ' + n + '">'
+                + n + ' <small style="opacity:0.85;font-weight:600;">(' + p.qtd + ')</small>'
+                + '</span></span>';
+        });
+        html += '</div>'
+            + '<p class="texto-explicacao" style="margin:8px 0 0 0;padding:0;font-size:11px;color:#64748b;">Clique no balão da obra excluída para ver o histórico Ano → Mês → Dia.</p>'
+            + '</div>';
+        baloesEl.innerHTML = html;
+    }
+
+    window.selecionarPastaArquivamento = function (nomePasta) {
+        const nome = String(nomePasta || '').trim();
+        if (!nome) return;
+        window._pastaArquivoSelecionada = nome;
+        const todos = window._contasArquivadasCache || [];
+        const chave = normalizarChaveNomeDespesa(nome);
+        const filtrados = todos.filter(function (a) {
+            return normalizarChaveNomeDespesa(nomePastaArquivoConta(a)) === chave;
+        });
+        renderBaloesArquivamentoContas(todos);
+        const tituloEl = document.getElementById('arq-contas-pasta-titulo');
+        const listaEl = document.getElementById('arq-contas-lista');
+        if (tituloEl) {
+            tituloEl.style.display = 'block';
+            tituloEl.innerHTML = '📁 Pasta: <span style="color:#856404;">' + escapeHtmlBasico(nome) + '</span>'
+                + ' <span style="font-weight:600;color:#64748b;font-size:12px;">(' + filtrados.length + ' lançamento(s))</span>';
+        }
+        if (listaEl) {
+            if (!filtrados.length) {
+                listaEl.innerHTML = '<p style="text-align:center;color:#888;padding:16px;">Nenhum lançamento nesta pasta.</p>';
+            } else {
+                listaEl.innerHTML = htmlPastasAnoMesDiaArquivo(filtrados);
+            }
+        }
+    };
+
     window.carregarArquivamentoContas = async function () {
         const listaEl = document.getElementById('arq-contas-lista');
         const resumoEl = document.getElementById('arq-contas-resumo');
+        const baloesEl = document.getElementById('arq-contas-baloes');
+        const tituloEl = document.getElementById('arq-contas-pasta-titulo');
         const empresa = getEmpresaGestor();
         if (!listaEl) return;
         if (!empresa) return Swal.fire('Atenção', 'Empresa não definida.', 'warning');
         listaEl.innerHTML = '<p style="text-align:center;color:#888;">Carregando arquivo...</p>';
+        if (baloesEl) baloesEl.innerHTML = '';
+        if (tituloEl) { tituloEl.style.display = 'none'; tituloEl.innerHTML = ''; }
         if (resumoEl) resumoEl.style.display = 'none';
         try {
             const busca = ((document.getElementById('arq-contas-busca') && document.getElementById('arq-contas-busca').value) || '').trim().toLowerCase();
@@ -14235,7 +14511,7 @@ window.carregarFiltrosDespesas = async function() {
             snap.forEach(function (d) { itens.push(Object.assign({ id: d.id }, d.data() || {})); });
             if (busca) {
                 itens = itens.filter(function (a) {
-                    const txt = [a.obra_nome, a.loja_nome, a.nota_fiscal, a.descricao, a.data_pagamento].join(' ').toLowerCase();
+                    const txt = [a.obra_nome, a.loja_nome, a.nota_fiscal, a.descricao, a.data_pagamento, a.motivo_arquivo].join(' ').toLowerCase();
                     return txt.indexOf(busca) !== -1;
                 });
             }
@@ -14253,54 +14529,30 @@ window.carregarFiltrosDespesas = async function() {
                 resumoEl.innerHTML = itens.length + ' conta(s) arquivada(s) · Total histórico: <b>' + formatarMoeda(total) + '</b>';
             }
             if (!itens.length) {
-                listaEl.innerHTML = '<p style="text-align:center;color:#888;padding:16px;">Nenhuma conta arquivada ainda. Nas contas <b>pagas</b>, use <b>Arquivar</b> (ou Excluir → Arquivar).</p>';
+                if (baloesEl) baloesEl.innerHTML = '';
+                listaEl.innerHTML = '<p style="text-align:center;color:#888;padding:16px;">Nenhuma conta arquivada ainda. Exclua uma obra (×) ou use <b>Arquivar</b> em conta paga.</p>';
                 return;
             }
 
-            const arvore = {};
-            itens.forEach(function (a) {
-                const ano = a.pasta_ano || 'Outros';
-                const mes = a.pasta_mes || 'Outros';
-                const dia = a.pasta_dia || 'Outros';
-                if (!arvore[ano]) arvore[ano] = {};
-                if (!arvore[ano][mes]) arvore[ano][mes] = {};
-                if (!arvore[ano][mes][dia]) arvore[ano][mes][dia] = [];
-                arvore[ano][mes][dia].push(a);
-            });
+            renderBaloesArquivamentoContas(itens);
 
-            let html = '';
-            Object.keys(arvore).sort(function (a, b) {
-                if (a === 'Outros') return 1;
-                if (b === 'Outros') return -1;
-                return Number(b) - Number(a);
-            }).forEach(function (ano) {
-                const qtdAno = Object.keys(arvore[ano]).reduce(function (s, m) {
-                    return s + Object.keys(arvore[ano][m]).reduce(function (s2, d) { return s2 + arvore[ano][m][d].length; }, 0);
-                }, 0);
-                html += '<details class="pasta-ano" open><summary>📁 Ano ' + escapeHtmlBasico(ano) + ' (' + qtdAno + ')</summary><div class="folder-content">';
-                Object.keys(arvore[ano]).sort(function (a, b) {
-                    if (a === 'Outros') return 1;
-                    if (b === 'Outros') return -1;
-                    return Number(b) - Number(a);
-                }).forEach(function (mes) {
-                    const nomeMes = nomeMeses[mes] || mes;
-                    const qtdMes = Object.keys(arvore[ano][mes]).reduce(function (s, d) { return s + arvore[ano][mes][d].length; }, 0);
-                    html += '<details class="pasta-mes"><summary>📂 ' + escapeHtmlBasico(String(nomeMes)) + ' (' + qtdMes + ')</summary><div class="folder-content">';
-                    Object.keys(arvore[ano][mes]).sort(function (a, b) {
-                        if (a === 'Outros') return 1;
-                        if (b === 'Outros') return -1;
-                        return Number(b) - Number(a);
-                    }).forEach(function (dia) {
-                        const listaDia = arvore[ano][mes][dia];
-                        html += '<details class="pasta-mes" open><summary>🗓️ Dia ' + escapeHtmlBasico(dia) + '/' + escapeHtmlBasico(mes) + '/' + escapeHtmlBasico(ano) + ' (' + listaDia.length + ')</summary><div class="folder-content">';
-                        listaDia.forEach(function (item) { html += htmlCardContaArquivada(item); });
-                        html += '</div></details>';
-                    });
-                    html += '</div></details>';
-                });
-                html += '</div></details>';
+            // Mantém pasta aberta se ainda existir; se só houver 1 pasta, abre automaticamente
+            const sel = window._pastaArquivoSelecionada || '';
+            const aindaExiste = sel && itens.some(function (a) {
+                return normalizarChaveNomeDespesa(nomePastaArquivoConta(a)) === normalizarChaveNomeDespesa(sel);
             });
-            listaEl.innerHTML = html;
+            const pastasUnicas = {};
+            itens.forEach(function (a) { pastasUnicas[nomePastaArquivoConta(a)] = true; });
+            const nomesPastas = Object.keys(pastasUnicas);
+            if (aindaExiste) {
+                selecionarPastaArquivamento(sel);
+            } else if (nomesPastas.length === 1) {
+                selecionarPastaArquivamento(nomesPastas[0]);
+            } else {
+                window._pastaArquivoSelecionada = '';
+                if (tituloEl) { tituloEl.style.display = 'none'; tituloEl.innerHTML = ''; }
+                listaEl.innerHTML = '<p style="text-align:center;color:#888;padding:16px;">Clique no <b>balão</b> da obra para abrir a pasta Ano → Mês → Dia.</p>';
+            }
         } catch (e) {
             console.error(e);
             listaEl.innerHTML = '<p style="text-align:center;color:#d9534f;">Erro ao carregar o arquivamento.</p>';
