@@ -772,7 +772,33 @@
         .doc-btn-ver { background: #2980b9; color: #fff; }
         .doc-btn-export { background: #217346; color: #fff; }
         .doc-btn-print { background: var(--dark-navy); color: #fff; }
+        .doc-btn-mover { background: #856404; color: #fff; }
         .doc-btn-del { background: #c0392b; color: #fff; flex: 1 1 100%; }
+
+        .doc-contratos-tabs {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin: 0 0 14px 0;
+        }
+        .doc-contratos-tab {
+            border: 1px solid #ccc;
+            background: #e0e6ed;
+            color: #1a2a43;
+            font-weight: 800;
+            font-size: 12px;
+            padding: 10px 14px;
+            border-radius: 15px;
+            cursor: pointer;
+            font-family: 'Poppins', sans-serif;
+        }
+        .doc-contratos-tab.active {
+            background: var(--dark-navy);
+            color: #fff;
+            border-color: var(--dark-navy);
+        }
+        .doc-contratos-secao { display: none; }
+        .doc-contratos-secao.active { display: block; }
 
         @media (max-width: 600px) {
             .doc-lista-grid {
@@ -4129,13 +4155,13 @@
     <div id="aba-documentos-fh" class="view-section">
         <div class="doc-pasta-panel">
             <h3>📁 Documentos — FH</h3>
-            <p class="texto-explicacao" style="margin: 0 0 4px 0;">Anexe documentos com o nome que quiser. Informe a <b>data de vencimento</b> para alerta faltando até 5 dias. No plano gratuito: use <b>foto</b> ou PDF até <b>600 KB</b> (PDFs maiores: tire foto do documento).</p>
+            <p class="texto-explicacao" style="margin: 0 0 4px 0;">Anexe documentos com o nome que quiser. Informe a <b>data de vencimento</b> para alerta faltando até 5 dias. No plano gratuito: use <b>foto</b> ou PDF até <b>~750 KB</b> (PDFs maiores: tire foto do documento).</p>
             <div class="doc-add-form">
                 <label for="doc-add-nome-fh">Nome do documento</label>
                 <input type="text" id="doc-add-nome-fh" list="doc-sugestoes-nomes" placeholder="Ex: Documento identidade, Conta de luz..." maxlength="120">
                 <label for="doc-add-arquivo-fh">Arquivo (foto ou PDF)</label>
                 <input type="file" id="doc-add-arquivo-fh" accept="image/*,application/pdf" capture="environment">
-                <p class="doc-aviso-tamanho">⚠️ <b>Atenção:</b> o documento deve ser <b>menor que 600 KB</b>. Se o PDF ou a foto for maior, comprima o arquivo ou tire uma foto do documento com o celular.</p>
+                <p class="doc-aviso-tamanho">⚠️ <b>Atenção:</b> o documento deve ser <b>menor que ~750 KB</b>. Se o PDF ou a foto for maior, comprima o arquivo ou tire uma foto do documento com o celular.</p>
                 <label for="doc-add-vencimento-fh">Data de vencimento</label>
                 <input type="date" id="doc-add-vencimento-fh">
                 <input type="hidden" id="doc-add-base64-fh">
@@ -4150,13 +4176,13 @@
     <div id="aba-documentos-hallana" class="view-section">
         <div class="doc-pasta-panel">
             <h3>📁 Documentos — Hallana</h3>
-            <p class="texto-explicacao" style="margin: 0 0 4px 0;">Anexe documentos com o nome que quiser. Informe a <b>data de vencimento</b> para alerta faltando até 5 dias. No plano gratuito: use <b>foto</b> ou PDF até <b>600 KB</b> (PDFs maiores: tire foto do documento).</p>
+            <p class="texto-explicacao" style="margin: 0 0 4px 0;">Anexe documentos com o nome que quiser. Informe a <b>data de vencimento</b> para alerta faltando até 5 dias. No plano gratuito: use <b>foto</b> ou PDF até <b>~750 KB</b> (PDFs maiores: tire foto do documento).</p>
             <div class="doc-add-form">
                 <label for="doc-add-nome-hallana">Nome do documento</label>
                 <input type="text" id="doc-add-nome-hallana" list="doc-sugestoes-nomes" placeholder="Ex: Documento identidade, Conta de luz..." maxlength="120">
                 <label for="doc-add-arquivo-hallana">Arquivo (foto ou PDF)</label>
                 <input type="file" id="doc-add-arquivo-hallana" accept="image/*,application/pdf" capture="environment">
-                <p class="doc-aviso-tamanho">⚠️ <b>Atenção:</b> o documento deve ser <b>menor que 600 KB</b>. Se o PDF ou a foto for maior, comprima o arquivo ou tire uma foto do documento com o celular.</p>
+                <p class="doc-aviso-tamanho">⚠️ <b>Atenção:</b> o documento deve ser <b>menor que ~750 KB</b>. Se o PDF ou a foto for maior, comprima o arquivo ou tire uma foto do documento com o celular.</p>
                 <label for="doc-add-vencimento-hallana">Data de vencimento</label>
                 <input type="date" id="doc-add-vencimento-hallana">
                 <input type="hidden" id="doc-add-base64-hallana">
@@ -4171,13 +4197,13 @@
     <div id="aba-documentos-felipe" class="view-section">
         <div class="doc-pasta-panel">
             <h3>📁 Documentos — Felipe</h3>
-            <p class="texto-explicacao" style="margin: 0 0 4px 0;">Anexe documentos com o nome que quiser. Informe a <b>data de vencimento</b> para alerta faltando até 5 dias. No plano gratuito: use <b>foto</b> ou PDF até <b>600 KB</b> (PDFs maiores: tire foto do documento).</p>
+            <p class="texto-explicacao" style="margin: 0 0 4px 0;">Anexe documentos com o nome que quiser. Informe a <b>data de vencimento</b> para alerta faltando até 5 dias. No plano gratuito: use <b>foto</b> ou PDF até <b>~750 KB</b> (PDFs maiores: tire foto do documento).</p>
             <div class="doc-add-form">
                 <label for="doc-add-nome-felipe">Nome do documento</label>
                 <input type="text" id="doc-add-nome-felipe" list="doc-sugestoes-nomes" placeholder="Ex: Documento identidade, Conta de luz..." maxlength="120">
                 <label for="doc-add-arquivo-felipe">Arquivo (foto ou PDF)</label>
                 <input type="file" id="doc-add-arquivo-felipe" accept="image/*,application/pdf" capture="environment">
-                <p class="doc-aviso-tamanho">⚠️ <b>Atenção:</b> o documento deve ser <b>menor que 600 KB</b>. Se o PDF ou a foto for maior, comprima o arquivo ou tire uma foto do documento com o celular.</p>
+                <p class="doc-aviso-tamanho">⚠️ <b>Atenção:</b> o documento deve ser <b>menor que ~750 KB</b>. Se o PDF ou a foto for maior, comprima o arquivo ou tire uma foto do documento com o celular.</p>
                 <label for="doc-add-vencimento-felipe">Data de vencimento</label>
                 <input type="date" id="doc-add-vencimento-felipe">
                 <input type="hidden" id="doc-add-base64-felipe">
@@ -4209,13 +4235,13 @@
     <div id="aba-documentos-wellington" class="view-section">
         <div class="doc-pasta-panel">
             <h3>📁 Documentos — Wellington</h3>
-            <p class="texto-explicacao" style="margin: 0 0 4px 0;">Anexe documentos com o nome que quiser. Informe a <b>data de vencimento</b> para alerta faltando até 5 dias. No plano gratuito: use <b>foto</b> ou PDF até <b>600 KB</b> (PDFs maiores: tire foto do documento).</p>
+            <p class="texto-explicacao" style="margin: 0 0 4px 0;">Anexe documentos com o nome que quiser. Informe a <b>data de vencimento</b> para alerta faltando até 5 dias. No plano gratuito: use <b>foto</b> ou PDF até <b>~750 KB</b> (PDFs maiores: tire foto do documento).</p>
             <div class="doc-add-form">
                 <label for="doc-add-nome-wellington">Nome do documento</label>
                 <input type="text" id="doc-add-nome-wellington" list="doc-sugestoes-nomes" placeholder="Ex: Documento identidade, Conta de luz..." maxlength="120">
                 <label for="doc-add-arquivo-wellington">Arquivo (foto ou PDF)</label>
                 <input type="file" id="doc-add-arquivo-wellington" accept="image/*,application/pdf" capture="environment">
-                <p class="doc-aviso-tamanho">⚠️ <b>Atenção:</b> o documento deve ser <b>menor que 600 KB</b>. Se o PDF ou a foto for maior, comprima o arquivo ou tire uma foto do documento com o celular.</p>
+                <p class="doc-aviso-tamanho">⚠️ <b>Atenção:</b> o documento deve ser <b>menor que ~750 KB</b>. Se o PDF ou a foto for maior, comprima o arquivo ou tire uma foto do documento com o celular.</p>
                 <label for="doc-add-vencimento-wellington">Data de vencimento</label>
                 <input type="date" id="doc-add-vencimento-wellington">
                 <input type="hidden" id="doc-add-base64-wellington">
@@ -4230,13 +4256,13 @@
     <div id="aba-documentos-licitacoes" class="view-section">
         <div class="doc-pasta-panel">
             <h3>📁 Documentos — Licitações</h3>
-            <p class="texto-explicacao" style="margin: 0 0 4px 0;">Anexe editais, propostas e documentos de <b>licitação</b>. Informe a <b>data de vencimento</b> para alerta faltando até 5 dias. No plano gratuito: use <b>foto</b> ou PDF até <b>600 KB</b>.</p>
+            <p class="texto-explicacao" style="margin: 0 0 4px 0;">Anexe editais, propostas e documentos de <b>licitação</b>. Informe a <b>data de vencimento</b> para alerta faltando até 5 dias. No plano gratuito: use <b>foto</b> ou PDF até <b>~750 KB</b>.</p>
             <div class="doc-add-form">
                 <label for="doc-add-nome-licitacoes">Nome do documento</label>
                 <input type="text" id="doc-add-nome-licitacoes" list="doc-sugestoes-licitacoes" placeholder="Ex: Edital Pregão 001/2026..." maxlength="120">
                 <label for="doc-add-arquivo-licitacoes">Arquivo (foto ou PDF)</label>
                 <input type="file" id="doc-add-arquivo-licitacoes" accept="image/*,application/pdf" capture="environment">
-                <p class="doc-aviso-tamanho">⚠️ <b>Atenção:</b> o documento deve ser <b>menor que 600 KB</b>. Se o PDF ou a foto for maior, comprima o arquivo ou tire uma foto do documento com o celular.</p>
+                <p class="doc-aviso-tamanho">⚠️ <b>Atenção:</b> o documento deve ser <b>menor que ~750 KB</b>. Se o PDF ou a foto for maior, comprima o arquivo ou tire uma foto do documento com o celular.</p>
                 <label for="doc-add-vencimento-licitacoes">Data de vencimento</label>
                 <input type="date" id="doc-add-vencimento-licitacoes">
                 <input type="hidden" id="doc-add-base64-licitacoes">
@@ -4251,34 +4277,60 @@
     <div id="aba-documentos-contratos" class="view-section">
         <div class="doc-pasta-panel">
             <h3>📁 Documentos — Contratos</h3>
-            <p class="texto-explicacao" style="margin: 0 0 4px 0;">Anexe <b>contratos</b> e aditivos. Informe a <b>data de vencimento</b> para alerta faltando até 5 dias. No plano gratuito: use <b>foto</b> ou PDF até <b>600 KB</b>.</p>
-            <div class="doc-add-form">
-                <label for="doc-add-nome-contratos">Nome do documento</label>
-                <input type="text" id="doc-add-nome-contratos" list="doc-sugestoes-contratos" placeholder="Ex: Contrato obra Barracão SP..." maxlength="120">
-                <label for="doc-add-arquivo-contratos">Arquivo (foto ou PDF)</label>
-                <input type="file" id="doc-add-arquivo-contratos" accept="image/*,application/pdf" capture="environment">
-                <p class="doc-aviso-tamanho">⚠️ <b>Atenção:</b> o documento deve ser <b>menor que 600 KB</b>. Se o PDF ou a foto for maior, comprima o arquivo ou tire uma foto do documento com o celular.</p>
-                <label for="doc-add-vencimento-contratos">Data de vencimento</label>
-                <input type="date" id="doc-add-vencimento-contratos">
-                <input type="hidden" id="doc-add-base64-contratos">
-                <input type="hidden" id="doc-add-mime-contratos">
-                <div id="doc-add-preview-contratos" class="doc-preview-add"></div>
-                <button type="button" class="btn-enviar" style="margin-top: 14px; width: 100%;" onclick="salvarDocumentoPessoal('contratos')">💾 Adicionar documento</button>
+            <p class="texto-explicacao" style="margin: 0 0 10px 0;">Separe em <b>Ativos</b> e <b>Finalizados</b>. Anexo: foto ou PDF até <b>~750 KB</b> (máximo prático no Firestore / plano gratuito — limite do documento é 1 MB).</p>
+            <div class="doc-contratos-tabs" role="tablist">
+                <button type="button" class="doc-contratos-tab active" id="tab-contratos-ativos" onclick="mostrarSecaoContratos('ativos')">Contratos Ativos</button>
+                <button type="button" class="doc-contratos-tab" id="tab-contratos-finalizados" onclick="mostrarSecaoContratos('finalizados')">Contratos Finalizados</button>
             </div>
-            <div id="doc-lista-contratos"><p style="text-align:center;color:#888;">Carregue esta aba para ver os documentos.</p></div>
+
+            <div id="secao-contratos-ativos" class="doc-contratos-secao active">
+                <h4 style="margin:0 0 8px 0;color:#1a2a43;">Contratos Ativos</h4>
+                <div class="doc-add-form">
+                    <label for="doc-add-nome-contratos_ativos">Nome do contrato</label>
+                    <input type="text" id="doc-add-nome-contratos_ativos" list="doc-sugestoes-contratos" placeholder="Ex: Contrato obra Barracão SP..." maxlength="120">
+                    <label for="doc-add-arquivo-contratos_ativos">Arquivo (foto ou PDF)</label>
+                    <input type="file" id="doc-add-arquivo-contratos_ativos" accept="image/*,application/pdf" capture="environment">
+                    <p class="doc-aviso-tamanho">⚠️ <b>Atenção:</b> o documento deve ser <b>menor que ~750 KB</b> (limite máximo prático do Firestore = 1 MB por registro).</p>
+                    <label for="doc-add-vencimento-contratos_ativos">Data de vencimento</label>
+                    <input type="date" id="doc-add-vencimento-contratos_ativos">
+                    <input type="hidden" id="doc-add-base64-contratos_ativos">
+                    <input type="hidden" id="doc-add-mime-contratos_ativos">
+                    <div id="doc-add-preview-contratos_ativos" class="doc-preview-add"></div>
+                    <button type="button" class="btn-enviar" style="margin-top: 14px; width: 100%;" onclick="salvarDocumentoPessoal('contratos_ativos')">💾 Adicionar contrato ativo</button>
+                </div>
+                <div id="doc-lista-contratos_ativos"><p style="text-align:center;color:#888;">Carregue esta aba para ver os contratos ativos.</p></div>
+            </div>
+
+            <div id="secao-contratos-finalizados" class="doc-contratos-secao">
+                <h4 style="margin:0 0 8px 0;color:#1a2a43;">Contratos Finalizados</h4>
+                <div class="doc-add-form">
+                    <label for="doc-add-nome-contratos_finalizados">Nome do contrato</label>
+                    <input type="text" id="doc-add-nome-contratos_finalizados" list="doc-sugestoes-contratos" placeholder="Ex: Contrato encerrado..." maxlength="120">
+                    <label for="doc-add-arquivo-contratos_finalizados">Arquivo (foto ou PDF)</label>
+                    <input type="file" id="doc-add-arquivo-contratos_finalizados" accept="image/*,application/pdf" capture="environment">
+                    <p class="doc-aviso-tamanho">⚠️ <b>Atenção:</b> o documento deve ser <b>menor que ~750 KB</b> (limite máximo prático do Firestore = 1 MB por registro).</p>
+                    <label for="doc-add-vencimento-contratos_finalizados">Data de vencimento</label>
+                    <input type="date" id="doc-add-vencimento-contratos_finalizados">
+                    <input type="hidden" id="doc-add-base64-contratos_finalizados">
+                    <input type="hidden" id="doc-add-mime-contratos_finalizados">
+                    <div id="doc-add-preview-contratos_finalizados" class="doc-preview-add"></div>
+                    <button type="button" class="btn-enviar" style="margin-top: 14px; width: 100%;" onclick="salvarDocumentoPessoal('contratos_finalizados')">💾 Adicionar contrato finalizado</button>
+                </div>
+                <div id="doc-lista-contratos_finalizados"><p style="text-align:center;color:#888;">Carregue esta aba para ver os contratos finalizados.</p></div>
+            </div>
         </div>
     </div>
 
     <div id="aba-documentos-empenhos" class="view-section">
         <div class="doc-pasta-panel">
             <h3>📁 Documentos — Empenhos</h3>
-            <p class="texto-explicacao" style="margin: 0 0 4px 0;">Anexe <b>empenhos</b> e documentos relacionados. Informe a <b>data de vencimento</b> para alerta faltando até 5 dias. No plano gratuito: use <b>foto</b> ou PDF até <b>600 KB</b>.</p>
+            <p class="texto-explicacao" style="margin: 0 0 4px 0;">Anexe <b>empenhos</b> e documentos relacionados. Informe a <b>data de vencimento</b> para alerta faltando até 5 dias. No plano gratuito: use <b>foto</b> ou PDF até <b>~750 KB</b>.</p>
             <div class="doc-add-form">
                 <label for="doc-add-nome-empenhos">Nome do documento</label>
                 <input type="text" id="doc-add-nome-empenhos" list="doc-sugestoes-empenhos" placeholder="Ex: Empenho nº 123/2026..." maxlength="120">
                 <label for="doc-add-arquivo-empenhos">Arquivo (foto ou PDF)</label>
                 <input type="file" id="doc-add-arquivo-empenhos" accept="image/*,application/pdf" capture="environment">
-                <p class="doc-aviso-tamanho">⚠️ <b>Atenção:</b> o documento deve ser <b>menor que 600 KB</b>. Se o PDF ou a foto for maior, comprima o arquivo ou tire uma foto do documento com o celular.</p>
+                <p class="doc-aviso-tamanho">⚠️ <b>Atenção:</b> o documento deve ser <b>menor que ~750 KB</b>. Se o PDF ou a foto for maior, comprima o arquivo ou tire uma foto do documento com o celular.</p>
                 <label for="doc-add-vencimento-empenhos">Data de vencimento</label>
                 <input type="date" id="doc-add-vencimento-empenhos">
                 <input type="hidden" id="doc-add-base64-empenhos">
@@ -6629,10 +6681,10 @@ function separarDataSegura(dataString) {
     const COLECAO_AJUDA_CUSTO = 'ajuda_custo';
     const COLECAO_DESCONTOS_FOLHA = 'descontos_folha';
     const COLECAO_DOCUMENTOS_PESSOAIS = 'documentos_pessoais';
-    const PASTAS_DOCUMENTOS = ['fh', 'hallana', 'felipe', 'wellington', 'licitacoes', 'contratos', 'empenhos'];
-    const DOC_PDF_MAX_FIRESTORE_RAW = 600000;
-    const DOC_FIRESTORE_MAX_B64 = 850000;
-    const MSG_DOC_TAMANHO_MAX = 'O documento deve ser menor que 600 KB. Comprima o PDF ou tire uma foto do documento.';
+    const PASTAS_DOCUMENTOS = ['fh', 'hallana', 'felipe', 'wellington', 'licitacoes', 'contratos_ativos', 'contratos_finalizados', 'empenhos'];
+    const DOC_PDF_MAX_FIRESTORE_RAW = 750000;
+    const DOC_FIRESTORE_MAX_B64 = 980000;
+    const MSG_DOC_TAMANHO_MAX = 'O anexo deve ter no máximo ~750 KB. O Firestore (plano gratuito e pago) limita cada registro a 1 MB; como o arquivo é salvo em base64 (ocupa ~33% a mais), ~750 KB é o máximo seguro.';
     const PASTA_LABEL_DOCUMENTOS = {
         fh: 'FH',
         hallana: 'HALLANA',
@@ -6640,6 +6692,8 @@ function separarDataSegura(dataString) {
         wellington: 'WELLINGTON',
         licitacoes: 'LICITAÇÕES',
         contratos: 'CONTRATOS',
+        contratos_ativos: 'CONTRATOS ATIVOS',
+        contratos_finalizados: 'CONTRATOS FINALIZADOS',
         empenhos: 'EMPENHOS'
     };
 
@@ -6735,7 +6789,10 @@ function separarDataSegura(dataString) {
             snap.forEach((docSnap) => {
                 const meta = metaDocumentoPessoalFromSnap(docSnap);
                 todosMeta.push(meta);
-                if (byPasta[meta.pasta]) byPasta[meta.pasta].push(meta);
+                let pastaKey = meta.pasta;
+                // Legado: pasta "contratos" → Contratos Ativos
+                if (pastaKey === 'contratos') pastaKey = 'contratos_ativos';
+                if (byPasta[pastaKey]) byPasta[pastaKey].push(meta);
             });
             PASTAS_DOCUMENTOS.forEach((p) => {
                 byPasta[p].sort((a, b) => String(b.data_cadastro || '').localeCompare(String(a.data_cadastro || '')));
@@ -7058,6 +7115,12 @@ function separarDataSegura(dataString) {
                 + '<button type="button" class="doc-btn-ver" onclick="visualizarDocumentoPessoal(\'' + doc.id + '\', \'' + pasta + '\')">👁️ Ver</button>'
                 + '<button type="button" class="doc-btn-export" onclick="exportarDocumentoPessoal(\'' + doc.id + '\', \'' + pasta + '\')">⬇️ Exportar</button>'
                 + '<button type="button" class="doc-btn-print" onclick="imprimirDocumentoPessoal(\'' + doc.id + '\', \'' + pasta + '\')">🖨️ Imprimir</button>'
+                + (pasta === 'contratos_ativos'
+                    ? '<button type="button" class="doc-btn-mover" onclick="moverContratoDocumento(\'' + doc.id + '\',\'contratos_ativos\',\'contratos_finalizados\')">📦 Finalizar</button>'
+                    : '')
+                + (pasta === 'contratos_finalizados'
+                    ? '<button type="button" class="doc-btn-mover" onclick="moverContratoDocumento(\'' + doc.id + '\',\'contratos_finalizados\',\'contratos_ativos\')">♻️ Reativar</button>'
+                    : '')
                 + '<button type="button" class="doc-btn-del" onclick="excluirDocumentoPessoal(\'' + doc.id + '\', \'' + pasta + '\')">🗑️ Excluir</button>'
                 + '</div>'
                 + '</div>';
@@ -7130,6 +7193,8 @@ function separarDataSegura(dataString) {
                 data_cadastro: dataBr,
                 criado_em: serverTimestamp()
             };
+            if (pasta === 'contratos_ativos') docPayload.status_contrato = 'ativo';
+            if (pasta === 'contratos_finalizados') docPayload.status_contrato = 'finalizado';
             if (vencimento) {
                 docPayload.data_vencimento = vencimento;
                 docPayload.data_vencimento_ts = parseDataVencimentoParaTimestamp(vencimento);
@@ -7169,7 +7234,11 @@ function separarDataSegura(dataString) {
         Swal.fire({ toast: true, position: 'top-end', icon: 'success', title: 'Documento adicionado!', showConfirmButton: false, timer: 2200 });
 
         try {
-            await carregarDocumentosPessoais(pasta);
+            if (pasta === 'contratos_ativos' || pasta === 'contratos_finalizados') {
+                await carregarAbaContratosDocumentos();
+            } else {
+                await carregarDocumentosPessoais(pasta);
+            }
         } catch (e) {
             console.error(e);
         }
@@ -7246,11 +7315,82 @@ function separarDataSegura(dataString) {
             invalidarCacheDocumentosPessoaisEmpresa();
             Swal.close();
             Swal.fire({ toast: true, position: 'top-end', icon: 'success', title: 'Documento excluído', showConfirmButton: false, timer: 2000 });
-            await carregarDocumentosPessoais(pasta);
+            if (pasta === 'contratos_ativos' || pasta === 'contratos_finalizados') {
+                await carregarAbaContratosDocumentos();
+            } else {
+                await carregarDocumentosPessoais(pasta);
+            }
         } catch (e) {
             console.error(e);
             Swal.close();
             Swal.fire('Erro', 'Não foi possível excluir o documento.', 'error');
+        }
+    };
+
+    window.mostrarSecaoContratos = function (tipo) {
+        const ativos = tipo === 'ativos';
+        const secaoAtivos = document.getElementById('secao-contratos-ativos');
+        const secaoFin = document.getElementById('secao-contratos-finalizados');
+        const tabAtivos = document.getElementById('tab-contratos-ativos');
+        const tabFin = document.getElementById('tab-contratos-finalizados');
+        if (secaoAtivos) secaoAtivos.classList.toggle('active', ativos);
+        if (secaoFin) secaoFin.classList.toggle('active', !ativos);
+        if (tabAtivos) tabAtivos.classList.toggle('active', ativos);
+        if (tabFin) tabFin.classList.toggle('active', !ativos);
+        window._secaoContratosAtual = ativos ? 'ativos' : 'finalizados';
+    };
+
+    window.carregarAbaContratosDocumentos = async function () {
+        if (typeof initInputsDocumentosPessoais === 'function') initInputsDocumentosPessoais();
+        const secao = window._secaoContratosAtual || 'ativos';
+        mostrarSecaoContratos(secao);
+        await Promise.all([
+            carregarDocumentosPessoais('contratos_ativos'),
+            carregarDocumentosPessoais('contratos_finalizados')
+        ]);
+    };
+
+    window.moverContratoDocumento = async function (id, pastaOrigem, pastaDestino) {
+        if (!id || !pastaDestino) return;
+        const item = buscarDocumentoPessoalCache(id, pastaOrigem);
+        if (!item) return Swal.fire('Atenção', 'Contrato não encontrado.', 'warning');
+        const paraFinalizar = pastaDestino === 'contratos_finalizados';
+        const conf = await Swal.fire({
+            title: paraFinalizar ? 'Finalizar contrato?' : 'Reativar contrato?',
+            html: paraFinalizar
+                ? 'Mover <b>' + escapeHtmlBasico(item.nome) + '</b> para <b>Contratos Finalizados</b>?'
+                : 'Mover <b>' + escapeHtmlBasico(item.nome) + '</b> de volta para <b>Contratos Ativos</b>?',
+            icon: 'question',
+            showCancelButton: true,
+            confirmButtonText: paraFinalizar ? 'Sim, finalizar' : 'Sim, reativar',
+            cancelButtonText: 'Cancelar',
+            confirmButtonColor: '#856404'
+        });
+        if (!conf.isConfirmed) return;
+        try {
+            Swal.fire({ title: 'Atualizando...', allowOutsideClick: false, didOpen: function () { Swal.showLoading(); } });
+            await updateDoc(doc(db, COLECAO_DOCUMENTOS_PESSOAIS, id), {
+                pasta: pastaDestino,
+                status_contrato: paraFinalizar ? 'finalizado' : 'ativo',
+                movido_em: Date.now(),
+                movido_em_str: new Date().toLocaleString('pt-BR')
+            });
+            invalidarCacheDocumentosPessoaisEmpresa();
+            Swal.close();
+            Swal.fire({
+                toast: true,
+                position: 'top-end',
+                icon: 'success',
+                title: paraFinalizar ? 'Contrato finalizado' : 'Contrato reativado',
+                showConfirmButton: false,
+                timer: 2200
+            });
+            await carregarAbaContratosDocumentos();
+            mostrarSecaoContratos(paraFinalizar ? 'finalizados' : 'ativos');
+        } catch (e) {
+            console.error(e);
+            Swal.close();
+            Swal.fire('Erro', 'Não foi possível mover o contrato.', 'error');
         }
     };
 
@@ -7833,7 +7973,7 @@ function separarDataSegura(dataString) {
                 ${valorHtml}
                 <label style="font-weight:700;display:block;margin-bottom:6px;">Comprovante de pagamento</label>
                 <input type="file" id="swal-comprovante-pgto" accept="image/*,application/pdf,.pdf" style="width:100%;padding:8px;border:1px solid #ddd;border-radius:8px;box-sizing:border-box;background:#fff;">
-                <p style="margin:6px 0 0;font-size:11px;color:#888;">Aceita imagem (JPG/PNG) ou PDF. PDF até ~600 KB.</p>
+                <p style="margin:6px 0 0;font-size:11px;color:#888;">Aceita imagem (JPG/PNG) ou PDF. PDF até ~750 KB.</p>
                 <div id="swal-prev-comprovante" style="margin-top:8px;display:none;text-align:center;">
                     <img id="swal-prev-comprovante-img" alt="Pré-visualização" style="max-width:100%;max-height:120px;border-radius:8px;border:1px solid #ddd;display:none;">
                     <div id="swal-prev-comprovante-pdf" style="display:none;padding:12px;background:#eef2f5;border:1px solid #d0d7de;border-radius:8px;">
@@ -7890,7 +8030,7 @@ function separarDataSegura(dataString) {
                         input.value = '';
                         window._swalComprovantePgtoBase64 = '';
                         if (prev) prev.style.display = 'none';
-                        Swal.showValidationMessage('PDF grande demais (máx. ~600 KB). Comprima o arquivo e tente de novo.');
+                        Swal.showValidationMessage('PDF grande demais (máx. ~750 KB). Comprima o arquivo e tente de novo.');
                         return;
                     }
                     const b64 = await new Promise(function (resolve, reject) {
@@ -7903,7 +8043,7 @@ function separarDataSegura(dataString) {
                         input.value = '';
                         window._swalComprovantePgtoBase64 = '';
                         if (prev) prev.style.display = 'none';
-                        Swal.showValidationMessage('PDF grande demais para salvar. Comprima o arquivo (máx. ~600 KB).');
+                        Swal.showValidationMessage('PDF grande demais para salvar. Comprima o arquivo (máx. ~750 KB).');
                         return;
                     }
                     window._swalComprovantePgtoBase64 = b64;
@@ -16320,9 +16460,13 @@ window.exportarPDF = function(tipo) {
             window.renderRecebimentos();
         }
         if (ABAS_GRUPO_DOCUMENTOS.includes(aba)) {
-            const pasta = aba.replace('documentos-', '');
-            if (typeof window.carregarDocumentosPessoais === 'function') {
-                window.carregarDocumentosPessoais(pasta);
+            if (aba === 'documentos-contratos' && typeof window.carregarAbaContratosDocumentos === 'function') {
+                window.carregarAbaContratosDocumentos();
+            } else {
+                const pasta = aba.replace('documentos-', '');
+                if (typeof window.carregarDocumentosPessoais === 'function') {
+                    window.carregarDocumentosPessoais(pasta);
+                }
             }
         }
     };
@@ -23729,3 +23873,4 @@ setInterval(function () {
 </script>
 </body>
 </html>
+
