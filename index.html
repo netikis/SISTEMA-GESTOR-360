@@ -3144,6 +3144,9 @@
                     <button type="button" class="gestor-menu-btn menu-documentos" data-titulo="Hallana" onclick="mudarAba('documentos-hallana', this)">📄 HALLANA</button>
                     <button type="button" class="gestor-menu-btn menu-documentos" data-titulo="Felipe" onclick="mudarAba('documentos-felipe', this)">📄 FELIPE</button>
                     <button type="button" class="gestor-menu-btn menu-documentos" data-titulo="Wellington" onclick="mudarAba('documentos-wellington', this)">📄 WELLINGTON</button>
+                    <button type="button" class="gestor-menu-btn menu-documentos" data-titulo="Licitações" onclick="mudarAba('documentos-licitacoes', this)">📄 LICITAÇÕES</button>
+                    <button type="button" class="gestor-menu-btn menu-documentos" data-titulo="Contratos" onclick="mudarAba('documentos-contratos', this)">📄 CONTRATOS</button>
+                    <button type="button" class="gestor-menu-btn menu-documentos" data-titulo="Empenhos" onclick="mudarAba('documentos-empenhos', this)">📄 EMPENHOS</button>
                 </div>
             </div>
             <button type="button" class="gestor-menu-btn menu-arquivamento" id="btn-menu-arquivamento-contas" data-titulo="Arquivamento de Contas" onclick="mudarAba('arquivamento-contas', this)">🗄️ Arquivamento de Contas</button>
@@ -4224,6 +4227,69 @@
         </div>
     </div>
 
+    <div id="aba-documentos-licitacoes" class="view-section">
+        <div class="doc-pasta-panel">
+            <h3>📁 Documentos — Licitações</h3>
+            <p class="texto-explicacao" style="margin: 0 0 4px 0;">Anexe editais, propostas e documentos de <b>licitação</b>. Informe a <b>data de vencimento</b> para alerta faltando até 5 dias. No plano gratuito: use <b>foto</b> ou PDF até <b>600 KB</b>.</p>
+            <div class="doc-add-form">
+                <label for="doc-add-nome-licitacoes">Nome do documento</label>
+                <input type="text" id="doc-add-nome-licitacoes" list="doc-sugestoes-licitacoes" placeholder="Ex: Edital Pregão 001/2026..." maxlength="120">
+                <label for="doc-add-arquivo-licitacoes">Arquivo (foto ou PDF)</label>
+                <input type="file" id="doc-add-arquivo-licitacoes" accept="image/*,application/pdf" capture="environment">
+                <p class="doc-aviso-tamanho">⚠️ <b>Atenção:</b> o documento deve ser <b>menor que 600 KB</b>. Se o PDF ou a foto for maior, comprima o arquivo ou tire uma foto do documento com o celular.</p>
+                <label for="doc-add-vencimento-licitacoes">Data de vencimento</label>
+                <input type="date" id="doc-add-vencimento-licitacoes">
+                <input type="hidden" id="doc-add-base64-licitacoes">
+                <input type="hidden" id="doc-add-mime-licitacoes">
+                <div id="doc-add-preview-licitacoes" class="doc-preview-add"></div>
+                <button type="button" class="btn-enviar" style="margin-top: 14px; width: 100%;" onclick="salvarDocumentoPessoal('licitacoes')">💾 Adicionar documento</button>
+            </div>
+            <div id="doc-lista-licitacoes"><p style="text-align:center;color:#888;">Carregue esta aba para ver os documentos.</p></div>
+        </div>
+    </div>
+
+    <div id="aba-documentos-contratos" class="view-section">
+        <div class="doc-pasta-panel">
+            <h3>📁 Documentos — Contratos</h3>
+            <p class="texto-explicacao" style="margin: 0 0 4px 0;">Anexe <b>contratos</b> e aditivos. Informe a <b>data de vencimento</b> para alerta faltando até 5 dias. No plano gratuito: use <b>foto</b> ou PDF até <b>600 KB</b>.</p>
+            <div class="doc-add-form">
+                <label for="doc-add-nome-contratos">Nome do documento</label>
+                <input type="text" id="doc-add-nome-contratos" list="doc-sugestoes-contratos" placeholder="Ex: Contrato obra Barracão SP..." maxlength="120">
+                <label for="doc-add-arquivo-contratos">Arquivo (foto ou PDF)</label>
+                <input type="file" id="doc-add-arquivo-contratos" accept="image/*,application/pdf" capture="environment">
+                <p class="doc-aviso-tamanho">⚠️ <b>Atenção:</b> o documento deve ser <b>menor que 600 KB</b>. Se o PDF ou a foto for maior, comprima o arquivo ou tire uma foto do documento com o celular.</p>
+                <label for="doc-add-vencimento-contratos">Data de vencimento</label>
+                <input type="date" id="doc-add-vencimento-contratos">
+                <input type="hidden" id="doc-add-base64-contratos">
+                <input type="hidden" id="doc-add-mime-contratos">
+                <div id="doc-add-preview-contratos" class="doc-preview-add"></div>
+                <button type="button" class="btn-enviar" style="margin-top: 14px; width: 100%;" onclick="salvarDocumentoPessoal('contratos')">💾 Adicionar documento</button>
+            </div>
+            <div id="doc-lista-contratos"><p style="text-align:center;color:#888;">Carregue esta aba para ver os documentos.</p></div>
+        </div>
+    </div>
+
+    <div id="aba-documentos-empenhos" class="view-section">
+        <div class="doc-pasta-panel">
+            <h3>📁 Documentos — Empenhos</h3>
+            <p class="texto-explicacao" style="margin: 0 0 4px 0;">Anexe <b>empenhos</b> e documentos relacionados. Informe a <b>data de vencimento</b> para alerta faltando até 5 dias. No plano gratuito: use <b>foto</b> ou PDF até <b>600 KB</b>.</p>
+            <div class="doc-add-form">
+                <label for="doc-add-nome-empenhos">Nome do documento</label>
+                <input type="text" id="doc-add-nome-empenhos" list="doc-sugestoes-empenhos" placeholder="Ex: Empenho nº 123/2026..." maxlength="120">
+                <label for="doc-add-arquivo-empenhos">Arquivo (foto ou PDF)</label>
+                <input type="file" id="doc-add-arquivo-empenhos" accept="image/*,application/pdf" capture="environment">
+                <p class="doc-aviso-tamanho">⚠️ <b>Atenção:</b> o documento deve ser <b>menor que 600 KB</b>. Se o PDF ou a foto for maior, comprima o arquivo ou tire uma foto do documento com o celular.</p>
+                <label for="doc-add-vencimento-empenhos">Data de vencimento</label>
+                <input type="date" id="doc-add-vencimento-empenhos">
+                <input type="hidden" id="doc-add-base64-empenhos">
+                <input type="hidden" id="doc-add-mime-empenhos">
+                <div id="doc-add-preview-empenhos" class="doc-preview-add"></div>
+                <button type="button" class="btn-enviar" style="margin-top: 14px; width: 100%;" onclick="salvarDocumentoPessoal('empenhos')">💾 Adicionar documento</button>
+            </div>
+            <div id="doc-lista-empenhos"><p style="text-align:center;color:#888;">Carregue esta aba para ver os documentos.</p></div>
+        </div>
+    </div>
+
     <datalist id="doc-sugestoes-nomes">
         <option value="Documento de identidade"></option>
         <option value="Conta de luz"></option>
@@ -4233,6 +4299,25 @@
         <option value="Comprovante de residência"></option>
         <option value="Contrato"></option>
         <option value="Holerite"></option>
+    </datalist>
+    <datalist id="doc-sugestoes-licitacoes">
+        <option value="Edital"></option>
+        <option value="Proposta comercial"></option>
+        <option value="Ata de julgamento"></option>
+        <option value="Homologação"></option>
+        <option value="Habilitação"></option>
+    </datalist>
+    <datalist id="doc-sugestoes-contratos">
+        <option value="Contrato"></option>
+        <option value="Aditivo contratual"></option>
+        <option value="Termo de rescisão"></option>
+        <option value="Apostilamento"></option>
+    </datalist>
+    <datalist id="doc-sugestoes-empenhos">
+        <option value="Nota de empenho"></option>
+        <option value="Empenho"></option>
+        <option value="Reforço de empenho"></option>
+        <option value="Anulação de empenho"></option>
     </datalist>
 
     <div id="aba-backup" class="view-section">
@@ -6544,11 +6629,19 @@ function separarDataSegura(dataString) {
     const COLECAO_AJUDA_CUSTO = 'ajuda_custo';
     const COLECAO_DESCONTOS_FOLHA = 'descontos_folha';
     const COLECAO_DOCUMENTOS_PESSOAIS = 'documentos_pessoais';
-    const PASTAS_DOCUMENTOS = ['fh', 'hallana', 'felipe', 'wellington'];
+    const PASTAS_DOCUMENTOS = ['fh', 'hallana', 'felipe', 'wellington', 'licitacoes', 'contratos', 'empenhos'];
     const DOC_PDF_MAX_FIRESTORE_RAW = 600000;
     const DOC_FIRESTORE_MAX_B64 = 850000;
     const MSG_DOC_TAMANHO_MAX = 'O documento deve ser menor que 600 KB. Comprima o PDF ou tire uma foto do documento.';
-    const PASTA_LABEL_DOCUMENTOS = { fh: 'FH', hallana: 'HALLANA', felipe: 'FELIPE', wellington: 'WELLINGTON' };
+    const PASTA_LABEL_DOCUMENTOS = {
+        fh: 'FH',
+        hallana: 'HALLANA',
+        felipe: 'FELIPE',
+        wellington: 'WELLINGTON',
+        licitacoes: 'LICITAÇÕES',
+        contratos: 'CONTRATOS',
+        empenhos: 'EMPENHOS'
+    };
 
     function formatarVencimentoDocExibir(item) {
         const iso = item && item.data_vencimento;
@@ -16041,7 +16134,7 @@ window.exportarPDF = function(tipo) {
     const ABAS_GRUPO_EQUIPE = ['cadastrar', 'equipe-cadastrada', 'criar', 'buscar', 'ponto', 'ajuda-custo', 'descontos-folha', 'folha', 'holerites', 'pedidos'];
     const ABAS_GRUPO_OBRAS = ['despesas-cadastrar', 'despesas-relatorio', 'relatorio-despesas', 'obras-relatorio-geral', 'notas-fiscais-geral', 'terceiros'];
     const ABAS_GRUPO_ENTRADAS = ['cadastrar-conta', 'contas-receber', 'recebimentos'];
-    const ABAS_GRUPO_DOCUMENTOS = ['documentos-fh', 'documentos-hallana', 'documentos-felipe', 'documentos-wellington'];
+    const ABAS_GRUPO_DOCUMENTOS = ['documentos-fh', 'documentos-hallana', 'documentos-felipe', 'documentos-wellington', 'documentos-licitacoes', 'documentos-contratos', 'documentos-empenhos'];
 
     window.abrirGrupoMenuObras = function () {
         const grupo = document.getElementById('grupo-menu-obras');
