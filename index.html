@@ -4189,10 +4189,12 @@
     <div id="aba-arquivamento-contas" class="view-section">
         <div class="doc-pasta-panel">
             <h3>🗄️ Arquivamento de Contas</h3>
-            <p class="texto-explicacao" style="margin:0 0 12px 0;">Pastas por <b>nome da obra</b> (balões). Clique no balão para abrir o histórico em <b>Ano → Mês → Dia</b>, com nota e comprovantes.</p>
-            <div class="rel-geral-obras-toolbar" style="display:flex;margin-bottom:12px;flex-wrap:wrap;gap:8px;">
+            <p class="texto-explicacao" style="margin:0 0 12px 0;">Pastas por <b>nome da obra</b> (balões). Clique no balão para abrir o histórico em <b>Ano → Mês → Dia</b>. Use <b>Exportar Excel/PDF</b> para guardar um relatório para o futuro.</p>
+            <div class="rel-geral-obras-toolbar" style="display:flex;margin-bottom:12px;flex-wrap:wrap;gap:8px;align-items:center;">
                 <button type="button" class="btn-enviar" style="margin:0;" onclick="carregarArquivamentoContas()">🔄 Atualizar arquivo</button>
                 <input type="text" id="arq-contas-busca" placeholder="Buscar obra, fornecedor, NF..." style="flex:1;min-width:180px;margin:0;padding:10px;border:1px solid #ccc;border-radius:8px;" onkeydown="if(event.key==='Enter')carregarArquivamentoContas()">
+                <button type="button" class="btn-pdf-relatorio" style="margin:0;background-color:#217346;" onclick="exportarExcelArquivamentoContas()">📊 Exportar Excel</button>
+                <button type="button" class="btn-pdf-relatorio" style="margin:0;background-color:var(--dark-navy);" onclick="exportarPDFArquivamentoContas()">🖨️ Exportar PDF</button>
             </div>
             <div id="arq-contas-resumo" style="display:none;margin-bottom:12px;padding:12px;background:#fff3cd;border:1px solid #ffeeba;border-radius:10px;text-align:center;color:#856404;font-weight:700;"></div>
             <div id="arq-contas-baloes" class="desp-baloes-lista" style="margin-bottom:14px;"></div>
@@ -14579,6 +14581,213 @@ window.carregarFiltrosDespesas = async function() {
             console.error(e);
             Swal.fire('Erro', 'Não foi possível apagar do arquivo.', 'error');
         }
+    };
+
+    function obterItensArquivamentoParaExport(escopo) {
+        const todos = window._contasArquivadasCache || [];
+        if (!todos.length) return { itens: [], label: '' };
+        if (escopo === 'pasta') {
+            const sel = window._pastaArquivoSelecionada || '';
+            if (!sel) return { itens: [], label: '', erro: 'Selecione um balão de obra antes de exportar só a pasta.' };
+            const chave = normalizarChaveNomeDespesa(sel);
+            const itens = todos.filter(function (a) {
+                return normalizarChaveNomeDespesa(nomePastaArquivoConta(a)) === chave;
+            });
+            return { itens: itens, label: 'Pasta: ' + sel };
+        }
+        return { itens: todos.slice(), label: 'Todas as pastas' };
+    }
+
+    async function perguntarEscopoExportArquivamento() {
+        const todos = window._contasArquivadasCache || [];
+        if (!todos.length) {
+            await Swal.fire('Atenção', 'Nenhuma conta arquivada carregada. Clique em Atualizar arquivo.', 'info');
+            return null;
+        }
+        const temPasta = !!(window._pastaArquivoSelecionada);
+        const conf = await Swal.fire({
+            title: 'Exportar arquivamento',
+            html: '<p style="text-align:left;font-size:13px;margin:0 0 10px 0;">Escolha o que exportar:</p>'
+                + '<label style="display:flex;align-items:center;gap:8px;text-align:left;margin:6px 0;cursor:pointer;">'
+                + '<input type="radio" name="arq-exp-escopo" value="pasta" ' + (temPasta ? 'checked' : '') + (temPasta ? '' : ' disabled') + '>'
+                + ' Só a pasta aberta' + (temPasta ? ' (<b>' + escapeHtmlBasico(window._pastaArquivoSelecionada) + '</b>)' : ' <span style="color:#888;">(clique num balão primeiro)</span>')
+                + '</label>'
+                + '<label style="display:flex;align-items:center;gap:8px;text-align:left;margin:6px 0;cursor:pointer;">'
+                + '<input type="radio" name="arq-exp-escopo" value="tudo" ' + (temPasta ? '' : 'checked') + '>'
+                + ' Todas as pastas arquivadas (<b>' + todos.length + '</b> lançamento(s))'
+                + '</label>',
+            showCancelButton: true,
+            confirmButtonText: 'Continuar',
+            cancelButtonText: 'Cancelar',
+            confirmButtonColor: '#856404',
+            preConfirm: function () {
+                const el = document.querySelector('input[name="arq-exp-escopo"]:checked');
+                return el ? el.value : 'tudo';
+            }
+        });
+        if (!conf.isConfirmed) return null;
+        return conf.value || 'tudo';
+    }
+
+    function montarLinhasExcelArquivamento(itens) {
+        return (itens || []).map(function (a) {
+            const valor = Number(a.valor_pago_acumulado != null ? a.valor_pago_acumulado : a.valor_numero) || 0;
+            const tipo = a.tipo_arquivo === 'terceiro'
+                ? 'Terceiro'
+                : (a.tipo_arquivo === 'relatorio_despesa' ? 'Relatório despesa' : 'Despesa');
+            return {
+                'Pasta (obra)': nomePastaArquivoConta(a),
+                'Tipo': tipo,
+                'Fornecedor / Terceiro': a.loja_nome || a.nome || '',
+                'Nota Fiscal': a.nota_fiscal || '',
+                'Descrição': a.descricao || '',
+                'Valor (R$)': valor,
+                'Status origem': a.status_origem || '',
+                'Data pagamento / pasta': a.data_pagamento || a.pasta_label || '',
+                'Ano': a.pasta_ano || '',
+                'Mês': a.pasta_mes || '',
+                'Dia': a.pasta_dia || '',
+                'Arquivada em': a.arquivado_em_str || '',
+                'Motivo': a.motivo_arquivo || '',
+                'Observação': a.observacao || ''
+            };
+        });
+    }
+
+    window.exportarExcelArquivamentoContas = async function () {
+        if (!window.XLSX) {
+            return Swal.fire('Erro', 'Biblioteca Excel não carregou. Recarregue a página (Ctrl+F5).', 'error');
+        }
+        const escopo = await perguntarEscopoExportArquivamento();
+        if (!escopo) return;
+        const pack = obterItensArquivamentoParaExport(escopo);
+        if (pack.erro) return Swal.fire('Atenção', pack.erro, 'warning');
+        if (!pack.itens.length) {
+            return Swal.fire('Atenção', 'Nenhum lançamento para exportar neste escopo.', 'info');
+        }
+
+        const linhas = montarLinhasExcelArquivamento(pack.itens);
+        const ws = XLSX.utils.json_to_sheet(linhas);
+        const colunas = Object.keys(linhas[0]);
+        ws['!cols'] = [
+            { wch: 22 }, { wch: 16 }, { wch: 28 }, { wch: 14 }, { wch: 36 },
+            { wch: 12 }, { wch: 12 }, { wch: 16 }, { wch: 8 }, { wch: 6 },
+            { wch: 6 }, { wch: 18 }, { wch: 28 }, { wch: 24 }
+        ];
+        const range = XLSX.utils.decode_range(ws['!ref']);
+        const idxValor = colunas.indexOf('Valor (R$)');
+        if (idxValor >= 0) {
+            for (let r = range.s.r + 1; r <= range.e.r; r += 1) {
+                const addr = XLSX.utils.encode_cell({ r: r, c: idxValor });
+                if (ws[addr] && typeof ws[addr].v === 'number') {
+                    ws[addr].t = 'n';
+                    ws[addr].z = '#,##0.00';
+                }
+            }
+        }
+        const total = linhas.reduce(function (s, ln) { return s + (Number(ln['Valor (R$)']) || 0); }, 0);
+        const linhaTotal = range.e.r + 2;
+        const addrLabel = XLSX.utils.encode_cell({ r: linhaTotal, c: Math.max(0, idxValor - 1) });
+        const addrTotal = XLSX.utils.encode_cell({ r: linhaTotal, c: idxValor });
+        ws[addrLabel] = { t: 's', v: 'TOTAL (R$)' };
+        ws[addrTotal] = { t: 'n', v: total, z: '#,##0.00' };
+        const novoFim = XLSX.utils.encode_cell({ r: linhaTotal, c: range.e.c });
+        ws['!ref'] = ws['!ref'].split(':')[0] + ':' + novoFim;
+        ws['!autofilter'] = { ref: XLSX.utils.encode_range({ s: { r: 0, c: 0 }, e: { r: range.e.r, c: range.e.c } }) };
+
+        const wb = XLSX.utils.book_new();
+        XLSX.utils.book_append_sheet(wb, ws, 'Arquivamento');
+        const empresa = getEmpresaGestor() || 'Empresa';
+        const sufixo = escopo === 'pasta'
+            ? (window._pastaArquivoSelecionada || 'pasta')
+            : 'todas';
+        XLSX.writeFile(wb, nomeArquivoExcelSeguro('arquivamento_contas_' + empresa + '_' + sufixo) + '.xlsx');
+
+        Swal.fire({
+            toast: true,
+            position: 'top-end',
+            icon: 'success',
+            title: 'Excel do arquivamento exportado!',
+            showConfirmButton: false,
+            timer: 2500
+        });
+    };
+
+    window.exportarPDFArquivamentoContas = async function () {
+        if (!window.jspdf || !window.jspdf.jsPDF) {
+            return Swal.fire('Erro', 'Biblioteca PDF não carregou. Recarregue a página (Ctrl+F5).', 'error');
+        }
+        const escopo = await perguntarEscopoExportArquivamento();
+        if (!escopo) return;
+        const pack = obterItensArquivamentoParaExport(escopo);
+        if (pack.erro) return Swal.fire('Atenção', pack.erro, 'warning');
+        if (!pack.itens.length) {
+            return Swal.fire('Atenção', 'Nenhum lançamento para exportar neste escopo.', 'info');
+        }
+
+        function limparPdf(s) {
+            return String(s == null ? '' : s).replace(/[\u{1F300}-\u{1FAFF}\u{2600}-\u{27BF}]/gu, '').trim();
+        }
+
+        const { jsPDF } = window.jspdf;
+        const doc = new jsPDF('l', 'mm', 'a4');
+        const empresa = limparPdf(getEmpresaGestor() || 'Empresa');
+        doc.setFontSize(11);
+        doc.setFont('helvetica', 'bold');
+        doc.text(empresa, 14, 12);
+        doc.setFontSize(10);
+        doc.text('Arquivamento de Contas', 14, 18);
+        doc.setFont('helvetica', 'normal');
+        doc.setFontSize(8);
+        doc.text(limparPdf(pack.label) + '  |  Gerado: ' + new Date().toLocaleString('pt-BR') + '  |  ' + pack.itens.length + ' lancamento(s)', 14, 23);
+
+        let total = 0;
+        const body = pack.itens.map(function (a) {
+            const valor = Number(a.valor_pago_acumulado != null ? a.valor_pago_acumulado : a.valor_numero) || 0;
+            total += valor;
+            const tipo = a.tipo_arquivo === 'terceiro'
+                ? 'Terceiro'
+                : (a.tipo_arquivo === 'relatorio_despesa' ? 'Relatorio' : 'Despesa');
+            return [
+                limparPdf(nomePastaArquivoConta(a)).slice(0, 18),
+                limparPdf(tipo),
+                limparPdf(a.loja_nome || '').slice(0, 22),
+                limparPdf(a.nota_fiscal || '—').slice(0, 12),
+                limparPdf(a.data_pagamento || a.pasta_label || '—'),
+                limparPdf(a.motivo_arquivo || '').slice(0, 24),
+                limparPdf(typeof formatarMoeda === 'function' ? formatarMoeda(valor) : String(valor))
+            ];
+        });
+
+        doc.autoTable({
+            startY: 28,
+            head: [['Pasta (obra)', 'Tipo', 'Fornecedor', 'NF', 'Pagamento', 'Motivo', 'Valor R$']],
+            body: body,
+            theme: 'grid',
+            styles: { fontSize: 7, cellPadding: 1.6, valign: 'middle' },
+            headStyles: { fillColor: [133, 100, 4], textColor: [255, 255, 255], fontStyle: 'bold' },
+            columnStyles: { 6: { halign: 'right', cellWidth: 26 } },
+            margin: { left: 10, right: 10 }
+        });
+
+        const yFinal = (doc.lastAutoTable && doc.lastAutoTable.finalY ? doc.lastAutoTable.finalY : 28) + 6;
+        doc.setFont('helvetica', 'bold');
+        doc.setFontSize(9);
+        doc.text('Total historico: ' + (typeof formatarMoeda === 'function' ? formatarMoeda(total) : String(total)), 14, yFinal);
+
+        const sufixo = escopo === 'pasta'
+            ? (window._pastaArquivoSelecionada || 'pasta')
+            : 'todas';
+        doc.save(nomeArquivoExcelSeguro('arquivamento_contas_' + empresa + '_' + sufixo) + '.pdf');
+
+        Swal.fire({
+            toast: true,
+            position: 'top-end',
+            icon: 'success',
+            title: 'PDF do arquivamento exportado!',
+            showConfirmButton: false,
+            timer: 2500
+        });
     };
 
     window.abrirNotaResumoPorIndice = function (indice) {
