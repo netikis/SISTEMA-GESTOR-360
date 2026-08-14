@@ -6910,10 +6910,24 @@ function separarDataSegura(dataString) {
 
     function fecharLoadingDocumentoPessoal() {
         try {
-            if (typeof Swal !== 'undefined' && Swal.isVisible()) {
-                Swal.close();
-            }
+            if (typeof Swal === 'undefined') return;
+            if (typeof Swal.hideLoading === 'function') Swal.hideLoading();
+            if (Swal.isVisible()) Swal.close();
         } catch (_) {}
+    }
+
+    // O SweetAlert mantém o estado de "carregando" quando um popup abre logo após
+    // outro ser fechado, deixando o botão de confirmar travado.
+    function esperarSwalLiberado() {
+        return new Promise(function (resolve) {
+            try {
+                if (typeof Swal !== 'undefined') {
+                    if (typeof Swal.hideLoading === 'function') Swal.hideLoading();
+                    if (Swal.isVisible()) Swal.close();
+                }
+            } catch (_) {}
+            setTimeout(resolve, 260);
+        });
     }
 
     async function baixarArquivoDocumentoPessoal(item, nomeDownload) {
@@ -7015,10 +7029,17 @@ function separarDataSegura(dataString) {
         return await novo.save();
     }
 
-    async function repartirPdfArrayBufferParaFirestore(arrayBuffer) {
+    function respirarUI() {
+        return new Promise(function (r) { setTimeout(r, 0); });
+    }
+
+    async function repartirPdfArrayBufferParaFirestore(arrayBuffer, onProgresso) {
+        const avisar = typeof onProgresso === 'function' ? onProgresso : function () {};
         if (!window.PDFLib || !window.PDFLib.PDFDocument) {
             throw new Error('pdf_lib_ausente');
         }
+        avisar('Lendo o PDF...');
+        await respirarUI();
         const src = await window.PDFLib.PDFDocument.load(arrayBuffer, { ignoreEncryption: true });
         const total = src.getPageCount();
         if (!total) throw new Error('pdf_vazio');
@@ -7034,6 +7055,8 @@ function separarDataSegura(dataString) {
 
             while (lo <= hi) {
                 const mid = (lo + hi) >> 1;
+                avisar('Parte ' + (partes.length + 1) + ' — testando páginas ' + (inicio + 1) + ' a ' + (mid + 1) + ' de ' + total + '...');
+                await respirarUI();
                 const bytes = await criarPdfParcialDePaginas(src, inicio, mid);
                 const dataUrl = uint8ParaDataUrlPdf(bytes);
                 if (partePdfCabeNoFirestore(bytes, dataUrl)) {
@@ -7049,6 +7072,9 @@ function separarDataSegura(dataString) {
             if (melhor < inicio || !melhorUrl) {
                 throw new Error('pagina_grande');
             }
+
+            avisar('Parte ' + (partes.length + 1) + ' pronta (páginas ' + (inicio + 1) + ' a ' + (melhor + 1) + ').');
+            await respirarUI();
 
             partes.push({
                 data: melhorUrl,
@@ -7095,7 +7121,9 @@ function separarDataSegura(dataString) {
     }
 
     async function processarPdfGrandeDocumentoPessoal(pasta, file) {
-        Swal.fire({
+        await esperarSwalLiberado();
+
+        const conf = await Swal.fire({
             title: 'PDF grande',
             html: 'Este PDF tem <b>' + formatarTamanhoArquivo(file.size) + '</b> e passa do limite do Firebase (~750 KB).<br><br>'
                 + 'Posso <b>repartir</b> em partes menores (ex.: 10 + 10 páginas) e salvar cada parte no sistema.',
@@ -7103,55 +7131,78 @@ function separarDataSegura(dataString) {
             showCancelButton: true,
             confirmButtonText: 'Sim, repartir PDF',
             cancelButtonText: 'Cancelar',
-            confirmButtonColor: '#1a2a43'
-        }).then(async function (conf) {
-            if (!conf.isConfirmed) return;
-            try {
-                Swal.fire({
-                    title: 'Repartindo PDF...',
-                    text: 'Aguarde, isso pode levar alguns segundos.',
-                    allowOutsideClick: false,
-                    showConfirmButton: false,
-                    didOpen: function () { Swal.showLoading(); }
-                });
-                const buffer = await file.arrayBuffer();
-                const resultado = await repartirPdfArrayBufferParaFirestore(buffer);
-                const info = {
-                    nomeArquivo: file.name || 'documento.pdf',
-                    totalPaginas: resultado.totalPaginas,
-                    partes: resultado.partes
-                };
-                if (!window._docPdfPartesPendentes) window._docPdfPartesPendentes = {};
-                window._docPdfPartesPendentes[pasta] = info;
-
-                const b64El = document.getElementById('doc-add-base64-' + pasta);
-                const mimeEl = document.getElementById('doc-add-mime-' + pasta);
-                if (b64El) b64El.value = '';
-                if (mimeEl) mimeEl.value = 'application/pdf';
-                mostrarPreviewPartesPdfDocumento(pasta, info);
-                fecharLoadingDocumentoPessoal();
-                Swal.fire({
-                    icon: 'success',
-                    title: 'PDF repartido',
-                    html: 'Foram criadas <b>' + info.partes.length + '</b> parte(s) a partir de <b>' + info.totalPaginas + '</b> página(s).<br>'
-                        + 'Informe o nome e clique em <b>Adicionar</b> para gravar tudo.',
-                    confirmButtonColor: '#1a2a43'
-                });
-            } catch (e) {
-                console.error(e);
-                fecharLoadingDocumentoPessoal();
-                limparPartesPdfPendentes(pasta);
-                let msg = 'Não foi possível repartir este PDF.';
-                if (e && e.message === 'pdf_lib_ausente') {
-                    msg = 'Biblioteca de PDF não carregou. Recarregue a página (Ctrl+F5).';
-                } else if (e && e.message === 'pagina_grande') {
-                    msg = 'Há página(s) individuais grandes demais (~750 KB). Comprima o PDF ou tire foto da página.';
-                } else if (e && e.message === 'pdf_vazio') {
-                    msg = 'O PDF não tem páginas.';
-                }
-                Swal.fire('Erro', msg, 'error');
+            confirmButtonColor: '#1a2a43',
+            allowOutsideClick: true,
+            didOpen: function () {
+                try { Swal.hideLoading(); } catch (_) {}
             }
         });
+
+        if (!conf.isConfirmed) {
+            const input = document.getElementById('doc-add-arquivo-' + pasta);
+            if (input) input.value = '';
+            return;
+        }
+
+        try {
+            Swal.fire({
+                title: 'Repartindo PDF...',
+                html: '<span id="doc-pdf-progresso">Preparando...</span>',
+                allowOutsideClick: false,
+                allowEscapeKey: false,
+                showConfirmButton: false,
+                didOpen: function () { Swal.showLoading(); }
+            });
+            const buffer = await file.arrayBuffer();
+            const resultado = await repartirPdfArrayBufferParaFirestore(buffer, function (texto) {
+                const el = document.getElementById('doc-pdf-progresso');
+                if (el) el.textContent = texto;
+            });
+            const info = {
+                nomeArquivo: file.name || 'documento.pdf',
+                totalPaginas: resultado.totalPaginas,
+                partes: resultado.partes
+            };
+            if (!window._docPdfPartesPendentes) window._docPdfPartesPendentes = {};
+            window._docPdfPartesPendentes[pasta] = info;
+
+            const b64El = document.getElementById('doc-add-base64-' + pasta);
+            const mimeEl = document.getElementById('doc-add-mime-' + pasta);
+            if (b64El) b64El.value = '';
+            if (mimeEl) mimeEl.value = 'application/pdf';
+            mostrarPreviewPartesPdfDocumento(pasta, info);
+
+            await esperarSwalLiberado();
+            Swal.fire({
+                icon: 'success',
+                title: 'PDF repartido',
+                html: 'Foram criadas <b>' + info.partes.length + '</b> parte(s) a partir de <b>' + info.totalPaginas + '</b> página(s).<br>'
+                    + 'Informe o nome e clique em <b>Adicionar</b> para gravar tudo.',
+                confirmButtonColor: '#1a2a43',
+                didOpen: function () { try { Swal.hideLoading(); } catch (_) {} }
+            });
+        } catch (e) {
+            console.error(e);
+            limparPartesPdfPendentes(pasta);
+            const input = document.getElementById('doc-add-arquivo-' + pasta);
+            if (input) input.value = '';
+            let msg = 'Não foi possível repartir este PDF.';
+            if (e && e.message === 'pdf_lib_ausente') {
+                msg = 'Biblioteca de PDF não carregou. Recarregue a página (Ctrl+F5).';
+            } else if (e && e.message === 'pagina_grande') {
+                msg = 'Há página(s) individuais grandes demais (~750 KB). Comprima o PDF ou tire foto da página.';
+            } else if (e && e.message === 'pdf_vazio') {
+                msg = 'O PDF não tem páginas.';
+            }
+            await esperarSwalLiberado();
+            Swal.fire({
+                icon: 'error',
+                title: 'Erro',
+                text: msg,
+                confirmButtonColor: '#1a2a43',
+                didOpen: function () { try { Swal.hideLoading(); } catch (_) {} }
+            });
+        }
     }
 
     function lerArquivoDocumentoPessoal(file, pasta) {
