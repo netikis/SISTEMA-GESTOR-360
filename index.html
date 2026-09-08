@@ -920,6 +920,47 @@
             min-width: 0;
         }
 
+        .gestor-nav-historico {
+            display: flex;
+            flex-shrink: 0;
+            gap: 6px;
+            align-items: center;
+        }
+
+        .gestor-btn-voltar,
+        .gestor-btn-avancar {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 4px;
+            min-width: 42px;
+            height: 42px;
+            padding: 0 12px;
+            border: 2px solid rgba(212, 160, 23, 0.55);
+            border-radius: 10px;
+            background: rgba(26, 42, 67, 0.9);
+            color: #f5f7fa;
+            font-size: 13px;
+            font-weight: 700;
+            font-family: 'Poppins', sans-serif;
+            cursor: pointer;
+            line-height: 1;
+            -webkit-tap-highlight-color: transparent;
+            touch-action: manipulation;
+        }
+
+        .gestor-btn-voltar:hover,
+        .gestor-btn-avancar:hover {
+            background: #1a2a43;
+            color: #f1c40f;
+        }
+
+        .gestor-btn-voltar:disabled,
+        .gestor-btn-avancar:disabled {
+            opacity: 0.4;
+            cursor: default;
+        }
+
         .gestor-btn-menu-mobile {
             display: none;
             flex-shrink: 0;
@@ -1238,8 +1279,17 @@
                 font-size: 13px;
             }
 
-            .gestor-btn-menu-mobile {
-                display: inline-flex;
+            .gestor-btn-voltar,
+            .gestor-btn-avancar {
+                height: 46px;
+                min-width: 46px;
+                padding: 0 10px;
+                font-size: 16px;
+            }
+
+            .gestor-btn-voltar .gestor-nav-rotulo,
+            .gestor-btn-avancar .gestor-nav-rotulo {
+                display: none;
             }
 
             .gestor-main-content {
@@ -3188,6 +3238,10 @@
     <div class="gestor-main-content">
         <div class="gestor-content-header">
             <button type="button" class="gestor-btn-menu-mobile" id="btn-menu-mobile-gestor" onclick="toggleMenuMobileGestor()" aria-label="Abrir menu de navegação" aria-expanded="false">☰</button>
+            <div class="gestor-nav-historico">
+                <button type="button" class="gestor-btn-voltar" id="btn-gestor-voltar" onclick="voltarAbaGestor()" title="Voltar (seta do mouse ou Alt + ←)" aria-label="Voltar" disabled>← <span class="gestor-nav-rotulo">Voltar</span></button>
+                <button type="button" class="gestor-btn-avancar" id="btn-gestor-avancar" onclick="avancarAbaGestor()" title="Avançar (seta do mouse ou Alt + →)" aria-label="Avançar" disabled><span class="gestor-nav-rotulo">Avançar</span> →</button>
+            </div>
             <div class="gestor-content-header-texto">
                 <h2 class="gestor-titulo-aba" id="gestor-titulo-aba">Painel Gestor</h2>
                 <p class="gestor-subtitulo-painel">Gestor 360 — Obras · Holerite · Ponto</p>
@@ -4074,7 +4128,7 @@
         <details style="margin-top: 20px;">
             <summary style="background: #eef2f5;">📊 Resumo de Gastos (Obra x Fornecedor)</summary>
             <div style="padding: 15px;">
-                <p class="texto-explicacao" style="text-align: justify;">Esta tabela cruza fornecedores da <b>obra selecionada</b> acima. Clique na etiqueta da obra e depois em "Gerar tabela de resumo".</p>
+                <p class="texto-explicacao" style="text-align: justify;">Esta tabela cruza fornecedores da <b>obra selecionada</b> acima (cadastro em <b>Adicionar Despesas</b> e em <b>Exportar Relatórios</b>). Clique no fornecedor para ver a origem de cada nota, visualizar e editar.</p>
                 <button class="btn-enviar" style="margin-top: 5px;" onclick="gerarResumoFornecedores()">GERAR TABELA DE RESUMO</button>
                 
                 <div id="tabela-resumo-fornecedores" style="margin-top: 20px; overflow-x: auto;"></div>
@@ -5158,6 +5212,9 @@
         mostrarPainelGestor();
         atualizarBadgeSessaoGestor(empresaLogada);
         mostrarTelaInicioGestor();
+        setTimeout(function () {
+            if (typeof iniciarHistoricoPainelGestor === 'function') iniciarHistoricoPainelGestor();
+        }, 0);
         
         carregarListaDeFuncionarios();
         const mesAtual = String(new Date().getMonth() + 1).padStart(2, '0');
@@ -6118,7 +6175,7 @@ function separarDataSegura(dataString) {
             const obs = escapeHtmlBasico(rawObs);
             const obsShort = rawObs.length > 100 ? escapeHtmlBasico(rawObs.slice(0, 97)) + '…' : obs;
             const titleObs = escapeAttrBasico(rawObs);
-            html += '<tr style="vertical-align:top;border-bottom:1px solid #eee;' + trFundo + '">';
+            html += '<tr data-despesa-id="' + escapeAttrBasico(d.id) + '" style="vertical-align:top;border-bottom:1px solid #eee;' + trFundo + '">';
             html += '<td style="padding:6px;border:1px solid #eee;">' + escapeHtmlBasico(d.obra_nome || '') + '</td>';
             html += '<td style="padding:6px;border:1px solid #eee;">' + escapeHtmlBasico(d.loja_nome || '') + '</td>';
             html += '<td style="padding:6px;border:1px solid #eee;">' + refDoc + '</td>';
@@ -6150,6 +6207,11 @@ function separarDataSegura(dataString) {
         wrap.innerHTML = html;
         wrap.setAttribute('data-rel-desp-carregado', '1');
         atualizarPainelResumoRelDespesas(arr);
+        if (window._destacarDespesaId) {
+            const idDest = window._destacarDespesaId;
+            window._destacarDespesaId = null;
+            setTimeout(function () { destacarCardOrigemNota(idDest); }, 280);
+        }
     }
 
     function relatorioDespesasTemVariosAnosVencimento(arr) {
@@ -6161,13 +6223,29 @@ function separarDataSegura(dataString) {
         return anos.size > 1;
     }
 
+    function despesaStatusExplicitamentePago(d) {
+        const st = String(d && d.status || '').trim().toLowerCase();
+        return st === 'pago' || st === 'paga' || st === 'quitado' || st === 'quitada' || st === 'baixado' || st === 'baixada';
+    }
+
     function despesaEstaVencida(d) {
-        if (despesaEstaPaga(d)) return false;
+        if (!d) return false;
+        if (despesaStatusExplicitamentePago(d)) return false;
         const ts = dataVencimentoTsDespesa(d);
         if (ts == null) return false;
         const hoje = new Date();
         hoje.setHours(12, 0, 0, 0);
         return ts < hoje.getTime();
+    }
+
+    /** Saldo para o relatório: conta vencida pendente não some por abatimento de terceiro nem por valor acumulado. */
+    function valorSaldoAbertoRelatorio(d) {
+        if (!d || despesaStatusExplicitamentePago(d)) return 0;
+        const abat = Number(d._abatimento_terceiros) || 0;
+        const aposTerc = Math.max(0, Math.round((saldoDevedorDespesa(d) - abat) * 100) / 100);
+        if (aposTerc > 0.009) return aposTerc;
+        if (despesaEstaVencida(d)) return valorOriginalDespesa(d);
+        return 0;
     }
 
     /** Data de pagamento preenchida (ignora vazio / N/A). */
@@ -6208,8 +6286,6 @@ function separarDataSegura(dataString) {
         if (st === 'pago' || st === 'paga' || st === 'quitado' || st === 'quitada' || st === 'baixado' || st === 'baixada') {
             return valorOriginalDespesa(d);
         }
-        // Legado: data_pagamento sem parcelas = quitação total
-        if (obterDataPagamentoDespesa(d) && !pars.length) return valorOriginalDespesa(d);
         return 0;
     }
 
@@ -6231,6 +6307,7 @@ function separarDataSegura(dataString) {
 
     /**
      * Quitada por completo (saldo zero). Pagamento parcial NÃO conta como paga.
+     * Status pendente continua em aberto mesmo se existir data_pagamento (isso não quita sozinho).
      */
     function despesaEstaPaga(d) {
         if (!d) return false;
@@ -6242,7 +6319,10 @@ function separarDataSegura(dataString) {
         if (listaPagamentosParciaisDespesa(d).length) {
             return saldoDevedorDespesa(d) <= 0.009;
         }
-        return !!obterDataPagamentoDespesa(d);
+        if (d.valor_pago_acumulado != null && Number.isFinite(Number(d.valor_pago_acumulado)) && Number(d.valor_pago_acumulado) > 0) {
+            return saldoDevedorDespesa(d) <= 0.009;
+        }
+        return false;
     }
 
     /** Valor que entra em "em aberto" (vencido / a vencer): o saldo restante. */
@@ -6256,9 +6336,11 @@ function separarDataSegura(dataString) {
         const col = colecaoNome || 'despesas_obras';
         const pendentes = (lista || []).filter((d) => {
             if (!d || !d.id) return false;
-            if (listaPagamentosParciaisDespesa(d).length) return false; // parcial: não forçar quitação
-            if (String(d.status || '').trim().toLowerCase() === 'parcial') return false;
-            return obterDataPagamentoDespesa(d) && String(d.status || '').trim().toLowerCase() !== 'pago';
+            const st = String(d.status || '').trim().toLowerCase();
+            if (st === 'pago' || st === 'paga' || st === 'quitado' || st === 'quitada' || st === 'baixado' || st === 'baixada') return false;
+            if (st === 'parcial') return false;
+            if (!listaPagamentosParciaisDespesa(d).length) return false;
+            return saldoDevedorDespesa(d) <= 0.009;
         });
         if (!pendentes.length) return 0;
         let ok = 0;
@@ -11859,9 +11941,63 @@ window.carregarFiltrosDespesas = async function() {
         });
     };
 
-    window.editarDespesa = function (id) {
-        const despesa = window.dadosExportacaoDespesas && window.dadosExportacaoDespesas.find(d => d.id === id);
-        if (!despesa) return;
+    function notaVeioDoRelatorioDespesas(d) {
+        return !!(d && (d._origem === 'relatorio_despesas' || d.origem_colecao === 'relatorio_despesas'));
+    }
+
+    function localizarNotaCadastradaPorId(id) {
+        if (id == null || id === '') return null;
+        const sid = String(id);
+        const listas = [];
+        if (Array.isArray(window._notasResumoVisualizarAtual)) listas.push(window._notasResumoVisualizarAtual);
+        if (Array.isArray(window.dadosExportacaoDespesas)) listas.push(window.dadosExportacaoDespesas);
+        if (window._mapDespesasResumoFornecedor) {
+            Object.keys(window._mapDespesasResumoFornecedor).forEach(function (k) {
+                listas.push(window._mapDespesasResumoFornecedor[k] || []);
+            });
+        }
+        for (let i = 0; i < listas.length; i += 1) {
+            const achou = (listas[i] || []).find(function (d) { return d && String(d.id) === sid; });
+            if (achou) return achou;
+        }
+        if (window._mapRelatorioDespesasParaEdicao && window._mapRelatorioDespesasParaEdicao[id]) {
+            return window._mapRelatorioDespesasParaEdicao[id];
+        }
+        return null;
+    }
+
+    function reabrirNotasResumoSePreciso() {
+        if (!window._reabrirNotasResumoAposEditar) return;
+        window._reabrirNotasResumoAposEditar = false;
+        const chaveObra = window._notasResumoChaveObra;
+        const chaveLoja = window._notasResumoChaveLoja;
+        if (!chaveObra || !chaveLoja) return;
+        setTimeout(async function () {
+            try {
+                if (typeof window.gerarResumoFornecedores === 'function' && document.getElementById('tabela-resumo-fornecedores')) {
+                    await window.gerarResumoFornecedores();
+                }
+            } catch (eResumo) { /* reabre a lista mesmo se a tabela não atualizar */ }
+            if (typeof window.visualizarNotasDespesaResumo === 'function') {
+                window.visualizarNotasDespesaResumo(chaveObra, chaveLoja);
+            }
+        }, 250);
+    }
+
+    window.editarDespesa = async function (id) {
+        let despesa = localizarNotaCadastradaPorId(id);
+        if (notaVeioDoRelatorioDespesas(despesa)) {
+            return window.editarDespesaRelatorio(id);
+        }
+        if (!despesa) {
+            try {
+                const snap = await getDoc(doc(db, 'despesas_obras', id));
+                if (snap.exists()) despesa = { id: snap.id, ...snap.data(), _origem: 'despesas_obras' };
+            } catch (eBusca) { /* segue aviso abaixo */ }
+        }
+        if (!despesa) {
+            return Swal.fire('Aviso', 'Despesa não encontrada para edição.', 'warning');
+        }
 
         const vObra = escapeHtmlBasico(despesa.obra_nome || '');
         const vLoja = escapeHtmlBasico(despesa.loja_nome || '');
@@ -11920,10 +12056,14 @@ window.carregarFiltrosDespesas = async function() {
             if (result.isConfirmed) {
                 try {
                     await updateDoc(doc(db, "despesas_obras", id), result.value);
-                    Swal.fire('Atualizado!', 'As informações foram corrigidas.', 'success');
+                    Object.assign(despesa, result.value);
+                    await Swal.fire('Atualizado!', 'As informações foram corrigidas.', 'success');
                     const busca = document.getElementById('busca-obra');
                     if (busca && busca.value.trim()) buscarDespesasObra();
+                    reabrirNotasResumoSePreciso();
                 } catch (e) { Swal.fire('Erro', 'Não foi possível editar.', 'error'); }
+            } else {
+                reabrirNotasResumoSePreciso();
             }
         });
     };
@@ -12017,9 +12157,13 @@ window.carregarFiltrosDespesas = async function() {
             if (result.isConfirmed) {
                 try {
                     await updateDoc(doc(db, COLECAO_RELATORIO_DESPESAS, id), result.value);
-                    Swal.fire('Atualizado!', 'As informações foram corrigidas.', 'success');
+                    if (despesa) Object.assign(despesa, result.value);
+                    await Swal.fire('Atualizado!', 'As informações foram corrigidas.', 'success');
                     recarregarRelatorioDespesasTabularSeCarregado();
+                    reabrirNotasResumoSePreciso();
                 } catch (e) { Swal.fire('Erro', 'Não foi possível editar.', 'error'); }
+            } else {
+                reabrirNotasResumoSePreciso();
             }
         });
     };
@@ -12120,14 +12264,17 @@ window.carregarFiltrosDespesas = async function() {
             if (result.isConfirmed) {
                 try {
                     await deleteDoc(doc(db, COLECAO_RELATORIO_DESPESAS, id));
-                    Swal.fire('Apagado!', 'Linha removida do relatório.', 'success');
+                    await Swal.fire('Apagado!', 'Linha removida do relatório.', 'success');
                     recarregarRelatorioDespesasTabularSeCarregado();
                     if (typeof window.carregarNomesRelatorioDespesas === 'function') {
                         window.carregarNomesRelatorioDespesas();
                     }
+                    reabrirNotasResumoSePreciso();
                 } catch (e) {
                     Swal.fire('Erro', 'Não foi possível apagar.', 'error');
                 }
+            } else {
+                reabrirNotasResumoSePreciso();
             }
         });
     };
@@ -12526,13 +12673,13 @@ window.carregarFiltrosDespesas = async function() {
 
         let html = '';
         if (htmlVencidas) {
-            html += `<details class="secao-despesas-busca secao-vencidas"><summary>🔴 Contas Vencidas — por vencimento <span class="secao-seta">▲</span></summary><div class="secao-despesas-conteudo">${htmlVencidas}</div></details>`;
+            html += `<details class="secao-despesas-busca secao-vencidas" open><summary>🔴 Contas Vencidas — por vencimento <span class="secao-seta">▲</span></summary><div class="secao-despesas-conteudo">${htmlVencidas}</div></details>`;
         }
         if (htmlAVencer) {
-            html += `<details class="secao-despesas-busca secao-avencer"><summary>🟡 Contas a Vencer (No Prazo) — por vencimento <span class="secao-seta">▲</span></summary><div class="secao-despesas-conteudo">${htmlAVencer}</div></details>`;
+            html += `<details class="secao-despesas-busca secao-avencer"${htmlVencidas ? '' : ' open'}><summary>🟡 Contas a Vencer (No Prazo) — por vencimento <span class="secao-seta">▲</span></summary><div class="secao-despesas-conteudo">${htmlAVencer}</div></details>`;
         }
         if (htmlPagas) {
-            html += `<details class="secao-despesas-busca secao-pagas" open><summary>🟢 Histórico de Contas Pagas <span class="secao-seta">▲</span></summary><div class="secao-despesas-conteudo">${htmlPagas}</div></details>`;
+            html += `<details class="secao-despesas-busca secao-pagas"${htmlVencidas ? '' : ' open'}><summary>🟢 Histórico de Contas Pagas <span class="secao-seta">▲</span></summary><div class="secao-despesas-conteudo">${htmlPagas}</div></details>`;
         }
 
         if (!html) {
@@ -13523,11 +13670,10 @@ window.carregarFiltrosDespesas = async function() {
                 await sincronizarStatusPagoInconsistente(despesas.filter((d) => despesaEstaPaga(d)), 'despesas_obras');
             } catch (eSync) { /* segue */ }
 
-            // Em aberto = saldo (já desconta parcial + terceiros abatidos)
+            // Em aberto = saldo. Vencida com status pendente continua na lista (como no alerta).
             const pendentesViews = [];
             despesas.forEach((d) => {
-                if (despesaEstaPaga(d)) return;
-                const saldo = valorEmAbertoComTerceirosDespesa(d);
+                const saldo = valorSaldoAbertoRelatorio(d);
                 if (saldo <= 0.009) return;
                 pendentesViews.push(Object.assign({}, d, {
                     valor_numero: saldo,
@@ -13672,7 +13818,7 @@ window.carregarFiltrosDespesas = async function() {
 
             htmlSecoes += '<div id="rel-geral-obras-quadro">';
 
-            htmlSecoes += '<details class="secao-despesas-busca secao-vencidas">'
+            htmlSecoes += '<details class="secao-despesas-busca secao-vencidas" open>'
                 + '<summary>🔴 Em aberto — Vencido (' + cntVenc + ') — ' + formatarMoeda(somaVencidas) + ' <span class="secao-seta">▲</span></summary>'
                 + '<div class="secao-despesas-conteudo">'
                 + (htmlVencidas || '<p style="text-align:center;color:#888;padding:12px;">Nenhuma despesa vencida.</p>')
@@ -13684,7 +13830,7 @@ window.carregarFiltrosDespesas = async function() {
                 + (htmlAVencer || '<p style="text-align:center;color:#888;padding:12px;">Nenhuma despesa a vencer.</p>')
                 + '</div></details>';
 
-            htmlSecoes += '<details class="secao-despesas-busca secao-pagas" open>'
+            htmlSecoes += '<details class="secao-despesas-busca secao-pagas">'
                 + '<summary>🟢 Já pago (' + (cntPagosForn + terceiros.length) + ') — ' + formatarMoeda(somaPagas) + ' <span class="secao-seta">▲</span></summary>'
                 + '<div class="secao-despesas-conteudo">';
 
@@ -14526,7 +14672,7 @@ window.carregarFiltrosDespesas = async function() {
 
             window.dadosExportacaoDespesas = matching.slice().concat(terceirosMatching);
 
-            let pendentesArray = matching.filter((d) => valorEmAbertoComTerceirosDespesa(d) > 0.009);
+            let pendentesArray = matching.filter((d) => valorSaldoAbertoRelatorio(d) > 0.009);
             let agrupadoPagas = {};
 
             function valorPagoTerceiroNorm(t) {
@@ -14596,7 +14742,7 @@ window.carregarFiltrosDespesas = async function() {
                 const orig = valorOriginalDespesa(d);
                 const abatTer = Number(d._abatimento_terceiros) || 0;
                 const pagoParc = valorPagoComTerceirosDespesa(d);
-                const saldo = valorEmAbertoComTerceirosDespesa(d);
+                const saldo = valorSaldoAbertoRelatorio(d);
                 const ehParcial = despesaTemPagamentoParcial(d) || abatTer > 0.009;
 
                 const corBorda = ehParcial ? '#17a2b8' : (isVencida ? '#dc3545' : '#ffc107');
@@ -14662,7 +14808,7 @@ window.carregarFiltrosDespesas = async function() {
                 }
 
                 const cardHtml = `
-                    <div class="resultado-item" style="border-left-color: ${corBorda};">
+                    <div class="resultado-item" data-despesa-id="${escapeAttrBasico(d.id)}" style="border-left-color: ${corBorda};">
                         ${fotoHtml}
                         <b style="color: ${corBorda}; font-size: 16px;">${formatarMoeda(saldo)}</b> <span style="font-size: 10px; background: ${badgeFundo}; color: ${corTexto}; padding: 2px 6px; border-radius: 4px; margin-left: 5px; font-weight: bold;">${textoBadge}</span><br>
                         <span style="font-size:12px;color:#555;">Contrato/original: <b>${formatarMoeda(orig)}</b>${pagoParc > 0 ? ' · Já pago: <b style="color:#28a745;">' + formatarMoeda(pagoParc) + '</b>' + (abatTer > 0 ? ' <span style="color:#0c5460;">(inclui ' + formatarMoeda(abatTer) + ' de terceiros)</span>' : '') + ' · Saldo: <b style="color:#c0392b;">' + formatarMoeda(saldo) + '</b>' : ''}</span><br>
@@ -14713,7 +14859,7 @@ window.carregarFiltrosDespesas = async function() {
                             ? ''
                             : `<button onclick="excluirDespesa('${d.id}')" style="background: #6c757d; color: white; border: none; padding: 8px; border-radius: 8px; cursor: pointer; width: 100%; font-weight: bold; font-size: 11px; transition: 0.3s;">🗑️ EXCLUIR</button>`;
                         htmlPagas += `
-                            <div class="resultado-item" style="border-left-color: #28a745; opacity: 0.85; background: #f4fdf6;">
+                            <div class="resultado-item" data-despesa-id="${escapeAttrBasico(d.id)}" style="border-left-color: #28a745; opacity: 0.85; background: #f4fdf6;">
                                 ${fotoHtml}${compPgtoHtml}
                                 ${badgeOrigem}
                                 <b style="color: #28a745; font-size: 16px;">R$ ${d.valor_string}</b> <span style="font-size: 10px; background: #d4edda; color: #155724; padding: 2px 6px; border-radius: 4px; margin-left: 5px; font-weight: bold;">PAGO EM: ${obterDataPagamentoDespesa(d) || d.data_pagamento || 'N/A'}</span><br>
@@ -14740,11 +14886,22 @@ window.carregarFiltrosDespesas = async function() {
             if (btnExportarExcel) btnExportarExcel.style.display = 'inline-block';
             divLista.innerHTML = '';
             renderizarQuadroControlesDespesas(htmlVencidas, htmlAVencer, htmlPagas, avisoAnosHtml);
-            // Abre a pasta de pagos para o usuário ver o Já Pago
             try {
+                const secaoVenc = document.querySelector('#quadro-controles-secoes .secao-vencidas');
                 const secaoPagas = document.querySelector('#quadro-controles-secoes .secao-pagas');
-                if (secaoPagas && somaPagas > 0) secaoPagas.open = true;
+                if (secaoVenc && (somaVencidas > 0 || window._abrirSecaoVencidas)) {
+                    secaoVenc.open = true;
+                    if (secaoPagas) secaoPagas.open = false;
+                } else if (secaoPagas && somaPagas > 0 && somaVencidas <= 0) {
+                    secaoPagas.open = true;
+                }
             } catch (eOpen) { /* ignore */ }
+            window._abrirSecaoVencidas = false;
+            if (window._destacarDespesaId) {
+                const idDest = window._destacarDespesaId;
+                window._destacarDespesaId = null;
+                setTimeout(function () { destacarCardOrigemNota(idDest); }, 280);
+            }
 
         } catch (e) {
             ocultarQuadroControlesDespesas();
@@ -14753,7 +14910,11 @@ window.carregarFiltrosDespesas = async function() {
     };
 
         window.excluirDespesa = async function(id) {
-        const despesa = (window.dadosExportacaoDespesas || []).find((d) => d && d.id === id && d._origem !== 'pagamentos_terceiros');
+        let despesa = localizarNotaCadastradaPorId(id);
+        if (despesa && despesa._origem === 'pagamentos_terceiros') despesa = null;
+        if (!despesa) {
+            despesa = (window.dadosExportacaoDespesas || []).find((d) => d && d.id === id && d._origem !== 'pagamentos_terceiros');
+        }
         const paga = despesa ? despesaEstaPaga(despesa) : false;
 
         if (paga) {
@@ -14773,28 +14934,35 @@ window.carregarFiltrosDespesas = async function() {
             if (conf.isConfirmed) {
                 return arquivarDespesaPaga(id);
             }
-            if (!conf.isDenied) return;
+            if (!conf.isDenied) {
+                reabrirNotasResumoSePreciso();
+                return;
+            }
         } else {
             const conf = await Swal.fire({
-                title: 'Apagar?',
-                text: 'Remover permanentemente?',
+                title: 'Apagar nota?',
+                text: 'Remover permanentemente este cadastro?',
                 icon: 'warning',
                 showCancelButton: true,
                 confirmButtonColor: '#d9534f',
                 confirmButtonText: 'Sim, apagar!'
             });
-            if (!conf.isConfirmed) return;
+            if (!conf.isConfirmed) {
+                reabrirNotasResumoSePreciso();
+                return;
+            }
         }
 
         try {
             await deleteDoc(doc(db, 'despesas_obras', id));
-            Swal.fire('Apagado!', 'Removido do sistema.', 'success');
+            await Swal.fire('Apagado!', 'Removido do sistema.', 'success');
             const busca = document.getElementById('busca-obra');
             if (busca && busca.value.trim()) buscarDespesasObra();
             if (typeof carregarFiltrosDespesas === 'function') carregarFiltrosDespesas();
             if (typeof carregarRelatorioGeralObras === 'function' && document.getElementById('rel-geral-obras-quadro')) {
                 carregarRelatorioGeralObras();
             }
+            reabrirNotasResumoSePreciso();
         } catch (e) {
             console.error(e);
             Swal.fire('Erro', 'Não foi possível apagar.', 'error');
@@ -14928,18 +15096,28 @@ window.carregarFiltrosDespesas = async function() {
 
     window.arquivarDespesaPaga = async function (id) {
         if (!id) return;
-        let despesa = (window.dadosExportacaoDespesas || []).find(function (d) {
-            return d && String(d.id) === String(id) && d._origem !== 'pagamentos_terceiros';
-        });
+        let despesa = localizarNotaCadastradaPorId(id);
+        if (despesa && despesa._origem === 'pagamentos_terceiros') despesa = null;
+        if (!despesa) {
+            despesa = (window.dadosExportacaoDespesas || []).find(function (d) {
+                return d && String(d.id) === String(id) && d._origem !== 'pagamentos_terceiros';
+            });
+        }
         if (!despesa) {
             try {
                 const snap = await getDoc(doc(db, 'despesas_obras', id));
                 if (snap.exists()) despesa = Object.assign({ id: snap.id }, snap.data() || {});
             } catch (e) { console.error(e); }
         }
-        if (!despesa) return Swal.fire('Atenção', 'Despesa não encontrada.', 'warning');
+        if (!despesa) {
+            await Swal.fire('Atenção', 'Despesa não encontrada.', 'warning');
+            reabrirNotasResumoSePreciso();
+            return;
+        }
         if (!despesaEstaPaga(despesa)) {
-            return Swal.fire('Atenção', 'Só é possível arquivar conta totalmente paga. Conta em aberto use Excluir com cuidado.', 'info');
+            await Swal.fire('Atenção', 'Só é possível arquivar conta totalmente paga. Conta em aberto use Excluir com cuidado.', 'info');
+            reabrirNotasResumoSePreciso();
+            return;
         }
 
         Swal.fire({ title: 'Arquivando...', allowOutsideClick: false, didOpen: function () { Swal.showLoading(); } });
@@ -14951,7 +15129,7 @@ window.carregarFiltrosDespesas = async function() {
                 'Arquivada!',
                 'Conta guardada em Arquivamento → ' + payload.pasta_ano + ' → ' + (nomeMeses[payload.pasta_mes] || payload.pasta_mes) + ' → dia ' + payload.pasta_dia + '.',
                 'success'
-            );
+            ).then(function () { reabrirNotasResumoSePreciso(); });
             const busca = document.getElementById('busca-obra');
             if (busca && busca.value.trim()) buscarDespesasObra();
             if (typeof carregarFiltrosDespesas === 'function') carregarFiltrosDespesas();
@@ -15438,10 +15616,152 @@ window.carregarFiltrosDespesas = async function() {
         });
     };
 
+    function rotuloOrigemNotaCadastrada(d) {
+        if (notaVeioDoRelatorioDespesas(d)) return 'Exportar Relatórios';
+        return 'Adicionar Despesas';
+    }
+
+    function htmlOrigemNotaBadge(d) {
+        const rel = notaVeioDoRelatorioDespesas(d);
+        const fundo = rel ? '#1a2a43' : '#1565c0';
+        return '<span style="display:inline-block;font-size:10px;font-weight:800;letter-spacing:.02em;background:' + fundo + ';color:#fff;padding:3px 8px;border-radius:999px;">📍 ' + escapeHtmlBasico(rotuloOrigemNotaCadastrada(d)) + '</span>';
+    }
+
+    function destacarCardOrigemNota(id) {
+        if (!id) return;
+        const sid = String(id).replace(/\\/g, '\\\\').replace(/"/g, '\\"');
+        let el = null;
+        try {
+            el = document.querySelector('.resultado-item[data-despesa-id="' + sid + '"]')
+                || document.querySelector('tr[data-despesa-id="' + sid + '"]')
+                || document.querySelector('[data-despesa-id="' + sid + '"]');
+        } catch (eSel) { el = null; }
+        if (!el) return;
+        let p = el.parentElement;
+        while (p) {
+            if (p.tagName === 'DETAILS') p.open = true;
+            p = p.parentElement;
+        }
+        el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        el.style.outline = '3px solid #4285F4';
+        el.style.boxShadow = '0 0 0 6px rgba(66,133,244,0.28)';
+        setTimeout(function () {
+            el.style.outline = '';
+            el.style.boxShadow = '';
+        }, 6500);
+    }
+
+    function htmlDetalheNotaCadastrada(d, indice) {
+        const st = despesaEstaPaga(d) ? 'Pago' : (despesaEstaVencida(d) ? 'Vencida' : 'Pendente');
+        const corSt = despesaEstaPaga(d) ? '#28a745' : (despesaEstaVencida(d) ? '#dc3545' : '#856404');
+        const venc = formatarVencimentoDespesaExibir(d);
+        const lanc = (typeof diaLancamentoDespExibir === 'function') ? diaLancamentoDespExibir(d) : (d.data || '');
+        const chq = d.cheque_boleto_num ? String(d.cheque_boleto_num).trim() : '';
+        const obs = d.observacao ? String(d.observacao).trim() : '';
+        const valorTxt = String(d.valor_string || '0');
+        const valorFmt = valorTxt.trim().startsWith('R$') ? valorTxt : ('R$ ' + valorTxt);
+        const fotoHtml = d.foto_recibo
+            ? '<p style="font-size:11px;color:#666;margin:12px 0 6px 0;text-align:center;">Clique na miniatura para ampliar</p>'
+                + '<img src="' + d.foto_recibo + '" alt="Nota" onclick="abrirNotaResumoPorIndice(' + Number(indice) + ')" style="max-width:100%;max-height:240px;object-fit:contain;border-radius:8px;border:2px solid #4285F4;cursor:pointer;display:block;margin:0 auto;">'
+            : '<p style="font-size:12px;color:#888;margin-top:12px;text-align:center;background:#f5f5f5;padding:12px;border-radius:8px;">Sem foto da nota / recibo.</p>';
+        const compHtml = (typeof montarHtmlComprovantePagamento === 'function') ? montarHtmlComprovantePagamento(d) : '';
+        return '<div style="text-align:left;font-size:13px;line-height:1.45;">'
+            + '<div style="margin-bottom:10px;">' + htmlOrigemNotaBadge(d) + '</div>'
+            + '<div style="margin-bottom:8px;"><span style="color:#666;font-size:11px;font-weight:700;">🏗️ OBRA</span><br><b style="color:#1a2a43;">' + escapeHtmlBasico(d.obra_nome || '—') + '</b></div>'
+            + '<div style="margin-bottom:8px;"><span style="color:#666;font-size:11px;font-weight:700;">🏪 FORNECEDOR</span><br><b style="color:#1a2a43;">' + escapeHtmlBasico(d.loja_nome || '—') + '</b></div>'
+            + '<div style="display:flex;gap:16px;flex-wrap:wrap;margin-bottom:8px;">'
+            + '<span><span style="color:#666;font-size:11px;">Valor</span><br><b>' + escapeHtmlBasico(valorFmt) + '</b></span>'
+            + '<span><span style="color:#666;font-size:11px;">Status</span><br><b style="color:' + corSt + ';">' + st + '</b></span>'
+            + '<span><span style="color:#666;font-size:11px;">Vencimento</span><br><b>' + escapeHtmlBasico(venc) + '</b></span>'
+            + '</div>'
+            + '<div style="font-size:12px;color:#555;margin-bottom:4px;"><b>NF / Recibo:</b> ' + escapeHtmlBasico(d.nota_fiscal || 'Sem NF') + '</div>'
+            + (chq ? '<div style="font-size:12px;color:#555;margin-bottom:4px;"><b>Cheque / boleto:</b> ' + escapeHtmlBasico(chq) + '</div>' : '')
+            + '<div style="font-size:12px;color:#888;margin-bottom:4px;"><b>Cadastrado em:</b> ' + escapeHtmlBasico(lanc || d.data || '—') + '</div>'
+            + (despesaEstaPaga(d) ? '<div style="font-size:12px;color:#155724;margin-bottom:4px;"><b>Pago em:</b> ' + escapeHtmlBasico(obterDataPagamentoDespesa(d) || d.data_pagamento || '—') + '</div>' : '')
+            + (d.descricao ? '<div style="font-size:12px;color:#444;margin-top:8px;padding-top:8px;border-top:1px solid #eee;">' + escapeHtmlBasico(String(d.descricao)) + '</div>' : '')
+            + (obs ? '<div style="font-size:11px;color:#666;margin-top:6px;"><b>Obs.:</b> ' + escapeHtmlBasico(obs) + '</div>' : '')
+            + (compHtml || '')
+            + fotoHtml
+            + '</div>';
+    }
+
     window.abrirNotaResumoPorIndice = function (indice) {
         const lista = window._notasResumoVisualizarAtual || [];
         const item = lista[indice];
         if (item && item.foto_recibo) abrirFoto(item.foto_recibo);
+    };
+
+    window.visualizarNotaCadastradaResumo = function (indice) {
+        const lista = window._notasResumoVisualizarAtual || [];
+        const d = lista[indice];
+        if (!d) return Swal.fire('Aviso', 'Nota não encontrada.', 'warning');
+        const chaveObra = window._notasResumoChaveObra;
+        const chaveLoja = window._notasResumoChaveLoja;
+        Swal.fire({
+            title: '📄 Nota cadastrada',
+            html: htmlDetalheNotaCadastrada(d, indice),
+            width: 640,
+            showDenyButton: true,
+            showCancelButton: true,
+            confirmButtonText: 'Voltar às notas',
+            confirmButtonColor: '#1a2a43',
+            denyButtonText: '✏️ Editar',
+            denyButtonColor: '#4285F4',
+            cancelButtonText: '📍 Ver origem',
+            cancelButtonColor: '#856404'
+        }).then(function (r) {
+            if (r.isDenied) return window.editarNotaCadastradaResumo(indice);
+            if (r.dismiss === Swal.DismissReason.cancel) return window.abrirOrigemNotaCadastrada(indice);
+            if (chaveObra && chaveLoja) window.visualizarNotasDespesaResumo(chaveObra, chaveLoja);
+        });
+    };
+
+    window.editarNotaCadastradaResumo = function (indice) {
+        const lista = window._notasResumoVisualizarAtual || [];
+        const d = lista[indice];
+        if (!d || !d.id) return Swal.fire('Aviso', 'Nota não encontrada.', 'warning');
+        window._reabrirNotasResumoAposEditar = true;
+        if (notaVeioDoRelatorioDespesas(d)) return window.editarDespesaRelatorio(d.id);
+        return window.editarDespesa(d.id);
+    };
+
+    window.excluirNotaCadastradaResumo = function (indice) {
+        const lista = window._notasResumoVisualizarAtual || [];
+        const d = lista[indice];
+        if (!d || !d.id) return Swal.fire('Aviso', 'Nota não encontrada.', 'warning');
+        window._reabrirNotasResumoAposEditar = true;
+        if (notaVeioDoRelatorioDespesas(d)) return window.excluirLinhaRelatorioDespesas(d.id);
+        return window.excluirDespesa(d.id);
+    };
+
+    window.abrirOrigemNotaCadastrada = async function (indice) {
+        const lista = window._notasResumoVisualizarAtual || [];
+        const d = lista[indice];
+        if (!d) return Swal.fire('Aviso', 'Nota não encontrada.', 'warning');
+        window._reabrirNotasResumoAposEditar = false;
+        try { Swal.close(); } catch (eClose) { /* ignore */ }
+        window._destacarDespesaId = d.id;
+        if (notaVeioDoRelatorioDespesas(d)) {
+            const btnExp = document.getElementById('btn-menu-relatorio-despesas');
+            mudarAba('relatorio-despesas', btnExp);
+            const filtro = document.getElementById('rel-desp-filtro');
+            if (filtro) filtro.value = d.loja_nome || d.obra_nome || '';
+            if (typeof window.carregarRelatorioDespesasTabular === 'function') {
+                await window.carregarRelatorioDespesasTabular();
+            }
+            return;
+        }
+        const btnRel = document.getElementById('btn-menu-despesas-relatorio');
+        mudarAba('despesas-relatorio', btnRel);
+        const busca = document.getElementById('busca-obra');
+        if (busca) busca.value = d.obra_nome || '';
+        window._filtroCadastroDespesa = {
+            obra: formatarNomeCanonicoDespesa(d.obra_nome || ''),
+            fornecedor: formatarNomeCanonicoDespesa(d.loja_nome || '')
+        };
+        if (typeof window.buscarDespesasObra === 'function') {
+            await window.buscarDespesasObra();
+        }
     };
 
     window.visualizarNotasDespesaResumo = function (chaveObra, chaveLoja) {
@@ -15456,9 +15776,12 @@ window.carregarFiltrosDespesas = async function() {
             return tb - ta;
         });
         window._notasResumoVisualizarAtual = ordenada;
+        window._notasResumoChaveObra = chaveObra;
+        window._notasResumoChaveLoja = chaveLoja;
         const nomeObra = formatarNomeCanonicoDespesa(ordenada[0].obra_nome) || 'Obra';
         const nomeLoja = formatarNomeCanonicoDespesa(ordenada[0].loja_nome) || 'Fornecedor';
-        let html = '<p style="font-size:12px;color:#666;margin:0 0 12px 0;text-align:left;"><b>' + escapeHtmlBasico(nomeObra) + '</b> — <b>' + escapeHtmlBasico(nomeLoja) + '</b><br>Clique na miniatura para ampliar a nota / recibo.</p>';
+        let html = '<p style="font-size:12px;color:#666;margin:0 0 12px 0;text-align:left;"><b>' + escapeHtmlBasico(nomeObra) + '</b> — <b>' + escapeHtmlBasico(nomeLoja) + '</b><br>'
+            + 'A <b>origem</b> mostra onde a nota foi cadastrada. Use <b>Visualizar</b>, <b>Editar</b>, <b>Ver origem</b> ou <b>Excluir</b>.</p>';
         ordenada.forEach((d, idx) => {
             const st = despesaEstaPaga(d) ? 'Pago' : (despesaEstaVencida(d) ? 'Vencida' : 'Pendente');
             const corSt = despesaEstaPaga(d) ? '#28a745' : (despesaEstaVencida(d) ? '#dc3545' : '#856404');
@@ -15467,18 +15790,25 @@ window.carregarFiltrosDespesas = async function() {
                 ? '<img src="' + d.foto_recibo + '" onclick="abrirNotaResumoPorIndice(' + idx + ')" alt="Nota" style="max-width:140px;max-height:100px;object-fit:cover;border-radius:8px;border:2px solid #4285F4;cursor:pointer;margin-top:8px;" title="Clique para ampliar">'
                 : '<span style="display:inline-block;margin-top:8px;font-size:11px;color:#888;background:#f5f5f5;padding:6px 10px;border-radius:6px;">Sem foto da nota</span>';
             html += '<div style="text-align:left;border:1px solid #e0e6ed;border-radius:10px;padding:12px;margin-bottom:10px;background:#fafcff;">'
-                + '<div style="display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap;">'
-                + '<div><b style="color:#1a2a43;">R$ ' + escapeHtmlBasico(String(d.valor_string || '0')) + '</b>'
-                + ' <span style="font-size:11px;font-weight:700;color:' + corSt + ';">' + st + '</span></div>'
+                + '<div style="display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap;align-items:center;">'
+                + '<div>' + htmlOrigemNotaBadge(d) + '</div>'
                 + '<span style="font-size:11px;color:#666;">Venc.: ' + escapeHtmlBasico(venc) + '</span></div>'
+                + '<div style="margin-top:8px;"><b style="color:#1a2a43;">R$ ' + escapeHtmlBasico(String(d.valor_string || '0')) + '</b>'
+                + ' <span style="font-size:11px;font-weight:700;color:' + corSt + ';">' + st + '</span></div>'
                 + (d.nota_fiscal ? '<div style="font-size:11px;color:#555;margin-top:4px;">NF: ' + escapeHtmlBasico(String(d.nota_fiscal)) + '</div>' : '')
                 + (d.descricao ? '<div style="font-size:11px;color:#444;margin-top:4px;">' + escapeHtmlBasico(String(d.descricao).slice(0, 120)) + '</div>' : '')
-                + fotoHtml + '</div>';
+                + fotoHtml
+                + '<div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:12px;">'
+                + '<button type="button" onclick="visualizarNotaCadastradaResumo(' + idx + ')" style="flex:1;min-width:90px;background:#1a2a43;color:#fff;border:none;padding:8px 10px;border-radius:8px;cursor:pointer;font-weight:800;font-size:11px;">👁️ Visualizar</button>'
+                + '<button type="button" onclick="editarNotaCadastradaResumo(' + idx + ')" style="flex:1;min-width:90px;background:#4285F4;color:#fff;border:none;padding:8px 10px;border-radius:8px;cursor:pointer;font-weight:800;font-size:11px;">✏️ Editar</button>'
+                + '<button type="button" onclick="abrirOrigemNotaCadastrada(' + idx + ')" style="flex:1;min-width:90px;background:#856404;color:#fff;border:none;padding:8px 10px;border-radius:8px;cursor:pointer;font-weight:800;font-size:11px;">📍 Ver origem</button>'
+                + '<button type="button" onclick="excluirNotaCadastradaResumo(' + idx + ')" style="flex:1;min-width:90px;background:#d9534f;color:#fff;border:none;padding:8px 10px;border-radius:8px;cursor:pointer;font-weight:800;font-size:11px;">🗑️ Excluir</button>'
+                + '</div></div>';
         });
         Swal.fire({
             title: '📄 Notas / Recibos',
             html: html,
-            width: 680,
+            width: 720,
             confirmButtonText: 'Fechar',
             confirmButtonColor: '#1a2a43'
         });
@@ -15513,12 +15843,10 @@ window.carregarFiltrosDespesas = async function() {
             let grafFornecedores = {};
             window._mapDespesasResumoFornecedor = {};
             let encontrouNaObra = false;
-            
-            querySnapshot.forEach(doc => {
-                const d = { id: doc.id, ...doc.data() };
+
+            function incorporarDespesaNoResumo(d) {
                 const chObraDoc = normalizarChaveNomeDespesa(d.obra_nome || d.obra_lower || '');
                 if (chObraDoc !== chaveObraFiltro) return;
-
                 encontrouNaObra = true;
                 const obra = formatarNomeCanonicoDespesa(d.obra_nome) || obraSelecionada;
                 const loja = formatarNomeCanonicoDespesa(d.loja_nome) || 'NÃO INFORMADO';
@@ -15527,13 +15855,15 @@ window.carregarFiltrosDespesas = async function() {
                 const mapKey = chaveObra + '||' + chaveLoja;
                 if (!window._mapDespesasResumoFornecedor[mapKey]) window._mapDespesasResumoFornecedor[mapKey] = [];
                 window._mapDespesasResumoFornecedor[mapKey].push(d);
+                if (notaVeioDoRelatorioDespesas(d)) {
+                    if (!window._mapRelatorioDespesasParaEdicao) window._mapRelatorioDespesasParaEdicao = {};
+                    window._mapRelatorioDespesasParaEdicao[d.id] = d;
+                }
                 const valor = d.valor_numero || 0;
                 const status = d.status || 'pendente';
-                
                 if (!resumo[chaveObra]) resumo[chaveObra] = { label: obra, lojas: {} };
                 if (!resumo[chaveObra].lojas[chaveLoja]) resumo[chaveObra].lojas[chaveLoja] = { label: loja, pendente: 0, pago: 0 };
                 if (!grafFornecedores[chaveLoja]) grafFornecedores[chaveLoja] = { label: loja, pendente: 0, pago: 0 };
-                
                 if (status === 'pago') {
                     resumo[chaveObra].lojas[chaveLoja].pago += valor;
                     grafFornecedores[chaveLoja].pago += valor;
@@ -15541,7 +15871,18 @@ window.carregarFiltrosDespesas = async function() {
                     resumo[chaveObra].lojas[chaveLoja].pendente += valor;
                     grafFornecedores[chaveLoja].pendente += valor;
                 }
+            }
+            
+            querySnapshot.forEach(docSnap => {
+                incorporarDespesaNoResumo({ id: docSnap.id, ...docSnap.data(), _origem: 'despesas_obras' });
             });
+            try {
+                const qRel = query(collection(db, COLECAO_RELATORIO_DESPESAS), where('empresa_id', '==', empresaLogada));
+                const snapRel = await getDocs(qRel);
+                snapRel.forEach(function (docSnap) {
+                    incorporarDespesaNoResumo({ id: docSnap.id, ...docSnap.data(), _origem: 'relatorio_despesas' });
+                });
+            } catch (eRelResumo) { /* relatório de despesas é opcional neste cruzamento */ }
 
             if (!encontrouNaObra) {
                 divTabela.innerHTML = '<p style="text-align: center; color: #d9534f; font-weight: bold;">Nenhuma despesa registada para a obra <b>' + nomeObraTitulo + '</b>.</p>';
@@ -16761,8 +17102,142 @@ window.exportarPDF = function(tipo) {
         if (titulo) titulo.setAttribute('aria-expanded', aberto ? 'true' : 'false');
     };
 
-    window.mudarAba = function(aba, elementoAtivado) {
+    const GESTOR_HIST_MARCA = 'gestor360';
+    let _gestorAbaAtual = 'inicio';
+    let _gestorHistIndice = 0;
+    let _gestorHistMax = 0;
+
+    function gestorUrlAba(aba) {
+        try {
+            const url = new URL(location.href);
+            url.hash = 'g/' + (aba || 'inicio');
+            return url.pathname + url.search + url.hash;
+        } catch (_) {
+            return '#g/' + (aba || 'inicio');
+        }
+    }
+
+    function capturarScrollGestor() {
+        const main = document.querySelector('.gestor-main-content');
+        return main ? main.scrollTop : 0;
+    }
+
+    function restaurarScrollGestor(topo) {
+        const main = document.querySelector('.gestor-main-content');
+        if (!main) return;
+        const valor = typeof topo === 'number' ? topo : 0;
+        requestAnimationFrame(() => { main.scrollTop = valor; });
+    }
+
+    function estadoHistoricoAbaGestor(aba, idx, scroll) {
+        return {
+            gestor: GESTOR_HIST_MARCA,
+            aba: aba || 'inicio',
+            idx: typeof idx === 'number' ? idx : _gestorHistIndice,
+            scroll: typeof scroll === 'number' ? scroll : 0
+        };
+    }
+
+    function atualizarBotoesHistoricoGestor() {
+        const btnVoltar = document.getElementById('btn-gestor-voltar');
+        const btnAvancar = document.getElementById('btn-gestor-avancar');
+        if (btnVoltar) btnVoltar.disabled = _gestorHistIndice <= 0;
+        if (btnAvancar) btnAvancar.disabled = _gestorHistIndice >= _gestorHistMax;
+    }
+
+    function encontrarBotaoAbaGestor(aba) {
+        if (!aba || aba === 'inicio') return null;
+        const needle = "mudarAba('" + aba + "'";
+        return Array.from(document.querySelectorAll('.gestor-menu-btn')).find((btn) => {
+            const oc = btn.getAttribute('onclick') || '';
+            return oc.indexOf(needle) !== -1;
+        }) || null;
+    }
+
+    function iniciarHistoricoPainelGestor() {
+        _gestorAbaAtual = 'inicio';
+        _gestorHistIndice = 0;
+        _gestorHistMax = 0;
+        const url = gestorUrlAba('inicio');
+        try {
+            history.replaceState({ gestor: GESTOR_HIST_MARCA, sentinel: true }, '', url);
+            history.pushState(estadoHistoricoAbaGestor('inicio', 0, 0), '', url);
+        } catch (_) {}
+        atualizarBotoesHistoricoGestor();
+    }
+    window.iniciarHistoricoPainelGestor = iniciarHistoricoPainelGestor;
+
+    function registrarNavegacaoAbaGestor(aba) {
+        if (!aba || aba === _gestorAbaAtual) return;
+        const urlAtual = gestorUrlAba(_gestorAbaAtual);
+        try {
+            history.replaceState(
+                estadoHistoricoAbaGestor(_gestorAbaAtual, _gestorHistIndice, capturarScrollGestor()),
+                '',
+                urlAtual
+            );
+            _gestorHistIndice += 1;
+            _gestorHistMax = _gestorHistIndice;
+            _gestorAbaAtual = aba;
+            history.pushState(estadoHistoricoAbaGestor(aba, _gestorHistIndice, 0), '', gestorUrlAba(aba));
+        } catch (_) {
+            _gestorAbaAtual = aba;
+        }
+        atualizarBotoesHistoricoGestor();
+    }
+
+    window.voltarAbaGestor = function () {
+        if (_gestorHistIndice <= 0) return;
+        history.back();
+    };
+
+    window.avancarAbaGestor = function () {
+        if (_gestorHistIndice >= _gestorHistMax) return;
+        history.forward();
+    };
+
+    window.addEventListener('popstate', function (ev) {
+        if (typeof painelGestorEstaVisivel === 'function' && !painelGestorEstaVisivel()) return;
+        if (window.Swal && typeof Swal.isVisible === 'function' && Swal.isVisible()) {
+            try { Swal.close(); } catch (_) {}
+        }
+        const st = ev.state;
+        if (!st || st.gestor !== GESTOR_HIST_MARCA || st.sentinel) {
+            try {
+                history.pushState(
+                    estadoHistoricoAbaGestor(_gestorAbaAtual, _gestorHistIndice, capturarScrollGestor()),
+                    '',
+                    gestorUrlAba(_gestorAbaAtual)
+                );
+            } catch (_) {}
+            atualizarBotoesHistoricoGestor();
+            return;
+        }
+        _gestorHistIndice = typeof st.idx === 'number' ? st.idx : _gestorHistIndice;
+        _gestorAbaAtual = st.aba || 'inicio';
+        window.mudarAba(_gestorAbaAtual, encontrarBotaoAbaGestor(_gestorAbaAtual), {
+            preservarConteudo: true,
+            semHistorico: true,
+            scroll: st.scroll
+        });
+        atualizarBotoesHistoricoGestor();
+    });
+
+    window.mudarAba = function(aba, elementoAtivado, opcoes) {
+        opcoes = opcoes || {};
+        const preservarConteudo = !!opcoes.preservarConteudo;
+        const semHistorico = !!opcoes.semHistorico || preservarConteudo;
+
+        if (!semHistorico) registrarNavegacaoAbaGestor(aba);
+
         if (window.innerWidth <= 900) fecharMenuMobileGestor();
+
+        if (aba === 'inicio') {
+            if (typeof mostrarTelaInicioGestor === 'function') mostrarTelaInicioGestor();
+            if (preservarConteudo) restaurarScrollGestor(opcoes.scroll);
+            return;
+        }
+
         document.querySelectorAll('.gestor-menu-btn').forEach(t => t.classList.remove('active'));
         document.querySelectorAll('.view-section').forEach(v => v.classList.remove('active'));
 
@@ -16809,6 +17284,8 @@ window.exportarPDF = function(tipo) {
             }
         }
 
+        if (!elementoAtivado) elementoAtivado = encontrarBotaoAbaGestor(aba);
+
         if (elementoAtivado) {
             elementoAtivado.classList.add('active');
             const tituloEl = document.getElementById('gestor-titulo-aba');
@@ -16818,6 +17295,11 @@ window.exportarPDF = function(tipo) {
         }
         const secao = document.getElementById(`aba-${aba}`);
         if (secao) secao.classList.add('active');
+
+        if (preservarConteudo) {
+            restaurarScrollGestor(opcoes.scroll);
+            return;
+        }
 
         const mainGestor = document.querySelector('.gestor-main-content');
         if (mainGestor) mainGestor.scrollTop = 0;
@@ -22793,12 +23275,13 @@ async function monitorarVencimentosObras() {
         let emitirSom = false;
 
         querySnapshot.forEach((docSnap) => {
-            const dados = docSnap.data();
+            const dados = Object.assign({ id: docSnap.id }, docSnap.data() || {});
             const idDoc = docSnap.id;
-            const statusAtual = dados.status || dados.Status || "";
+            if (typeof despesaEstaPaga === 'function' && despesaEstaPaga(dados)) return;
+            if (typeof valorEmAbertoDespesa === 'function' && valorEmAbertoDespesa(dados) <= 0.009) return;
             const tsVenc = dataVencimentoTsDespesa(dados);
 
-            if (statusAtual !== "Pago" && statusAtual !== "pago" && tsVenc != null) {
+            if (tsVenc != null) {
                 const diffMs = tsVenc - hojeMeioDia.getTime();
                 const diasRestantes = Math.round(diffMs / (1000 * 60 * 60 * 24));
                 const silenciadoHoje = localStorage.getItem(chaveAlertaSilenciado(idDoc, hojeFormatado));
@@ -23427,6 +23910,32 @@ function atualizarContagemPainelAlertas() {
 }
 
 // Layout atualizado para exibir OBRA e LOJA
+window.abrirDespesaDoAlertaNaObra = async function (id) {
+    const d = (window._mapAlertasDespesas && window._mapAlertasDespesas[id]) || null;
+    if (!d) {
+        return Swal.fire('Aviso', 'Não foi possível localizar este vencimento.', 'warning');
+    }
+    const btnRel = document.getElementById('btn-menu-despesas-relatorio');
+    if (typeof mudarAba === 'function') mudarAba('despesas-relatorio', btnRel);
+    window._destacarDespesaId = id;
+    window._abrirSecaoVencidas = true;
+    const obra = d.obra_nome || d.obra || '';
+    const loja = d.loja_nome || d.loja || '';
+    if (obra && loja && typeof window.selecionarFornecedorDespesa === 'function') {
+        window.selecionarFornecedorDespesa(loja, obra);
+        return;
+    }
+    if (obra && typeof window.selecionarObraDespesa === 'function') {
+        window.selecionarObraDespesa(obra);
+        return;
+    }
+    const busca = document.getElementById('busca-obra');
+    if (busca) busca.value = obra || loja || '';
+    if (typeof window.buscarDespesasObra === 'function') {
+        await window.buscarDespesasObra();
+    }
+};
+
 function montarPainelAlerta(id, loja, obra, desc, titulo, tipo, temNota, valor, vencimento) {
     const corTema = tipo === "urgente" ? "#d9534f" : "#f0ad4e";
     const lojaEsc = escapeHtmlBasico(loja);
@@ -23450,6 +23959,7 @@ function montarPainelAlerta(id, loja, obra, desc, titulo, tipo, temNota, valor, 
             </div>
             <div style="display:flex; flex-direction:column; gap:8px; flex-shrink:0; min-width:88px;">
                 ${btnNota}
+                <button type="button" onclick="window.abrirDespesaDoAlertaNaObra('${id}')" style="background:#1a2a43;color:#fff;border:none;border-radius:6px;padding:7px 10px;font-size:11px;font-weight:700;cursor:pointer;width:100%;">📍 Ver na obra</button>
                 <button type="button" onclick="window.confirmarLeituraAlerta('${id}')" style="background:#f8f9fa; border:1px solid #ddd; border-radius:6px; padding:6px 12px; font-weight:700; cursor:pointer; color:#333;">OK</button>
             </div>
         </div>
