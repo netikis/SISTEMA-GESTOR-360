@@ -1,0 +1,12 @@
+# rascunhos, backups e pastas que não devem ir ao GitHub
+*.bak
+CODIGO MANIFEST.txt
+CODIGO SW.txt
+Nova pasta/
+AUDIOS E IMAGENS/
+*.mp4
+*.mp3
+*.wav
+logo.jpg
+OLIVEIRA DANTAS.jpg
+PEDIU CHEGOU.jpg
