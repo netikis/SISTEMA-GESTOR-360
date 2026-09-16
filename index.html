@@ -568,12 +568,52 @@
             border-color: #f1c40f;
         }
 
+        .gestor-menu-grupo.grupo-cartoes .gestor-menu-grupo-titulo {
+            color: #d7bde2;
+        }
+
+        .gestor-menu-grupo.grupo-cartoes.has-active .gestor-menu-grupo-titulo {
+            background: rgba(142, 68, 173, 0.35);
+            border-color: #f1c40f;
+        }
+
+        .cartao-item {
+            background: #fff;
+            border: 1px solid #e0e6ed;
+            border-radius: 12px;
+            padding: 14px 16px;
+            margin-bottom: 10px;
+            cursor: pointer;
+            text-align: left;
+        }
+
+        .cartao-item:hover {
+            border-color: #8e44ad;
+            box-shadow: 0 4px 12px rgba(142, 68, 173, 0.15);
+        }
+
+        .cartao-item h4 {
+            margin: 0 0 4px;
+            color: #1a2a43;
+            font-size: 16px;
+        }
+
+        .cartao-despesa-linha {
+            background: #f8f9fb;
+            border-radius: 8px;
+            padding: 10px 12px;
+            margin-bottom: 8px;
+            font-size: 13px;
+        }
+
         .gestor-menu-btn.menu-despesas { color: #f5b7b1; }
         .gestor-menu-btn.menu-despesas.active { background: #c0392b; border-color: #f1c40f; }
         .gestor-menu-btn.menu-documentos { color: #aed6f1; }
         .gestor-menu-btn.menu-documentos.active { background: #2980b9; border-color: #f1c40f; }
         .gestor-menu-btn.menu-entradas { color: #abebc6; }
         .gestor-menu-btn.menu-entradas.active { background: #1e8449; border-color: #f1c40f; }
+        .gestor-menu-btn.menu-cartoes { color: #d7bde2; }
+        .gestor-menu-btn.menu-cartoes.active { background: #8e44ad; border-color: #f1c40f; }
 
         .bloco-lancamento-entradas {
             background: #eef2f5;
@@ -1084,8 +1124,9 @@
 
         #aba-inicio.gestor-tela-inicio.active {
             display: flex;
-            align-items: center;
+            align-items: flex-start;
             justify-content: center;
+            overflow-y: auto;
         }
 
         #aba-inicio.gestor-tela-inicio::before {
@@ -1110,23 +1151,34 @@
             position: relative;
             z-index: 1;
             text-align: center;
-            padding: 40px 24px;
-            max-width: 420px;
+            padding: 28px 20px 36px;
+            width: 100%;
+            max-width: 980px;
+        }
+
+        .gestor-inicio-topo {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 18px;
+            margin-bottom: 22px;
+            text-align: left;
         }
 
         .gestor-tela-inicio-logo {
-            width: min(280px, 70vw);
+            width: min(92px, 22vw);
             height: auto;
-            max-height: 280px;
+            max-height: 92px;
             object-fit: contain;
-            border-radius: 16px;
+            border-radius: 14px;
             background: #fff;
-            padding: 12px;
-            box-shadow: 0 16px 48px rgba(0, 0, 0, 0.45);
+            padding: 8px;
+            box-shadow: 0 10px 28px rgba(0, 0, 0, 0.35);
+            flex-shrink: 0;
         }
 
         .gestor-tela-inicio-nome {
-            margin: 22px 0 8px;
+            margin: 0 0 4px;
             color: #f1c40f;
             font-size: 22px;
             font-weight: 800;
@@ -1140,6 +1192,116 @@
             font-size: 14px;
             font-weight: 500;
             line-height: 1.5;
+        }
+
+        .gestor-acesso-rapido {
+            background: rgba(255, 255, 255, 0.94);
+            border-radius: 18px;
+            padding: 22px 20px 20px;
+            text-align: left;
+            box-shadow: 0 16px 40px rgba(0, 0, 0, 0.28);
+        }
+
+        .gestor-acesso-rapido h4 {
+            margin: 0 0 4px;
+            color: #1a2a43;
+            font-size: 20px;
+            font-weight: 800;
+        }
+
+        .gestor-acesso-rapido-hint {
+            margin: 0 0 16px;
+            color: #667085;
+            font-size: 13px;
+        }
+
+        .gestor-atalhos-grid {
+            display: grid;
+            grid-template-columns: repeat(3, minmax(0, 1fr));
+            gap: 12px;
+        }
+
+        .gestor-atalho-card {
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            align-items: flex-start;
+            gap: 6px;
+            min-height: 118px;
+            padding: 16px 14px 14px;
+            border: 1px solid #e8edf2;
+            border-radius: 14px;
+            background: #fff;
+            cursor: pointer;
+            text-align: left;
+            font-family: 'Poppins', sans-serif;
+            transition: transform 0.15s ease, box-shadow 0.15s ease, border-color 0.15s ease;
+        }
+
+        .gestor-atalho-card:hover {
+            transform: translateY(-2px);
+            border-color: #d4a017;
+            box-shadow: 0 8px 20px rgba(26, 42, 67, 0.12);
+        }
+
+        .gestor-atalho-icone {
+            font-size: 26px;
+            line-height: 1;
+        }
+
+        .gestor-atalho-titulo {
+            color: #1a2a43;
+            font-size: 15px;
+            font-weight: 800;
+            line-height: 1.25;
+        }
+
+        .gestor-atalho-desc {
+            color: #6b7280;
+            font-size: 12px;
+            font-weight: 500;
+            line-height: 1.35;
+        }
+
+        .gestor-atalho-tecla {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            min-width: 28px;
+            padding: 2px 7px;
+            border-radius: 8px;
+            background: #eef3f8;
+            color: #1a2a43;
+            font-size: 11px;
+            font-weight: 800;
+            text-align: center;
+        }
+
+        #tela-patrao .gestor-tela-inicio-nome {
+            color: #f1c40f !important;
+        }
+
+        #tela-patrao .gestor-tela-inicio-hint {
+            color: #d5dbe3 !important;
+            font-weight: 500 !important;
+        }
+
+        #tela-patrao .gestor-acesso-rapido h4 {
+            color: #1a2a43 !important;
+        }
+
+        #tela-patrao .gestor-acesso-rapido-hint {
+            color: #667085 !important;
+            font-weight: 500 !important;
+        }
+
+        #tela-patrao .gestor-atalho-desc {
+            color: #6b7280 !important;
+            font-weight: 500 !important;
+        }
+
+        #tela-patrao .gestor-atalho-titulo {
+            color: #1a2a43 !important;
         }
 
         #tela-patrao .func-item {
@@ -1358,7 +1520,14 @@
             }
 
             .gestor-tela-inicio-conteudo {
-                padding: 28px 16px;
+                padding: 16px 12px 24px;
+            }
+
+            .gestor-inicio-topo {
+                flex-direction: column;
+                text-align: center;
+                gap: 10px;
+                margin-bottom: 16px;
             }
 
             .gestor-tela-inicio-nome {
@@ -1367,6 +1536,16 @@
 
             .gestor-tela-inicio-hint {
                 font-size: 13px;
+            }
+
+            .gestor-atalhos-grid {
+                grid-template-columns: repeat(2, minmax(0, 1fr));
+                gap: 8px;
+            }
+
+            .gestor-atalho-card {
+                min-height: 108px;
+                padding: 14px 12px 12px;
             }
 
             #alerta-container-global,
@@ -3072,7 +3251,7 @@
 <script>
     if ('serviceWorker' in navigator && (location.protocol === 'https:' || location.protocol === 'http:')) {
       window.addEventListener('load', () => {
-        navigator.serviceWorker.register('./sw.js?v=6')
+        navigator.serviceWorker.register('./sw.js?v=8')
           .then(registration => {
             registration.update();
             console.log('ServiceWorker registado:', registration.scope);
@@ -3208,6 +3387,17 @@
                     <button type="button" class="gestor-menu-btn menu-despesas" id="btn-menu-terceiros" data-titulo="Terceiros" onclick="mudarAba('terceiros', this)">👷 Terceiros</button>
                 </div>
             </div>
+            <div class="gestor-menu-grupo grupo-cartoes" id="grupo-menu-cartoes">
+                <button type="button" class="gestor-menu-grupo-titulo" id="btn-grupo-cartoes" onclick="toggleGrupoMenuCartoes()" aria-expanded="false">
+                    <span>💳 Despesas Cartões</span>
+                    <span class="gestor-menu-grupo-seta" aria-hidden="true">▼</span>
+                </button>
+                <div class="gestor-menu-sub" id="submenu-cartoes">
+                    <button type="button" class="gestor-menu-btn menu-cartoes" id="btn-menu-cartoes-cadastro" data-titulo="Cadastro de Cartões" onclick="mudarAba('cartoes-cadastro', this)">➕ Cadastro de Cartões</button>
+                    <button type="button" class="gestor-menu-btn menu-cartoes" id="btn-menu-cartoes-cadastrados" data-titulo="Cartões Cadastrados" onclick="mudarAba('cartoes-cadastrados', this)">💳 Cartões Cadastrados</button>
+                    <button type="button" class="gestor-menu-btn menu-cartoes" id="btn-menu-cartoes-relatorio" data-titulo="Relatório de Faturas" onclick="mudarAba('cartoes-relatorio', this)">📊 Relatório de Faturas</button>
+                </div>
+            </div>
             <div class="gestor-menu-grupo grupo-entradas" id="grupo-menu-entradas">
                 <button type="button" class="gestor-menu-grupo-titulo" id="btn-grupo-entradas" onclick="toggleGrupoMenuEntradas()" aria-expanded="false">
                     <span>📥 Entradas / Recebíveis</span>
@@ -3259,9 +3449,85 @@
 
     <div id="aba-inicio" class="view-section gestor-tela-inicio active">
         <div class="gestor-tela-inicio-conteudo">
-            <img src="https://i.postimg.cc/zDRJMSTn/69420f5a-5b80-457e-8146-00485162d7f2.jpg" crossorigin="anonymous" class="gestor-tela-inicio-logo" id="gestor-inicio-logo" alt="Logo da empresa">
-            <h3 class="gestor-tela-inicio-nome" id="gestor-inicio-nome">Empresa</h3>
-            <p class="gestor-tela-inicio-hint">Toque no menu ☰ e escolha uma opção para começar.</p>
+            <div class="gestor-inicio-topo">
+                <img src="https://i.postimg.cc/zDRJMSTn/69420f5a-5b80-457e-8146-00485162d7f2.jpg" crossorigin="anonymous" class="gestor-tela-inicio-logo" id="gestor-inicio-logo" alt="Logo da empresa">
+                <div>
+                    <h3 class="gestor-tela-inicio-nome" id="gestor-inicio-nome">Empresa</h3>
+                    <p class="gestor-tela-inicio-hint">Painel geral do gestor — obras, equipe, cartões e financeiro.</p>
+                </div>
+            </div>
+            <section class="gestor-acesso-rapido" aria-label="Acesso rápido">
+                <h4>Acesso rápido</h4>
+                <p class="gestor-acesso-rapido-hint">Clique no atalho ou use a tecla indicada. O <b>F5</b> continua atualizando a página.</p>
+                <div class="gestor-atalhos-grid">
+                    <button type="button" class="gestor-atalho-card" onclick="abrirAtalhoGestor('F1')">
+                        <span class="gestor-atalho-tecla">F1</span>
+                        <span class="gestor-atalho-icone">🏠</span>
+                        <span class="gestor-atalho-titulo">Início</span>
+                        <span class="gestor-atalho-desc">Painel inicial</span>
+                    </button>
+                    <button type="button" class="gestor-atalho-card" onclick="abrirAtalhoGestor('F2')">
+                        <span class="gestor-atalho-tecla">F2</span>
+                        <span class="gestor-atalho-icone">👥</span>
+                        <span class="gestor-atalho-titulo">Funcionários</span>
+                        <span class="gestor-atalho-desc">Equipe cadastrada</span>
+                    </button>
+                    <button type="button" class="gestor-atalho-card" onclick="abrirAtalhoGestor('F3')">
+                        <span class="gestor-atalho-tecla">F3</span>
+                        <span class="gestor-atalho-icone">➕</span>
+                        <span class="gestor-atalho-titulo">Cadastrar</span>
+                        <span class="gestor-atalho-desc">Novo funcionário</span>
+                    </button>
+                    <button type="button" class="gestor-atalho-card" onclick="abrirAtalhoGestor('F4')">
+                        <span class="gestor-atalho-tecla">F4</span>
+                        <span class="gestor-atalho-icone">🏗️</span>
+                        <span class="gestor-atalho-titulo">Despesas</span>
+                        <span class="gestor-atalho-desc">Adicionar despesas</span>
+                    </button>
+                    <button type="button" class="gestor-atalho-card" onclick="abrirAtalhoGestor('F6')">
+                        <span class="gestor-atalho-tecla">F6</span>
+                        <span class="gestor-atalho-icone">🔍</span>
+                        <span class="gestor-atalho-titulo">Gastos por obra</span>
+                        <span class="gestor-atalho-desc">Relatório de gastos</span>
+                    </button>
+                    <button type="button" class="gestor-atalho-card" onclick="abrirAtalhoGestor('F7')">
+                        <span class="gestor-atalho-tecla">F7</span>
+                        <span class="gestor-atalho-icone">💳</span>
+                        <span class="gestor-atalho-titulo">Cartões</span>
+                        <span class="gestor-atalho-desc">Cartões cadastrados</span>
+                    </button>
+                    <button type="button" class="gestor-atalho-card" onclick="abrirAtalhoGestor('F8')">
+                        <span class="gestor-atalho-tecla">F8</span>
+                        <span class="gestor-atalho-icone">📑</span>
+                        <span class="gestor-atalho-titulo">Faturas</span>
+                        <span class="gestor-atalho-desc">Relatório de faturas</span>
+                    </button>
+                    <button type="button" class="gestor-atalho-card" onclick="abrirAtalhoGestor('F9')">
+                        <span class="gestor-atalho-tecla">F9</span>
+                        <span class="gestor-atalho-icone">📄</span>
+                        <span class="gestor-atalho-titulo">Folha</span>
+                        <span class="gestor-atalho-desc">Folha de pagamento</span>
+                    </button>
+                    <button type="button" class="gestor-atalho-card" onclick="abrirAtalhoGestor('F10')">
+                        <span class="gestor-atalho-tecla">F10</span>
+                        <span class="gestor-atalho-icone">📊</span>
+                        <span class="gestor-atalho-titulo">Relatório obras</span>
+                        <span class="gestor-atalho-desc">Relatório geral</span>
+                    </button>
+                    <button type="button" class="gestor-atalho-card" onclick="abrirAtalhoGestor('F11')">
+                        <span class="gestor-atalho-tecla">F11</span>
+                        <span class="gestor-atalho-icone">⏳</span>
+                        <span class="gestor-atalho-titulo">A receber</span>
+                        <span class="gestor-atalho-desc">Contas a receber</span>
+                    </button>
+                    <button type="button" class="gestor-atalho-card" onclick="abrirAtalhoGestor('F12')">
+                        <span class="gestor-atalho-tecla">F12</span>
+                        <span class="gestor-atalho-icone">📍</span>
+                        <span class="gestor-atalho-titulo">Ponto</span>
+                        <span class="gestor-atalho-desc">Registro de ponto</span>
+                    </button>
+                </div>
+            </section>
         </div>
     </div>
 
@@ -3947,6 +4213,123 @@
                 <div id="lista-terceiros-resultados" style="margin-top: 15px;"></div>
             </div>
         </details>
+    </div>
+
+    <div id="aba-cartoes-cadastro" class="view-section">
+        <h2 style="color:#8e44ad;margin:0 0 8px 0;font-size:18px;">Cadastro de Cartões</h2>
+        <p class="texto-explicacao" style="margin-top:0;">Cadastre o cartão usado nas compras da empresa. O <b>CVC não é gravado</b>. Do número ficam só os <b>4 últimos dígitos</b>.</p>
+        <form id="formCadastroCartao" onsubmit="event.preventDefault(); window.salvarCartaoCredito();">
+            <label>Nome</label>
+            <input type="text" id="cartao-nome" required placeholder="Ex.: Nubank empresa, Visa compras" autocomplete="off">
+            <label>Número do cartão</label>
+            <input type="text" id="cartao-numero" inputmode="numeric" autocomplete="off" maxlength="23" placeholder="•••• •••• •••• 1234" oninput="mascaraNumeroCartao(this)">
+            <label>CVC</label>
+            <input type="password" id="cartao-cvc" inputmode="numeric" autocomplete="off" maxlength="4" placeholder="Não é salvo">
+            <p class="texto-explicacao" style="margin:4px 0 12px;">O CVC é só para conferência na hora do cadastro e <b>não fica armazenado</b>.</p>
+            <label>Data de vencimento do cartão</label>
+            <input type="month" id="cartao-validade">
+            <label>Dia de vencimento da fatura</label>
+            <select id="cartao-dia-fatura"></select>
+            <button type="submit" class="btn-gold">SALVAR CARTÃO</button>
+            <button type="button" onclick="limparFormCartao()" style="width:100%;margin-top:10px;background:#7f8c8d;color:#fff;border:none;padding:12px;border-radius:12px;font-weight:700;cursor:pointer;">CANCELAR</button>
+        </form>
+    </div>
+
+    <div id="aba-cartoes-cadastrados" class="view-section">
+        <div id="cartoes-lista-wrap">
+            <h2 style="color:#8e44ad;margin:0 0 8px 0;font-size:18px;">Cartões Cadastrados</h2>
+            <p class="texto-explicacao" style="margin-top:0;">Clique no cartão para lançar despesas, parcelamentos e marcar a <b>fatura como paga</b>.</p>
+            <button type="button" class="btn-enviar" style="margin-top:8px;" onclick="carregarCartoesCadastrados()">🔄 ATUALIZAR LISTA</button>
+            <div id="lista-cartoes-cadastrados" style="margin-top:16px;"></div>
+        </div>
+        <div id="cartao-detalhe-wrap" style="display:none;">
+            <button type="button" onclick="fecharDetalheCartao()" style="background:#1a2a43;color:#fff;border:none;padding:8px 14px;border-radius:8px;font-weight:700;cursor:pointer;margin-bottom:12px;">← Voltar aos cartões</button>
+            <div id="cartao-detalhe-cabecalho"></div>
+            <details open style="margin:16px 0;">
+                <summary style="background:#eef2f5;">➕ Adicionar despesa neste cartão</summary>
+                <div style="padding:15px;">
+                    <label>Pagamentos realizados</label>
+                    <input type="text" id="cartao-desp-descricao" placeholder="Ex.: material elétrico, combustível, ferramenta">
+                    <label>Tipo</label>
+                    <select id="cartao-desp-tipo" onchange="alternarParcelasCartao()">
+                        <option value="pagamento_realizado">Pagamentos realizados</option>
+                        <option value="parcelamento">Parcelamento realizado</option>
+                        <option value="a_vista">Pagamento à vista</option>
+                    </select>
+                    <div id="cartao-desp-parcelas-wrap" style="display:none;">
+                        <label>Quantidade de parcelas</label>
+                        <input type="number" id="cartao-desp-parcelas" min="2" max="24" value="2">
+                    </div>
+                    <label>Valor da compra (R$)</label>
+                    <input type="text" id="cartao-desp-valor" placeholder="0,00" oninput="mascaraMoeda(this)">
+                    <label>Data da compra</label>
+                    <input type="date" id="cartao-desp-data">
+                    <label>Fatura (mês / ano)</label>
+                    <input type="month" id="cartao-desp-competencia">
+                    <div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:8px;">
+                        <button type="button" class="btn-gold" style="flex:1;margin-top:8px;" onclick="salvarDespesaCartao()">SALVAR</button>
+                        <button type="button" style="flex:1;margin-top:8px;background:#7f8c8d;color:#fff;border:none;padding:15px;border-radius:12px;font-weight:700;cursor:pointer;" onclick="limparFormDespesaCartao()">CANCELAR</button>
+                    </div>
+                </div>
+            </details>
+            <div style="background:#fff8e8;border:1px solid #ffeeba;border-radius:10px;padding:14px;margin-bottom:16px;">
+                <h4 style="margin:0 0 8px;color:#856404;">Fatura em aberto</h4>
+                <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:flex-end;">
+                    <div style="flex:1;min-width:160px;">
+                        <label>Mês / ano da fatura</label>
+                        <input type="month" id="cartao-fatura-competencia" onchange="renderDespesasCartaoAberto()">
+                    </div>
+                    <button type="button" class="btn-enviar" style="background:#27ae60;flex:1;min-width:180px;" onclick="marcarFaturaCartaoPaga()">✅ FATURA PAGA</button>
+                </div>
+                <p id="cartao-fatura-total" style="margin:12px 0 0;font-weight:800;color:#c0392b;">Total em aberto: R$ 0,00</p>
+            </div>
+            <h4 style="color:#1a2a43;margin:0 0 8px;">Lançamentos desta fatura</h4>
+            <div id="lista-despesas-cartao"></div>
+        </div>
+    </div>
+
+    <div id="aba-cartoes-relatorio" class="view-section">
+        <h2 style="color:#8e44ad;margin:0 0 8px 0;font-size:18px;">Relatório de Faturas Pagas</h2>
+        <p class="texto-explicacao" style="margin-top:0;">Faturas marcadas como <b>pagas</b>. Filtre por data, mês e ano, como nos relatórios de obras.</p>
+        <div style="display:flex;flex-wrap:wrap;gap:10px;align-items:flex-end;">
+            <div style="min-width:160px;flex:1;">
+                <label>Data do pagamento</label>
+                <input type="date" id="cartao-rel-data" style="margin:0;">
+            </div>
+            <div style="min-width:140px;">
+                <label>Mês</label>
+                <select id="cartao-rel-mes" style="margin:0;">
+                    <option value="">Todos</option>
+                    <option value="01">Janeiro</option>
+                    <option value="02">Fevereiro</option>
+                    <option value="03">Março</option>
+                    <option value="04">Abril</option>
+                    <option value="05">Maio</option>
+                    <option value="06">Junho</option>
+                    <option value="07">Julho</option>
+                    <option value="08">Agosto</option>
+                    <option value="09">Setembro</option>
+                    <option value="10">Outubro</option>
+                    <option value="11">Novembro</option>
+                    <option value="12">Dezembro</option>
+                </select>
+            </div>
+            <div style="min-width:110px;">
+                <label>Ano</label>
+                <input type="number" id="cartao-rel-ano" placeholder="2026" style="margin:0;">
+            </div>
+            <button type="button" class="btn-enviar" style="min-width:140px;" onclick="carregarRelatorioFaturasCartoes()">🔍 BUSCAR</button>
+        </div>
+        <div class="rel-geral-obras-toolbar" style="display:flex;margin-top:12px;flex-wrap:wrap;gap:8px;">
+            <button type="button" class="btn-pdf-relatorio" onclick="exportarPDFFaturasCartoes()">🖨️ Exportar PDF</button>
+        </div>
+        <div id="cartao-rel-resumo" style="display:none;margin-top:16px;background:#fff3cd;padding:15px;border-radius:10px;text-align:center;border:1px solid #ffeeba;">
+            <h4 style="margin:0;color:#856404;">Resumo — Faturas de cartão</h4>
+            <div id="cartao-rel-resumo-totais" style="margin-top:8px;"></div>
+        </div>
+        <div id="lista-relatorio-faturas-cartao" style="margin-top:16px;">
+            <p style="text-align:center;color:#888;font-size:13px;">Escolha data, mês ou ano e clique em Buscar.</p>
+        </div>
     </div>
 
     <div id="aba-cadastrar-conta" class="view-section">
@@ -5184,6 +5567,13 @@
         }
         const btnEntradas = document.getElementById('btn-grupo-entradas');
         if (btnEntradas) btnEntradas.setAttribute('aria-expanded', 'false');
+
+        const grupoCartoes = document.getElementById('grupo-menu-cartoes');
+        if (grupoCartoes) {
+            grupoCartoes.classList.remove('has-active', 'open');
+        }
+        const btnCartoes = document.getElementById('btn-grupo-cartoes');
+        if (btnCartoes) btnCartoes.setAttribute('aria-expanded', 'false');
 
         const tituloEl = document.getElementById('gestor-titulo-aba');
         const empresa = getEmpresaGestor();
@@ -6773,6 +7163,9 @@ function separarDataSegura(dataString) {
     const COLECAO_AJUDA_CUSTO = 'ajuda_custo';
     const COLECAO_DESCONTOS_FOLHA = 'descontos_folha';
     const COLECAO_DOCUMENTOS_PESSOAIS = 'documentos_pessoais';
+    const COLECAO_CARTOES = 'cartoes_cadastro';
+    const COLECAO_CARTOES_DESPESAS = 'cartoes_despesas';
+    const COLECAO_CARTOES_FATURAS = 'cartoes_faturas';
     const PASTAS_DOCUMENTOS = ['fh', 'hallana', 'felipe', 'wellington', 'licitacoes', 'contratos_ativos', 'contratos_finalizados', 'empenhos'];
     const DOC_PDF_MAX_FIRESTORE_RAW = 750000;
     const DOC_FIRESTORE_MAX_B64 = 980000;
@@ -17043,6 +17436,7 @@ window.exportarPDF = function(tipo) {
 
     const ABAS_GRUPO_EQUIPE = ['cadastrar', 'equipe-cadastrada', 'criar', 'buscar', 'ponto', 'ajuda-custo', 'descontos-folha', 'folha', 'holerites', 'pedidos'];
     const ABAS_GRUPO_OBRAS = ['despesas-cadastrar', 'despesas-relatorio', 'relatorio-despesas', 'obras-relatorio-geral', 'notas-fiscais-geral', 'terceiros'];
+    const ABAS_GRUPO_CARTOES = ['cartoes-cadastro', 'cartoes-cadastrados', 'cartoes-relatorio'];
     const ABAS_GRUPO_ENTRADAS = ['cadastrar-conta', 'contas-receber', 'recebimentos'];
     const ABAS_GRUPO_DOCUMENTOS = ['documentos-fh', 'documentos-hallana', 'documentos-felipe', 'documentos-wellington', 'documentos-licitacoes', 'documentos-contratos', 'documentos-empenhos'];
 
@@ -17104,6 +17498,22 @@ window.exportarPDF = function(tipo) {
     window.toggleGrupoMenuDocumentos = function () {
         const grupo = document.getElementById('grupo-menu-documentos');
         const titulo = document.getElementById('btn-grupo-documentos');
+        if (!grupo) return;
+        grupo.classList.toggle('open');
+        const aberto = grupo.classList.contains('open');
+        if (titulo) titulo.setAttribute('aria-expanded', aberto ? 'true' : 'false');
+    };
+
+    window.abrirGrupoMenuCartoes = function () {
+        const grupo = document.getElementById('grupo-menu-cartoes');
+        const titulo = document.getElementById('btn-grupo-cartoes');
+        if (grupo) grupo.classList.add('open');
+        if (titulo) titulo.setAttribute('aria-expanded', 'true');
+    };
+
+    window.toggleGrupoMenuCartoes = function () {
+        const grupo = document.getElementById('grupo-menu-cartoes');
+        const titulo = document.getElementById('btn-grupo-cartoes');
         if (!grupo) return;
         grupo.classList.toggle('open');
         const aberto = grupo.classList.contains('open');
@@ -17292,6 +17702,16 @@ window.exportarPDF = function(tipo) {
             }
         }
 
+        const grupoCartoes = document.getElementById('grupo-menu-cartoes');
+        if (grupoCartoes) {
+            if (ABAS_GRUPO_CARTOES.includes(aba)) {
+                grupoCartoes.classList.add('has-active');
+                abrirGrupoMenuCartoes();
+            } else {
+                grupoCartoes.classList.remove('has-active');
+            }
+        }
+
         if (!elementoAtivado) elementoAtivado = encontrarBotaoAbaGestor(aba);
 
         if (elementoAtivado) {
@@ -17370,6 +17790,15 @@ window.exportarPDF = function(tipo) {
         if (aba === 'recebimentos' && typeof window.renderRecebimentos === 'function') {
             window.renderRecebimentos();
         }
+        if (aba === 'cartoes-cadastro' && typeof window.initFormCadastroCartao === 'function') {
+            window.initFormCadastroCartao();
+        }
+        if (aba === 'cartoes-cadastrados' && typeof window.carregarCartoesCadastrados === 'function') {
+            window.carregarCartoesCadastrados();
+        }
+        if (aba === 'cartoes-relatorio' && typeof window.initRelatorioFaturasCartoes === 'function') {
+            window.initRelatorioFaturasCartoes();
+        }
         if (ABAS_GRUPO_DOCUMENTOS.includes(aba)) {
             if (aba === 'documentos-contratos' && typeof window.carregarAbaContratosDocumentos === 'function') {
                 window.carregarAbaContratosDocumentos();
@@ -17380,6 +17809,528 @@ window.exportarPDF = function(tipo) {
                 }
             }
         }
+    };
+
+    const NOMES_TIPO_DESPESA_CARTAO = {
+        pagamento_realizado: 'Pagamentos realizados',
+        parcelamento: 'Parcelamento realizado',
+        a_vista: 'Pagamento à vista'
+    };
+    const NOMES_FORMA_FATURA_CARTAO = {
+        DINHEIRO: 'Dinheiro',
+        PIX: 'PIX',
+        DEBITO_CONTA: 'Débito em conta',
+        BOLETO: 'Boleto'
+    };
+    let _cartaoAberto = null;
+    let _despesasCartaoAberto = [];
+    let _faturasCartoesFiltradas = [];
+
+    function competenciaAtualCartao() {
+        const d = new Date();
+        return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0');
+    }
+
+    function dataIsoHojeCartao() {
+        const d = new Date();
+        return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
+    }
+
+    function formatarCompetenciaCartao(comp) {
+        if (!comp || !/^\d{4}-\d{2}$/.test(comp)) return comp || '—';
+        const p = comp.split('-');
+        return p[1] + '/' + p[0];
+    }
+
+    function formatarValidadeCartao(val) {
+        if (!val) return '—';
+        if (/^\d{4}-\d{2}$/.test(val)) {
+            const p = val.split('-');
+            return p[1] + '/' + p[0];
+        }
+        return val;
+    }
+
+    function somarMesesCompetenciaCartao(comp, add) {
+        const base = (comp && /^\d{4}-\d{2}$/.test(comp)) ? comp : competenciaAtualCartao();
+        const y = Number(base.slice(0, 4));
+        const m = Number(base.slice(5, 7));
+        const dt = new Date(y, m - 1 + (Number(add) || 0), 1);
+        return dt.getFullYear() + '-' + String(dt.getMonth() + 1).padStart(2, '0');
+    }
+
+    function preencherDiasFaturaCartao() {
+        const sel = document.getElementById('cartao-dia-fatura');
+        if (!sel || sel.options.length > 1) return;
+        sel.innerHTML = '';
+        for (let i = 1; i <= 31; i++) {
+            const op = document.createElement('option');
+            op.value = String(i);
+            op.textContent = 'Dia ' + i;
+            sel.appendChild(op);
+        }
+        sel.value = '10';
+    }
+
+    window.mascaraNumeroCartao = function (input) {
+        const dig = String(input.value || '').replace(/\D/g, '').slice(0, 16);
+        input.value = dig.replace(/(\d{4})(?=\d)/g, '$1 ').trim();
+    };
+
+    window.initFormCadastroCartao = function () {
+        preencherDiasFaturaCartao();
+    };
+
+    window.limparFormCartao = function () {
+        const ids = ['cartao-nome', 'cartao-numero', 'cartao-cvc', 'cartao-validade'];
+        ids.forEach(function (id) {
+            const el = document.getElementById(id);
+            if (el) el.value = '';
+        });
+        const dia = document.getElementById('cartao-dia-fatura');
+        if (dia) dia.value = '10';
+    };
+
+    window.salvarCartaoCredito = async function () {
+        const empresaLogada = getEmpresaGestor();
+        if (!empresaLogada) return Swal.fire('Atenção', 'Entre como gestor para cadastrar cartões.', 'warning');
+        const nome = ((document.getElementById('cartao-nome') && document.getElementById('cartao-nome').value) || '').trim();
+        const numeroDig = ((document.getElementById('cartao-numero') && document.getElementById('cartao-numero').value) || '').replace(/\D/g, '');
+        const cvc = ((document.getElementById('cartao-cvc') && document.getElementById('cartao-cvc').value) || '').replace(/\D/g, '');
+        const validade = ((document.getElementById('cartao-validade') && document.getElementById('cartao-validade').value) || '').trim();
+        const diaFatura = Number((document.getElementById('cartao-dia-fatura') && document.getElementById('cartao-dia-fatura').value) || 0);
+        if (!nome) return Swal.fire('Atenção', 'Informe o nome do cartão.', 'warning');
+        if (numeroDig.length < 4) return Swal.fire('Atenção', 'Informe o número do cartão (pelo menos os 4 últimos dígitos).', 'warning');
+        if (!cvc || cvc.length < 3 || cvc.length > 4) return Swal.fire('Atenção', 'Informe o CVC (ele não será gravado).', 'warning');
+        if (!validade) return Swal.fire('Atenção', 'Informe a data de vencimento do cartão.', 'warning');
+        if (!(diaFatura >= 1 && diaFatura <= 31)) return Swal.fire('Atenção', 'Informe o dia de vencimento da fatura.', 'warning');
+        const finais = numeroDig.slice(-4);
+        try {
+            await addDoc(collection(db, COLECAO_CARTOES), {
+                empresa_id: empresaLogada,
+                nome: nome,
+                finais: finais,
+                numero_mascarado: '•••• ' + finais,
+                validade: validade,
+                dia_vencimento_fatura: diaFatura,
+                timestamp: Date.now(),
+                criado_em: serverTimestamp()
+            });
+            window.limparFormCartao();
+            Swal.fire('Sucesso!', 'Cartão cadastrado. O CVC não foi gravado.', 'success');
+        } catch (e) {
+            console.error(e);
+            Swal.fire('Erro', 'Não foi possível salvar o cartão.', 'error');
+        }
+    };
+
+    async function listarCartoesEmpresa() {
+        const empresaLogada = getEmpresaGestor();
+        if (!empresaLogada) return [];
+        const snap = await getDocs(query(collection(db, COLECAO_CARTOES), where('empresa_id', '==', empresaLogada)));
+        const lista = [];
+        snap.forEach(function (d) { lista.push(Object.assign({ id: d.id }, d.data() || {})); });
+        lista.sort(function (a, b) { return String(a.nome || '').localeCompare(String(b.nome || ''), 'pt-BR'); });
+        return lista;
+    }
+
+    async function listarDespesasCartoesEmpresa() {
+        const empresaLogada = getEmpresaGestor();
+        if (!empresaLogada) return [];
+        const snap = await getDocs(query(collection(db, COLECAO_CARTOES_DESPESAS), where('empresa_id', '==', empresaLogada)));
+        const lista = [];
+        snap.forEach(function (d) { lista.push(Object.assign({ id: d.id }, d.data() || {})); });
+        return lista;
+    }
+
+    async function listarFaturasCartoesEmpresa() {
+        const empresaLogada = getEmpresaGestor();
+        if (!empresaLogada) return [];
+        const snap = await getDocs(query(collection(db, COLECAO_CARTOES_FATURAS), where('empresa_id', '==', empresaLogada)));
+        const lista = [];
+        snap.forEach(function (d) { lista.push(Object.assign({ id: d.id }, d.data() || {})); });
+        lista.sort(function (a, b) { return String(b.data_pagamento || b.competencia || '').localeCompare(String(a.data_pagamento || a.competencia || '')); });
+        return lista;
+    }
+
+    window.carregarCartoesCadastrados = async function () {
+        const listaEl = document.getElementById('lista-cartoes-cadastrados');
+        const wrapLista = document.getElementById('cartoes-lista-wrap');
+        const wrapDetalhe = document.getElementById('cartao-detalhe-wrap');
+        if (wrapLista) wrapLista.style.display = '';
+        if (wrapDetalhe) wrapDetalhe.style.display = 'none';
+        _cartaoAberto = null;
+        if (!listaEl) return;
+        listaEl.innerHTML = '<p style="text-align:center;color:#888;">Carregando...</p>';
+        try {
+            const cartoes = await listarCartoesEmpresa();
+            if (!cartoes.length) {
+                listaEl.innerHTML = '<p style="text-align:center;color:#888;">Nenhum cartão cadastrado. Use <b>Cadastro de Cartões</b>.</p>';
+                return;
+            }
+            listaEl.innerHTML = cartoes.map(function (c) {
+                return '<div class="cartao-item" onclick="abrirCartaoCadastrado(\'' + escapeAttrBasico(c.id) + '\')">'
+                    + '<h4>' + escapeHtmlBasico(c.nome || 'Cartão') + '</h4>'
+                    + '<div style="color:#555;">' + escapeHtmlBasico(c.numero_mascarado || ('•••• ' + (c.finais || ''))) + '</div>'
+                    + '<div style="font-size:12px;color:#888;margin-top:4px;">Validade: ' + escapeHtmlBasico(formatarValidadeCartao(c.validade))
+                    + ' · Fatura todo dia ' + escapeHtmlBasico(String(c.dia_vencimento_fatura || '—')) + '</div>'
+                    + '</div>';
+            }).join('');
+        } catch (e) {
+            console.error(e);
+            listaEl.innerHTML = '<p style="text-align:center;color:#d9534f;">Erro ao carregar cartões.</p>';
+        }
+    };
+
+    window.fecharDetalheCartao = function () {
+        window.carregarCartoesCadastrados();
+    };
+
+    window.abrirCartaoCadastrado = async function (id) {
+        try {
+            const cartoes = await listarCartoesEmpresa();
+            const cartao = cartoes.find(function (c) { return String(c.id) === String(id); });
+            if (!cartao) return Swal.fire('Aviso', 'Cartão não encontrado.', 'warning');
+            _cartaoAberto = cartao;
+            const wrapLista = document.getElementById('cartoes-lista-wrap');
+            const wrapDetalhe = document.getElementById('cartao-detalhe-wrap');
+            if (wrapLista) wrapLista.style.display = 'none';
+            if (wrapDetalhe) wrapDetalhe.style.display = '';
+            const cab = document.getElementById('cartao-detalhe-cabecalho');
+            if (cab) {
+                cab.innerHTML = '<h2 style="color:#8e44ad;margin:0 0 6px;font-size:18px;">' + escapeHtmlBasico(cartao.nome) + '</h2>'
+                    + '<p class="texto-explicacao" style="margin:0;">' + escapeHtmlBasico(cartao.numero_mascarado || ('•••• ' + (cartao.finais || '')))
+                    + ' · Validade ' + escapeHtmlBasico(formatarValidadeCartao(cartao.validade))
+                    + ' · Fatura dia ' + escapeHtmlBasico(String(cartao.dia_vencimento_fatura || '—')) + '</p>';
+            }
+            const hoje = competenciaAtualCartao();
+            const compDesp = document.getElementById('cartao-desp-competencia');
+            const compFat = document.getElementById('cartao-fatura-competencia');
+            const dataCompra = document.getElementById('cartao-desp-data');
+            if (compDesp) compDesp.value = hoje;
+            if (compFat) compFat.value = hoje;
+            if (dataCompra && !dataCompra.value) dataCompra.value = dataIsoHojeCartao();
+            window.limparFormDespesaCartao(true);
+            await window.renderDespesasCartaoAberto();
+        } catch (e) {
+            console.error(e);
+            Swal.fire('Erro', 'Não foi possível abrir o cartão.', 'error');
+        }
+    };
+
+    window.alternarParcelasCartao = function () {
+        const tipo = (document.getElementById('cartao-desp-tipo') && document.getElementById('cartao-desp-tipo').value) || '';
+        const wrap = document.getElementById('cartao-desp-parcelas-wrap');
+        if (wrap) wrap.style.display = tipo === 'parcelamento' ? '' : 'none';
+    };
+
+    window.limparFormDespesaCartao = function (manterDatas) {
+        const desc = document.getElementById('cartao-desp-descricao');
+        const tipo = document.getElementById('cartao-desp-tipo');
+        const valor = document.getElementById('cartao-desp-valor');
+        const parc = document.getElementById('cartao-desp-parcelas');
+        if (desc) desc.value = '';
+        if (tipo) tipo.value = 'pagamento_realizado';
+        if (valor) valor.value = '';
+        if (parc) parc.value = '2';
+        if (!manterDatas) {
+            const dataCompra = document.getElementById('cartao-desp-data');
+            const comp = document.getElementById('cartao-desp-competencia');
+            if (dataCompra) dataCompra.value = dataIsoHojeCartao();
+            if (comp) comp.value = competenciaAtualCartao();
+        }
+        window.alternarParcelasCartao();
+    };
+
+    window.salvarDespesaCartao = async function () {
+        const empresaLogada = getEmpresaGestor();
+        if (!empresaLogada || !_cartaoAberto) return Swal.fire('Atenção', 'Abra um cartão para lançar a despesa.', 'warning');
+        const descricao = ((document.getElementById('cartao-desp-descricao') && document.getElementById('cartao-desp-descricao').value) || '').trim();
+        const tipo = (document.getElementById('cartao-desp-tipo') && document.getElementById('cartao-desp-tipo').value) || 'pagamento_realizado';
+        const valor = parseMoedaLocal((document.getElementById('cartao-desp-valor') && document.getElementById('cartao-desp-valor').value) || '0');
+        const dataCompra = ((document.getElementById('cartao-desp-data') && document.getElementById('cartao-desp-data').value) || '').trim();
+        const competencia = ((document.getElementById('cartao-desp-competencia') && document.getElementById('cartao-desp-competencia').value) || competenciaAtualCartao()).trim();
+        let qtdParcelas = 1;
+        if (tipo === 'parcelamento') {
+            qtdParcelas = Math.max(2, Math.min(24, Number((document.getElementById('cartao-desp-parcelas') && document.getElementById('cartao-desp-parcelas').value) || 2)));
+        }
+        if (!descricao) return Swal.fire('Atenção', 'Informe o campo Pagamentos realizados.', 'warning');
+        if (!(valor > 0)) return Swal.fire('Atenção', 'Informe o valor da compra.', 'warning');
+        if (!dataCompra) return Swal.fire('Atenção', 'Informe a data da compra.', 'warning');
+        const valorParcela = Math.round((valor / qtdParcelas) * 100) / 100;
+        try {
+            const grupoId = 'grp_' + Date.now();
+            for (let i = 0; i < qtdParcelas; i++) {
+                const resto = i === qtdParcelas - 1
+                    ? Math.round((valor - valorParcela * (qtdParcelas - 1)) * 100) / 100
+                    : valorParcela;
+                await addDoc(collection(db, COLECAO_CARTOES_DESPESAS), {
+                    empresa_id: empresaLogada,
+                    cartao_id: _cartaoAberto.id,
+                    cartao_nome: _cartaoAberto.nome || '',
+                    tipo: tipo,
+                    descricao: descricao,
+                    valor_compra: valor,
+                    valor_parcela: resto,
+                    parcelas_total: qtdParcelas,
+                    parcela_num: i + 1,
+                    grupo_id: grupoId,
+                    data_compra: dataCompra,
+                    competencia: somarMesesCompetenciaCartao(competencia, i),
+                    status: 'aberta',
+                    timestamp: Date.now() + i,
+                    criado_em: serverTimestamp()
+                });
+            }
+            window.limparFormDespesaCartao(true);
+            await window.renderDespesasCartaoAberto();
+            Swal.fire('Sucesso!', qtdParcelas > 1 ? 'Parcelamento lançado em ' + qtdParcelas + ' faturas.' : 'Despesa salva.', 'success');
+        } catch (e) {
+            console.error(e);
+            Swal.fire('Erro', 'Não foi possível salvar a despesa.', 'error');
+        }
+    };
+
+    window.renderDespesasCartaoAberto = async function () {
+        const box = document.getElementById('lista-despesas-cartao');
+        const totalEl = document.getElementById('cartao-fatura-total');
+        if (!box || !_cartaoAberto) return;
+        box.innerHTML = '<p style="text-align:center;color:#888;">Carregando...</p>';
+        const competencia = ((document.getElementById('cartao-fatura-competencia') && document.getElementById('cartao-fatura-competencia').value) || competenciaAtualCartao());
+        try {
+            const todas = await listarDespesasCartoesEmpresa();
+            _despesasCartaoAberto = todas.filter(function (d) {
+                return String(d.cartao_id) === String(_cartaoAberto.id) && String(d.competencia) === String(competencia);
+            }).sort(function (a, b) { return String(a.data_compra || '').localeCompare(String(b.data_compra || '')); });
+            const abertas = _despesasCartaoAberto.filter(function (d) { return d.status !== 'paga'; });
+            const totalAberto = abertas.reduce(function (s, d) { return s + (Number(d.valor_parcela) || 0); }, 0);
+            if (totalEl) totalEl.textContent = 'Total em aberto: ' + formatarMoeda(totalAberto);
+            if (!_despesasCartaoAberto.length) {
+                box.innerHTML = '<p style="text-align:center;color:#888;">Nenhum lançamento nesta fatura.</p>';
+                return;
+            }
+            box.innerHTML = _despesasCartaoAberto.map(function (d) {
+                const tipoNome = NOMES_TIPO_DESPESA_CARTAO[d.tipo] || d.tipo || '';
+                const parcTxt = Number(d.parcelas_total) > 1 ? (' · Parcela ' + d.parcela_num + '/' + d.parcelas_total) : '';
+                const pago = d.status === 'paga';
+                return '<div class="cartao-despesa-linha">'
+                    + '<div style="display:flex;justify-content:space-between;gap:8px;flex-wrap:wrap;">'
+                    + '<b>' + escapeHtmlBasico(d.descricao || '—') + '</b>'
+                    + '<b style="color:' + (pago ? '#1e8449' : '#c0392b') + ';">' + escapeHtmlBasico(formatarMoeda(Number(d.valor_parcela) || 0)) + '</b>'
+                    + '</div>'
+                    + '<div style="color:#666;font-size:12px;margin-top:4px;">' + escapeHtmlBasico(tipoNome) + parcTxt
+                    + ' · Compra: ' + escapeHtmlBasico(d.data_compra || '—')
+                    + (pago ? ' · <span style="color:#1e8449;font-weight:700;">PAGO</span>' : '')
+                    + '</div>'
+                    + (pago ? '' : '<button type="button" style="margin-top:8px;background:#c0392b;color:#fff;border:none;padding:6px 10px;border-radius:6px;font-size:11px;font-weight:700;cursor:pointer;" onclick="excluirDespesaCartao(\'' + escapeAttrBasico(d.id) + '\')">Excluir</button>')
+                    + '</div>';
+            }).join('');
+        } catch (e) {
+            console.error(e);
+            box.innerHTML = '<p style="text-align:center;color:#d9534f;">Erro ao carregar lançamentos.</p>';
+        }
+    };
+
+    window.excluirDespesaCartao = async function (id) {
+        const ok = await Swal.fire({ title: 'Excluir lançamento?', icon: 'warning', showCancelButton: true, confirmButtonText: 'Excluir', cancelButtonText: 'Cancelar' });
+        if (!ok.isConfirmed) return;
+        try {
+            await deleteDoc(doc(db, COLECAO_CARTOES_DESPESAS, id));
+            await window.renderDespesasCartaoAberto();
+        } catch (e) {
+            console.error(e);
+            Swal.fire('Erro', 'Não foi possível excluir.', 'error');
+        }
+    };
+
+    window.marcarFaturaCartaoPaga = async function () {
+        if (!_cartaoAberto) return;
+        const competencia = ((document.getElementById('cartao-fatura-competencia') && document.getElementById('cartao-fatura-competencia').value) || '').trim();
+        if (!competencia) return Swal.fire('Atenção', 'Escolha o mês e o ano da fatura.', 'warning');
+        const abertas = (_despesasCartaoAberto || []).filter(function (d) { return d.status !== 'paga'; });
+        if (!abertas.length) return Swal.fire('Atenção', 'Não há lançamentos em aberto nesta fatura.', 'info');
+        const total = abertas.reduce(function (s, d) { return s + (Number(d.valor_parcela) || 0); }, 0);
+        const result = await Swal.fire({
+            title: 'Fatura paga',
+            html: '<p style="margin:0 0 10px;">Cartão: <b>' + escapeHtmlBasico(_cartaoAberto.nome) + '</b><br>Fatura ' + escapeHtmlBasico(formatarCompetenciaCartao(competencia)) + '<br>Total: <b>' + escapeHtmlBasico(formatarMoeda(total)) + '</b></p>'
+                + '<label style="display:block;text-align:left;font-size:13px;">Data do pagamento</label>'
+                + '<input id="swal-cartao-data-pag" type="date" class="swal2-input" style="width:auto;margin:6px 0 12px;" value="' + dataIsoHojeCartao() + '">'
+                + '<label style="display:block;text-align:left;font-size:13px;">Forma de pagamento</label>'
+                + '<select id="swal-cartao-forma-pag" class="swal2-input" style="width:auto;margin:6px 0;">'
+                + '<option value="DINHEIRO">Dinheiro</option>'
+                + '<option value="PIX" selected>PIX</option>'
+                + '<option value="DEBITO_CONTA">Débito em conta</option>'
+                + '<option value="BOLETO">Boleto</option>'
+                + '</select>',
+            showCancelButton: true,
+            confirmButtonText: 'Confirmar pagamento',
+            cancelButtonText: 'Cancelar',
+            preConfirm: function () {
+                const dataPag = (document.getElementById('swal-cartao-data-pag') && document.getElementById('swal-cartao-data-pag').value) || '';
+                const forma = (document.getElementById('swal-cartao-forma-pag') && document.getElementById('swal-cartao-forma-pag').value) || 'PIX';
+                if (!dataPag) {
+                    Swal.showValidationMessage('Informe a data do pagamento.');
+                    return false;
+                }
+                return { dataPag: dataPag, forma: forma };
+            }
+        });
+        if (!result.isConfirmed || !result.value) return;
+        const empresaLogada = getEmpresaGestor();
+        try {
+            const faturaRef = await addDoc(collection(db, COLECAO_CARTOES_FATURAS), {
+                empresa_id: empresaLogada,
+                cartao_id: _cartaoAberto.id,
+                cartao_nome: _cartaoAberto.nome || '',
+                competencia: competencia,
+                data_pagamento: result.value.dataPag,
+                forma_pagamento: result.value.forma,
+                valor_total: total,
+                qtd_lancamentos: abertas.length,
+                status: 'paga',
+                timestamp: Date.now(),
+                criado_em: serverTimestamp()
+            });
+            for (let i = 0; i < abertas.length; i++) {
+                await updateDoc(doc(db, COLECAO_CARTOES_DESPESAS, abertas[i].id), {
+                    status: 'paga',
+                    fatura_id: faturaRef.id,
+                    data_pagamento: result.value.dataPag,
+                    forma_pagamento: result.value.forma
+                });
+            }
+            await window.renderDespesasCartaoAberto();
+            Swal.fire('Sucesso!', 'Fatura lançada no relatório de faturas pagas.', 'success');
+        } catch (e) {
+            console.error(e);
+            Swal.fire('Erro', 'Não foi possível marcar a fatura como paga.', 'error');
+        }
+    };
+
+    window.initRelatorioFaturasCartoes = function () {
+        const ano = document.getElementById('cartao-rel-ano');
+        if (ano && !ano.value) ano.value = String(new Date().getFullYear());
+        const mes = document.getElementById('cartao-rel-mes');
+        if (mes && !mes.value) mes.value = String(new Date().getMonth() + 1).padStart(2, '0');
+        window.carregarRelatorioFaturasCartoes();
+    };
+
+    window.carregarRelatorioFaturasCartoes = async function () {
+        const box = document.getElementById('lista-relatorio-faturas-cartao');
+        const resumo = document.getElementById('cartao-rel-resumo');
+        const totais = document.getElementById('cartao-rel-resumo-totais');
+        if (!box) return;
+        box.innerHTML = '<p style="text-align:center;color:#888;">Carregando...</p>';
+        const dataFiltro = ((document.getElementById('cartao-rel-data') && document.getElementById('cartao-rel-data').value) || '').trim();
+        const mesFiltro = ((document.getElementById('cartao-rel-mes') && document.getElementById('cartao-rel-mes').value) || '').trim();
+        const anoFiltro = String((document.getElementById('cartao-rel-ano') && document.getElementById('cartao-rel-ano').value) || '').trim();
+        try {
+            let lista = await listarFaturasCartoesEmpresa();
+            lista = lista.filter(function (f) {
+                const dataPag = String(f.data_pagamento || '');
+                const comp = String(f.competencia || '');
+                if (dataFiltro && dataPag !== dataFiltro) return false;
+                if (mesFiltro) {
+                    const mesPag = dataPag.slice(5, 7) || comp.slice(5, 7);
+                    if (mesPag !== mesFiltro) return false;
+                }
+                if (anoFiltro) {
+                    const anoPag = dataPag.slice(0, 4) || comp.slice(0, 4);
+                    if (anoPag !== anoFiltro) return false;
+                }
+                return true;
+            });
+            _faturasCartoesFiltradas = lista;
+            const soma = lista.reduce(function (s, f) { return s + (Number(f.valor_total) || 0); }, 0);
+            if (resumo) resumo.style.display = '';
+            if (totais) totais.innerHTML = '<h2 style="margin:6px 0 0;color:#d9534f;">' + escapeHtmlBasico(formatarMoeda(soma)) + '</h2>'
+                + '<p style="margin:6px 0 0;font-size:13px;">' + lista.length + ' fatura(s) paga(s)</p>';
+            if (!lista.length) {
+                box.innerHTML = '<p style="text-align:center;color:#888;">Nenhuma fatura paga neste filtro.</p>';
+                return;
+            }
+            box.innerHTML = lista.map(function (f) {
+                const forma = NOMES_FORMA_FATURA_CARTAO[f.forma_pagamento] || f.forma_pagamento || '—';
+                const dataBr = (f.data_pagamento && /^\d{4}-\d{2}-\d{2}/.test(f.data_pagamento))
+                    ? f.data_pagamento.split('-').reverse().join('/')
+                    : (f.data_pagamento || '—');
+                return '<div class="cartao-item" style="cursor:default;">'
+                    + '<h4>' + escapeHtmlBasico(f.cartao_nome || 'Cartão') + '</h4>'
+                    + '<div style="font-size:13px;color:#555;">Fatura ' + escapeHtmlBasico(formatarCompetenciaCartao(f.competencia))
+                    + ' · Pago em ' + escapeHtmlBasico(dataBr)
+                    + ' · ' + escapeHtmlBasico(forma) + '</div>'
+                    + '<div style="margin-top:6px;font-weight:800;color:#1e8449;">' + escapeHtmlBasico(formatarMoeda(Number(f.valor_total) || 0)) + '</div>'
+                    + '</div>';
+            }).join('');
+        } catch (e) {
+            console.error(e);
+            box.innerHTML = '<p style="text-align:center;color:#d9534f;">Erro ao carregar o relatório.</p>';
+        }
+    };
+
+    window.exportarPDFFaturasCartoes = async function () {
+        if (!window.jspdf || !window.jspdf.jsPDF) {
+            return Swal.fire('Erro', 'Biblioteca PDF não carregou. Recarregue a página (Ctrl+F5).', 'error');
+        }
+        if (!_faturasCartoesFiltradas.length) {
+            return Swal.fire('Atenção', 'Busque o relatório antes de exportar.', 'warning');
+        }
+        const { jsPDF } = window.jspdf;
+        const docPdf = new jsPDF('p', 'mm', 'a4');
+        const empresa = getEmpresaGestor() || 'Empresa';
+        docPdf.setFontSize(12);
+        docPdf.setFont('helvetica', 'bold');
+        docPdf.text(String(empresa), 14, 14);
+        docPdf.setFontSize(11);
+        docPdf.text('Relatorio de Faturas de Cartoes', 14, 21);
+        const soma = _faturasCartoesFiltradas.reduce(function (s, f) { return s + (Number(f.valor_total) || 0); }, 0);
+        const body = _faturasCartoesFiltradas.map(function (f) {
+            const dataBr = (f.data_pagamento && /^\d{4}-\d{2}-\d{2}/.test(f.data_pagamento))
+                ? f.data_pagamento.split('-').reverse().join('/')
+                : (f.data_pagamento || '—');
+            return [
+                f.cartao_nome || '',
+                formatarCompetenciaCartao(f.competencia),
+                dataBr,
+                NOMES_FORMA_FATURA_CARTAO[f.forma_pagamento] || f.forma_pagamento || '',
+                formatarMoeda(Number(f.valor_total) || 0)
+            ];
+        });
+        docPdf.autoTable({
+            startY: 26,
+            head: [['Cartao', 'Fatura', 'Pagamento', 'Forma', 'Valor']],
+            body: body,
+            foot: [['', '', '', 'Total', formatarMoeda(soma)]],
+            styles: { fontSize: 9 }
+        });
+        docPdf.save('faturas-cartoes.pdf');
+    };
+
+    window.MAPA_ATALHOS_GESTOR = {
+        F1: { aba: 'inicio' },
+        F2: { aba: 'equipe-cadastrada' },
+        F3: { aba: 'cadastrar' },
+        F4: { aba: 'despesas-cadastrar' },
+        F6: { aba: 'despesas-relatorio' },
+        F7: { aba: 'cartoes-cadastrados' },
+        F8: { aba: 'cartoes-relatorio' },
+        F9: { aba: 'folha' },
+        F10: { aba: 'obras-relatorio-geral' },
+        F11: { aba: 'contas-receber' },
+        F12: { aba: 'ponto' }
+    };
+
+    window.abrirAtalhoGestor = function (tecla) {
+        const item = window.MAPA_ATALHOS_GESTOR[tecla];
+        if (!item) return;
+        if (typeof painelGestorEstaVisivel === 'function' && !painelGestorEstaVisivel()) return;
+        if (item.aba === 'inicio') {
+            if (typeof window.mudarAba === 'function') window.mudarAba('inicio');
+            else if (typeof mostrarTelaInicioGestor === 'function') mostrarTelaInicioGestor();
+            return;
+        }
+        const btn = typeof encontrarBotaoAbaGestor === 'function' ? encontrarBotaoAbaGestor(item.aba) : null;
+        if (typeof window.mudarAba === 'function') window.mudarAba(item.aba, btn);
     };
 
     window.salvarFeriado = async function() {
@@ -23190,13 +24141,21 @@ window.gerarFolhaPagamento = async function() {
     // BLOQUEIO ANTI-CÓPIA
     document.addEventListener('contextmenu', event => event.preventDefault());
     
-    document.onkeydown = function (e) { 
-        if (e.keyCode == 123 || 
-           (e.ctrlKey && e.shiftKey && (e.keyCode == 'I'.charCodeAt(0) || e.keyCode == 'J'.charCodeAt(0))) || 
-           (e.ctrlKey && e.keyCode == 'U'.charCodeAt(0))) { 
-            return false; 
-        } 
-    };
+    document.addEventListener('keydown', function (e) {
+        if (e.key === 'F5') return;
+        const gestorAberto = typeof painelGestorEstaVisivel === 'function' && painelGestorEstaVisivel();
+        if (gestorAberto && /^F([1-46-9]|1[0-2])$/.test(e.key)) {
+            if (window.Swal && typeof Swal.isVisible === 'function' && Swal.isVisible()) return;
+            e.preventDefault();
+            if (typeof window.abrirAtalhoGestor === 'function') window.abrirAtalhoGestor(e.key);
+            return;
+        }
+        if (e.keyCode == 123 ||
+           (e.ctrlKey && e.shiftKey && (e.keyCode == 'I'.charCodeAt(0) || e.keyCode == 'J'.charCodeAt(0))) ||
+           (e.ctrlKey && e.keyCode == 'U'.charCodeAt(0))) {
+            e.preventDefault();
+        }
+    });
 
 // === INÍCIO DO SISTEMA DE ALERTAS ===
 function ensureAlertaStack() {
