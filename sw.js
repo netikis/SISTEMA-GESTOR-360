@@ -1,4 +1,4 @@
-const CACHE_NAME = 'fh-construcoes-v10';
+const CACHE_NAME = 'fh-construcoes-v11';
 
 const urlsToCache = [
   './',
@@ -23,42 +23,66 @@ function isHtmlRequest(request) {
   }
 }
 
+function deveBuscarSemCache(request) {
+  try {
+    const url = new URL(request.url);
+    const path = url.pathname.toLowerCase();
+    return path.endsWith('/sw.js') || path.endsWith('sw.js') || path.endsWith('app-version.json');
+  } catch (_) {
+    return false;
+  }
+}
+
 self.addEventListener('install', event => {
   event.waitUntil(
     caches.open(CACHE_NAME).then(cache =>
       Promise.allSettled(
         urlsToCache.map(url => cache.add(url).catch(err => console.log('Cache skip:', url, err)))
       )
-    )
+    ).then(() => self.skipWaiting())
   );
-  self.skipWaiting();
+});
+
+self.addEventListener('message', event => {
+  const data = event.data;
+  if (data === 'SKIP_WAITING' || (data && data.type === 'SKIP_WAITING')) {
+    self.skipWaiting();
+  }
 });
 
 self.addEventListener('fetch', event => {
+  if (event.request.method !== 'GET') return;
   if (event.request.url.includes('firestore.googleapis.com')) return;
+
+  if (deveBuscarSemCache(event.request)) {
+    event.respondWith(fetch(event.request, { cache: 'no-store' }));
+    return;
+  }
 
   if (isHtmlRequest(event.request)) {
     event.respondWith(
-      fetch(event.request)
+      fetch(event.request, { cache: 'no-store' })
         .then(response => {
-          const clone = response.clone();
-          caches.open(CACHE_NAME).then(cache => cache.put(event.request, clone));
+          if (response && response.ok) {
+            const clone = response.clone();
+            caches.open(CACHE_NAME).then(cache => cache.put(event.request, clone));
+          }
           return response;
         })
-        .catch(() => caches.match('./index.html') || caches.match('./'))
+        .catch(() => caches.match(event.request).then(r => r || caches.match('./index.html') || caches.match('./')))
     );
     return;
   }
 
   event.respondWith(
     caches.match(event.request).then(cached => {
-      if (cached) return cached;
-      return fetch(event.request).then(response => {
+      const fetched = fetch(event.request).then(response => {
         if (!response || response.status !== 200 || response.type === 'opaque') return response;
         const clone = response.clone();
         caches.open(CACHE_NAME).then(cache => cache.put(event.request, clone));
         return response;
-      });
+      }).catch(() => cached);
+      return cached || fetched;
     }).catch(() => {
       if (event.request.mode === 'navigate') {
         return caches.match('./index.html') || caches.match('./');
