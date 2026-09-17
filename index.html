@@ -3249,22 +3249,100 @@
 </script>
 
 <script>
-    if ('serviceWorker' in navigator && (location.protocol === 'https:' || location.protocol === 'http:')) {
-      window.addEventListener('load', () => {
-        navigator.serviceWorker.register('./sw.js?v=10')
-          .then(registration => {
-            registration.update();
-            console.log('ServiceWorker registado:', registration.scope);
-          }, err => {
-            console.log('Falha ao registar o ServiceWorker:', err);
+    window.APP_BUILD = 11;
+    (function () {
+      function mostrarOverlayAtualizacaoApp() {
+        if (document.getElementById('overlay-atualizacao-app')) return;
+        const el = document.createElement('div');
+        el.id = 'overlay-atualizacao-app';
+        el.setAttribute('style', 'position:fixed;inset:0;background:rgba(26,42,67,.94);z-index:999999;display:flex;flex-direction:column;align-items:center;justify-content:center;color:#fff;padding:24px;text-align:center;font-family:Poppins,sans-serif;');
+        el.innerHTML = '<div style="font-size:22px;font-weight:700;margin-bottom:12px;">Atualizando o ponto</div><div style="font-size:14px;line-height:1.55;max-width:340px;">Baixando a versão nova, com <b>ENVIAR PONTO DO DIA ANTERIOR</b>.<br><br>Não precisa excluir o aplicativo. Aguarde alguns segundos.</div>';
+        (document.body || document.documentElement).appendChild(el);
+      }
+
+      async function limparCachesDoApp() {
+        if (!window.caches) return;
+        const keys = await caches.keys();
+        await Promise.all(keys.map(function (k) { return caches.delete(k); }));
+      }
+
+      window.verificarAtualizacaoApp = async function () {
+        if (!navigator.onLine) return false;
+        try {
+          const res = await fetch('./app-version.json?t=' + Date.now(), { cache: 'no-store' });
+          if (!res.ok) return false;
+          const data = await res.json();
+          const remote = Number(data && data.build);
+          if (!remote || remote === window.APP_BUILD) return false;
+          const flag = 'app_upd_' + remote;
+          if (sessionStorage.getItem(flag) === '1') return false;
+          sessionStorage.setItem(flag, '1');
+          mostrarOverlayAtualizacaoApp();
+          await limparCachesDoApp();
+          if ('serviceWorker' in navigator) {
+            const regs = await navigator.serviceWorker.getRegistrations();
+            regs.forEach(function (r) {
+              if (r.waiting) r.waiting.postMessage({ type: 'SKIP_WAITING' });
+              r.update();
+            });
+          }
+          const u = new URL(location.href);
+          u.searchParams.set('app', String(remote));
+          setTimeout(function () { location.replace(u.href); }, 350);
+          return true;
+        } catch (_) {
+          return false;
+        }
+      };
+
+      if (!('serviceWorker' in navigator) || (location.protocol !== 'https:' && location.protocol !== 'http:')) {
+        window.addEventListener('load', function () { window.verificarAtualizacaoApp(); });
+        return;
+      }
+
+      window.addEventListener('load', function () {
+        navigator.serviceWorker.register('./sw.js?v=11').then(function (registration) {
+          function pedirSkip(sw) {
+            if (sw) sw.postMessage({ type: 'SKIP_WAITING' });
+          }
+          if (registration.waiting) pedirSkip(registration.waiting);
+          registration.addEventListener('updatefound', function () {
+            const sw = registration.installing;
+            if (!sw) return;
+            sw.addEventListener('statechange', function () {
+              if (sw.state === 'installed' && navigator.serviceWorker.controller) {
+                mostrarOverlayAtualizacaoApp();
+                pedirSkip(sw);
+              }
+            });
           });
-        navigator.serviceWorker.addEventListener('controllerchange', () => {
+          registration.update();
+          setInterval(function () {
+            registration.update();
+            window.verificarAtualizacaoApp();
+          }, 30000);
+          console.log('ServiceWorker registado:', registration.scope);
+        }, function (err) {
+          console.log('Falha ao registar o ServiceWorker:', err);
+        });
+        navigator.serviceWorker.addEventListener('controllerchange', function () {
           if (window.__gestorSwReload) return;
           window.__gestorSwReload = true;
+          mostrarOverlayAtualizacaoApp();
           location.reload();
         });
+        window.verificarAtualizacaoApp();
       });
-    }
+
+      document.addEventListener('visibilitychange', function () {
+        if (document.visibilityState === 'visible') {
+          window.verificarAtualizacaoApp();
+          if ('serviceWorker' in navigator) {
+            navigator.serviceWorker.getRegistration().then(function (r) { if (r) r.update(); });
+          }
+        }
+      });
+    })();
 </script>
 
 <div id="tela-bloqueio" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #1a2a43; z-index: 99999; flex-direction: column; justify-content: center; align-items: center; color: white; padding: 20px; text-align: center; box-sizing: border-box;">
@@ -4962,6 +5040,7 @@
    <button class="btn-gold" onclick="abrirTelaMeusVales()" style="margin-top: 15px; box-shadow: none;">💰 MEUS VALES E RECIBOS</button>
 
     <button class="btn-logout" onclick="fazerLogout()" style="margin-top: 25px;">Sair da Conta (Logout)</button>
+    <p id="versao-app-ponto" style="text-align:center;font-size:10px;color:#8a94a6;margin:12px 0 0 0;">versão 11</p>
 </div>
 <div class="main-card" id="tela-meus-vales" style="display: none;">
     <div class="header-logo">
@@ -5404,6 +5483,7 @@
         document.getElementById('tela-relogio').style.display = 'block';
         document.getElementById('nome-logado').innerText = getSessaoFunc('funcLogadoNome');
         if (typeof atualizarDataRelogioPonto === 'function') atualizarDataRelogioPonto();
+        if (typeof window.verificarAtualizacaoApp === 'function') window.verificarAtualizacaoApp();
         
         const empFunc = getSessaoFunc('funcLogadoEmpresa');
         if (empFunc) {
