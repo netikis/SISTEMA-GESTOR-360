@@ -3249,7 +3249,7 @@
 </script>
 
 <script>
-    window.APP_BUILD = 12;
+    window.APP_BUILD = 13;
     (function () {
       function mostrarOverlayAtualizacaoApp() {
         if (document.getElementById('overlay-atualizacao-app')) return;
@@ -3301,7 +3301,7 @@
       }
 
       window.addEventListener('load', function () {
-        navigator.serviceWorker.register('./sw.js?v=12').then(function (registration) {
+        navigator.serviceWorker.register('./sw.js?v=13').then(function (registration) {
           function pedirSkip(sw) {
             if (sw) sw.postMessage({ type: 'SKIP_WAITING' });
           }
@@ -5042,7 +5042,7 @@
    <button class="btn-gold" onclick="abrirTelaMeusVales()" style="margin-top: 15px; box-shadow: none;">💰 MEUS VALES E RECIBOS</button>
 
     <button class="btn-logout" onclick="fazerLogout()" style="margin-top: 25px;">Sair da Conta (Logout)</button>
-    <p id="versao-app-ponto" style="text-align:center;font-size:10px;color:#8a94a6;margin:12px 0 0 0;">versão 12</p>
+    <p id="versao-app-ponto" style="text-align:center;font-size:10px;color:#8a94a6;margin:12px 0 0 0;">versão 13</p>
 </div>
 <div class="main-card" id="tela-meus-vales" style="display: none;">
     <div class="header-logo">
@@ -5188,7 +5188,12 @@
     async function ensureAuth() {
         if (auth.currentUser) return auth.currentUser;
         try {
-            const cred = await signInAnonymously(auth);
+            const cred = await Promise.race([
+                signInAnonymously(auth),
+                new Promise(function (_, reject) {
+                    setTimeout(function () { reject(new Error('timeout_anon')); }, 8000);
+                })
+            ]);
             if (cred && cred.user) return cred.user;
         } catch (e) {
             console.error('Falha no Auth anônimo', e);
@@ -5499,11 +5504,8 @@
         sincronizarPontoOffline().then(function () {
             if (typeof atualizarUiBotoesPontoDia === 'function') atualizarUiBotoesPontoDia(true);
             if (typeof atualizarAvisoPontoPendente === 'function') atualizarAvisoPontoPendente();
-            const funcIdLoad = typeof getSessaoFunc === 'function' ? getSessaoFunc('funcLogadoId') : null;
-            if (navigator.onLine && typeof temPontoOfflineDiaAnterior === 'function' && temPontoOfflineDiaAnterior(funcIdLoad)
-                && typeof window.enviarPontoOfflinePendente === 'function') {
-                window.enviarPontoOfflinePendente();
-            }
+        }).catch(function () {
+            if (typeof atualizarAvisoPontoPendente === 'function') atualizarAvisoPontoPendente();
         });
     } else if (temSessaoGestor) {
         document.title = "Gestor 360 — " + temSessaoGestor; 
@@ -20560,58 +20562,104 @@ window.gerarFolhaPagamento = async function() {
     const MSG_ENVIO_DIA_ANTERIOR_PONTO =
         'AGUARDE.<br><br>Enviando ponto batido do <b>dia anterior</b> que estava offline e <b>não foi enviado na data correta</b> ao sistema.<br><br>Depois disso você poderá bater o ponto de <b>hoje</b>.';
 
-    window.enviarPontoOfflinePendente = async function () {
-        const funcId = typeof getSessaoFunc === 'function' ? getSessaoFunc('funcLogadoId') : null;
-        const filaLocal = typeof pontosOfflineDoFuncionario === 'function' ? pontosOfflineDoFuncionario(funcId) : [];
-        const eraDiaAnterior = temPontoOfflineDiaAnterior(funcId);
-        if (!eraDiaAnterior && !(filaLocal && filaLocal.length)) {
-            if (typeof atualizarUiBotoesPontoDia === 'function') atualizarUiBotoesPontoDia(true);
-            return Swal.fire({
-                icon: 'info',
-                title: 'Nada pendente',
-                html: 'Não há ponto do dia anterior neste celular esperando envio.<br><br>Você já pode bater o ponto de <b>hoje</b>.',
-                confirmButtonColor: '#1a2a43'
-            });
-        }
-        if (!navigator.onLine) {
-            return Swal.fire({
-                icon: 'warning',
-                title: 'Sem internet',
-                html: eraDiaAnterior
-                    ? 'Há ponto do dia anterior offline que ainda não foi enviado na data correta ao sistema.<br><br>Conecte a internet para enviar. Só depois será liberado o ponto de hoje.'
-                    : 'Há ponto offline neste celular. Conecte a internet e toque de novo em <b>ENVIAR PONTO DO DIA ANTERIOR</b>.',
-                confirmButtonColor: '#1a2a43'
-            });
-        }
-        Swal.fire({
-            title: 'AGUARDE',
-            html: eraDiaAnterior ? MSG_ENVIO_DIA_ANTERIOR_PONTO : 'Enviando os pontos que estavam offline neste celular.',
-            allowOutsideClick: false,
-            allowEscapeKey: false,
-            showConfirmButton: false,
-            didOpen: function () { Swal.showLoading(); }
-        });
+    async function gravarPontoFilaNaNuvem(payloadOrigem) {
+        const tentar = async function (payload) {
+            await promiseComTimeout(
+                addDoc(collection(db, 'ponto_registros'), payload),
+                12000,
+                'timeout_add_ponto'
+            );
+        };
+        const cheio = prepararPayloadPontoParaFirestore(payloadOrigem);
         try {
-            await sincronizarPontoOffline();
-        } catch (_) {}
-        try { Swal.close(); } catch (_) {}
-        if (temPontoOfflineDiaAnterior(funcId)) {
+            await tentar(cheio);
+            return true;
+        } catch (e1) {
+            const leve = Object.assign({}, cheio, { foto: null, foto_omitida: true });
+            await tentar(leve);
+            return true;
+        }
+    }
+
+    window.enviarPontoOfflinePendente = async function () {
+        if (window.__envioPontoAnteriorTrava) return;
+        window.__envioPontoAnteriorTrava = true;
+        const btnEnviar = document.getElementById('btn-enviar-ponto-dia-anterior');
+        const textoBtn = btnEnviar ? btnEnviar.innerHTML : '';
+        if (btnEnviar) {
+            btnEnviar.disabled = true;
+            btnEnviar.innerHTML = 'ENVIANDO...';
+        }
+        const fecharAguarde = function () {
+            try {
+                if (typeof Swal.hideLoading === 'function') Swal.hideLoading();
+                if (Swal.isVisible()) Swal.close();
+            } catch (_) {}
+        };
+        try {
+            const funcId = typeof getSessaoFunc === 'function' ? getSessaoFunc('funcLogadoId') : null;
+            const filaLocal = typeof pontosOfflineDoFuncionario === 'function' ? pontosOfflineDoFuncionario(funcId) : [];
+            const eraDiaAnterior = temPontoOfflineDiaAnterior(funcId);
+            if (!eraDiaAnterior && !(filaLocal && filaLocal.length)) {
+                if (typeof atualizarUiBotoesPontoDia === 'function') atualizarUiBotoesPontoDia(true);
+                return Swal.fire({
+                    icon: 'info',
+                    title: 'Nada pendente',
+                    html: 'Não há ponto do dia anterior neste celular esperando envio.<br><br>Você já pode bater o ponto de <b>hoje</b>.',
+                    confirmButtonColor: '#1a2a43'
+                });
+            }
+            if (!navigator.onLine) {
+                return Swal.fire({
+                    icon: 'warning',
+                    title: 'Sem internet',
+                    html: eraDiaAnterior
+                        ? 'Há ponto do dia anterior offline que ainda não foi enviado na data correta ao sistema.<br><br>Conecte a internet para enviar. Só depois será liberado o ponto de hoje.'
+                        : 'Há ponto offline neste celular. Conecte a internet e toque de novo em <b>ENVIAR PONTO DO DIA ANTERIOR</b>.',
+                    confirmButtonColor: '#1a2a43'
+                });
+            }
+            let estourouTempo = false;
+            const timerAguarde = setTimeout(function () { estourouTempo = true; fecharAguarde(); }, 40000);
+            Swal.fire({
+                title: 'AGUARDE',
+                html: eraDiaAnterior ? MSG_ENVIO_DIA_ANTERIOR_PONTO : 'Enviando os pontos que estavam offline neste celular.',
+                allowOutsideClick: false,
+                allowEscapeKey: false,
+                showConfirmButton: false,
+                didOpen: function () { Swal.showLoading(); }
+            });
+            try {
+                await promiseComTimeout(sincronizarPontoOffline({ forcar: true }), 38000, 'timeout_envio_dia_anterior');
+            } catch (_) {}
+            clearTimeout(timerAguarde);
+            fecharAguarde();
+            await new Promise(function (r) { setTimeout(r, 280); });
+            if (temPontoOfflineDiaAnterior(funcId) || estourouTempo) {
+                return Swal.fire({
+                    icon: 'error',
+                    title: estourouTempo ? 'Demorou demais' : 'Ainda não enviado',
+                    html: 'Não foi possível enviar o ponto do dia anterior agora. Mantenha a internet e toque de novo em <b>ENVIAR PONTO DO DIA ANTERIOR</b>.',
+                    confirmButtonColor: '#1a2a43'
+                });
+            }
+            if (typeof atualizarUiBotoesPontoDia === 'function') await atualizarUiBotoesPontoDia(true);
             return Swal.fire({
-                icon: 'error',
-                title: 'Ainda não enviado',
-                html: 'Não foi possível enviar o ponto do dia anterior. Mantenha a internet e toque em <b>ENVIAR PONTO DO DIA ANTERIOR</b> de novo.',
+                icon: 'success',
+                title: eraDiaAnterior ? 'Enviado na data correta' : 'Fila enviada',
+                html: eraDiaAnterior
+                    ? 'O ponto do dia anterior foi enviado ao sistema.<br><br>Agora você pode bater o ponto de <b>hoje</b>.'
+                    : 'Os pontos pendentes deste celular foram enviados.<br><br>Agora você pode bater o ponto de <b>hoje</b>.',
                 confirmButtonColor: '#1a2a43'
             });
+        } finally {
+            window.__envioPontoAnteriorTrava = false;
+            if (btnEnviar) {
+                btnEnviar.disabled = false;
+                btnEnviar.innerHTML = textoBtn || 'ENVIAR PONTO DO DIA ANTERIOR';
+            }
+            if (typeof aplicarTravaPontoDiaAnterior === 'function') aplicarTravaPontoDiaAnterior();
         }
-        if (typeof atualizarUiBotoesPontoDia === 'function') await atualizarUiBotoesPontoDia(true);
-        return Swal.fire({
-            icon: 'success',
-            title: eraDiaAnterior ? 'Enviado na data correta' : 'Fila enviada',
-            html: eraDiaAnterior
-                ? 'O ponto do dia anterior foi enviado ao sistema.<br><br>Agora você pode bater o ponto de <b>hoje</b>.'
-                : 'Os pontos pendentes deste celular foram enviados.<br><br>Agora você pode bater o ponto de <b>hoje</b>.',
-            confirmButtonColor: '#1a2a43'
-        });
     };
 
     function prepararPayloadPontoParaFirestore(payloadOrigem) {
@@ -20623,13 +20671,20 @@ window.gerarFolhaPagamento = async function() {
         return payload;
     }
 
-    async function sincronizarPontoOffline() {
-        if (window.__syncPontoOfflineRodando) return window.__syncPontoOfflineRodando;
-        window.__syncPontoOfflineRodando = (async function () {
+    async function sincronizarPontoOffline(opts) {
+        const forcar = !!(opts && opts.forcar);
+        if (window.__syncPontoOfflineRodando && !forcar) {
+            try {
+                return await promiseComTimeout(window.__syncPontoOfflineRodando, 20000, 'timeout_wait_sync');
+            } catch (_) {
+                window.__syncPontoOfflineRodando = null;
+            }
+        }
+        const geracao = (window.__syncPontoGeracao = (window.__syncPontoGeracao || 0) + 1);
+        const job = (async function () {
         let pontosOffline = lerFilaPontoOffline();
         
         if (pontosOffline.length > 0 && navigator.onLine) {
-            // Remove duplicados dentro da própria fila local (mesmo dia+tipo+hora)
             try {
                 const vistosFila = new Map();
                 const filaLimpa = [];
@@ -20654,7 +20709,7 @@ window.gerarFolhaPagamento = async function() {
 
             let salvos = 0;
             const pendentes = [];
-            try { await ensureAuth(); } catch (_) {}
+            try { await promiseComTimeout(ensureAuth(), 8000, 'timeout_auth_sync'); } catch (_) {}
 
             for (let i = 0; i < pontosOffline.length; i++) {
                 try {
@@ -20663,50 +20718,23 @@ window.gerarFolhaPagamento = async function() {
                     const funcId = payload.funcionario_id;
                     const dataBR = dataBrDoRegistroPonto(payload);
 
-                    // Avisa a gestão se estiver fora de ordem, mas NÃO descarta o ponto
-                    try {
-                        let estado = estadoPontoVazio();
-                        if (funcId) {
-                            estado = await promiseComTimeout(
-                                obterEstadoPontoDiaFromFirestore(funcId, dataBR),
-                                10000,
-                                'timeout_estado_sync'
-                            );
-                        }
-                        const valid = validarSequenciaPontoTipo(payload.tipo, estado);
-                        if (!valid.ok) {
-                            await registrarEventoSequenciaPontoInvalida({
-                                empresa_id: payload.empresa_id || null,
-                                funcionario_id: funcId,
-                                funcionario_nome: payload.nome || '',
-                                tipo_tentado: payload.tipo,
-                                motivo: valid.msg,
-                                data_br: dataBR,
-                                hora_tentativa: payload.hora || '',
-                                origem: 'offline_sync'
-                            });
-                        }
-                    } catch (eSeq) {
-                        console.warn('validação sequência no sync offline', eSeq);
-                    }
-
                     let jaExisteNaNuvem = false;
-                    try {
-                        const cancelados = funcId ? await promiseComTimeout(
-                            buscarIdsPontoCanceladosFuncionario(funcId),
-                            8000,
-                            'timeout_cancel_sync'
-                        ) : new Set();
-                        const batidasDia = funcId ? await promiseComTimeout(
-                            buscarBatidasPontoDiaFuncionario(funcId, dataBR),
-                            8000,
-                            'timeout_batidas_sync'
-                        ) : [];
-                        jaExisteNaNuvem = existeBatidaDuplicadaPonto(batidasDia, cancelados, payload.tipo, dataBR, payload.hora);
-                    } catch (eDup) {
-                        console.warn('checagem duplicado no sync offline — mantendo na fila', eDup);
-                        pendentes.push(pontosOffline[i]);
-                        continue;
+                    if (!forcar) {
+                        try {
+                            const cancelados = funcId ? await promiseComTimeout(
+                                buscarIdsPontoCanceladosFuncionario(funcId),
+                                4000,
+                                'timeout_cancel_sync'
+                            ) : new Set();
+                            const batidasDia = funcId ? await promiseComTimeout(
+                                buscarBatidasPontoDiaFuncionario(funcId, dataBR),
+                                4000,
+                                'timeout_batidas_sync'
+                            ) : [];
+                            jaExisteNaNuvem = existeBatidaDuplicadaPonto(batidasDia, cancelados, payload.tipo, dataBR, payload.hora);
+                        } catch (eDup) {
+                            jaExisteNaNuvem = false;
+                        }
                     }
 
                     if (jaExisteNaNuvem) {
@@ -20714,32 +20742,43 @@ window.gerarFolhaPagamento = async function() {
                         continue;
                     }
 
-                    await addDoc(collection(db, "ponto_registros"), payload);
+                    await gravarPontoFilaNaNuvem(bruto);
                     salvos++;
                 } catch (e) {
                     console.error('Erro de sincronização', e);
                     pendentes.push(aliviarFotoPonto(pontosOffline[i]));
                 }
             }
+            if (geracao !== window.__syncPontoGeracao) return;
             if (pendentes.length) {
                 gravarFilaPontoOffline(pendentes);
             } else {
                 localStorage.removeItem('pontos_offline');
             }
             if (salvos > 0) {
-                Swal.fire({ 
-                    toast: true, 
-                    position: 'top-end', 
-                    icon: 'success', 
-                    title: 'Pontos offline sincronizados!', 
-                    showConfirmButton: false, 
-                    timer: 3000 
-                });
+                try {
+                    if (!(typeof Swal !== 'undefined' && Swal.isVisible() && document.querySelector('.swal2-loader'))) {
+                        Swal.fire({ 
+                            toast: true, 
+                            position: 'top-end', 
+                            icon: 'success', 
+                            title: 'Pontos offline sincronizados!', 
+                            showConfirmButton: false, 
+                            timer: 3000 
+                        });
+                    }
+                } catch (_) {}
             }
         }
         if (typeof atualizarAvisoPontoPendente === 'function') atualizarAvisoPontoPendente();
-        })().finally(function () { window.__syncPontoOfflineRodando = null; });
-        return window.__syncPontoOfflineRodando;
+        })();
+        const limitado = promiseComTimeout(job, 36000, 'timeout_sync_total');
+        window.__syncPontoOfflineRodando = limitado;
+        try {
+            return await limitado;
+        } finally {
+            if (window.__syncPontoOfflineRodando === limitado) window.__syncPontoOfflineRodando = null;
+        }
     }
 
     document.getElementById('btnLinkPonto').onclick = function() {
