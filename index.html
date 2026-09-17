@@ -3249,7 +3249,7 @@
 </script>
 
 <script>
-    window.APP_BUILD = 11;
+    window.APP_BUILD = 12;
     (function () {
       function mostrarOverlayAtualizacaoApp() {
         if (document.getElementById('overlay-atualizacao-app')) return;
@@ -3301,7 +3301,7 @@
       }
 
       window.addEventListener('load', function () {
-        navigator.serviceWorker.register('./sw.js?v=11').then(function (registration) {
+        navigator.serviceWorker.register('./sw.js?v=12').then(function (registration) {
           function pedirSkip(sw) {
             if (sw) sw.postMessage({ type: 'SKIP_WAITING' });
           }
@@ -4989,11 +4989,6 @@
     </div>
     <div id="alerta-ponto-pendente" style="display: none; background: #fdecea; color: #922b21; padding: 10px; border-radius: 8px; font-size: 12px; text-align: center; margin-bottom: 10px; border: 1px solid #f5b7b1;">
     </div>
-    <div id="trava-ponto-dia-anterior" style="display: none; background: #922b21; color: #fff; padding: 14px 12px; border-radius: 10px; font-size: 13px; text-align: center; margin-bottom: 12px; line-height: 1.45;">
-        <b>AGUARDE</b><br>
-        Enviando ponto batido do dia anterior que estava offline e não foi enviado na data correta ao sistema.
-        <button type="button" id="btn-enviar-ponto-dia-anterior" onclick="enviarPontoOfflinePendente()" style="margin-top:12px;width:100%;background:#f1c40f;color:#1a2a43;border:none;padding:12px;border-radius:8px;font-weight:800;cursor:pointer;">ENVIAR PONTO DO DIA ANTERIOR</button>
-    </div>
 
     <label style="margin-top: 20px;">Em qual local ou obra está agora?</label>
     <input type="text" id="obra-atual" placeholder="Informe a obra ou local atual">
@@ -5023,7 +5018,14 @@
         <b>Não clique várias vezes</b> no mesmo botão. Depois de bater, o botão fica <b>cinza com OK</b> e só libera no dia seguinte.
     </p>
 
-    <div style="text-align:center;margin:16px 0 10px 0;padding:12px 10px;background:#eef2f5;border:2px solid #1a2a43;border-radius:12px;">
+    <div id="trava-ponto-dia-anterior" style="display:block;background:#1a2a43;color:#fff;padding:14px 12px;border-radius:12px;font-size:13px;text-align:center;margin:16px 0 12px 0;line-height:1.45;border:2px solid #f1c40f;">
+        <div id="aviso-trava-ponto-dia-anterior">
+            Se ontem o ponto ficou offline e não foi enviado na data correta, toque no botão abaixo antes de bater o ponto de hoje.
+        </div>
+        <button type="button" id="btn-enviar-ponto-dia-anterior" onclick="enviarPontoOfflinePendente()" style="margin-top:12px;width:100%;background:#f1c40f;color:#1a2a43;border:none;padding:16px;border-radius:10px;font-weight:800;font-size:15px;cursor:pointer;">ENVIAR PONTO DO DIA ANTERIOR</button>
+    </div>
+
+    <div style="text-align:center;margin:0 0 10px 0;padding:12px 10px;background:#eef2f5;border:2px solid #1a2a43;border-radius:12px;">
         <div style="font-size:12px;color:#555;font-weight:600;margin-bottom:4px;">Data do registro de ponto</div>
         <div id="relogio-data-hoje" style="font-size:22px;font-weight:800;color:#1a2a43;letter-spacing:1px;">—</div>
     </div>
@@ -5040,7 +5042,7 @@
    <button class="btn-gold" onclick="abrirTelaMeusVales()" style="margin-top: 15px; box-shadow: none;">💰 MEUS VALES E RECIBOS</button>
 
     <button class="btn-logout" onclick="fazerLogout()" style="margin-top: 25px;">Sair da Conta (Logout)</button>
-    <p id="versao-app-ponto" style="text-align:center;font-size:10px;color:#8a94a6;margin:12px 0 0 0;">versão 11</p>
+    <p id="versao-app-ponto" style="text-align:center;font-size:10px;color:#8a94a6;margin:12px 0 0 0;">versão 12</p>
 </div>
 <div class="main-card" id="tela-meus-vales" style="display: none;">
     <div class="header-logo">
@@ -20507,7 +20509,23 @@ window.gerarFolhaPagamento = async function() {
         const funcId = typeof getSessaoFunc === 'function' ? getSessaoFunc('funcLogadoId') : null;
         const trava = temPontoOfflineDiaAnterior(funcId);
         const box = document.getElementById('trava-ponto-dia-anterior');
-        if (box) box.style.display = trava ? 'block' : 'none';
+        const aviso = document.getElementById('aviso-trava-ponto-dia-anterior');
+        const btnEnviar = document.getElementById('btn-enviar-ponto-dia-anterior');
+        if (box) {
+            box.style.display = 'block';
+            box.style.background = trava ? '#922b21' : '#1a2a43';
+            box.style.borderColor = '#f1c40f';
+        }
+        if (aviso) {
+            const datas = datasPontoOfflineDiaAnterior(funcId);
+            aviso.innerHTML = trava
+                ? '<b>AGUARDE</b><br>Enviando ponto batido do dia anterior (' + datas.join(', ') + ') que estava offline e não foi enviado na data correta ao sistema.<br>Toque no botão abaixo para enviar. Só depois libera o ponto de hoje.'
+                : 'Se ontem o ponto ficou offline e não foi enviado na data correta, toque no botão abaixo antes de bater o ponto de hoje.';
+        }
+        if (btnEnviar) {
+            btnEnviar.disabled = false;
+            btnEnviar.style.opacity = '1';
+        }
         if (!trava) return false;
         Object.keys(IDS_BOTOES_PONTO).forEach(function (tipo) {
             const btn = document.getElementById(IDS_BOTOES_PONTO[tipo]);
@@ -20544,21 +20562,30 @@ window.gerarFolhaPagamento = async function() {
 
     window.enviarPontoOfflinePendente = async function () {
         const funcId = typeof getSessaoFunc === 'function' ? getSessaoFunc('funcLogadoId') : null;
-        if (!temPontoOfflineDiaAnterior(funcId)) {
+        const filaLocal = typeof pontosOfflineDoFuncionario === 'function' ? pontosOfflineDoFuncionario(funcId) : [];
+        const eraDiaAnterior = temPontoOfflineDiaAnterior(funcId);
+        if (!eraDiaAnterior && !(filaLocal && filaLocal.length)) {
             if (typeof atualizarUiBotoesPontoDia === 'function') atualizarUiBotoesPontoDia(true);
-            return;
+            return Swal.fire({
+                icon: 'info',
+                title: 'Nada pendente',
+                html: 'Não há ponto do dia anterior neste celular esperando envio.<br><br>Você já pode bater o ponto de <b>hoje</b>.',
+                confirmButtonColor: '#1a2a43'
+            });
         }
         if (!navigator.onLine) {
             return Swal.fire({
                 icon: 'warning',
                 title: 'Sem internet',
-                html: 'Há ponto do dia anterior offline que ainda não foi enviado na data correta ao sistema.<br><br>Conecte a internet para enviar. Só depois será liberado o ponto de hoje.',
+                html: eraDiaAnterior
+                    ? 'Há ponto do dia anterior offline que ainda não foi enviado na data correta ao sistema.<br><br>Conecte a internet para enviar. Só depois será liberado o ponto de hoje.'
+                    : 'Há ponto offline neste celular. Conecte a internet e toque de novo em <b>ENVIAR PONTO DO DIA ANTERIOR</b>.',
                 confirmButtonColor: '#1a2a43'
             });
         }
         Swal.fire({
             title: 'AGUARDE',
-            html: MSG_ENVIO_DIA_ANTERIOR_PONTO,
+            html: eraDiaAnterior ? MSG_ENVIO_DIA_ANTERIOR_PONTO : 'Enviando os pontos que estavam offline neste celular.',
             allowOutsideClick: false,
             allowEscapeKey: false,
             showConfirmButton: false,
@@ -20579,8 +20606,10 @@ window.gerarFolhaPagamento = async function() {
         if (typeof atualizarUiBotoesPontoDia === 'function') await atualizarUiBotoesPontoDia(true);
         return Swal.fire({
             icon: 'success',
-            title: 'Enviado na data correta',
-            html: 'O ponto do dia anterior foi enviado ao sistema.<br><br>Agora você pode bater o ponto de <b>hoje</b>.',
+            title: eraDiaAnterior ? 'Enviado na data correta' : 'Fila enviada',
+            html: eraDiaAnterior
+                ? 'O ponto do dia anterior foi enviado ao sistema.<br><br>Agora você pode bater o ponto de <b>hoje</b>.'
+                : 'Os pontos pendentes deste celular foram enviados.<br><br>Agora você pode bater o ponto de <b>hoje</b>.',
             confirmButtonColor: '#1a2a43'
         });
     };
