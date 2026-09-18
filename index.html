@@ -657,6 +657,51 @@
             vertical-align: middle;
         }
         .tabela-entradas tr:nth-child(even) td { background: #f8fafc; }
+        .tabela-cartoes-excel-wrap {
+            width: 100%;
+            overflow-x: auto;
+            border: 1px solid #d5dce4;
+            border-radius: 8px;
+            background: #fff;
+            max-height: 520px;
+        }
+        .tabela-cartoes-excel {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 12px;
+            min-width: 980px;
+        }
+        .tabela-cartoes-excel th {
+            background: #1a2a43;
+            color: #fff;
+            padding: 8px 7px;
+            text-align: left;
+            white-space: nowrap;
+            position: sticky;
+            top: 0;
+            z-index: 1;
+        }
+        .tabela-cartoes-excel td {
+            padding: 7px 7px;
+            border-bottom: 1px solid #e8edf2;
+            border-right: 1px solid #eef2f5;
+            white-space: nowrap;
+            vertical-align: middle;
+        }
+        .tabela-cartoes-excel tr:nth-child(even) td { background: #f7f9fb; }
+        .tabela-cartoes-excel .num { text-align: right; font-variant-numeric: tabular-nums; }
+        .tag-pago { color: #1e8449; font-weight: 800; }
+        .tag-apagar { color: #c0392b; font-weight: 800; }
+        .cartoes-filtros {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            align-items: flex-end;
+            margin: 12px 0;
+        }
+        .cartoes-filtros > div { min-width: 140px; flex: 1; }
+        .cartoes-filtros label { font-size: 12px; margin: 0 0 4px; display: block; }
+        .cartoes-filtros input, .cartoes-filtros select { margin: 0; }
 
         .doc-pasta-panel {
             background: #fff;
@@ -3249,7 +3294,7 @@
 </script>
 
 <script>
-    window.APP_BUILD = 13;
+    window.APP_BUILD = 14;
     (function () {
       function mostrarOverlayAtualizacaoApp() {
         if (document.getElementById('overlay-atualizacao-app')) return;
@@ -3301,7 +3346,7 @@
       }
 
       window.addEventListener('load', function () {
-        navigator.serviceWorker.register('./sw.js?v=13').then(function (registration) {
+        navigator.serviceWorker.register('./sw.js?v=14').then(function (registration) {
           function pedirSkip(sw) {
             if (sw) sw.postMessage({ type: 'SKIP_WAITING' });
           }
@@ -3472,8 +3517,10 @@
                 </button>
                 <div class="gestor-menu-sub" id="submenu-cartoes">
                     <button type="button" class="gestor-menu-btn menu-cartoes" id="btn-menu-cartoes-cadastro" data-titulo="Cadastro de Cartões" onclick="mudarAba('cartoes-cadastro', this)">➕ Cadastro de Cartões</button>
-                    <button type="button" class="gestor-menu-btn menu-cartoes" id="btn-menu-cartoes-cadastrados" data-titulo="Cartões Cadastrados" onclick="mudarAba('cartoes-cadastrados', this)">💳 Cartões Cadastrados</button>
-                    <button type="button" class="gestor-menu-btn menu-cartoes" id="btn-menu-cartoes-relatorio" data-titulo="Relatório de Faturas" onclick="mudarAba('cartoes-relatorio', this)">📊 Relatório de Faturas</button>
+                    <button type="button" class="gestor-menu-btn menu-cartoes" id="btn-menu-cartoes-cadastrados" data-titulo="Fatura - Despesas" onclick="mudarAba('cartoes-cadastrados', this)">📋 Fatura - Despesas</button>
+                    <button type="button" class="gestor-menu-btn menu-cartoes" id="btn-menu-cartoes-dashboard" data-titulo="Dashboard Cartões" onclick="mudarAba('cartoes-dashboard', this)">📊 Dashboard</button>
+                    <button type="button" class="gestor-menu-btn menu-cartoes" id="btn-menu-cartoes-reembolso" data-titulo="Resumo Reembolso" onclick="mudarAba('cartoes-reembolso', this)">💸 Resumo Reembolso</button>
+                    <button type="button" class="gestor-menu-btn menu-cartoes" id="btn-menu-cartoes-relatorio" data-titulo="Relatório de Faturas" onclick="mudarAba('cartoes-relatorio', this)">✅ Relatório de Faturas</button>
                 </div>
             </div>
             <div class="gestor-menu-grupo grupo-entradas" id="grupo-menu-entradas">
@@ -3572,7 +3619,7 @@
                         <span class="gestor-atalho-tecla">F7</span>
                         <span class="gestor-atalho-icone">💳</span>
                         <span class="gestor-atalho-titulo">Cartões</span>
-                        <span class="gestor-atalho-desc">Cartões cadastrados</span>
+                        <span class="gestor-atalho-desc">Fatura - Despesas</span>
                     </button>
                     <button type="button" class="gestor-atalho-card" onclick="abrirAtalhoGestor('F8')">
                         <span class="gestor-atalho-tecla">F8</span>
@@ -4295,74 +4342,292 @@
 
     <div id="aba-cartoes-cadastro" class="view-section">
         <h2 style="color:#8e44ad;margin:0 0 8px 0;font-size:18px;">Cadastro de Cartões</h2>
-        <p class="texto-explicacao" style="margin-top:0;">Cadastre o cartão usado nas compras da empresa. O <b>CVC não é gravado</b>. Do número ficam só os <b>4 últimos dígitos</b>.</p>
-        <form id="formCadastroCartao" onsubmit="event.preventDefault(); window.salvarCartaoCredito();">
-            <label>Nome</label>
-            <input type="text" id="cartao-nome" required placeholder="Ex.: Nubank empresa, Visa compras" autocomplete="off">
-            <label>Número do cartão</label>
-            <input type="text" id="cartao-numero" inputmode="numeric" autocomplete="off" maxlength="23" placeholder="•••• •••• •••• 1234" oninput="mascaraNumeroCartao(this)">
-            <label>CVC</label>
-            <input type="password" id="cartao-cvc" inputmode="numeric" autocomplete="off" maxlength="4" placeholder="Não é salvo">
-            <p class="texto-explicacao" style="margin:4px 0 12px;">O CVC é só para conferência na hora do cadastro e <b>não fica armazenado</b>.</p>
-            <label>Data de vencimento do cartão</label>
-            <input type="month" id="cartao-validade">
-            <label>Dia de vencimento da fatura</label>
-            <select id="cartao-dia-fatura"></select>
-            <button type="submit" class="btn-gold">SALVAR CARTÃO</button>
-            <button type="button" onclick="limparFormCartao()" style="width:100%;margin-top:10px;background:#7f8c8d;color:#fff;border:none;padding:12px;border-radius:12px;font-weight:700;cursor:pointer;">CANCELAR</button>
-        </form>
+        <p class="texto-explicacao" style="margin-top:0;">Tabela no mesmo formato do Excel: <b>Titular, Apelido, Nº (últimos 4), Bandeira, Vcto (dia), Limite, Status, Link fatura</b>. O CVC não é gravado.</p>
+        <details open style="margin-bottom:16px;">
+            <summary style="background:#eef2f5;">➕ Cadastrar cartão</summary>
+            <div style="padding:15px;">
+                <form id="formCadastroCartao" onsubmit="event.preventDefault(); window.salvarCartaoCredito();">
+                    <div class="row-entradas">
+                        <div class="col-entradas">
+                            <label>Titular</label>
+                            <input type="text" id="cartao-titular" list="lista-titulares-cartao" placeholder="Ex.: FELIPE, WELLINGTON" autocomplete="off">
+                        </div>
+                        <div class="col-entradas">
+                            <label>Apelido cartão</label>
+                            <input type="text" id="cartao-nome" required placeholder="Ex.: Nubank Pessoal" autocomplete="off">
+                        </div>
+                    </div>
+                    <div class="row-entradas">
+                        <div class="col-entradas">
+                            <label>Número (últimos 4)</label>
+                            <input type="text" id="cartao-numero" inputmode="numeric" autocomplete="off" maxlength="23" placeholder="•••• •••• •••• 1234" oninput="mascaraNumeroCartao(this)">
+                        </div>
+                        <div class="col-entradas">
+                            <label>Bandeira</label>
+                            <select id="cartao-bandeira">
+                                <option value="">Selecione</option>
+                                <option value="Mastercard">Mastercard</option>
+                                <option value="Visa">Visa</option>
+                                <option value="Elo">Elo</option>
+                                <option value="Amex">Amex</option>
+                                <option value="Hipercard">Hipercard</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="row-entradas">
+                        <div class="col-entradas">
+                            <label>Vcto (dia da fatura)</label>
+                            <select id="cartao-dia-fatura"></select>
+                        </div>
+                        <div class="col-entradas">
+                            <label>Limite (R$)</label>
+                            <input type="text" id="cartao-limite" placeholder="0,00" oninput="mascaraMoeda(this)">
+                        </div>
+                    </div>
+                    <div class="row-entradas">
+                        <div class="col-entradas">
+                            <label>Status</label>
+                            <select id="cartao-status">
+                                <option value="ATIVO">ATIVO</option>
+                                <option value="INATIVO">INATIVO</option>
+                                <option value="BLOQUEADO">BLOQUEADO</option>
+                            </select>
+                        </div>
+                        <div class="col-entradas">
+                            <label>Validade do plástico (opcional)</label>
+                            <input type="month" id="cartao-validade">
+                        </div>
+                    </div>
+                    <label>Link fatura</label>
+                    <input type="url" id="cartao-link-fatura" placeholder="https://..." autocomplete="off">
+                    <label>CVC (não é salvo)</label>
+                    <input type="password" id="cartao-cvc" inputmode="numeric" autocomplete="off" maxlength="4" placeholder="Opcional — não fica armazenado">
+                    <button type="submit" class="btn-gold">SALVAR CARTÃO</button>
+                    <button type="button" onclick="limparFormCartao()" style="width:100%;margin-top:10px;background:#7f8c8d;color:#fff;border:none;padding:12px;border-radius:12px;font-weight:700;cursor:pointer;">CANCELAR</button>
+                </form>
+                <datalist id="lista-titulares-cartao">
+                    <option value="FELIPE"></option>
+                    <option value="WELLINGTON"></option>
+                </datalist>
+            </div>
+        </details>
+        <h4 style="margin:0 0 8px;color:#1a2a43;">Tabela — Cadastro de cartões</h4>
+        <div class="tabela-cartoes-excel-wrap">
+            <table class="tabela-cartoes-excel">
+                <thead>
+                    <tr>
+                        <th>TITULAR</th>
+                        <th>APELIDO CARTÃO</th>
+                        <th>NÚMERO (últimos 4)</th>
+                        <th>BANDEIRA</th>
+                        <th>VCTO (dia)</th>
+                        <th>LIMITE</th>
+                        <th>STATUS</th>
+                        <th>LINK FATURA</th>
+                        <th>AÇÕES</th>
+                    </tr>
+                </thead>
+                <tbody id="tabela-cadastro-cartoes">
+                    <tr><td colspan="9" style="text-align:center;color:#888;">Carregando...</td></tr>
+                </tbody>
+            </table>
+        </div>
     </div>
 
     <div id="aba-cartoes-cadastrados" class="view-section">
-        <div id="cartoes-lista-wrap">
-            <h2 style="color:#8e44ad;margin:0 0 8px 0;font-size:18px;">Cartões Cadastrados</h2>
-            <p class="texto-explicacao" style="margin-top:0;">Clique no cartão para lançar despesas, parcelamentos e marcar a <b>fatura como paga</b>.</p>
-            <button type="button" class="btn-enviar" style="margin-top:8px;" onclick="carregarCartoesCadastrados()">🔄 ATUALIZAR LISTA</button>
-            <div id="lista-cartoes-cadastrados" style="margin-top:16px;"></div>
-        </div>
-        <div id="cartao-detalhe-wrap" style="display:none;">
-            <button type="button" onclick="fecharDetalheCartao()" style="background:#1a2a43;color:#fff;border:none;padding:8px 14px;border-radius:8px;font-weight:700;cursor:pointer;margin-bottom:12px;">← Voltar aos cartões</button>
-            <div id="cartao-detalhe-cabecalho"></div>
-            <details open style="margin:16px 0;">
-                <summary style="background:#eef2f5;">➕ Adicionar despesa neste cartão</summary>
-                <div style="padding:15px;">
-                    <label>Pagamentos realizados</label>
-                    <input type="text" id="cartao-desp-descricao" placeholder="Ex.: material elétrico, combustível, ferramenta">
-                    <label>Tipo</label>
-                    <select id="cartao-desp-tipo" onchange="alternarParcelasCartao()">
-                        <option value="pagamento_realizado">Pagamentos realizados</option>
-                        <option value="parcelamento">Parcelamento realizado</option>
-                        <option value="a_vista">Pagamento à vista</option>
-                    </select>
-                    <div id="cartao-desp-parcelas-wrap" style="display:none;">
-                        <label>Quantidade de parcelas</label>
-                        <input type="number" id="cartao-desp-parcelas" min="2" max="24" value="2">
+        <h2 style="color:#8e44ad;margin:0 0 8px 0;font-size:18px;">Fatura - Despesas</h2>
+        <p class="texto-explicacao" style="margin-top:0;">Lançamentos no mesmo formato do Excel. Compra parcelada gera <b>uma linha por parcela</b>, com fatura nos meses seguintes. A coluna <b>Valor parcela</b> é calculada.</p>
+        <details open style="margin-bottom:16px;">
+            <summary style="background:#eef2f5;">➕ Lançar compra</summary>
+            <div style="padding:15px;">
+                <div class="row-entradas">
+                    <div class="col-entradas">
+                        <label>Data</label>
+                        <input type="date" id="cartao-desp-data">
                     </div>
-                    <label>Valor da compra (R$)</label>
-                    <input type="text" id="cartao-desp-valor" placeholder="0,00" oninput="mascaraMoeda(this)">
-                    <label>Data da compra</label>
-                    <input type="date" id="cartao-desp-data">
-                    <label>Fatura (mês / ano)</label>
-                    <input type="month" id="cartao-desp-competencia">
-                    <div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:8px;">
-                        <button type="button" class="btn-gold" style="flex:1;margin-top:8px;" onclick="salvarDespesaCartao()">SALVAR</button>
-                        <button type="button" style="flex:1;margin-top:8px;background:#7f8c8d;color:#fff;border:none;padding:15px;border-radius:12px;font-weight:700;cursor:pointer;" onclick="limparFormDespesaCartao()">CANCELAR</button>
+                    <div class="col-entradas">
+                        <label>Cartão</label>
+                        <select id="cartao-desp-cartao" onchange="aoEscolherCartaoDespesa()"></select>
                     </div>
                 </div>
-            </details>
-            <div style="background:#fff8e8;border:1px solid #ffeeba;border-radius:10px;padding:14px;margin-bottom:16px;">
-                <h4 style="margin:0 0 8px;color:#856404;">Fatura em aberto</h4>
-                <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:flex-end;">
-                    <div style="flex:1;min-width:160px;">
-                        <label>Mês / ano da fatura</label>
-                        <input type="month" id="cartao-fatura-competencia" onchange="renderDespesasCartaoAberto()">
+                <div class="row-entradas">
+                    <div class="col-entradas">
+                        <label>Descrição / Fornecedor</label>
+                        <input type="text" id="cartao-desp-descricao" placeholder="Ex.: Kalunga - Material escritório">
                     </div>
-                    <button type="button" class="btn-enviar" style="background:#27ae60;flex:1;min-width:180px;" onclick="marcarFaturaCartaoPaga()">✅ FATURA PAGA</button>
+                    <div class="col-entradas">
+                        <label>Categoria</label>
+                        <select id="cartao-desp-categoria"></select>
+                    </div>
                 </div>
-                <p id="cartao-fatura-total" style="margin:12px 0 0;font-weight:800;color:#c0392b;">Total em aberto: R$ 0,00</p>
+                <div class="row-entradas">
+                    <div class="col-entradas">
+                        <label>Fatura MM/AAAA</label>
+                        <input type="month" id="cartao-desp-competencia">
+                    </div>
+                    <div class="col-entradas">
+                        <label>Forma</label>
+                        <select id="cartao-desp-tipo" onchange="alternarParcelasCartao()">
+                            <option value="a_vista">A VISTA</option>
+                            <option value="parcelamento">PARCELADO</option>
+                        </select>
+                    </div>
+                </div>
+                <div id="cartao-desp-parcelas-wrap" style="display:none;">
+                    <label>Qtd. parcelas</label>
+                    <input type="number" id="cartao-desp-parcelas" min="2" max="24" value="2">
+                </div>
+                <div class="row-entradas">
+                    <div class="col-entradas">
+                        <label>Valor total (R$)</label>
+                        <input type="text" id="cartao-desp-valor" placeholder="0,00" oninput="mascaraMoeda(this)">
+                    </div>
+                    <div class="col-entradas">
+                        <label>Status</label>
+                        <select id="cartao-desp-status">
+                            <option value="A PAGAR">A PAGAR</option>
+                            <option value="PAGO">PAGO</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="row-entradas">
+                    <div class="col-entradas">
+                        <label>Link comprovante</label>
+                        <input type="url" id="cartao-desp-comprovante" placeholder="https://...">
+                    </div>
+                    <div class="col-entradas">
+                        <label>Reembolsado?</label>
+                        <select id="cartao-desp-reembolsado">
+                            <option value="NÃO">NÃO</option>
+                            <option value="SIM">SIM</option>
+                        </select>
+                    </div>
+                </div>
+                <div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:8px;">
+                    <button type="button" class="btn-gold" style="flex:1;margin-top:8px;" onclick="salvarDespesaCartao()">SALVAR</button>
+                    <button type="button" style="flex:1;margin-top:8px;background:#7f8c8d;color:#fff;border:none;padding:15px;border-radius:12px;font-weight:700;cursor:pointer;" onclick="limparFormDespesaCartao()">CANCELAR</button>
+                </div>
             </div>
-            <h4 style="color:#1a2a43;margin:0 0 8px;">Lançamentos desta fatura</h4>
-            <div id="lista-despesas-cartao"></div>
+        </details>
+        <div class="cartoes-filtros">
+            <div>
+                <label>Titular</label>
+                <select id="filtro-desp-titular" onchange="renderTabelaFaturaDespesas()"></select>
+            </div>
+            <div>
+                <label>Cartão</label>
+                <select id="filtro-desp-cartao" onchange="renderTabelaFaturaDespesas()"></select>
+            </div>
+            <div>
+                <label>Fatura</label>
+                <input type="month" id="filtro-desp-fatura" onchange="renderTabelaFaturaDespesas()">
+            </div>
+            <div>
+                <label>Status</label>
+                <select id="filtro-desp-status" onchange="renderTabelaFaturaDespesas()">
+                    <option value="">Todos</option>
+                    <option value="A PAGAR">A PAGAR</option>
+                    <option value="PAGO">PAGO</option>
+                </select>
+            </div>
+            <button type="button" class="btn-enviar" style="min-width:120px;" onclick="renderTabelaFaturaDespesas()">🔄 Atualizar</button>
+        </div>
+        <div style="background:#fff8e8;border:1px solid #ffeeba;border-radius:10px;padding:12px;margin-bottom:12px;display:flex;gap:10px;flex-wrap:wrap;align-items:center;justify-content:space-between;">
+            <p id="cartao-fatura-total" style="margin:0;font-weight:800;color:#c0392b;">Total em aberto: R$ 0,00</p>
+            <button type="button" class="btn-enviar" style="background:#27ae60;margin:0;min-width:180px;" onclick="marcarFaturaCartaoPaga()">✅ FATURA PAGA (filtro atual)</button>
+        </div>
+        <div class="tabela-cartoes-excel-wrap">
+            <table class="tabela-cartoes-excel">
+                <thead>
+                    <tr>
+                        <th>DATA</th>
+                        <th>TITULAR</th>
+                        <th>CARTÃO</th>
+                        <th>Nº CARTÃO</th>
+                        <th>VCTO</th>
+                        <th>DESCRIÇÃO / FORNECEDOR</th>
+                        <th>CATEGORIA</th>
+                        <th>FATURA MM/AAAA</th>
+                        <th>FORMA</th>
+                        <th>QTD PARC.</th>
+                        <th>PARC. ATUAL</th>
+                        <th>VALOR TOTAL</th>
+                        <th>VALOR PARCELA</th>
+                        <th>STATUS</th>
+                        <th>LINK COMPROVANTE</th>
+                        <th>REEMBOLSADO?</th>
+                        <th>AÇÕES</th>
+                    </tr>
+                </thead>
+                <tbody id="tabela-fatura-despesas">
+                    <tr><td colspan="17" style="text-align:center;color:#888;">Carregando...</td></tr>
+                </tbody>
+            </table>
+        </div>
+        <input type="hidden" id="cartao-fatura-competencia">
+        <div id="lista-despesas-cartao" style="display:none;"></div>
+        <div id="cartoes-lista-wrap" style="display:none;"></div>
+        <div id="cartao-detalhe-wrap" style="display:none;"></div>
+        <div id="lista-cartoes-cadastrados" style="display:none;"></div>
+        <div id="cartao-detalhe-cabecalho" style="display:none;"></div>
+    </div>
+
+    <div id="aba-cartoes-dashboard" class="view-section">
+        <h2 style="color:#8e44ad;margin:0 0 8px 0;font-size:18px;">Dashboard — Controle de Cartões</h2>
+        <p class="texto-explicacao" style="margin-top:0;">Resumos iguais ao Excel: por categoria, por titular e por mês de fatura.</p>
+        <button type="button" class="btn-enviar" onclick="carregarDashboardCartoes()">🔄 ATUALIZAR DASHBOARD</button>
+        <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:16px;margin-top:16px;">
+            <div>
+                <h4 style="margin:0 0 8px;color:#1a2a43;">Resumo por categoria</h4>
+                <div class="tabela-cartoes-excel-wrap">
+                    <table class="tabela-cartoes-excel" style="min-width:0;">
+                        <thead><tr><th>CATEGORIA</th><th>TOTAL</th><th>%</th></tr></thead>
+                        <tbody id="dash-cartoes-categoria"></tbody>
+                    </table>
+                </div>
+            </div>
+            <div>
+                <h4 style="margin:0 0 8px;color:#1a2a43;">Resumo por titular</h4>
+                <div class="tabela-cartoes-excel-wrap">
+                    <table class="tabela-cartoes-excel" style="min-width:0;">
+                        <thead><tr><th>SÓCIO</th><th>TOTAL</th><th>A VISTA</th><th>PARCELADO</th></tr></thead>
+                        <tbody id="dash-cartoes-titular"></tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+        <h4 style="margin:18px 0 8px;color:#1a2a43;">Resumo por mês de fatura</h4>
+        <div class="tabela-cartoes-excel-wrap">
+            <table class="tabela-cartoes-excel" style="min-width:0;">
+                <thead>
+                    <tr>
+                        <th>MÊS FATURA</th>
+                        <th>TOTAL</th>
+                        <th id="dash-cartoes-mes-th-titulares" colspan="2">POR TITULAR</th>
+                    </tr>
+                </thead>
+                <tbody id="dash-cartoes-mes"></tbody>
+            </table>
+        </div>
+    </div>
+
+    <div id="aba-cartoes-reembolso" class="view-section">
+        <h2 style="color:#8e44ad;margin:0 0 8px 0;font-size:18px;">Resumo para Reembolso</h2>
+        <p class="texto-explicacao" style="margin-top:0;">Totais por titular: gasto, já reembolsado e a reembolsar — igual à aba do Excel.</p>
+        <button type="button" class="btn-enviar" onclick="carregarResumoReembolsoCartoes()">🔄 ATUALIZAR</button>
+        <div class="tabela-cartoes-excel-wrap" style="margin-top:16px;">
+            <table class="tabela-cartoes-excel" style="min-width:0;">
+                <thead>
+                    <tr>
+                        <th>SÓCIO</th>
+                        <th>TOTAL GASTO</th>
+                        <th>JÁ REEMBOLSADO</th>
+                        <th>A REEMBOLSAR</th>
+                        <th>%</th>
+                    </tr>
+                </thead>
+                <tbody id="tabela-resumo-reembolso"></tbody>
+            </table>
         </div>
     </div>
 
@@ -5042,7 +5307,7 @@
    <button class="btn-gold" onclick="abrirTelaMeusVales()" style="margin-top: 15px; box-shadow: none;">💰 MEUS VALES E RECIBOS</button>
 
     <button class="btn-logout" onclick="fazerLogout()" style="margin-top: 25px;">Sair da Conta (Logout)</button>
-    <p id="versao-app-ponto" style="text-align:center;font-size:10px;color:#8a94a6;margin:12px 0 0 0;">versão 13</p>
+    <p id="versao-app-ponto" style="text-align:center;font-size:10px;color:#8a94a6;margin:12px 0 0 0;">versão 14</p>
 </div>
 <div class="main-card" id="tela-meus-vales" style="display: none;">
     <div class="header-logo">
@@ -17530,7 +17795,7 @@ window.exportarPDF = function(tipo) {
 
     const ABAS_GRUPO_EQUIPE = ['cadastrar', 'equipe-cadastrada', 'criar', 'buscar', 'ponto', 'ajuda-custo', 'descontos-folha', 'folha', 'holerites', 'pedidos'];
     const ABAS_GRUPO_OBRAS = ['despesas-cadastrar', 'despesas-relatorio', 'relatorio-despesas', 'obras-relatorio-geral', 'notas-fiscais-geral', 'terceiros'];
-    const ABAS_GRUPO_CARTOES = ['cartoes-cadastro', 'cartoes-cadastrados', 'cartoes-relatorio'];
+    const ABAS_GRUPO_CARTOES = ['cartoes-cadastro', 'cartoes-cadastrados', 'cartoes-dashboard', 'cartoes-reembolso', 'cartoes-relatorio'];
     const ABAS_GRUPO_ENTRADAS = ['cadastrar-conta', 'contas-receber', 'recebimentos'];
     const ABAS_GRUPO_DOCUMENTOS = ['documentos-fh', 'documentos-hallana', 'documentos-felipe', 'documentos-wellington', 'documentos-licitacoes', 'documentos-contratos', 'documentos-empenhos'];
 
@@ -17890,6 +18155,12 @@ window.exportarPDF = function(tipo) {
         if (aba === 'cartoes-cadastrados' && typeof window.carregarCartoesCadastrados === 'function') {
             window.carregarCartoesCadastrados();
         }
+        if (aba === 'cartoes-dashboard' && typeof window.carregarDashboardCartoes === 'function') {
+            window.carregarDashboardCartoes();
+        }
+        if (aba === 'cartoes-reembolso' && typeof window.carregarResumoReembolsoCartoes === 'function') {
+            window.carregarResumoReembolsoCartoes();
+        }
         if (aba === 'cartoes-relatorio' && typeof window.initRelatorioFaturasCartoes === 'function') {
             window.initRelatorioFaturasCartoes();
         }
@@ -17906,10 +18177,11 @@ window.exportarPDF = function(tipo) {
     };
 
     const NOMES_TIPO_DESPESA_CARTAO = {
-        pagamento_realizado: 'Pagamentos realizados',
-        parcelamento: 'Parcelamento realizado',
-        a_vista: 'Pagamento à vista'
+        pagamento_realizado: 'A VISTA',
+        parcelamento: 'PARCELADO',
+        a_vista: 'A VISTA'
     };
+    const CATEGORIAS_CARTAO_EXCEL = ['Escritório', 'Combustível', 'Marketing', 'Alimentação', 'Transporte', 'Imposto', 'Outros'];
     const NOMES_FORMA_FATURA_CARTAO = {
         DINHEIRO: 'Dinheiro',
         PIX: 'PIX',
@@ -17918,7 +18190,37 @@ window.exportarPDF = function(tipo) {
     };
     let _cartaoAberto = null;
     let _despesasCartaoAberto = [];
+    let _todasDespesasCartoesCache = [];
+    let _todosCartoesCache = [];
     let _faturasCartoesFiltradas = [];
+
+    function apelidoDoCartao(c) { return String((c && (c.apelido || c.nome)) || '').trim(); }
+    function titularDoCartao(c) { return String((c && c.titular) || '').trim(); }
+    function finaisDoCartao(c) { return String((c && c.finais) || '').replace(/\D/g, '').slice(-4); }
+    function formaDespesaExcel(d) {
+        if (d && d.forma) return String(d.forma).toUpperCase() === 'PARCELADO' ? 'PARCELADO' : 'A VISTA';
+        if (d && (d.tipo === 'parcelamento' || Number(d.parcelas_total) > 1)) return 'PARCELADO';
+        return 'A VISTA';
+    }
+    function statusDespesaExcel(d) {
+        if (d && d.status_excel) return d.status_excel;
+        return (d && d.status === 'paga') ? 'PAGO' : 'A PAGAR';
+    }
+    function reembolsadoDespesaExcel(d) {
+        const v = String((d && (d.reembolsado != null ? d.reembolsado : d.reembolsado_excel)) || 'NÃO').toUpperCase();
+        return v === 'SIM' || v === 'S' || v === 'TRUE' ? 'SIM' : 'NÃO';
+    }
+    function cartaoDaDespesa(d) {
+        return (_todosCartoesCache || []).find(function (c) { return String(c.id) === String(d && d.cartao_id); }) || {};
+    }
+
+    function preencherSelectCategoriasCartao() {
+        const sel = document.getElementById('cartao-desp-categoria');
+        if (!sel || sel.options.length > 1) return;
+        sel.innerHTML = CATEGORIAS_CARTAO_EXCEL.map(function (c) {
+            return '<option value="' + c + '">' + c + '</option>';
+        }).join('');
+    }
 
     function competenciaAtualCartao() {
         const d = new Date();
@@ -17973,44 +18275,59 @@ window.exportarPDF = function(tipo) {
 
     window.initFormCadastroCartao = function () {
         preencherDiasFaturaCartao();
+        window.renderTabelaCadastroCartoes();
     };
 
     window.limparFormCartao = function () {
-        const ids = ['cartao-nome', 'cartao-numero', 'cartao-cvc', 'cartao-validade'];
+        const ids = ['cartao-titular', 'cartao-nome', 'cartao-numero', 'cartao-cvc', 'cartao-validade', 'cartao-limite', 'cartao-link-fatura'];
         ids.forEach(function (id) {
             const el = document.getElementById(id);
             if (el) el.value = '';
         });
         const dia = document.getElementById('cartao-dia-fatura');
         if (dia) dia.value = '10';
+        const st = document.getElementById('cartao-status');
+        if (st) st.value = 'ATIVO';
+        const band = document.getElementById('cartao-bandeira');
+        if (band) band.value = '';
     };
 
     window.salvarCartaoCredito = async function () {
         const empresaLogada = getEmpresaGestor();
         if (!empresaLogada) return Swal.fire('Atenção', 'Entre como gestor para cadastrar cartões.', 'warning');
+        const titular = ((document.getElementById('cartao-titular') && document.getElementById('cartao-titular').value) || '').trim().toUpperCase();
         const nome = ((document.getElementById('cartao-nome') && document.getElementById('cartao-nome').value) || '').trim();
         const numeroDig = ((document.getElementById('cartao-numero') && document.getElementById('cartao-numero').value) || '').replace(/\D/g, '');
-        const cvc = ((document.getElementById('cartao-cvc') && document.getElementById('cartao-cvc').value) || '').replace(/\D/g, '');
+        const bandeira = ((document.getElementById('cartao-bandeira') && document.getElementById('cartao-bandeira').value) || '').trim();
         const validade = ((document.getElementById('cartao-validade') && document.getElementById('cartao-validade').value) || '').trim();
         const diaFatura = Number((document.getElementById('cartao-dia-fatura') && document.getElementById('cartao-dia-fatura').value) || 0);
-        if (!nome) return Swal.fire('Atenção', 'Informe o nome do cartão.', 'warning');
+        const limite = parseMoedaLocal((document.getElementById('cartao-limite') && document.getElementById('cartao-limite').value) || '0');
+        const statusCartao = ((document.getElementById('cartao-status') && document.getElementById('cartao-status').value) || 'ATIVO').trim();
+        const linkFatura = ((document.getElementById('cartao-link-fatura') && document.getElementById('cartao-link-fatura').value) || '').trim();
+        if (!titular) return Swal.fire('Atenção', 'Informe o titular.', 'warning');
+        if (!nome) return Swal.fire('Atenção', 'Informe o apelido do cartão.', 'warning');
         if (numeroDig.length < 4) return Swal.fire('Atenção', 'Informe o número do cartão (pelo menos os 4 últimos dígitos).', 'warning');
-        if (!cvc || cvc.length < 3 || cvc.length > 4) return Swal.fire('Atenção', 'Informe o CVC (ele não será gravado).', 'warning');
-        if (!validade) return Swal.fire('Atenção', 'Informe a data de vencimento do cartão.', 'warning');
         if (!(diaFatura >= 1 && diaFatura <= 31)) return Swal.fire('Atenção', 'Informe o dia de vencimento da fatura.', 'warning');
         const finais = numeroDig.slice(-4);
         try {
             await addDoc(collection(db, COLECAO_CARTOES), {
                 empresa_id: empresaLogada,
+                titular: titular,
                 nome: nome,
+                apelido: nome,
                 finais: finais,
                 numero_mascarado: '•••• ' + finais,
+                bandeira: bandeira,
                 validade: validade,
                 dia_vencimento_fatura: diaFatura,
+                limite: limite || 0,
+                status_cartao: statusCartao,
+                link_fatura: linkFatura,
                 timestamp: Date.now(),
                 criado_em: serverTimestamp()
             });
             window.limparFormCartao();
+            await window.renderTabelaCadastroCartoes();
             Swal.fire('Sucesso!', 'Cartão cadastrado. O CVC não foi gravado.', 'success');
         } catch (e) {
             console.error(e);
@@ -18047,33 +18364,102 @@ window.exportarPDF = function(tipo) {
         return lista;
     }
 
-    window.carregarCartoesCadastrados = async function () {
-        const listaEl = document.getElementById('lista-cartoes-cadastrados');
-        const wrapLista = document.getElementById('cartoes-lista-wrap');
-        const wrapDetalhe = document.getElementById('cartao-detalhe-wrap');
-        if (wrapLista) wrapLista.style.display = '';
-        if (wrapDetalhe) wrapDetalhe.style.display = 'none';
-        _cartaoAberto = null;
-        if (!listaEl) return;
-        listaEl.innerHTML = '<p style="text-align:center;color:#888;">Carregando...</p>';
+    window.renderTabelaCadastroCartoes = async function () {
+        const tbody = document.getElementById('tabela-cadastro-cartoes');
+        if (!tbody) return;
+        tbody.innerHTML = '<tr><td colspan="9" style="text-align:center;color:#888;">Carregando...</td></tr>';
         try {
             const cartoes = await listarCartoesEmpresa();
+            _todosCartoesCache = cartoes;
             if (!cartoes.length) {
-                listaEl.innerHTML = '<p style="text-align:center;color:#888;">Nenhum cartão cadastrado. Use <b>Cadastro de Cartões</b>.</p>';
+                tbody.innerHTML = '<tr><td colspan="9" style="text-align:center;color:#888;">Nenhum cartão cadastrado.</td></tr>';
                 return;
             }
-            listaEl.innerHTML = cartoes.map(function (c) {
-                return '<div class="cartao-item" onclick="abrirCartaoCadastrado(\'' + escapeAttrBasico(c.id) + '\')">'
-                    + '<h4>' + escapeHtmlBasico(c.nome || 'Cartão') + '</h4>'
-                    + '<div style="color:#555;">' + escapeHtmlBasico(c.numero_mascarado || ('•••• ' + (c.finais || ''))) + '</div>'
-                    + '<div style="font-size:12px;color:#888;margin-top:4px;">Validade: ' + escapeHtmlBasico(formatarValidadeCartao(c.validade))
-                    + ' · Fatura todo dia ' + escapeHtmlBasico(String(c.dia_vencimento_fatura || '—')) + '</div>'
-                    + '</div>';
+            tbody.innerHTML = cartoes.map(function (c) {
+                const link = String(c.link_fatura || '');
+                return '<tr>'
+                    + '<td>' + escapeHtmlBasico(titularDoCartao(c) || '—') + '</td>'
+                    + '<td>' + escapeHtmlBasico(apelidoDoCartao(c) || '—') + '</td>'
+                    + '<td>' + escapeHtmlBasico(finaisDoCartao(c) || '—') + '</td>'
+                    + '<td>' + escapeHtmlBasico(c.bandeira || '—') + '</td>'
+                    + '<td>' + escapeHtmlBasico(String(c.dia_vencimento_fatura || '—')) + '</td>'
+                    + '<td class="num">' + escapeHtmlBasico(formatarMoeda(Number(c.limite) || 0)) + '</td>'
+                    + '<td>' + escapeHtmlBasico(c.status_cartao || 'ATIVO') + '</td>'
+                    + '<td>' + (link ? '<a href="' + escapeAttrBasico(link) + '" target="_blank" rel="noopener">abrir</a>' : '—') + '</td>'
+                    + '<td><button type="button" style="background:#c0392b;color:#fff;border:none;padding:5px 8px;border-radius:6px;font-size:11px;font-weight:700;cursor:pointer;" onclick="excluirCartaoCadastro(\'' + escapeAttrBasico(c.id) + '\')">Excluir</button></td>'
+                    + '</tr>';
             }).join('');
         } catch (e) {
             console.error(e);
-            listaEl.innerHTML = '<p style="text-align:center;color:#d9534f;">Erro ao carregar cartões.</p>';
+            tbody.innerHTML = '<tr><td colspan="9" style="text-align:center;color:#d9534f;">Erro ao carregar.</td></tr>';
         }
+    };
+
+    window.excluirCartaoCadastro = async function (id) {
+        const ok = await Swal.fire({ title: 'Excluir cartão?', text: 'As despesas lançadas nele continuam no histórico.', icon: 'warning', showCancelButton: true, confirmButtonText: 'Excluir', cancelButtonText: 'Cancelar' });
+        if (!ok.isConfirmed) return;
+        try {
+            await deleteDoc(doc(db, COLECAO_CARTOES, id));
+            await window.renderTabelaCadastroCartoes();
+        } catch (e) {
+            console.error(e);
+            Swal.fire('Erro', 'Não foi possível excluir.', 'error');
+        }
+    };
+
+    function preencherSelectsCartoesDespesa(cartoes) {
+        const selLanc = document.getElementById('cartao-desp-cartao');
+        const selFiltro = document.getElementById('filtro-desp-cartao');
+        const selTit = document.getElementById('filtro-desp-titular');
+        const optsCartao = ['<option value="">Todos / selecione</option>'].concat(cartoes.map(function (c) {
+            return '<option value="' + escapeAttrBasico(c.id) + '">' + escapeHtmlBasico(titularDoCartao(c) + ' — ' + apelidoDoCartao(c) + ' • ' + finaisDoCartao(c)) + '</option>';
+        }));
+        if (selLanc) {
+            const atual = selLanc.value;
+            selLanc.innerHTML = optsCartao.join('').replace('Todos / selecione', 'Selecione o cartão');
+            if (atual) selLanc.value = atual;
+        }
+        if (selFiltro) {
+            const atual = selFiltro.value;
+            selFiltro.innerHTML = optsCartao.join('');
+            if (atual) selFiltro.value = atual;
+        }
+        const titulares = [];
+        cartoes.forEach(function (c) {
+            const t = titularDoCartao(c);
+            if (t && titulares.indexOf(t) === -1) titulares.push(t);
+        });
+        if (selTit) {
+            const atual = selTit.value;
+            selTit.innerHTML = '<option value="">Todos</option>' + titulares.map(function (t) {
+                return '<option value="' + escapeAttrBasico(t) + '">' + escapeHtmlBasico(t) + '</option>';
+            }).join('');
+            if (atual) selTit.value = atual;
+        }
+    }
+
+    window.aoEscolherCartaoDespesa = function () {
+        const id = (document.getElementById('cartao-desp-cartao') && document.getElementById('cartao-desp-cartao').value) || '';
+        _cartaoAberto = (_todosCartoesCache || []).find(function (c) { return String(c.id) === String(id); }) || null;
+    };
+
+    window.carregarCartoesCadastrados = async function () {
+        preencherSelectCategoriasCartao();
+        preencherDiasFaturaCartao();
+        const dataCompra = document.getElementById('cartao-desp-data');
+        const compDesp = document.getElementById('cartao-desp-competencia');
+        const filtroFat = document.getElementById('filtro-desp-fatura');
+        const hoje = competenciaAtualCartao();
+        if (dataCompra && !dataCompra.value) dataCompra.value = dataIsoHojeCartao();
+        if (compDesp && !compDesp.value) compDesp.value = hoje;
+        if (filtroFat && !filtroFat.value) filtroFat.value = hoje;
+        try {
+            _todosCartoesCache = await listarCartoesEmpresa();
+            preencherSelectsCartoesDespesa(_todosCartoesCache);
+        } catch (e) {
+            console.error(e);
+        }
+        await window.renderTabelaFaturaDespesas();
     };
 
     window.fecharDetalheCartao = function () {
@@ -18081,35 +18467,13 @@ window.exportarPDF = function(tipo) {
     };
 
     window.abrirCartaoCadastrado = async function (id) {
-        try {
-            const cartoes = await listarCartoesEmpresa();
-            const cartao = cartoes.find(function (c) { return String(c.id) === String(id); });
-            if (!cartao) return Swal.fire('Aviso', 'Cartão não encontrado.', 'warning');
-            _cartaoAberto = cartao;
-            const wrapLista = document.getElementById('cartoes-lista-wrap');
-            const wrapDetalhe = document.getElementById('cartao-detalhe-wrap');
-            if (wrapLista) wrapLista.style.display = 'none';
-            if (wrapDetalhe) wrapDetalhe.style.display = '';
-            const cab = document.getElementById('cartao-detalhe-cabecalho');
-            if (cab) {
-                cab.innerHTML = '<h2 style="color:#8e44ad;margin:0 0 6px;font-size:18px;">' + escapeHtmlBasico(cartao.nome) + '</h2>'
-                    + '<p class="texto-explicacao" style="margin:0;">' + escapeHtmlBasico(cartao.numero_mascarado || ('•••• ' + (cartao.finais || '')))
-                    + ' · Validade ' + escapeHtmlBasico(formatarValidadeCartao(cartao.validade))
-                    + ' · Fatura dia ' + escapeHtmlBasico(String(cartao.dia_vencimento_fatura || '—')) + '</p>';
-            }
-            const hoje = competenciaAtualCartao();
-            const compDesp = document.getElementById('cartao-desp-competencia');
-            const compFat = document.getElementById('cartao-fatura-competencia');
-            const dataCompra = document.getElementById('cartao-desp-data');
-            if (compDesp) compDesp.value = hoje;
-            if (compFat) compFat.value = hoje;
-            if (dataCompra && !dataCompra.value) dataCompra.value = dataIsoHojeCartao();
-            window.limparFormDespesaCartao(true);
-            await window.renderDespesasCartaoAberto();
-        } catch (e) {
-            console.error(e);
-            Swal.fire('Erro', 'Não foi possível abrir o cartão.', 'error');
-        }
+        await window.carregarCartoesCadastrados();
+        const sel = document.getElementById('cartao-desp-cartao');
+        const filtro = document.getElementById('filtro-desp-cartao');
+        if (sel) sel.value = id;
+        if (filtro) filtro.value = id;
+        window.aoEscolherCartaoDespesa();
+        await window.renderTabelaFaturaDespesas();
     };
 
     window.alternarParcelasCartao = function () {
@@ -18123,10 +18487,16 @@ window.exportarPDF = function(tipo) {
         const tipo = document.getElementById('cartao-desp-tipo');
         const valor = document.getElementById('cartao-desp-valor');
         const parc = document.getElementById('cartao-desp-parcelas');
+        const comprov = document.getElementById('cartao-desp-comprovante');
+        const status = document.getElementById('cartao-desp-status');
+        const reemb = document.getElementById('cartao-desp-reembolsado');
         if (desc) desc.value = '';
-        if (tipo) tipo.value = 'pagamento_realizado';
+        if (tipo) tipo.value = 'a_vista';
         if (valor) valor.value = '';
         if (parc) parc.value = '2';
+        if (comprov) comprov.value = '';
+        if (status) status.value = 'A PAGAR';
+        if (reemb) reemb.value = 'NÃO';
         if (!manterDatas) {
             const dataCompra = document.getElementById('cartao-desp-data');
             const comp = document.getElementById('cartao-desp-competencia');
@@ -18138,20 +18508,26 @@ window.exportarPDF = function(tipo) {
 
     window.salvarDespesaCartao = async function () {
         const empresaLogada = getEmpresaGestor();
-        if (!empresaLogada || !_cartaoAberto) return Swal.fire('Atenção', 'Abra um cartão para lançar a despesa.', 'warning');
+        window.aoEscolherCartaoDespesa();
+        if (!empresaLogada || !_cartaoAberto) return Swal.fire('Atenção', 'Selecione o cartão para lançar a despesa.', 'warning');
         const descricao = ((document.getElementById('cartao-desp-descricao') && document.getElementById('cartao-desp-descricao').value) || '').trim();
-        const tipo = (document.getElementById('cartao-desp-tipo') && document.getElementById('cartao-desp-tipo').value) || 'pagamento_realizado';
+        const categoria = ((document.getElementById('cartao-desp-categoria') && document.getElementById('cartao-desp-categoria').value) || 'Outros').trim();
+        const tipo = (document.getElementById('cartao-desp-tipo') && document.getElementById('cartao-desp-tipo').value) || 'a_vista';
         const valor = parseMoedaLocal((document.getElementById('cartao-desp-valor') && document.getElementById('cartao-desp-valor').value) || '0');
         const dataCompra = ((document.getElementById('cartao-desp-data') && document.getElementById('cartao-desp-data').value) || '').trim();
         const competencia = ((document.getElementById('cartao-desp-competencia') && document.getElementById('cartao-desp-competencia').value) || competenciaAtualCartao()).trim();
+        const statusExcel = ((document.getElementById('cartao-desp-status') && document.getElementById('cartao-desp-status').value) || 'A PAGAR').trim();
+        const reembolsado = ((document.getElementById('cartao-desp-reembolsado') && document.getElementById('cartao-desp-reembolsado').value) || 'NÃO').trim();
+        const comprovante = ((document.getElementById('cartao-desp-comprovante') && document.getElementById('cartao-desp-comprovante').value) || '').trim();
         let qtdParcelas = 1;
         if (tipo === 'parcelamento') {
             qtdParcelas = Math.max(2, Math.min(24, Number((document.getElementById('cartao-desp-parcelas') && document.getElementById('cartao-desp-parcelas').value) || 2)));
         }
-        if (!descricao) return Swal.fire('Atenção', 'Informe o campo Pagamentos realizados.', 'warning');
+        if (!descricao) return Swal.fire('Atenção', 'Informe a descrição / fornecedor.', 'warning');
         if (!(valor > 0)) return Swal.fire('Atenção', 'Informe o valor da compra.', 'warning');
         if (!dataCompra) return Swal.fire('Atenção', 'Informe a data da compra.', 'warning');
         const valorParcela = Math.round((valor / qtdParcelas) * 100) / 100;
+        const forma = tipo === 'parcelamento' ? 'PARCELADO' : 'A VISTA';
         try {
             const grupoId = 'grp_' + Date.now();
             for (let i = 0; i < qtdParcelas; i++) {
@@ -18161,9 +18537,14 @@ window.exportarPDF = function(tipo) {
                 await addDoc(collection(db, COLECAO_CARTOES_DESPESAS), {
                     empresa_id: empresaLogada,
                     cartao_id: _cartaoAberto.id,
-                    cartao_nome: _cartaoAberto.nome || '',
+                    cartao_nome: apelidoDoCartao(_cartaoAberto),
+                    titular: titularDoCartao(_cartaoAberto),
+                    cartao_finais: finaisDoCartao(_cartaoAberto),
+                    vcto_dia: Number(_cartaoAberto.dia_vencimento_fatura) || null,
                     tipo: tipo,
+                    forma: forma,
                     descricao: descricao,
+                    categoria: categoria,
                     valor_compra: valor,
                     valor_parcela: resto,
                     parcelas_total: qtdParcelas,
@@ -18171,13 +18552,16 @@ window.exportarPDF = function(tipo) {
                     grupo_id: grupoId,
                     data_compra: dataCompra,
                     competencia: somarMesesCompetenciaCartao(competencia, i),
-                    status: 'aberta',
+                    status: statusExcel === 'PAGO' ? 'paga' : 'aberta',
+                    status_excel: statusExcel,
+                    reembolsado: reembolsado,
+                    link_comprovante: comprovante,
                     timestamp: Date.now() + i,
                     criado_em: serverTimestamp()
                 });
             }
             window.limparFormDespesaCartao(true);
-            await window.renderDespesasCartaoAberto();
+            await window.renderTabelaFaturaDespesas();
             Swal.fire('Sucesso!', qtdParcelas > 1 ? 'Parcelamento lançado em ' + qtdParcelas + ' faturas.' : 'Despesa salva.', 'success');
         } catch (e) {
             console.error(e);
@@ -18185,43 +18569,85 @@ window.exportarPDF = function(tipo) {
         }
     };
 
-    window.renderDespesasCartaoAberto = async function () {
-        const box = document.getElementById('lista-despesas-cartao');
+    window.renderTabelaFaturaDespesas = async function () {
+        const tbody = document.getElementById('tabela-fatura-despesas');
         const totalEl = document.getElementById('cartao-fatura-total');
-        if (!box || !_cartaoAberto) return;
-        box.innerHTML = '<p style="text-align:center;color:#888;">Carregando...</p>';
-        const competencia = ((document.getElementById('cartao-fatura-competencia') && document.getElementById('cartao-fatura-competencia').value) || competenciaAtualCartao());
+        if (!tbody) return;
+        tbody.innerHTML = '<tr><td colspan="17" style="text-align:center;color:#888;">Carregando...</td></tr>';
+        const filtroTit = ((document.getElementById('filtro-desp-titular') && document.getElementById('filtro-desp-titular').value) || '').trim();
+        const filtroCartao = ((document.getElementById('filtro-desp-cartao') && document.getElementById('filtro-desp-cartao').value) || '').trim();
+        const filtroFat = ((document.getElementById('filtro-desp-fatura') && document.getElementById('filtro-desp-fatura').value) || '').trim();
+        const filtroSt = ((document.getElementById('filtro-desp-status') && document.getElementById('filtro-desp-status').value) || '').trim();
+        const hiddenComp = document.getElementById('cartao-fatura-competencia');
+        if (hiddenComp) hiddenComp.value = filtroFat || competenciaAtualCartao();
         try {
+            if (!_todosCartoesCache.length) _todosCartoesCache = await listarCartoesEmpresa();
             const todas = await listarDespesasCartoesEmpresa();
-            _despesasCartaoAberto = todas.filter(function (d) {
-                return String(d.cartao_id) === String(_cartaoAberto.id) && String(d.competencia) === String(competencia);
-            }).sort(function (a, b) { return String(a.data_compra || '').localeCompare(String(b.data_compra || '')); });
-            const abertas = _despesasCartaoAberto.filter(function (d) { return d.status !== 'paga'; });
+            _todasDespesasCartoesCache = todas;
+            const filtradas = todas.filter(function (d) {
+                const cartao = cartaoDaDespesa(d);
+                const titular = String(d.titular || titularDoCartao(cartao) || '').toUpperCase();
+                if (filtroTit && titular !== filtroTit.toUpperCase()) return false;
+                if (filtroCartao && String(d.cartao_id) !== String(filtroCartao)) return false;
+                if (filtroFat && String(d.competencia) !== String(filtroFat)) return false;
+                if (filtroSt && statusDespesaExcel(d) !== filtroSt) return false;
+                return true;
+            }).sort(function (a, b) {
+                return String(a.data_compra || '').localeCompare(String(b.data_compra || '')) || String(a.competencia || '').localeCompare(String(b.competencia || ''));
+            });
+            _despesasCartaoAberto = filtradas;
+            if (filtroCartao) {
+                _cartaoAberto = (_todosCartoesCache || []).find(function (c) { return String(c.id) === String(filtroCartao); }) || _cartaoAberto;
+            }
+            const abertas = filtradas.filter(function (d) { return statusDespesaExcel(d) !== 'PAGO'; });
             const totalAberto = abertas.reduce(function (s, d) { return s + (Number(d.valor_parcela) || 0); }, 0);
-            if (totalEl) totalEl.textContent = 'Total em aberto: ' + formatarMoeda(totalAberto);
-            if (!_despesasCartaoAberto.length) {
-                box.innerHTML = '<p style="text-align:center;color:#888;">Nenhum lançamento nesta fatura.</p>';
+            if (totalEl) totalEl.textContent = 'Total em aberto (filtro): ' + formatarMoeda(totalAberto);
+            if (!filtradas.length) {
+                tbody.innerHTML = '<tr><td colspan="17" style="text-align:center;color:#888;">Nenhum lançamento neste filtro.</td></tr>';
                 return;
             }
-            box.innerHTML = _despesasCartaoAberto.map(function (d) {
-                const tipoNome = NOMES_TIPO_DESPESA_CARTAO[d.tipo] || d.tipo || '';
-                const parcTxt = Number(d.parcelas_total) > 1 ? (' · Parcela ' + d.parcela_num + '/' + d.parcelas_total) : '';
-                const pago = d.status === 'paga';
-                return '<div class="cartao-despesa-linha">'
-                    + '<div style="display:flex;justify-content:space-between;gap:8px;flex-wrap:wrap;">'
-                    + '<b>' + escapeHtmlBasico(d.descricao || '—') + '</b>'
-                    + '<b style="color:' + (pago ? '#1e8449' : '#c0392b') + ';">' + escapeHtmlBasico(formatarMoeda(Number(d.valor_parcela) || 0)) + '</b>'
-                    + '</div>'
-                    + '<div style="color:#666;font-size:12px;margin-top:4px;">' + escapeHtmlBasico(tipoNome) + parcTxt
-                    + ' · Compra: ' + escapeHtmlBasico(d.data_compra || '—')
-                    + (pago ? ' · <span style="color:#1e8449;font-weight:700;">PAGO</span>' : '')
-                    + '</div>'
-                    + (pago ? '' : '<button type="button" style="margin-top:8px;background:#c0392b;color:#fff;border:none;padding:6px 10px;border-radius:6px;font-size:11px;font-weight:700;cursor:pointer;" onclick="excluirDespesaCartao(\'' + escapeAttrBasico(d.id) + '\')">Excluir</button>')
-                    + '</div>';
+            tbody.innerHTML = filtradas.map(function (d) {
+                const cartao = cartaoDaDespesa(d);
+                const st = statusDespesaExcel(d);
+                const reemb = reembolsadoDespesaExcel(d);
+                const link = String(d.link_comprovante || '');
+                const dataBr = (d.data_compra && /^\d{4}-\d{2}-\d{2}/.test(d.data_compra)) ? d.data_compra.split('-').reverse().join('/') : (d.data_compra || '—');
+                return '<tr>'
+                    + '<td>' + escapeHtmlBasico(dataBr) + '</td>'
+                    + '<td>' + escapeHtmlBasico(d.titular || titularDoCartao(cartao) || '—') + '</td>'
+                    + '<td>' + escapeHtmlBasico(d.cartao_nome || apelidoDoCartao(cartao) || '—') + '</td>'
+                    + '<td>' + escapeHtmlBasico(d.cartao_finais || finaisDoCartao(cartao) || '—') + '</td>'
+                    + '<td>' + escapeHtmlBasico(String(d.vcto_dia || cartao.dia_vencimento_fatura || '—')) + '</td>'
+                    + '<td>' + escapeHtmlBasico(d.descricao || '—') + '</td>'
+                    + '<td>' + escapeHtmlBasico(d.categoria || '—') + '</td>'
+                    + '<td>' + escapeHtmlBasico(formatarCompetenciaCartao(d.competencia)) + '</td>'
+                    + '<td>' + escapeHtmlBasico(formaDespesaExcel(d)) + '</td>'
+                    + '<td class="num">' + escapeHtmlBasico(String(d.parcelas_total || 1)) + '</td>'
+                    + '<td class="num">' + escapeHtmlBasico(String(d.parcela_num || 1)) + '</td>'
+                    + '<td class="num">' + escapeHtmlBasico(formatarMoeda(Number(d.valor_compra) || 0)) + '</td>'
+                    + '<td class="num"><b>' + escapeHtmlBasico(formatarMoeda(Number(d.valor_parcela) || 0)) + '</b></td>'
+                    + '<td class="' + (st === 'PAGO' ? 'tag-pago' : 'tag-apagar') + '">' + escapeHtmlBasico(st) + '</td>'
+                    + '<td>' + (link ? '<a href="' + escapeAttrBasico(link) + '" target="_blank" rel="noopener">abrir</a>' : '—') + '</td>'
+                    + '<td><button type="button" style="background:' + (reemb === 'SIM' ? '#1e8449' : '#7f8c8d') + ';color:#fff;border:none;padding:5px 8px;border-radius:6px;font-size:11px;font-weight:700;cursor:pointer;" onclick="alternarReembolsoDespesa(\'' + escapeAttrBasico(d.id) + '\',\'' + (reemb === 'SIM' ? 'NÃO' : 'SIM') + '\')">' + escapeHtmlBasico(reemb) + '</button></td>'
+                    + '<td>' + (st === 'PAGO' ? '' : '<button type="button" style="background:#c0392b;color:#fff;border:none;padding:5px 8px;border-radius:6px;font-size:11px;font-weight:700;cursor:pointer;" onclick="excluirDespesaCartao(\'' + escapeAttrBasico(d.id) + '\')">Excluir</button>') + '</td>'
+                    + '</tr>';
             }).join('');
         } catch (e) {
             console.error(e);
-            box.innerHTML = '<p style="text-align:center;color:#d9534f;">Erro ao carregar lançamentos.</p>';
+            tbody.innerHTML = '<tr><td colspan="17" style="text-align:center;color:#d9534f;">Erro ao carregar lançamentos.</td></tr>';
+        }
+    };
+
+    window.renderDespesasCartaoAberto = window.renderTabelaFaturaDespesas;
+
+    window.alternarReembolsoDespesa = async function (id, novo) {
+        try {
+            await updateDoc(doc(db, COLECAO_CARTOES_DESPESAS, id), { reembolsado: novo });
+            await window.renderTabelaFaturaDespesas();
+            if (typeof window.carregarResumoReembolsoCartoes === 'function') window.carregarResumoReembolsoCartoes();
+        } catch (e) {
+            console.error(e);
+            Swal.fire('Erro', 'Não foi possível atualizar o reembolso.', 'error');
         }
     };
 
@@ -18230,7 +18656,7 @@ window.exportarPDF = function(tipo) {
         if (!ok.isConfirmed) return;
         try {
             await deleteDoc(doc(db, COLECAO_CARTOES_DESPESAS, id));
-            await window.renderDespesasCartaoAberto();
+            await window.renderTabelaFaturaDespesas();
         } catch (e) {
             console.error(e);
             Swal.fire('Erro', 'Não foi possível excluir.', 'error');
@@ -18238,15 +18664,21 @@ window.exportarPDF = function(tipo) {
     };
 
     window.marcarFaturaCartaoPaga = async function () {
-        if (!_cartaoAberto) return;
-        const competencia = ((document.getElementById('cartao-fatura-competencia') && document.getElementById('cartao-fatura-competencia').value) || '').trim();
-        if (!competencia) return Swal.fire('Atenção', 'Escolha o mês e o ano da fatura.', 'warning');
-        const abertas = (_despesasCartaoAberto || []).filter(function (d) { return d.status !== 'paga'; });
+        const filtroCartao = ((document.getElementById('filtro-desp-cartao') && document.getElementById('filtro-desp-cartao').value) || '').trim();
+        if (filtroCartao) {
+            _cartaoAberto = (_todosCartoesCache || []).find(function (c) { return String(c.id) === String(filtroCartao); }) || _cartaoAberto;
+        }
+        if (!_cartaoAberto) return Swal.fire('Atenção', 'Filtre por um cartão antes de marcar a fatura como paga.', 'warning');
+        const competencia = ((document.getElementById('cartao-fatura-competencia') && document.getElementById('cartao-fatura-competencia').value) || ((document.getElementById('filtro-desp-fatura') && document.getElementById('filtro-desp-fatura').value) || '')).trim();
+        if (!competencia) return Swal.fire('Atenção', 'Escolha o mês e o ano da fatura no filtro.', 'warning');
+        const abertas = (_despesasCartaoAberto || []).filter(function (d) {
+            return String(d.cartao_id) === String(_cartaoAberto.id) && statusDespesaExcel(d) !== 'PAGO';
+        });
         if (!abertas.length) return Swal.fire('Atenção', 'Não há lançamentos em aberto nesta fatura.', 'info');
         const total = abertas.reduce(function (s, d) { return s + (Number(d.valor_parcela) || 0); }, 0);
         const result = await Swal.fire({
             title: 'Fatura paga',
-            html: '<p style="margin:0 0 10px;">Cartão: <b>' + escapeHtmlBasico(_cartaoAberto.nome) + '</b><br>Fatura ' + escapeHtmlBasico(formatarCompetenciaCartao(competencia)) + '<br>Total: <b>' + escapeHtmlBasico(formatarMoeda(total)) + '</b></p>'
+            html: '<p style="margin:0 0 10px;">Cartão: <b>' + escapeHtmlBasico(apelidoDoCartao(_cartaoAberto)) + '</b><br>Fatura ' + escapeHtmlBasico(formatarCompetenciaCartao(competencia)) + '<br>Total: <b>' + escapeHtmlBasico(formatarMoeda(total)) + '</b></p>'
                 + '<label style="display:block;text-align:left;font-size:13px;">Data do pagamento</label>'
                 + '<input id="swal-cartao-data-pag" type="date" class="swal2-input" style="width:auto;margin:6px 0 12px;" value="' + dataIsoHojeCartao() + '">'
                 + '<label style="display:block;text-align:left;font-size:13px;">Forma de pagamento</label>'
@@ -18275,7 +18707,7 @@ window.exportarPDF = function(tipo) {
             const faturaRef = await addDoc(collection(db, COLECAO_CARTOES_FATURAS), {
                 empresa_id: empresaLogada,
                 cartao_id: _cartaoAberto.id,
-                cartao_nome: _cartaoAberto.nome || '',
+                cartao_nome: apelidoDoCartao(_cartaoAberto),
                 competencia: competencia,
                 data_pagamento: result.value.dataPag,
                 forma_pagamento: result.value.forma,
@@ -18288,16 +18720,115 @@ window.exportarPDF = function(tipo) {
             for (let i = 0; i < abertas.length; i++) {
                 await updateDoc(doc(db, COLECAO_CARTOES_DESPESAS, abertas[i].id), {
                     status: 'paga',
+                    status_excel: 'PAGO',
                     fatura_id: faturaRef.id,
                     data_pagamento: result.value.dataPag,
                     forma_pagamento: result.value.forma
                 });
             }
-            await window.renderDespesasCartaoAberto();
+            await window.renderTabelaFaturaDespesas();
             Swal.fire('Sucesso!', 'Fatura lançada no relatório de faturas pagas.', 'success');
         } catch (e) {
             console.error(e);
             Swal.fire('Erro', 'Não foi possível marcar a fatura como paga.', 'error');
+        }
+    };
+
+    window.carregarDashboardCartoes = async function () {
+        const tbCat = document.getElementById('dash-cartoes-categoria');
+        const tbTit = document.getElementById('dash-cartoes-titular');
+        const tbMes = document.getElementById('dash-cartoes-mes');
+        if (!tbCat || !tbTit || !tbMes) return;
+        tbCat.innerHTML = tbTit.innerHTML = tbMes.innerHTML = '<tr><td colspan="4" style="text-align:center;color:#888;">Carregando...</td></tr>';
+        try {
+            _todosCartoesCache = await listarCartoesEmpresa();
+            const despesas = await listarDespesasCartoesEmpresa();
+            const porCat = {};
+            const porTit = {};
+            const porMes = {};
+            const titulares = [];
+            let geral = 0;
+            despesas.forEach(function (d) {
+                const v = Number(d.valor_parcela) || 0;
+                const cat = d.categoria || 'Outros';
+                const cartao = cartaoDaDespesa(d);
+                const tit = String(d.titular || titularDoCartao(cartao) || '—').toUpperCase();
+                const mes = formatarCompetenciaCartao(d.competencia);
+                const forma = formaDespesaExcel(d);
+                geral += v;
+                porCat[cat] = (porCat[cat] || 0) + v;
+                if (!porTit[tit]) porTit[tit] = { total: 0, vista: 0, parc: 0 };
+                porTit[tit].total += v;
+                if (forma === 'PARCELADO') porTit[tit].parc += v; else porTit[tit].vista += v;
+                if (titulares.indexOf(tit) === -1) titulares.push(tit);
+                if (!porMes[mes]) porMes[mes] = { total: 0, porTit: {} };
+                porMes[mes].total += v;
+                porMes[mes].porTit[tit] = (porMes[mes].porTit[tit] || 0) + v;
+            });
+            const cats = Object.keys(porCat).sort(function (a, b) { return porCat[b] - porCat[a]; });
+            tbCat.innerHTML = (cats.length ? cats.map(function (c) {
+                const pct = geral ? ((porCat[c] / geral) * 100).toFixed(1).replace('.', ',') + '%' : '0%';
+                return '<tr><td>' + escapeHtmlBasico(c) + '</td><td class="num">' + escapeHtmlBasico(formatarMoeda(porCat[c])) + '</td><td class="num">' + pct + '</td></tr>';
+            }).join('') : '<tr><td colspan="3" style="text-align:center;color:#888;">Sem lançamentos.</td></tr>');
+            const tits = Object.keys(porTit).sort();
+            let totT = 0, totV = 0, totP = 0;
+            tbTit.innerHTML = (tits.length ? tits.map(function (t) {
+                totT += porTit[t].total; totV += porTit[t].vista; totP += porTit[t].parc;
+                return '<tr><td>' + escapeHtmlBasico(t) + '</td><td class="num">' + escapeHtmlBasico(formatarMoeda(porTit[t].total)) + '</td><td class="num">' + escapeHtmlBasico(formatarMoeda(porTit[t].vista)) + '</td><td class="num">' + escapeHtmlBasico(formatarMoeda(porTit[t].parc)) + '</td></tr>';
+            }).join('') + '<tr><td><b>TOTAL</b></td><td class="num"><b>' + escapeHtmlBasico(formatarMoeda(totT)) + '</b></td><td class="num"><b>' + escapeHtmlBasico(formatarMoeda(totV)) + '</b></td><td class="num"><b>' + escapeHtmlBasico(formatarMoeda(totP)) + '</b></td></tr>' : '<tr><td colspan="4" style="text-align:center;color:#888;">Sem lançamentos.</td></tr>');
+            const th = document.getElementById('dash-cartoes-mes-th-titulares');
+            const headRow = tbMes.parentNode.querySelector('thead tr');
+            if (headRow) {
+                headRow.innerHTML = '<th>MÊS FATURA</th><th>TOTAL</th>' + titulares.map(function (t) {
+                    return '<th>' + escapeHtmlBasico(t) + '</th>';
+                }).join('');
+            }
+            const meses = Object.keys(porMes).sort(function (a, b) {
+                const pa = a.split('/'); const pb = b.split('/');
+                return String(pa[1] || '') + String(pa[0] || '') < String(pb[1] || '') + String(pb[0] || '') ? -1 : 1;
+            });
+            tbMes.innerHTML = (meses.length ? meses.map(function (m) {
+                return '<tr><td>' + escapeHtmlBasico(m) + '</td><td class="num">' + escapeHtmlBasico(formatarMoeda(porMes[m].total)) + '</td>'
+                    + titulares.map(function (t) { return '<td class="num">' + escapeHtmlBasico(formatarMoeda(porMes[m].porTit[t] || 0)) + '</td>'; }).join('')
+                    + '</tr>';
+            }).join('') : '<tr><td colspan="4" style="text-align:center;color:#888;">Sem lançamentos.</td></tr>');
+        } catch (e) {
+            console.error(e);
+            tbCat.innerHTML = '<tr><td colspan="3" style="color:#d9534f;text-align:center;">Erro ao carregar.</td></tr>';
+        }
+    };
+
+    window.carregarResumoReembolsoCartoes = async function () {
+        const tbody = document.getElementById('tabela-resumo-reembolso');
+        if (!tbody) return;
+        tbody.innerHTML = '<tr><td colspan="5" style="text-align:center;color:#888;">Carregando...</td></tr>';
+        try {
+            _todosCartoesCache = await listarCartoesEmpresa();
+            const despesas = await listarDespesasCartoesEmpresa();
+            const porTit = {};
+            despesas.forEach(function (d) {
+                const cartao = cartaoDaDespesa(d);
+                const tit = String(d.titular || titularDoCartao(cartao) || '—').toUpperCase();
+                if (!porTit[tit]) porTit[tit] = { gasto: 0, reemb: 0 };
+                const v = Number(d.valor_parcela) || 0;
+                porTit[tit].gasto += v;
+                if (reembolsadoDespesaExcel(d) === 'SIM') porTit[tit].reemb += v;
+            });
+            const tits = Object.keys(porTit).sort();
+            let tG = 0, tR = 0, tA = 0;
+            if (!tits.length) {
+                tbody.innerHTML = '<tr><td colspan="5" style="text-align:center;color:#888;">Sem lançamentos.</td></tr>';
+                return;
+            }
+            tbody.innerHTML = tits.map(function (t) {
+                const a = porTit[t].gasto - porTit[t].reemb;
+                const pct = porTit[t].gasto ? ((porTit[t].reemb / porTit[t].gasto) * 100).toFixed(1).replace('.', ',') + '%' : '0%';
+                tG += porTit[t].gasto; tR += porTit[t].reemb; tA += a;
+                return '<tr><td>' + escapeHtmlBasico(t) + '</td><td class="num">' + escapeHtmlBasico(formatarMoeda(porTit[t].gasto)) + '</td><td class="num">' + escapeHtmlBasico(formatarMoeda(porTit[t].reemb)) + '</td><td class="num">' + escapeHtmlBasico(formatarMoeda(a)) + '</td><td class="num">' + pct + '</td></tr>';
+            }).join('') + '<tr><td><b>TOTAL</b></td><td class="num"><b>' + escapeHtmlBasico(formatarMoeda(tG)) + '</b></td><td class="num"><b>' + escapeHtmlBasico(formatarMoeda(tR)) + '</b></td><td class="num"><b>' + escapeHtmlBasico(formatarMoeda(tA)) + '</b></td><td></td></tr>';
+        } catch (e) {
+            console.error(e);
+            tbody.innerHTML = '<tr><td colspan="5" style="color:#d9534f;text-align:center;">Erro ao carregar.</td></tr>';
         }
     };
 
