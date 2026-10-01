@@ -3294,7 +3294,11 @@
 </script>
 
 <script>
-    window.APP_BUILD = 14;
+    window.APP_BUILD = 16;
+    window.addEventListener('DOMContentLoaded', function () {
+      const elVer = document.getElementById('versao-app-ponto');
+      if (elVer) elVer.textContent = 'versão ' + window.APP_BUILD;
+    });
     (function () {
       function mostrarOverlayAtualizacaoApp() {
         if (document.getElementById('overlay-atualizacao-app')) return;
@@ -3346,7 +3350,7 @@
       }
 
       window.addEventListener('load', function () {
-        navigator.serviceWorker.register('./sw.js?v=14').then(function (registration) {
+        navigator.serviceWorker.register('./sw.js?v=16').then(function (registration) {
           function pedirSkip(sw) {
             if (sw) sw.postMessage({ type: 'SKIP_WAITING' });
           }
@@ -3788,9 +3792,15 @@
             </div>
         </div>
 
+        <label>Data do vale (mês do holerite)</label>
+        <input type="date" id="p-data-vale">
+
         <label>Descrição / Referente a:</label>
         <textarea id="p-desc" rows="2" placeholder="Descreva o motivo do vale ou os produtos"></textarea>
+        <p class="texto-explicacao" style="margin:8px 0 12px;">Quem não assina no celular: use <b>Lançar vale manual</b> — o valor já entra como desconto no holerite. Depois imprima para o funcionário assinar no papel.</p>
         <button class="btn-enviar" id="btnGerarLink">GERAR VALE E ENVIAR LINK</button>
+        <button type="button" class="btn-gold" id="btnValeManualHolerite" style="margin-top:10px;">LANÇAR VALE MANUAL NO HOLERITE</button>
+        <button type="button" id="btnImprimirValePapel" style="width:100%;margin-top:10px;background:#1a2a43;color:#fff;border:none;padding:14px;border-radius:12px;font-weight:700;cursor:pointer;">🖨️ IMPRIMIR PARA ASSINATURA MANUAL</button>
     </div>
 
     <div id="aba-buscar" class="view-section">
@@ -4057,6 +4067,30 @@
             <p class="texto-explicacao" style="margin:8px 0 0;">Se desmarcar, o sistema ainda <b>calcula e mostra</b> o valor na folha (e na discriminação dia a dia), mas <b>não soma nem desconta</b> no líquido. A escolha fica guardada neste navegador.</p>
         </div>
 
+        <div id="folha-bloco-vale-manual" style="margin:8px 0 14px;padding:12px;background:#fff8e6;border:1px solid #ffe08a;border-radius:10px;">
+            <p style="margin:0 0 8px;font-size:12px;color:#5c4a00;line-height:1.45;"><b>Vale sem celular:</b> lance aqui. O valor <b>já desconta neste holerite</b>. Depois imprima para o funcionário assinar no papel.</p>
+            <div style="display:flex;gap:8px;flex-wrap:wrap;">
+                <div style="flex:1.2;min-width:120px;">
+                    <label style="font-size:11px;margin:0 0 4px;">Valor (R$)</label>
+                    <input type="text" id="folha-vale-valor" placeholder="0,00" oninput="mascaraMoeda(this)" style="margin:0;">
+                </div>
+                <div style="flex:1;min-width:110px;">
+                    <label style="font-size:11px;margin:0 0 4px;">Tipo</label>
+                    <select id="folha-vale-tipo" style="margin:0;">
+                        <option value="Dinheiro">Dinheiro</option>
+                        <option value="PIX">PIX</option>
+                        <option value="Produto">Produto</option>
+                    </select>
+                </div>
+            </div>
+            <label style="font-size:11px;margin:8px 0 4px;">Descrição</label>
+            <input type="text" id="folha-vale-desc" placeholder="Motivo do vale ou produtos" style="margin:0;">
+            <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:10px;">
+                <button type="button" class="btn-gold" style="flex:1;min-width:160px;margin:0;padding:12px;font-size:13px;" onclick="lancarValeManualNaFolha()">LANÇAR VALE NO HOLERITE</button>
+                <button type="button" style="flex:1;min-width:160px;margin:0;padding:12px;font-size:13px;background:#1a2a43;color:#fff;border:none;border-radius:12px;font-weight:700;cursor:pointer;" onclick="imprimirValesDoHolerite()">🖨️ IMPRIMIR VALES DO MÊS</button>
+            </div>
+        </div>
+
         <button class="btn-enviar" onclick="gerarFolhaPagamento()">💰 CALCULAR FECHAMENTO</button>
 
         <div id="resultado-folha" style="display: none;">
@@ -4138,6 +4172,7 @@
                     <span>(-) Vales / Adiantamentos:</span>
                     <strong id="f-valor-vales">R$ 0,00</strong>
                 </div>
+                <p id="f-detalhe-vales" class="folha-detalhe"></p>
                 <div class="folha-linha desconto">
                     <span>(-) Produtos / Materiais:</span>
                     <strong id="f-valor-produtos">R$ 0,00</strong>
@@ -5307,7 +5342,7 @@
    <button class="btn-gold" onclick="abrirTelaMeusVales()" style="margin-top: 15px; box-shadow: none;">💰 MEUS VALES E RECIBOS</button>
 
     <button class="btn-logout" onclick="fazerLogout()" style="margin-top: 25px;">Sair da Conta (Logout)</button>
-    <p id="versao-app-ponto" style="text-align:center;font-size:10px;color:#8a94a6;margin:12px 0 0 0;">versão 14</p>
+    <p id="versao-app-ponto" style="text-align:center;font-size:10px;color:#8a94a6;margin:12px 0 0 0;">versão 16</p>
 </div>
 <div class="main-card" id="tela-meus-vales" style="display: none;">
     <div class="header-logo">
@@ -18121,6 +18156,9 @@ window.exportarPDF = function(tipo) {
                 window.carregarRelatorioGeralNotasFiscais();
             }
         }
+        if (aba === 'criar' && typeof preencherDataValePadrao === 'function') {
+            preencherDataValePadrao();
+        }
         if (aba === 'pedidos') {
             buscarPedidosMaterial();
         }
@@ -19257,6 +19295,7 @@ window.gerarFolhaPagamento = async function() {
             
             let totalDinheiro = 0; 
             let totalProduto = 0;
+            const itensValesFolha = [];
 
             valesSnap.forEach(doc => {
                 const vale = doc.data();
@@ -19266,8 +19305,9 @@ window.gerarFolhaPagamento = async function() {
                 
                 // Compara ignorando maiúsculas e minúsculas para evitar erro de digitação no status
                 const statusVale = String(vale.status || "").toLowerCase();
+                const contaNaFolha = statusVale === 'assinado' || statusVale === 'assinado_manual' || vale.desconta_folha === true;
                 
-                if (vale.empresa_id === empresaLogada && statusVale === 'assinado') {
+                if (vale.empresa_id === empresaLogada && contaNaFolha) {
                     const dataVale = separarDataSegura(vale.data_assinatura || vale.data_criacao || vale.data);
                     
                     // ESPIÃO 2: Mostra como a data foi separada
@@ -19275,9 +19315,18 @@ window.gerarFolhaPagamento = async function() {
                     
                     if (Number(dataVale.mes) === Number(mesSelected) && Number(dataVale.ano) === Number(anoSelected)) {
                         let v = parseMoedaLocal(vale.valor) || 0;
-                        
                         const tipoVale = String(vale.tipo || "").toLowerCase();
-                        if (tipoVale.includes('produto') || tipoVale.includes('material')) {
+                        const ehProduto = tipoVale.includes('produto') || tipoVale.includes('material');
+                        const ehManual = statusVale === 'assinado_manual' || String(vale.assinatura_tipo || vale.origem || '').toLowerCase() === 'manual';
+                        itensValesFolha.push({
+                            data: vale.data_assinatura || vale.data_criacao || vale.data || '',
+                            tipo: vale.tipo || '',
+                            valor: v,
+                            descricao: vale.descricao || '',
+                            manual: ehManual,
+                            produto: ehProduto
+                        });
+                        if (ehProduto) {
                             totalProduto += v;
                             console.log("✅ Adicionado aos Produtos:", v);
                         } else {
@@ -20081,6 +20130,19 @@ window.gerarFolhaPagamento = async function() {
 
             document.getElementById('f-valor-vales').innerText = formatarMoeda(totalDinheiro);
             document.getElementById('f-valor-produtos').innerText = formatarMoeda(totalProduto);
+            const detVales = document.getElementById('f-detalhe-vales');
+            if (detVales) {
+                if (itensValesFolha.length) {
+                    const linhas = itensValesFolha.map(function (it) {
+                        const origem = it.manual ? 'papel / manual' : 'assinado no celular';
+                        const desc = it.descricao ? ' — ' + escapeHtmlBasico(it.descricao) : '';
+                        return '<div>' + escapeHtmlBasico(it.data || '') + ' · ' + escapeHtmlBasico(it.tipo || '') + ' · ' + escapeHtmlBasico(formatarMoeda(it.valor)) + ' <span style="color:#888;">(' + origem + ')</span>' + desc + '</div>';
+                    }).join('');
+                    detVales.innerHTML = linhas + '<div style="margin-top:6px;">Pendentes só com link, sem assinar, <b>não descontam</b>.</div>';
+                } else {
+                    detVales.innerHTML = 'Nenhum vale confirmado neste mês. Vale só com link, sem assinar, <b>não desconta</b>. Use o bloco amarelo <b>Vale sem celular</b> acima para lançar e imprimir.';
+                }
+            }
 
             const elLinhaDf = document.getElementById('f-linha-desconto-faltas');
             const elLinhaDsr = document.getElementById('f-linha-desconto-dsr');
@@ -23741,16 +23803,20 @@ window.gerarFolhaPagamento = async function() {
     }
 
     function htmlPreviewReciboVale(dados) {
-        const assinado = String(dados.status || '').toLowerCase() === 'assinado';
+        const assinado = typeof valeContaComoDescontoFolha === 'function' ? valeContaComoDescontoFolha(dados) : String(dados.status || '').toLowerCase() === 'assinado';
+        const manual = typeof valeEhAssinaturaManual === 'function' ? valeEhAssinaturaManual(dados) : false;
         const hora = dados.hora_criacao ? ` às ${dados.hora_criacao}` : '';
+        const rotuloStatus = !assinado ? 'Pendente' : (manual ? 'Lançado no holerite (papel)' : 'Assinado');
         const assHtml = assinado && dados.assinatura
             ? `<div style="margin-top:18px;text-align:center;"><img src="${dados.assinatura}" alt="Assinatura" style="max-height:120px;border:1px solid #ddd;border-radius:8px;background:#fff;padding:6px;"><div style="margin-top:8px;font-weight:700;color:#1a2a43;">${escapeHtmlBasico(dados.nome || '')}</div><div style="font-size:12px;color:#666;">Assinatura digital do funcionário</div></div>`
-            : `<p style="margin-top:16px;padding:10px;background:#fff3cd;border:1px solid #ffc107;border-radius:8px;color:#856404;font-weight:700;">⏳ Recibo ainda sem assinatura do funcionário.</p>`;
+            : (assinado && manual
+                ? `<p style="margin-top:16px;padding:10px;background:#eef9f0;border:1px solid #28a745;border-radius:8px;color:#155724;font-weight:700;">📝 Vale lançado no holerite. Assinatura em papel.</p>`
+                : `<p style="margin-top:16px;padding:10px;background:#fff3cd;border:1px solid #ffc107;border-radius:8px;color:#856404;font-weight:700;">⏳ Recibo ainda sem assinatura do funcionário.</p>`);
         return `
             <div style="text-align:left;font-size:13px;line-height:1.5;">
                 <div style="text-align:center;margin-bottom:12px;padding-bottom:10px;border-bottom:2px solid #1a2a43;">
                     <b style="color:#1a2a43;font-size:15px;">${escapeHtmlBasico(dados.empresa_id || 'Empresa')}</b><br>
-                    <span style="font-size:12px;color:#666;">Recibo oficial — ${assinado ? 'Assinado' : 'Pendente'}</span>
+                    <span style="font-size:12px;color:#666;">Recibo oficial — ${rotuloStatus}</span>
                 </div>
                 <div style="font-size:12px;color:#666;margin-bottom:10px;"><b>Data:</b> ${escapeHtmlBasico((dados.data_criacao || dados.data || '') + hora)}</div>
                 <div style="font-size:12px;margin-bottom:8px;"><b>Tipo:</b> ${escapeHtmlBasico(dados.tipo || '')} &nbsp;|&nbsp; <b>Valor:</b> R$ ${escapeHtmlBasico(String(dados.valor || '0'))}</div>
@@ -23897,8 +23963,9 @@ window.gerarFolhaPagamento = async function() {
             if (docSnap.exists()) {
                 const dados = docSnap.data();
                 
-                if(dados.status === 'assinado') { 
-                    document.getElementById('tela-funcionario').innerHTML = `<div style="text-align:center; padding: 40px;"><img src="https://i.postimg.cc/zDRJMSTn/69420f5a-5b80-457e-8146-00485162d7f2.jpg" style="max-width:150px; margin-bottom:20px;"><h3 style="color:#28a745;">✅ Documento assinado!</h3></div>`; 
+                if (typeof valeContaComoDescontoFolha === 'function' ? valeContaComoDescontoFolha(dados) : dados.status === 'assinado') { 
+                    const txtManual = (typeof valeEhAssinaturaManual === 'function' && valeEhAssinaturaManual(dados)) ? 'Vale lançado no holerite (assinatura em papel).' : 'Documento assinado!';
+                    document.getElementById('tela-funcionario').innerHTML = `<div style="text-align:center; padding: 40px;"><img src="https://i.postimg.cc/zDRJMSTn/69420f5a-5b80-457e-8146-00485162d7f2.jpg" style="max-width:150px; margin-bottom:20px;"><h3 style="color:#28a745;">✅ ${txtManual}</h3></div>`; 
                     return; 
                 }
                 
@@ -24398,49 +24465,275 @@ window.gerarFolhaPagamento = async function() {
     // MÓDULO: VALES E ADIANTAMENTOS
     // ==========================================
 
-    document.getElementById('btnGerarLink').onclick = async function() {
-        const funcId = document.getElementById('p-func-select').value;
-        const funcSelect = document.getElementById('p-func-select');
-        const funcNome = funcSelect.options[funcSelect.selectedIndex].text;
-        const valor = document.getElementById('p-valor').value;
-        const tipo = document.getElementById('p-tipo').value;
-        const desc = document.getElementById('p-desc').value;
-        const empresaLogada = getEmpresaGestor();
+    function valeContaComoDescontoFolha(vale) {
+        const s = String((vale && vale.status) || '').toLowerCase();
+        return s === 'assinado' || s === 'assinado_manual' || !!(vale && vale.desconta_folha);
+    }
 
-        if (!funcId || !valor || !desc) {
-            return Swal.fire('Atenção', 'Selecione o funcionário, o valor e a descrição!', 'warning');
+    function valeEhAssinaturaManual(vale) {
+        const s = String((vale && vale.status) || '').toLowerCase();
+        const tipo = String((vale && (vale.assinatura_tipo || vale.origem)) || '').toLowerCase();
+        return s === 'assinado_manual' || tipo === 'manual';
+    }
+
+    function dataIsoParaBrVale(iso) {
+        if (iso && /^\d{4}-\d{2}-\d{2}$/.test(iso)) {
+            const p = iso.split('-');
+            return p[2] + '/' + p[1] + '/' + p[0];
         }
+        const d = new Date();
+        return String(d.getDate()).padStart(2, '0') + '/' + String(d.getMonth() + 1).padStart(2, '0') + '/' + d.getFullYear();
+    }
 
-        const btn = document.getElementById('btnGerarLink');
-        btn.innerText = "⏳ A GERAR LINK...";
-        btn.disabled = true;
+    function preencherDataValePadrao() {
+        const el = document.getElementById('p-data-vale');
+        if (!el || el.value) return;
+        const d = new Date();
+        el.value = d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
+    }
 
+    async function criarValeNoSistema(opcoes) {
+        const opts = opcoes || {};
+        const funcSelect = document.getElementById('p-func-select');
+        const folhaSelect = document.getElementById('folha-func-select');
+        const funcId = String(opts.funcId || (funcSelect && funcSelect.value) || '').trim();
+        let funcNome = String(opts.funcNome || '').trim();
+        if (!funcNome && funcSelect && funcSelect.value === funcId && funcSelect.selectedIndex >= 0) {
+            funcNome = funcSelect.options[funcSelect.selectedIndex].text;
+        }
+        if (!funcNome && folhaSelect && folhaSelect.value === funcId && folhaSelect.selectedIndex >= 0) {
+            funcNome = folhaSelect.options[folhaSelect.selectedIndex].text;
+        }
+        const valor = String(opts.valor != null ? opts.valor : ((document.getElementById('p-valor') && document.getElementById('p-valor').value) || '')).trim();
+        const tipo = String(opts.tipo || ((document.getElementById('p-tipo') && document.getElementById('p-tipo').value) || 'Dinheiro')).trim();
+        const desc = String(opts.desc != null ? opts.desc : ((document.getElementById('p-desc') && document.getElementById('p-desc').value) || '')).trim();
+        const empresaLogada = getEmpresaGestor();
+        const dataIso = String(opts.dataIso || ((document.getElementById('p-data-vale') && document.getElementById('p-data-vale').value) || '')).trim();
+        if (!funcId || !valor || !desc) {
+            await Swal.fire('Atenção', 'Selecione o funcionário, o valor e a descrição!', 'warning');
+            return null;
+        }
         const dataObj = new Date();
-        const dataAtual = `${String(dataObj.getDate()).padStart(2, '0')}/${String(dataObj.getMonth() + 1).padStart(2, '0')}/${dataObj.getFullYear()}`;
+        const dataAtual = dataIsoParaBrVale(dataIso);
         const horaAtual = String(dataObj.getHours()).padStart(2, '0') + ':' + String(dataObj.getMinutes()).padStart(2, '0');
+        const manual = !!opts.manual;
+        const payload = {
+            empresa_id: empresaLogada,
+            funcionario_id: funcId,
+            nome: funcNome,
+            valor: valor,
+            tipo: tipo,
+            descricao: desc,
+            status: manual ? 'assinado_manual' : 'pendente',
+            assinatura_tipo: manual ? 'manual' : 'digital',
+            origem: manual ? 'manual' : 'link',
+            desconta_folha: manual,
+            data_criacao: dataAtual,
+            hora_criacao: horaAtual,
+            data: dataAtual,
+            timestamp: dataObj.getTime()
+        };
+        if (manual) {
+            payload.data_assinatura = dataAtual;
+            payload.hora_assinatura = horaAtual;
+            payload.timestamp_assinatura = dataObj.getTime();
+        }
+        const docRef = await addDoc(collection(db, 'vales_sistema'), payload);
+        const textoRecibo = 'Eu, <b>' + funcNome + '</b>, confirmo o recebimento do valor de <b>R$ ' + valor + '</b> em formato de <b>' + tipo + '</b>, referente a: <i>' + desc + '</i>.';
+        await updateDoc(doc(db, 'vales_sistema', docRef.id), { texto: textoRecibo });
+        const criado = Object.assign({ id: docRef.id, texto: textoRecibo }, payload);
+        window.valesEncontrados = window.valesEncontrados || {};
+        window.valesEncontrados[docRef.id] = criado;
+        if (!opts.naoLimparForm) {
+            const elValor = document.getElementById('p-valor');
+            const elDesc = document.getElementById('p-desc');
+            if (elValor) elValor.value = '';
+            if (elDesc) elDesc.value = '';
+        }
+        return criado;
+    }
 
+    function dataIsoReferenciaFolha() {
+        const mes = ((document.getElementById('folha-mes') && document.getElementById('folha-mes').value) || '').trim();
+        const ano = Number((document.getElementById('folha-ano') && document.getElementById('folha-ano').value) || 0);
+        const hoje = new Date();
+        if (ano === hoje.getFullYear() && mes === String(hoje.getMonth() + 1).padStart(2, '0')) {
+            return hoje.getFullYear() + '-' + String(hoje.getMonth() + 1).padStart(2, '0') + '-' + String(hoje.getDate()).padStart(2, '0');
+        }
+        const ultimo = new Date(ano, Number(mes), 0).getDate();
+        return ano + '-' + mes + '-' + String(ultimo).padStart(2, '0');
+    }
+
+    window.lancarValeManualNaFolha = async function () {
+        const funcSelect = document.getElementById('folha-func-select');
+        const funcId = funcSelect && funcSelect.value;
+        const funcNome = (funcSelect && funcSelect.selectedIndex >= 0) ? funcSelect.options[funcSelect.selectedIndex].text : '';
+        const valor = ((document.getElementById('folha-vale-valor') && document.getElementById('folha-vale-valor').value) || '').trim();
+        const tipo = ((document.getElementById('folha-vale-tipo') && document.getElementById('folha-vale-tipo').value) || 'Dinheiro').trim();
+        const desc = ((document.getElementById('folha-vale-desc') && document.getElementById('folha-vale-desc').value) || '').trim();
+        if (!funcId) return Swal.fire('Atenção', 'Selecione o funcionário da folha.', 'warning');
+        let criado = null;
         try {
-            const docRef = await addDoc(collection(db, "vales_sistema"), {
-                empresa_id: empresaLogada,
-                funcionario_id: funcId,
-                nome: funcNome,
+            criado = await criarValeNoSistema({
+                manual: true,
+                naoLimparForm: true,
+                funcId: funcId,
+                funcNome: funcNome,
                 valor: valor,
                 tipo: tipo,
-                descricao: desc,
-                status: "pendente",
-                data_criacao: dataAtual,
-                hora_criacao: horaAtual,
-                data: dataAtual, 
-                timestamp: dataObj.getTime()
+                desc: desc,
+                dataIso: dataIsoReferenciaFolha()
             });
+        } catch (e) {
+            console.error(e);
+            return Swal.fire('Erro', 'Não foi possível lançar o vale no holerite.', 'error');
+        }
+        if (!criado) return;
+        const elValor = document.getElementById('folha-vale-valor');
+        const elDesc = document.getElementById('folha-vale-desc');
+        if (elValor) elValor.value = '';
+        if (elDesc) elDesc.value = '';
+        if (typeof window.gerarFolhaPagamento === 'function') {
+            try { await window.gerarFolhaPagamento(); } catch (_) {}
+        }
+        const result = await Swal.fire({
+            title: 'Vale no holerite',
+            html: 'O vale de <b>R$ ' + escapeHtmlBasico(String(criado.valor)) + '</b> já está descontando neste holerite.<br><br>Imprima para o funcionário assinar em papel.',
+            icon: 'success',
+            showCancelButton: true,
+            confirmButtonText: '🖨️ Imprimir agora',
+            cancelButtonText: 'Fechar',
+            confirmButtonColor: '#1a2a43'
+        });
+        if (result.isConfirmed) await window.imprimirValeParaAssinaturaManual(criado.id);
+    };
 
-            const textoRecibo = `Eu, <b>${funcNome}</b>, confirmo o recebimento do valor de <b>R$ ${valor}</b> em formato de <b>${tipo}</b>, referente a: <i>${desc}</i>.`;
-            
-            await updateDoc(doc(db, "vales_sistema", docRef.id), { texto: textoRecibo });
+    window.imprimirValesDoHolerite = async function () {
+        const funcSelect = document.getElementById('folha-func-select');
+        const funcId = funcSelect && funcSelect.value;
+        if (!funcId) return Swal.fire('Atenção', 'Selecione o funcionário da folha.', 'warning');
+        const mes = Number((document.getElementById('folha-mes') && document.getElementById('folha-mes').value) || 0);
+        const ano = Number((document.getElementById('folha-ano') && document.getElementById('folha-ano').value) || 0);
+        try {
+            const qVales = query(collection(db, 'vales_sistema'), where('funcionario_id', '==', funcId));
+            const snap = await getDocs(qVales);
+            const lista = [];
+            snap.forEach(function (d) {
+                const vale = Object.assign({ id: d.id }, d.data() || {});
+                if (!valeContaComoDescontoFolha(vale) && String(vale.status || '').toLowerCase() !== 'pendente') return;
+                const dataVale = separarDataSegura(vale.data_assinatura || vale.data_criacao || vale.data);
+                if (Number(dataVale.mes) === mes && Number(dataVale.ano) === ano) lista.push(vale);
+            });
+            if (!lista.length) return Swal.fire('Atenção', 'Não há vales deste funcionário neste mês para imprimir.', 'info');
+            lista.sort(function (a, b) {
+                return Number(a.timestamp || a.timestamp_assinatura || 0) - Number(b.timestamp || b.timestamp_assinatura || 0);
+            });
+            const w = window.open('', '_blank');
+            if (!w) return Swal.fire('Atenção', 'O navegador bloqueou a janela de impressão. Permita pop-ups.', 'warning');
+            w.document.open();
+            w.document.write(htmlDocumentoImpressaoVales(lista));
+            w.document.close();
+        } catch (e) {
+            console.error(e);
+            Swal.fire('Erro', 'Não foi possível imprimir os vales.', 'error');
+        }
+    };
 
-            const linkAssinatura = `${window.location.origin}${window.location.pathname}?id=${docRef.id}`;
-            const msgWhats = `Olá ${funcNome}, acesse o link abaixo para assinar digitalmente o seu vale de R$ ${valor} (${tipo}):\n\n${linkAssinatura}`;
+    function htmlBlocoValeImpressao(dados) {
+        const empresa = escapeHtmlBasico(dados.empresa_id || getEmpresaGestor() || 'Empresa');
+        const nome = escapeHtmlBasico(dados.nome || '');
+        const valor = escapeHtmlBasico(String(dados.valor || '0'));
+        const tipo = escapeHtmlBasico(dados.tipo || '');
+        const data = escapeHtmlBasico(dados.data_criacao || dados.data || '');
+        const desc = escapeHtmlBasico(dados.descricao || '');
+        const texto = dados.texto || ('Eu, <b>' + nome + '</b>, confirmo o recebimento do valor de <b>R$ ' + valor + '</b> em formato de <b>' + tipo + '</b>, referente a: <i>' + desc + '</i>.');
+        return '<div class="quebra">'
+            + '<div class="folha"><div class="via">Via da empresa</div><h1>' + empresa + '</h1><div class="sub">RECIBO DE VALE / ADIANTAMENTO — ASSINATURA MANUAL</div>'
+            + '<p><b>Data:</b> ' + data + ' &nbsp; <b>Tipo:</b> ' + tipo + ' &nbsp; <b>Valor:</b> R$ ' + valor + '</p>'
+            + '<p style="text-align:justify;line-height:1.55;font-size:15px;">' + texto + '</p>'
+            + '<p style="font-size:12px;color:#444;">Este vale foi lançado no holerite. O funcionário assina abaixo em papel, por não utilizar a assinatura no celular.</p>'
+            + '<div class="linha-ass"><div class="risco"></div><div><b>' + nome + '</b></div><div style="font-size:12px;">Assinatura do funcionário</div></div></div>'
+            + '<div style="height:18px;"></div>'
+            + '<div class="folha"><div class="via">Via do funcionário</div><h1>' + empresa + '</h1><div class="sub">RECIBO DE VALE / ADIANTAMENTO — ASSINATURA MANUAL</div>'
+            + '<p><b>Data:</b> ' + data + ' &nbsp; <b>Tipo:</b> ' + tipo + ' &nbsp; <b>Valor:</b> R$ ' + valor + '</p>'
+            + '<p style="text-align:justify;line-height:1.55;font-size:15px;">' + texto + '</p>'
+            + '<div class="linha-ass"><div class="risco"></div><div><b>' + nome + '</b></div><div style="font-size:12px;">Assinatura do funcionário</div></div></div>'
+            + '</div>';
+    }
 
+    function htmlDocumentoImpressaoVales(lista) {
+        const corpos = (lista || []).map(function (v) { return htmlBlocoValeImpressao(v); }).join('');
+        return '<!DOCTYPE html><html lang="pt-BR"><head><meta charset="UTF-8"><title>Vale para assinatura</title>'
+            + '<style>body{font-family:Arial,sans-serif;color:#111;margin:0;padding:18px;} .folha{max-width:720px;margin:0 auto;border:1px solid #333;padding:22px 24px;} h1{font-size:18px;margin:0 0 4px;text-align:center;} .sub{text-align:center;font-size:12px;color:#444;margin-bottom:18px;} .linha-ass{margin-top:48px;text-align:center;} .risco{border-top:1px solid #111;width:70%;margin:40px auto 6px;} .via{font-size:11px;color:#666;margin-top:8px;text-align:right;} .quebra{page-break-after:always;} .quebra:last-child{page-break-after:auto;} @media print { body{padding:0;} .no-print{display:none;} .folha{border:none;} }</style></head><body>'
+            + '<div class="no-print" style="text-align:center;margin-bottom:12px;"><button onclick="window.print()" style="padding:10px 18px;font-weight:700;cursor:pointer;">Imprimir</button></div>'
+            + corpos
+            + '<script>setTimeout(function(){window.print();},400);<\/script></body></html>';
+    }
+
+    function htmlImpressaoValeManual(dados) {
+        return htmlDocumentoImpressaoVales([dados]);
+    }
+
+    window.imprimirValeParaAssinaturaManual = async function (id) {
+        try {
+            const dados = await obterDadosValePorId(id);
+            if (!dados) return Swal.fire('Erro', 'Vale não encontrado.', 'error');
+            const w = window.open('', '_blank');
+            if (!w) return Swal.fire('Atenção', 'O navegador bloqueou a janela de impressão. Permita pop-ups.', 'warning');
+            w.document.open();
+            w.document.write(htmlImpressaoValeManual(dados));
+            w.document.close();
+        } catch (e) {
+            console.error(e);
+            Swal.fire('Erro', 'Não foi possível montar a impressão.', 'error');
+        }
+    };
+
+    window.marcarValeAssinadoPapel = async function (id) {
+        const ok = await Swal.fire({
+            title: 'Assinado em papel?',
+            html: 'Confirma que o funcionário assinou o vale no papel? O valor <b>passa a descontar no holerite</b>.',
+            icon: 'question',
+            showCancelButton: true,
+            confirmButtonText: 'Sim, descontar no holerite',
+            cancelButtonText: 'Cancelar',
+            confirmButtonColor: '#1a2a43'
+        });
+        if (!ok.isConfirmed) return;
+        const agora = new Date();
+        const dataBr = String(agora.getDate()).padStart(2, '0') + '/' + String(agora.getMonth() + 1).padStart(2, '0') + '/' + agora.getFullYear();
+        const hora = String(agora.getHours()).padStart(2, '0') + ':' + String(agora.getMinutes()).padStart(2, '0');
+        try {
+            await updateDoc(doc(db, 'vales_sistema', id), {
+                status: 'assinado_manual',
+                assinatura_tipo: 'manual',
+                desconta_folha: true,
+                data_assinatura: dataBr,
+                hora_assinatura: hora,
+                timestamp_assinatura: agora.getTime()
+            });
+            if (window.valesEncontrados && window.valesEncontrados[id]) {
+                window.valesEncontrados[id].status = 'assinado_manual';
+                window.valesEncontrados[id].desconta_folha = true;
+            }
+            Swal.fire('Pronto', 'Vale lançado no holerite (assinatura em papel).', 'success');
+            if (typeof window.buscarVales === 'function') window.buscarVales();
+        } catch (e) {
+            console.error(e);
+            Swal.fire('Erro', 'Não foi possível confirmar o vale.', 'error');
+        }
+    };
+
+    const btnGerarLinkEl = document.getElementById('btnGerarLink');
+    if (btnGerarLinkEl) btnGerarLinkEl.onclick = async function() {
+        const btn = document.getElementById('btnGerarLink');
+        btn.innerText = '⏳ A GERAR LINK...';
+        btn.disabled = true;
+        try {
+            const criado = await criarValeNoSistema({ manual: false });
+            if (!criado) return;
+            const linkAssinatura = window.location.origin + window.location.pathname + '?id=' + criado.id;
+            const msgWhats = 'Olá ' + criado.nome + ', acesse o link abaixo para assinar digitalmente o seu vale de R$ ' + criado.valor + ' (' + criado.tipo + '):\n\n' + linkAssinatura;
             Swal.fire({
                 title: 'Vale Gerado!',
                 text: 'O link de assinatura está pronto.',
@@ -24452,31 +24745,74 @@ window.gerarFolhaPagamento = async function() {
                 cancelButtonText: 'Copiar Link'
             }).then((result) => {
                 if (result.isConfirmed) {
-                    const funcionario = window.listaFuncionarios[funcId];
+                    const funcionario = window.listaFuncionarios[criado.funcionario_id];
                     if (funcionario && funcionario.tel) {
-                        window.open(`https://api.whatsapp.com/send?phone=55${funcionario.tel}&text=${encodeURIComponent(msgWhats)}`, '_blank');
+                        window.open('https://api.whatsapp.com/send?phone=55' + funcionario.tel + '&text=' + encodeURIComponent(msgWhats), '_blank');
                     } else {
                         Swal.fire('Aviso', 'Este funcionário não tem telefone cadastrado. Copie o link manualmente.', 'info');
                     }
                 } else {
                     navigator.clipboard.writeText(linkAssinatura);
-                    Swal.fire({toast:true, position:'top-end', icon:'success', title:'Link Copiado!', showConfirmButton:false, timer:2000});
+                    Swal.fire({ toast: true, position: 'top-end', icon: 'success', title: 'Link Copiado!', showConfirmButton: false, timer: 2000 });
                 }
             });
-
-            document.getElementById('p-valor').value = '';
-            document.getElementById('p-desc').value = '';
-
         } catch (e) {
             Swal.fire('Erro', 'Falha ao gerar o vale.', 'error');
         } finally {
-            btn.innerText = "GERAR VALE E ENVIAR LINK";
+            btn.innerText = 'GERAR VALE E ENVIAR LINK';
+            btn.disabled = false;
+        }
+    };
+
+    const btnValeManualHoleriteEl = document.getElementById('btnValeManualHolerite');
+    if (btnValeManualHoleriteEl) btnValeManualHoleriteEl.onclick = async function () {
+        const btn = document.getElementById('btnValeManualHolerite');
+        const txt = btn.innerText;
+        btn.innerText = '⏳ LANÇANDO...';
+        btn.disabled = true;
+        try {
+            const criado = await criarValeNoSistema({ manual: true });
+            if (!criado) return;
+            const result = await Swal.fire({
+                title: 'Vale no holerite',
+                html: 'O vale de <b>R$ ' + escapeHtmlBasico(String(criado.valor)) + '</b> já desconta na folha, mesmo sem assinatura no celular.<br><br>Imprima para o funcionário assinar em papel.',
+                icon: 'success',
+                showCancelButton: true,
+                confirmButtonText: '🖨️ Imprimir agora',
+                cancelButtonText: 'Fechar',
+                confirmButtonColor: '#1a2a43'
+            });
+            if (result.isConfirmed) await window.imprimirValeParaAssinaturaManual(criado.id);
+        } catch (e) {
+            console.error(e);
+            Swal.fire('Erro', 'Falha ao lançar o vale manual.', 'error');
+        } finally {
+            btn.innerText = txt;
+            btn.disabled = false;
+        }
+    };
+
+    const btnImprimirValePapelEl = document.getElementById('btnImprimirValePapel');
+    if (btnImprimirValePapelEl) btnImprimirValePapelEl.onclick = async function () {
+        const btn = document.getElementById('btnImprimirValePapel');
+        const txt = btn.innerText;
+        btn.innerText = '⏳ PREPARANDO...';
+        btn.disabled = true;
+        try {
+            const criado = await criarValeNoSistema({ manual: true });
+            if (!criado) return;
+            await window.imprimirValeParaAssinaturaManual(criado.id);
+        } catch (e) {
+            console.error(e);
+            Swal.fire('Erro', 'Falha ao gerar o vale para impressão.', 'error');
+        } finally {
+            btn.innerText = txt;
             btn.disabled = false;
         }
     };
 
     function obterDataReferenciaValeArquivo(v) {
-        const isAssinado = String(v.status || '').toLowerCase() === 'assinado';
+        const isAssinado = valeContaComoDescontoFolha(v);
         if (isAssinado) {
             const dataStr = v.data_assinatura || v.data_assinado || v.data_criacao || v.data || '';
             const horaStr = v.hora_assinatura || v.hora_assinado || v.hora_criacao || '';
@@ -24489,7 +24825,7 @@ window.gerarFolhaPagamento = async function() {
                 dataStr,
                 horaStr,
                 ts,
-                rotuloData: 'Assinado em'
+                rotuloData: valeEhAssinaturaManual(v) ? 'Lançado no holerite em' : 'Assinado em'
             };
         }
         const dataStr = v.data_criacao || v.data || '';
@@ -24507,9 +24843,10 @@ window.gerarFolhaPagamento = async function() {
     }
 
     function montarHtmlCardValeArquivo(v) {
-        const isAssinado = String(v.status || '').toLowerCase() === 'assinado';
+        const isAssinado = valeContaComoDescontoFolha(v);
+        const manual = valeEhAssinaturaManual(v);
         const corBorda = isAssinado ? '#28a745' : '#f0ad4e';
-        const badge = isAssinado ? '✅ ASSINADO' : '⏳ PENDENTE';
+        const badge = isAssinado ? (manual ? '📝 HOLERITE (PAPEL)' : '✅ ASSINADO') : '⏳ PENDENTE';
         const ref = obterDataReferenciaValeArquivo(v);
         const horaHtml = ref.horaStr ? ' às ' + ref.horaStr : '';
         return `
@@ -24524,10 +24861,13 @@ window.gerarFolhaPagamento = async function() {
                 <div style="display: flex; gap: 8px; margin-top: 15px; flex-wrap: wrap;">
                     ${isAssinado 
                         ? `<button type="button" onclick="abrirReciboValeTela('${v.id}')" style="flex:1; min-width:120px; background:#4285F4; color:white; border:none; padding:10px; border-radius:8px; font-size:11px; font-weight:bold; cursor:pointer;">👁️ VER NA TELA</button>
+                           <button type="button" onclick="imprimirValeParaAssinaturaManual('${v.id}')" style="flex:1; min-width:120px; background:#6c757d; color:white; border:none; padding:10px; border-radius:8px; font-size:11px; font-weight:bold; cursor:pointer;">🖨️ IMPRIMIR</button>
                            <button type="button" onclick="visualizarReciboValePdf('${v.id}')" style="flex:1; min-width:120px; background:#217346; color:white; border:none; padding:10px; border-radius:8px; font-size:11px; font-weight:bold; cursor:pointer;">📄 ABRIR PDF</button>
                            <button type="button" onclick="baixarReciboValePdf('${v.id}')" style="flex:1; min-width:120px; background:#1a2a43; color:white; border:none; padding:10px; border-radius:8px; font-size:11px; font-weight:bold; cursor:pointer;">📥 BAIXAR PDF</button>
                            <button type="button" onclick="compartilharReciboValeWhats('${v.id}')" style="flex:1; min-width:120px; background:#25D366; color:white; border:none; padding:10px; border-radius:8px; font-size:11px; font-weight:bold; cursor:pointer;">🟢 WHATSAPP</button>` 
                         : `<button type="button" onclick="abrirReciboValeTela('${v.id}')" style="flex:1; min-width:120px; background:#4285F4; color:white; border:none; padding:10px; border-radius:8px; font-size:11px; font-weight:bold; cursor:pointer;">👁️ VER TEXTO</button>
+                           <button type="button" onclick="imprimirValeParaAssinaturaManual('${v.id}')" style="flex:1; min-width:120px; background:#1a2a43; color:white; border:none; padding:10px; border-radius:8px; font-size:11px; font-weight:bold; cursor:pointer;">🖨️ IMPRIMIR PARA ASSINAR</button>
+                           <button type="button" onclick="marcarValeAssinadoPapel('${v.id}')" style="flex:1; min-width:120px; background:#d4a017; color:#1a2a43; border:none; padding:10px; border-radius:8px; font-size:11px; font-weight:bold; cursor:pointer;">✔ ASSINADO EM PAPEL</button>
                            <button type="button" onclick="reenviarLinkVale('${v.id}')" style="flex:1; min-width:120px; background:#25D366; color:white; border:none; padding:10px; border-radius:8px; font-size:11px; font-weight:bold; cursor:pointer;">🟢 REENVIAR LINK</button>`}
                     <button type="button" onclick="excluirVale('${v.id}')" style="flex:1; min-width:120px; background:#d9534f; color:white; border:none; padding:10px; border-radius:8px; font-size:11px; font-weight:bold; cursor:pointer;">🗑️ APAGAR</button>
                 </div>
@@ -24543,7 +24883,7 @@ window.gerarFolhaPagamento = async function() {
         arr.forEach((v) => {
             window.dadosExportacaoVales.push(v);
             window.valesEncontrados[v.id] = v;
-            const isAssinado = String(v.status || '').toLowerCase() === 'assinado';
+            const isAssinado = valeContaComoDescontoFolha(v);
             if (!isAssinado) {
                 pendentes.push(v);
                 return;
@@ -24561,7 +24901,7 @@ window.gerarFolhaPagamento = async function() {
 
         if (pendentes.length) {
             pendentes.sort((a, b) => (b.timestamp || 0) - (a.timestamp || 0));
-            html += `<details class="pasta-ano" open><summary>⏳ Pendentes de assinatura (${pendentes.length})</summary><div class="folder-content">`;
+            html += `<details class="pasta-ano" open><summary>⏳ Pendentes (ainda não descontam) (${pendentes.length})</summary><div class="folder-content">`;
             pendentes.forEach((v) => { html += montarHtmlCardValeArquivo(v); });
             html += `</div></details>`;
         }
@@ -24639,7 +24979,7 @@ window.gerarFolhaPagamento = async function() {
             const { html, totalVales } = montarHtmlPastasValesArquivo(arr);
 
             btnExportar.style.display = 'block';
-            divLista.innerHTML = `<div style="text-align:center; margin-bottom: 15px; padding: 10px; background: #eef2f5; border-radius: 10px;">Total em Vales Assinados: <b style="color:#d9534f; font-size:16px;">${formatarMoeda(totalVales)}</b><br><span style="font-size:11px;color:#666;">Organizados por mês/ano da <b>data de assinatura</b></span></div>` + html;
+            divLista.innerHTML = `<div style="text-align:center; margin-bottom: 15px; padding: 10px; background: #eef2f5; border-radius: 10px;">Total em Vales no holerite: <b style="color:#d9534f; font-size:16px;">${formatarMoeda(totalVales)}</b><br><span style="font-size:11px;color:#666;">Assinados no celular e lançados manualmente (papel)</span></div>` + html;
 
         } catch (e) {
             divLista.innerHTML = `<p style="text-align:center; color:#d9534f;">Erro ao buscar vales.</p>`;
@@ -24726,9 +25066,10 @@ window.gerarFolhaPagamento = async function() {
             arr.forEach(v => {
                 window.valesEncontrados[v.id] = v;
 
-                const isAssinado = v.status === 'assinado';
+                const isAssinado = valeContaComoDescontoFolha(v);
+                const manual = valeEhAssinaturaManual(v);
                 const corBorda = isAssinado ? '#28a745' : '#f0ad4e';
-                const badge = isAssinado ? '✅ ASSINADO' : '⏳ PENDENTE';
+                const badge = isAssinado ? (manual ? '📝 HOLERITE (PAPEL)' : '✅ ASSINADO') : '⏳ PENDENTE';
                 
                 if(isAssinado) totalAssinado += parseMoedaLocal(v.valor);
 
@@ -24745,16 +25086,18 @@ window.gerarFolhaPagamento = async function() {
                         <div style="display: flex; gap: 8px; margin-top: 15px; flex-wrap: wrap;">
                             ${isAssinado 
                                 ? `<button type="button" onclick="abrirReciboValeTela('${v.id}')" style="flex:1; min-width:120px; background:#4285F4; color:white; border:none; padding:10px; border-radius:8px; font-size:11px; font-weight:bold; cursor:pointer;">👁️ VER NA TELA</button>
+                                   <button type="button" onclick="imprimirValeParaAssinaturaManual('${v.id}')" style="flex:1; min-width:120px; background:#6c757d; color:white; border:none; padding:10px; border-radius:8px; font-size:11px; font-weight:bold; cursor:pointer;">🖨️ IMPRIMIR</button>
                                    <button type="button" onclick="visualizarReciboValePdf('${v.id}')" style="flex:1; min-width:120px; background:#217346; color:white; border:none; padding:10px; border-radius:8px; font-size:11px; font-weight:bold; cursor:pointer;">📄 ABRIR PDF</button>
                                    <button type="button" onclick="baixarReciboValePdf('${v.id}')" style="flex:1; min-width:120px; background:#1a2a43; color:white; border:none; padding:10px; border-radius:8px; font-size:11px; font-weight:bold; cursor:pointer;">📥 BAIXAR PDF</button>` 
                                 : `<button type="button" onclick="window.location.href='?id=${v.id}'" style="flex:1; min-width:120px; background:#d4a017; color:var(--dark-navy); border:none; padding:10px; border-radius:8px; font-size:11px; font-weight:bold; cursor:pointer;">✍️ ASSINAR AGORA</button>
+                                   <button type="button" onclick="imprimirValeParaAssinaturaManual('${v.id}')" style="flex:1; min-width:120px; background:#1a2a43; color:white; border:none; padding:10px; border-radius:8px; font-size:11px; font-weight:bold; cursor:pointer;">🖨️ IMPRIMIR</button>
                                    <button type="button" onclick="abrirReciboValeTela('${v.id}')" style="flex:1; min-width:120px; background:#4285F4; color:white; border:none; padding:10px; border-radius:8px; font-size:11px; font-weight:bold; cursor:pointer;">👁️ VER TEXTO</button>`}
                         </div>
                     </div>
                 `;
             });
 
-            divLista.innerHTML = `<div style="text-align:center; margin-bottom: 15px; padding: 10px; background: #eef2f5; border-radius: 10px;">Total Já Recebido (Assinado): <b style="color:#28a745; font-size:16px;">${formatarMoeda(totalAssinado)}</b></div>` + html;
+            divLista.innerHTML = `<div style="text-align:center; margin-bottom: 15px; padding: 10px; background: #eef2f5; border-radius: 10px;">Total no holerite: <b style="color:#28a745; font-size:16px;">${formatarMoeda(totalAssinado)}</b></div>` + html;
 
         } catch (e) {
             divLista.innerHTML = `<p style="text-align:center; color:#d9534f;">Erro ao buscar seus vales. Tente novamente.</p>`;

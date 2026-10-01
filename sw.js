@@ -1,4 +1,4 @@
-const CACHE_NAME = 'fh-construcoes-v14';
+const CACHE_NAME = 'fh-construcoes-v16';
 
 const urlsToCache = [
   './',
