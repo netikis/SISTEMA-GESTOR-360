@@ -3294,7 +3294,7 @@
 </script>
 
 <script>
-    window.APP_BUILD = 17;
+    window.APP_BUILD = 18;
     window.addEventListener('DOMContentLoaded', function () {
       const elVer = document.getElementById('versao-app-ponto');
       if (elVer) elVer.textContent = 'versão ' + window.APP_BUILD;
@@ -5432,16 +5432,30 @@
     </div>
 </div>
 
-<!-- MODAL VISUALIZADOR DE DOCUMENTOS (SEM REDIRECIONAR / SEM RECARREGAR) -->
-<div id="modal-visualizador-documento" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.78); z-index:999999; justify-content:center; align-items:center; padding:16px; box-sizing:border-box;" onclick="if(event.target===this) fecharVisualizadorDocumento()">
-    <div style="background:#fff; width:100%; max-width:960px; max-height:92vh; border-radius:12px; display:flex; flex-direction:column; overflow:hidden; box-shadow:0 12px 40px rgba(0,0,0,0.5);">
-        <div style="display:flex; justify-content:space-between; align-items:center; padding:12px 16px; background:#1a2a43; color:#fff;">
-            <strong id="visualizador-doc-titulo" style="font-size:15px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">Visualizar Documento</strong>
-            <button type="button" onclick="fecharVisualizadorDocumento()" style="background:transparent; border:none; color:#fff; font-size:24px; cursor:pointer; line-height:1; padding:0 6px;" title="Fechar (Esc)">&times;</button>
+<!-- MODAL VISUALIZADOR DE DOCUMENTOS (SEM REDIRECIONAR / SEM FECHAR FORMULÁRIOS) -->
+<div id="modal-visualizador-documento" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.85); z-index:9999999; justify-content:center; align-items:center; padding:12px; box-sizing:border-box;" onclick="if(event.target===this) fecharVisualizadorDocumento()">
+    <div style="background:#fff; width:100%; max-width:980px; max-height:94vh; border-radius:12px; display:flex; flex-direction:column; overflow:hidden; box-shadow:0 12px 40px rgba(0,0,0,0.6); position:relative;">
+        <div style="display:flex; justify-content:space-between; align-items:center; padding:10px 14px; background:#1a2a43; color:#fff; gap:8px; flex-wrap:wrap;">
+            <strong id="visualizador-doc-titulo" style="font-size:14px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; flex:1; min-width:140px;">Visualizar Documento</strong>
+            <div style="display:flex; align-items:center; gap:6px; flex-wrap:wrap;">
+                <div id="visualizador-doc-zoom-controles" style="display:none; align-items:center; gap:4px;">
+                    <button type="button" onclick="window.zoomVisualizadorDoc(-0.25)" style="background:#495057; color:#fff; border:none; border-radius:6px; padding:4px 9px; font-weight:700; cursor:pointer;" title="Reduzir">−</button>
+                    <button type="button" onclick="window.zoomVisualizadorDoc(0)" style="background:#fff; color:#1a2a43; border:none; border-radius:6px; padding:4px 8px; font-size:11px; font-weight:700; cursor:pointer;" title="100%"><span id="visualizador-doc-zoom-txt">100%</span></button>
+                    <button type="button" onclick="window.zoomVisualizadorDoc(0.25)" style="background:#495057; color:#fff; border:none; border-radius:6px; padding:4px 9px; font-weight:700; cursor:pointer;" title="Aumentar">+</button>
+                </div>
+                <button type="button" id="visualizador-doc-btn-aba" onclick="window.abrirVisualizadorEmNovaAba()" style="background:#28a745; color:#fff; border:none; border-radius:6px; padding:5px 10px; font-size:12px; font-weight:700; cursor:pointer; display:inline-flex; align-items:center; gap:4px;" title="Abrir em nova aba">
+                    ↗ Abrir em nova aba
+                </button>
+                <button type="button" onclick="fecharVisualizadorDocumento()" style="background:#dc3545; color:#fff; border:none; border-radius:6px; padding:5px 12px; font-size:12px; font-weight:700; cursor:pointer; display:inline-flex; align-items:center; gap:4px;" title="Fechar visualização (Esc)">
+                    ✕ Fechar (Esc)
+                </button>
+            </div>
         </div>
-        <div style="flex:1; overflow:auto; padding:12px; background:#f4f7f6; display:flex; justify-content:center; align-items:center; min-height:300px;">
+        <div id="visualizador-doc-body" style="flex:1; overflow:auto; padding:8px; background:#111; display:flex; justify-content:center; align-items:center; min-height:280px; -webkit-overflow-scrolling:touch;">
             <iframe id="visualizador-doc-frame" style="width:100%; height:75vh; border:none; border-radius:8px; display:none; background:#fff;"></iframe>
-            <img id="visualizador-doc-img" src="" alt="Documento" style="max-width:100%; max-height:75vh; object-fit:contain; border-radius:8px; display:none;">
+            <div id="visualizador-doc-img-wrap" style="width:100%; height:75vh; display:none; justify-content:center; align-items:center; overflow:auto; padding:10px; box-sizing:border-box;">
+                <img id="visualizador-doc-img" src="" alt="Documento" style="max-width:100%; max-height:100%; object-fit:contain; border-radius:8px; display:none; transition:transform 0.15s ease;">
+            </div>
         </div>
     </div>
 </div>
@@ -8509,6 +8523,30 @@ function separarDataSegura(dataString) {
         }
     };
 
+    window._visualizadorDocBlobUrl = null;
+    window._visualizadorDocUrlAtual = null;
+    window._visualizadorDocTipoAtual = null;
+    window._visualizadorDocZoom = 1;
+
+    window.zoomVisualizadorDoc = function(delta) {
+        if (delta === 0) {
+            window._visualizadorDocZoom = 1;
+        } else {
+            let z = (window._visualizadorDocZoom || 1) + delta;
+            z = Math.max(0.5, Math.min(4, Math.round(z * 100) / 100));
+            window._visualizadorDocZoom = z;
+        }
+        const img = document.getElementById('visualizador-doc-img');
+        const txt = document.getElementById('visualizador-doc-zoom-txt');
+        if (img) {
+            img.style.transform = `scale(${window._visualizadorDocZoom})`;
+            img.style.transformOrigin = 'center center';
+        }
+        if (txt) {
+            txt.textContent = Math.round(window._visualizadorDocZoom * 100) + '%';
+        }
+    };
+
     window.fecharVisualizadorDocumento = function () {
         const modal = document.getElementById('modal-visualizador-documento');
         if (modal) {
@@ -8516,35 +8554,153 @@ function separarDataSegura(dataString) {
             const frame = document.getElementById('visualizador-doc-frame');
             if (frame) frame.src = 'about:blank';
             const img = document.getElementById('visualizador-doc-img');
-            if (img) img.src = '';
+            if (img) {
+                img.src = '';
+                img.style.display = 'none';
+                img.style.transform = 'none';
+            }
+            const wrap = document.getElementById('visualizador-doc-img-wrap');
+            if (wrap) wrap.style.display = 'none';
+            const zoomCtrls = document.getElementById('visualizador-doc-zoom-controles');
+            if (zoomCtrls) zoomCtrls.style.display = 'none';
         }
+        if (window._visualizadorDocBlobUrl) {
+            try { URL.revokeObjectURL(window._visualizadorDocBlobUrl); } catch (_) {}
+            window._visualizadorDocBlobUrl = null;
+        }
+        window._visualizadorDocUrlAtual = null;
+        window._visualizadorDocTipoAtual = null;
+        window._visualizadorDocZoom = 1;
     };
 
     window.abrirVisualizadorDocumento = function (url, nome, tipo) {
+        if (!url) return;
         const modal = document.getElementById('modal-visualizador-documento');
         if (!modal) return;
+
+        if (window._visualizadorDocBlobUrl) {
+            try { URL.revokeObjectURL(window._visualizadorDocBlobUrl); } catch (_) {}
+            window._visualizadorDocBlobUrl = null;
+        }
+
         const titulo = document.getElementById('visualizador-doc-titulo');
         const frame = document.getElementById('visualizador-doc-frame');
         const img = document.getElementById('visualizador-doc-img');
+        const wrap = document.getElementById('visualizador-doc-img-wrap');
+        const zoomCtrls = document.getElementById('visualizador-doc-zoom-controles');
+        const txtZoom = document.getElementById('visualizador-doc-zoom-txt');
+
         if (titulo) titulo.textContent = nome || 'Visualização do Documento';
-        const ehPdf = tipo === 'pdf' || (url && /\.pdf(\?|$)/i.test(url)) || (url && String(url).startsWith('data:application/pdf'));
+
+        const srcRaw = String(url);
+        const ehPdf = tipo === 'pdf'
+            || (typeof ehAnexoPdfDataUrl === 'function' && ehAnexoPdfDataUrl(srcRaw))
+            || (/\.pdf(\?|$)/i.test(srcRaw))
+            || srcRaw.startsWith('data:application/pdf')
+            || /mime=application\/pdf/i.test(srcRaw);
+
+        window._visualizadorDocUrlAtual = srcRaw;
+        window._visualizadorDocTipoAtual = ehPdf ? 'pdf' : 'img';
+        window._visualizadorDocZoom = 1;
+        if (txtZoom) txtZoom.textContent = '100%';
+
         if (ehPdf) {
-            if (img) { img.style.display = 'none'; img.src = ''; }
+            if (img) {
+                img.style.display = 'none';
+                img.src = '';
+                img.style.transform = 'none';
+            }
+            if (wrap) wrap.style.display = 'none';
+            if (zoomCtrls) zoomCtrls.style.display = 'none';
+
+            let blobUrl = srcRaw;
+            try {
+                if (srcRaw.startsWith('data:')) {
+                    const partes = srcRaw.split(',');
+                    const b64 = partes.slice(1).join(',');
+                    const bin = atob(b64);
+                    const bytes = new Uint8Array(bin.length);
+                    for (let i = 0; i < bin.length; i += 1) bytes[i] = bin.charCodeAt(i);
+                    blobUrl = URL.createObjectURL(new Blob([bytes], { type: 'application/pdf' }));
+                    window._visualizadorDocBlobUrl = blobUrl;
+                }
+            } catch (e) {
+                blobUrl = srcRaw;
+            }
+
             if (frame) {
-                frame.src = url;
+                frame.src = blobUrl;
                 frame.style.display = 'block';
+                frame.onload = function () {
+                    try {
+                        frame.contentWindow.addEventListener('keydown', function (ev) {
+                            if (ev.key === 'Escape' || ev.key === 'Esc') {
+                                ev.preventDefault();
+                                window.fecharVisualizadorDocumento();
+                            }
+                        });
+                    } catch (_) {}
+                };
             }
         } else {
             if (frame) {
                 frame.style.display = 'none';
                 frame.src = 'about:blank';
             }
+            if (wrap) wrap.style.display = 'flex';
             if (img) {
-                img.src = url;
+                img.src = srcRaw;
                 img.style.display = 'block';
+                img.style.transform = 'scale(1)';
             }
+            if (zoomCtrls) zoomCtrls.style.display = 'inline-flex';
         }
         modal.style.display = 'flex';
+    };
+
+    window.abrirVisualizadorEmNovaAba = function () {
+        const url = window._visualizadorDocBlobUrl || window._visualizadorDocUrlAtual;
+        const ehPdf = window._visualizadorDocTipoAtual === 'pdf';
+        if (!url) return;
+        try {
+            const w = window.open('', '_blank');
+            if (!w) {
+                if (typeof Swal !== 'undefined') Swal.fire('Atenção', 'O navegador bloqueou a nova aba. Permita pop-ups para este site.', 'warning');
+                return;
+            }
+            if (ehPdf) {
+                const srcEsc = String(url).replace(/&/g, '&amp;').replace(/"/g, '&quot;');
+                w.document.write('<!DOCTYPE html><html><head><title>Visualização PDF</title><meta name="viewport" content="width=device-width,initial-scale=1">'
+                    + '<style>html,body{margin:0;height:100%;background:#111;}iframe{width:100%;height:100%;border:none;}</style></head><body>'
+                    + '<iframe src="' + srcEsc + '" style="width:100%;height:100%;border:none;"></iframe></body></html>');
+            } else {
+                const srcEsc = String(url).replace(/&/g, '&amp;').replace(/"/g, '&quot;');
+                w.document.write('<!DOCTYPE html><html><head><title>Visualização de Imagem</title><meta name="viewport" content="width=device-width,initial-scale=1">'
+                    + '<style>body{margin:0;background:#111;display:flex;justify-content:center;align-items:center;min-height:100vh;}img{max-width:100%;height:auto;}</style></head><body>'
+                    + '<img src="' + srcEsc + '" alt="Documento"></body></html>');
+            }
+            w.document.close();
+        } catch (e) {
+            console.error(e);
+            window.open(url, '_blank');
+        }
+    };
+
+    window.abrirFoto = function (imgBase64, titulo) {
+        if (!imgBase64) {
+            if (typeof Swal !== 'undefined') Swal.fire('Atenção', 'Nenhuma imagem ou documento para exibir.', 'info');
+            return;
+        }
+        const srcRaw = String(imgBase64);
+        const ehPdf = (typeof ehAnexoPdfDataUrl === 'function' && ehAnexoPdfDataUrl(srcRaw))
+            || /\.pdf(\?|$)/i.test(srcRaw)
+            || srcRaw.startsWith('data:application/pdf')
+            || /mime=application\/pdf/i.test(srcRaw);
+
+        if (typeof window.abrirVisualizadorDocumento === 'function') {
+            window.abrirVisualizadorDocumento(srcRaw, titulo || (ehPdf ? 'Comprovante PDF' : 'Comprovante / Anexo'), ehPdf ? 'pdf' : 'img');
+            return;
+        }
     };
 
     window.visualizarDocumentoPessoal = async function (id, pasta) {
@@ -9349,7 +9505,9 @@ function separarDataSegura(dataString) {
 
         if (btnVerPdf) {
             btnVerPdf.onclick = function () {
-                if (window._swalComprovantePgtoBase64) abrirFoto(window._swalComprovantePgtoBase64);
+                if (window._swalComprovantePgtoBase64) {
+                    abrirFoto(window._swalComprovantePgtoBase64, prevPdfNome ? prevPdfNome.textContent : 'Comprovante PDF');
+                }
             };
         }
 
@@ -9394,7 +9552,9 @@ function separarDataSegura(dataString) {
                     if (prevImg) {
                         prevImg.src = window._swalComprovantePgtoBase64;
                         prevImg.style.display = 'inline-block';
-                        prevImg.onclick = function () { abrirFoto(window._swalComprovantePgtoBase64); };
+                        prevImg.onclick = function () {
+                            abrirFoto(window._swalComprovantePgtoBase64, 'Comprovante de pagamento');
+                        };
                         prevImg.title = 'Clique para ampliar';
                         prevImg.style.cursor = 'pointer';
                     }
@@ -21841,120 +22001,19 @@ window.gerarFolhaPagamento = async function() {
         }
     };
 
-    window.abrirFoto = function(imgBase64) {
+    window.abrirFoto = function(imgBase64, titulo) {
         if (!imgBase64) {
             return Swal.fire('Atenção', 'Nenhuma imagem para exibir.', 'info');
         }
         const srcRaw = String(imgBase64);
-        const ehPdf = ehAnexoPdfDataUrl(srcRaw) || /\.pdf(\?|$)/i.test(srcRaw);
+        const ehPdf = (typeof ehAnexoPdfDataUrl === 'function' && ehAnexoPdfDataUrl(srcRaw))
+            || /\.pdf(\?|$)/i.test(srcRaw)
+            || srcRaw.startsWith('data:application/pdf');
 
-        function abrirEmNovaAba(url) {
-            try {
-                const w = window.open('', '_blank');
-                if (!w) {
-                    Swal.fire('Atenção', 'O navegador bloqueou a nova aba. Permita pop-ups para este site.', 'warning');
-                    return;
-                }
-                if (ehPdf) {
-                    w.document.write('<!DOCTYPE html><html><head><title>Comprovante PDF</title><meta name="viewport" content="width=device-width,initial-scale=1">'
-                        + '<style>html,body{margin:0;height:100%;background:#111;}iframe{width:100%;height:100%;border:none;}</style></head><body>'
-                        + '<iframe src="' + String(url).replace(/&/g, '&amp;').replace(/"/g, '&quot;') + '"></iframe></body></html>');
-                } else {
-                    const srcEsc = String(url).replace(/&/g, '&amp;').replace(/"/g, '&quot;');
-                    w.document.write('<!DOCTYPE html><html><head><title>Comprovante</title><meta name="viewport" content="width=device-width,initial-scale=1">'
-                        + '<style>body{margin:0;background:#111;display:flex;justify-content:center;}img{max-width:100%;height:auto;}</style></head><body>'
-                        + '<img src="' + srcEsc + '" alt="Comprovante"></body></html>');
-                }
-                w.document.close();
-            } catch (e) {
-                Swal.fire('Erro', 'Não foi possível abrir o anexo em nova aba.', 'error');
-            }
-        }
-
-        if (ehPdf) {
-            let blobUrl = srcRaw;
-            try {
-                if (srcRaw.startsWith('data:')) {
-                    const partes = srcRaw.split(',');
-                    const meta = partes[0] || '';
-                    const b64 = partes.slice(1).join(',');
-                    const bin = atob(b64);
-                    const bytes = new Uint8Array(bin.length);
-                    for (let i = 0; i < bin.length; i += 1) bytes[i] = bin.charCodeAt(i);
-                    blobUrl = URL.createObjectURL(new Blob([bytes], { type: 'application/pdf' }));
-                }
-            } catch (e) {
-                blobUrl = srcRaw;
-            }
-            const srcEsc = String(blobUrl).replace(/&/g, '&amp;').replace(/"/g, '&quot;');
-            Swal.fire({
-                title: 'Comprovante PDF',
-                width: Math.min(window.innerWidth - 16, 960),
-                padding: '1rem',
-                html: ''
-                    + '<p style="margin:0 0 10px 0;font-size:12px;color:#666;text-align:left;">Visualize o PDF abaixo ou abra em nova aba.</p>'
-                    + '<iframe src="' + srcEsc + '" title="PDF" style="width:100%;height:min(72vh,720px);border:none;border-radius:10px;background:#fff;"></iframe>',
-                showDenyButton: true,
-                showCancelButton: false,
-                confirmButtonText: 'Fechar',
-                denyButtonText: 'Abrir em nova aba',
-                confirmButtonColor: '#1a2a43',
-                denyButtonColor: '#217346',
-                focusConfirm: false
-            }).then(function (r) {
-                if (r.isDenied) {
-                    abrirEmNovaAba(srcRaw.startsWith('data:') ? srcRaw : blobUrl);
-                }
-                if (!r.isDenied && blobUrl !== srcRaw && String(blobUrl).startsWith('blob:')) {
-                    try { URL.revokeObjectURL(blobUrl); } catch (_) {}
-                }
-            });
+        if (typeof window.abrirVisualizadorDocumento === 'function') {
+            window.abrirVisualizadorDocumento(srcRaw, titulo || (ehPdf ? 'Comprovante PDF' : 'Comprovante / Anexo'), ehPdf ? 'pdf' : 'img');
             return;
         }
-
-        window._fotoViewerZoom = 1;
-        const srcEsc = srcRaw.replace(/&/g, '&amp;').replace(/"/g, '&quot;');
-
-        function aplicarZoomViewer(delta) {
-            let z = Number(window._fotoViewerZoom) || 1;
-            z = Math.max(0.5, Math.min(4, z + delta));
-            window._fotoViewerZoom = z;
-            const img = document.getElementById('foto-viewer-img');
-            const label = document.getElementById('foto-viewer-zoom-label');
-            if (img) {
-                img.style.width = (100 * z) + '%';
-            }
-            if (label) label.textContent = Math.round(z * 100) + '%';
-        }
-
-        window._fotoViewerZoomMenos = function () { aplicarZoomViewer(-0.25); };
-        window._fotoViewerZoomMais = function () { aplicarZoomViewer(0.25); };
-        window._fotoViewerZoomReset = function () { window._fotoViewerZoom = 1; aplicarZoomViewer(0); };
-
-        Swal.fire({
-            title: 'Comprovante / Anexo',
-            width: Math.min(window.innerWidth - 16, 960),
-            padding: '1rem',
-            html: ''
-                + '<p style="margin:0 0 10px 0;font-size:12px;color:#666;text-align:left;">Use <b>+</b> / <b>−</b> para ampliar, role a imagem e, se preferir, abra em nova aba em tamanho real.</p>'
-                + '<div style="display:flex;gap:8px;justify-content:center;flex-wrap:wrap;margin-bottom:10px;">'
-                + '<button type="button" onclick="window._fotoViewerZoomMenos()" style="background:#6c757d;color:#fff;border:none;border-radius:8px;padding:8px 14px;font-weight:700;cursor:pointer;">− Zoom</button>'
-                + '<button type="button" onclick="window._fotoViewerZoomReset()" style="background:#eef2f5;color:#1a2a43;border:1px solid #ccc;border-radius:8px;padding:8px 14px;font-weight:700;cursor:pointer;"><span id="foto-viewer-zoom-label">100%</span></button>'
-                + '<button type="button" onclick="window._fotoViewerZoomMais()" style="background:#1a2a43;color:#fff;border:none;border-radius:8px;padding:8px 14px;font-weight:700;cursor:pointer;">+ Zoom</button>'
-                + '</div>'
-                + '<div id="foto-viewer-scroll" style="max-height:min(72vh,720px);overflow:auto;background:#111;border-radius:10px;padding:8px;text-align:center;-webkit-overflow-scrolling:touch;">'
-                + '<img id="foto-viewer-img" src="' + srcEsc + '" alt="Anexo" style="width:100%;height:auto;display:block;margin:0 auto;image-rendering:auto;">'
-                + '</div>',
-            showDenyButton: true,
-            showCancelButton: false,
-            confirmButtonText: 'Fechar',
-            denyButtonText: 'Abrir em nova aba',
-            confirmButtonColor: '#1a2a43',
-            denyButtonColor: '#4285F4',
-            focusConfirm: false
-        }).then(function (r) {
-            if (r.isDenied) abrirEmNovaAba(srcRaw);
-        });
     };
 
     const NOMES_DIA_SEMANA_CURTO = ['Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb'];
