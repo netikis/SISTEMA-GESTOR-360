@@ -3294,7 +3294,7 @@
 </script>
 
 <script>
-    window.APP_BUILD = 16;
+    window.APP_BUILD = 17;
     window.addEventListener('DOMContentLoaded', function () {
       const elVer = document.getElementById('versao-app-ponto');
       if (elVer) elVer.textContent = 'versão ' + window.APP_BUILD;
@@ -3350,7 +3350,7 @@
       }
 
       window.addEventListener('load', function () {
-        navigator.serviceWorker.register('./sw.js?v=16').then(function (registration) {
+        navigator.serviceWorker.register('./sw.js?v=17').then(function (registration) {
           function pedirSkip(sw) {
             if (sw) sw.postMessage({ type: 'SKIP_WAITING' });
           }
@@ -5342,7 +5342,7 @@
    <button class="btn-gold" onclick="abrirTelaMeusVales()" style="margin-top: 15px; box-shadow: none;">💰 MEUS VALES E RECIBOS</button>
 
     <button class="btn-logout" onclick="fazerLogout()" style="margin-top: 25px;">Sair da Conta (Logout)</button>
-    <p id="versao-app-ponto" style="text-align:center;font-size:10px;color:#8a94a6;margin:12px 0 0 0;">versão 16</p>
+    <p id="versao-app-ponto" style="text-align:center;font-size:10px;color:#8a94a6;margin:12px 0 0 0;">versão 17</p>
 </div>
 <div class="main-card" id="tela-meus-vales" style="display: none;">
     <div class="header-logo">
@@ -5429,6 +5429,20 @@
         <img id="pdf-assinatura" src="" style="max-height: 140px; margin-bottom: 5px;">
         <div style="border-top: 1px solid #1a2a43; width: 60%; margin: 0 auto; padding-top: 8px; font-size: 16px; font-weight: bold; color: #1a2a43;" id="pdf-nome-ass"></div>
         <div style="font-size: 13px; color: #666; margin-top: 5px;">Assinatura Digital do Funcionário</div>
+    </div>
+</div>
+
+<!-- MODAL VISUALIZADOR DE DOCUMENTOS (SEM REDIRECIONAR / SEM RECARREGAR) -->
+<div id="modal-visualizador-documento" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.78); z-index:999999; justify-content:center; align-items:center; padding:16px; box-sizing:border-box;" onclick="if(event.target===this) fecharVisualizadorDocumento()">
+    <div style="background:#fff; width:100%; max-width:960px; max-height:92vh; border-radius:12px; display:flex; flex-direction:column; overflow:hidden; box-shadow:0 12px 40px rgba(0,0,0,0.5);">
+        <div style="display:flex; justify-content:space-between; align-items:center; padding:12px 16px; background:#1a2a43; color:#fff;">
+            <strong id="visualizador-doc-titulo" style="font-size:15px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">Visualizar Documento</strong>
+            <button type="button" onclick="fecharVisualizadorDocumento()" style="background:transparent; border:none; color:#fff; font-size:24px; cursor:pointer; line-height:1; padding:0 6px;" title="Fechar (Esc)">&times;</button>
+        </div>
+        <div style="flex:1; overflow:auto; padding:12px; background:#f4f7f6; display:flex; justify-content:center; align-items:center; min-height:300px;">
+            <iframe id="visualizador-doc-frame" style="width:100%; height:75vh; border:none; border-radius:8px; display:none; background:#fff;"></iframe>
+            <img id="visualizador-doc-img" src="" alt="Documento" style="max-width:100%; max-height:75vh; object-fit:contain; border-radius:8px; display:none;">
+        </div>
     </div>
 </div>
 
@@ -8495,20 +8509,51 @@ function separarDataSegura(dataString) {
         }
     };
 
+    window.fecharVisualizadorDocumento = function () {
+        const modal = document.getElementById('modal-visualizador-documento');
+        if (modal) {
+            modal.style.display = 'none';
+            const frame = document.getElementById('visualizador-doc-frame');
+            if (frame) frame.src = 'about:blank';
+            const img = document.getElementById('visualizador-doc-img');
+            if (img) img.src = '';
+        }
+    };
+
+    window.abrirVisualizadorDocumento = function (url, nome, tipo) {
+        const modal = document.getElementById('modal-visualizador-documento');
+        if (!modal) return;
+        const titulo = document.getElementById('visualizador-doc-titulo');
+        const frame = document.getElementById('visualizador-doc-frame');
+        const img = document.getElementById('visualizador-doc-img');
+        if (titulo) titulo.textContent = nome || 'Visualização do Documento';
+        const ehPdf = tipo === 'pdf' || (url && /\.pdf(\?|$)/i.test(url)) || (url && String(url).startsWith('data:application/pdf'));
+        if (ehPdf) {
+            if (img) { img.style.display = 'none'; img.src = ''; }
+            if (frame) {
+                frame.src = url;
+                frame.style.display = 'block';
+            }
+        } else {
+            if (frame) {
+                frame.style.display = 'none';
+                frame.src = 'about:blank';
+            }
+            if (img) {
+                img.src = url;
+                img.style.display = 'block';
+            }
+        }
+        modal.style.display = 'flex';
+    };
+
     window.visualizarDocumentoPessoal = async function (id, pasta) {
         Swal.fire({ title: 'Abrindo documento...', allowOutsideClick: false, showConfirmButton: false, didOpen: () => Swal.showLoading() });
         const item = await obterDocumentoPessoalCompleto(id, pasta);
         fecharLoadingDocumentoPessoal();
         const url = urlArquivoDocumentoPessoal(item);
         if (!item || !url) return Swal.fire('Atenção', 'Documento não encontrado.', 'warning');
-        if (documentoPessoalEhPdf(item)) {
-            const w = window.open('', '_blank');
-            if (!w) return Swal.fire('Atenção', 'Permita pop-ups para visualizar o PDF.', 'warning');
-            w.document.write('<!DOCTYPE html><html><head><title>' + escapeHtmlBasico(item.nome) + '</title><style>html,body{margin:0;height:100%;}iframe{width:100%;height:100%;border:none;}</style></head><body><iframe src="' + escapeAttrBasico(url) + '"></iframe></body></html>');
-            w.document.close();
-            return;
-        }
-        abrirFoto(url);
+        abrirVisualizadorDocumento(url, item.nome, documentoPessoalEhPdf(item) ? 'pdf' : 'img');
     };
 
     window.exportarDocumentoPessoal = async function (id, pasta) {
@@ -25369,6 +25414,23 @@ window.gerarFolhaPagamento = async function() {
     document.addEventListener('contextmenu', event => event.preventDefault());
     
     document.addEventListener('keydown', function (e) {
+        if (e.key === 'Escape' || e.key === 'Esc') {
+            const modal = document.getElementById('modal-visualizador-documento');
+            if (modal && modal.style.display !== 'none') {
+                e.preventDefault();
+                if (typeof window.fecharVisualizadorDocumento === 'function') {
+                    window.fecharVisualizadorDocumento();
+                } else {
+                    modal.style.display = 'none';
+                }
+                return;
+            }
+            if (window.Swal && typeof Swal.isVisible === 'function' && Swal.isVisible()) {
+                e.preventDefault();
+                Swal.close();
+                return;
+            }
+        }
         if (e.key === 'F5') return;
         const gestorAberto = typeof painelGestorEstaVisivel === 'function' && painelGestorEstaVisivel();
         if (gestorAberto && /^F([1-46-9]|1[0-2])$/.test(e.key)) {
@@ -26396,11 +26458,8 @@ window.visualizarDocumentoAlertaCertidao = async function (idDoc) {
         if (typeof Swal !== 'undefined' && Swal.isVisible()) Swal.close();
     } catch (_) {}
     if (!d || !d.arquivo) return Swal.fire('Aviso', 'Documento não encontrado.', 'warning');
-    if (documentoPessoalEhPdf(d)) {
-        const w = window.open('', '_blank');
-        if (!w) return Swal.fire('Atenção', 'Permita pop-ups para visualizar o PDF.', 'warning');
-        w.document.write('<!DOCTYPE html><html><head><title>' + escapeHtmlBasico(d.nome) + '</title><style>html,body{margin:0;height:100%;}iframe{width:100%;height:100%;border:none;}</style></head><body><iframe src="' + escapeAttrBasico(d.arquivo) + '"></iframe></body></html>');
-        w.document.close();
+    if (typeof window.abrirVisualizadorDocumento === 'function') {
+        window.abrirVisualizadorDocumento(d.arquivo, d.nome, documentoPessoalEhPdf(d) ? 'pdf' : 'img');
         return;
     }
     abrirFoto(d.arquivo);
