@@ -2149,6 +2149,11 @@
             margin: 6px 0 12px 0;
             padding: 0 2px;
         }
+        .btn-excluir-vale-folha {
+            text-decoration: none !important;
+            font-weight: 700 !important;
+            color: #fff !important;
+        }
         .folha-secao-titulo {
             font-size: 12px;
             font-weight: 700;
@@ -3294,7 +3299,7 @@
 </script>
 
 <script>
-    window.APP_BUILD = 18;
+    window.APP_BUILD = 19;
     window.addEventListener('DOMContentLoaded', function () {
       const elVer = document.getElementById('versao-app-ponto');
       if (elVer) elVer.textContent = 'versão ' + window.APP_BUILD;
@@ -4089,6 +4094,7 @@
                 <button type="button" class="btn-gold" style="flex:1;min-width:160px;margin:0;padding:12px;font-size:13px;" onclick="lancarValeManualNaFolha()">LANÇAR VALE NO HOLERITE</button>
                 <button type="button" style="flex:1;min-width:160px;margin:0;padding:12px;font-size:13px;background:#1a2a43;color:#fff;border:none;border-radius:12px;font-weight:700;cursor:pointer;" onclick="imprimirValesDoHolerite()">🖨️ IMPRIMIR VALES DO MÊS</button>
             </div>
+            <div id="folha-lista-vales-manuais" style="margin-top:4px;"></div>
         </div>
 
         <button class="btn-enviar" onclick="gerarFolhaPagamento()">💰 CALCULAR FECHAMENTO</button>
@@ -4172,7 +4178,7 @@
                     <span>(-) Vales / Adiantamentos:</span>
                     <strong id="f-valor-vales">R$ 0,00</strong>
                 </div>
-                <p id="f-detalhe-vales" class="folha-detalhe"></p>
+                <div id="f-detalhe-vales" class="folha-detalhe"></div>
                 <div class="folha-linha desconto">
                     <span>(-) Produtos / Materiais:</span>
                     <strong id="f-valor-produtos">R$ 0,00</strong>
@@ -18364,6 +18370,9 @@ window.exportarPDF = function(tipo) {
         if (aba === 'criar' && typeof preencherDataValePadrao === 'function') {
             preencherDataValePadrao();
         }
+        if (aba === 'folha' && typeof window.listarValesManuaisDaFolha === 'function') {
+            window.listarValesManuaisDaFolha();
+        }
         if (aba === 'pedidos') {
             buscarPedidosMaterial();
         }
@@ -19524,7 +19533,9 @@ window.gerarFolhaPagamento = async function() {
                         const ehProduto = tipoVale.includes('produto') || tipoVale.includes('material');
                         const ehManual = statusVale === 'assinado_manual' || String(vale.assinatura_tipo || vale.origem || '').toLowerCase() === 'manual';
                         itensValesFolha.push({
+                            id: doc.id,
                             data: vale.data_assinatura || vale.data_criacao || vale.data || '',
+                            hora: vale.hora_assinatura || vale.hora_criacao || '',
                             tipo: vale.tipo || '',
                             valor: v,
                             descricao: vale.descricao || '',
@@ -20341,11 +20352,18 @@ window.gerarFolhaPagamento = async function() {
                     const linhas = itensValesFolha.map(function (it) {
                         const origem = it.manual ? 'papel / manual' : 'assinado no celular';
                         const desc = it.descricao ? ' — ' + escapeHtmlBasico(it.descricao) : '';
-                        return '<div>' + escapeHtmlBasico(it.data || '') + ' · ' + escapeHtmlBasico(it.tipo || '') + ' · ' + escapeHtmlBasico(formatarMoeda(it.valor)) + ' <span style="color:#888;">(' + origem + ')</span>' + desc + '</div>';
+                        const hora = it.hora ? ' ' + escapeHtmlBasico(it.hora) : '';
+                        const btnExcluir = (it.manual && it.id)
+                            ? ' <button type="button" class="btn-excluir-vale-folha" onclick="excluirValeManualDaFolha(\'' + String(it.id).replace(/'/g, '') + '\')" style="margin-left:6px;background:#d9534f;color:#fff;border:none;border-radius:6px;padding:2px 8px;font-size:10px;font-weight:700;cursor:pointer;">Excluir</button>'
+                            : '';
+                        return '<div>' + escapeHtmlBasico(it.data || '') + hora + ' · ' + escapeHtmlBasico(it.tipo || '') + ' · ' + escapeHtmlBasico(formatarMoeda(it.valor)) + ' <span style="color:#888;">(' + origem + ')</span>' + desc + btnExcluir + '</div>';
                     }).join('');
-                    detVales.innerHTML = linhas + '<div style="margin-top:6px;">Pendentes só com link, sem assinar, <b>não descontam</b>.</div>';
+                    detVales.innerHTML = linhas + '<div style="margin-top:6px;">Pendentes só com link, sem assinar, <b>não descontam</b>. Vales manuais podem ser excluídos aqui.</div>';
                 } else {
                     detVales.innerHTML = 'Nenhum vale confirmado neste mês. Vale só com link, sem assinar, <b>não desconta</b>. Use o bloco amarelo <b>Vale sem celular</b> acima para lançar e imprimir.';
+                }
+                if (typeof window.listarValesManuaisDaFolha === 'function') {
+                    window.listarValesManuaisDaFolha();
                 }
             }
 
@@ -24697,6 +24715,9 @@ window.gerarFolhaPagamento = async function() {
         const elDesc = document.getElementById('folha-vale-desc');
         if (elValor) elValor.value = '';
         if (elDesc) elDesc.value = '';
+        if (typeof window.listarValesManuaisDaFolha === 'function') {
+            try { await window.listarValesManuaisDaFolha(); } catch (_) {}
+        }
         if (typeof window.gerarFolhaPagamento === 'function') {
             try { await window.gerarFolhaPagamento(); } catch (_) {}
         }
@@ -24711,6 +24732,95 @@ window.gerarFolhaPagamento = async function() {
         });
         if (result.isConfirmed) await window.imprimirValeParaAssinaturaManual(criado.id);
     };
+
+    window.listarValesManuaisDaFolha = async function () {
+        const box = document.getElementById('folha-lista-vales-manuais');
+        if (!box) return;
+        const funcSelect = document.getElementById('folha-func-select');
+        const funcId = funcSelect && funcSelect.value;
+        if (!funcId) {
+            box.innerHTML = '';
+            return;
+        }
+        const mes = Number((document.getElementById('folha-mes') && document.getElementById('folha-mes').value) || 0);
+        const ano = Number((document.getElementById('folha-ano') && document.getElementById('folha-ano').value) || 0);
+        const empresaLogada = getEmpresaGestor();
+        try {
+            const qVales = query(collection(db, 'vales_sistema'), where('funcionario_id', '==', funcId));
+            const snap = await getDocs(qVales);
+            const lista = [];
+            snap.forEach(function (d) {
+                const vale = Object.assign({ id: d.id }, d.data() || {});
+                if (vale.empresa_id !== empresaLogada) return;
+                if (!valeContaComoDescontoFolha(vale) || !valeEhAssinaturaManual(vale)) return;
+                const dataVale = separarDataSegura(vale.data_assinatura || vale.data_criacao || vale.data);
+                if (Number(dataVale.mes) === mes && Number(dataVale.ano) === ano) lista.push(vale);
+            });
+            lista.sort(function (a, b) {
+                return Number(b.timestamp_assinatura || b.timestamp || 0) - Number(a.timestamp_assinatura || a.timestamp || 0);
+            });
+            if (!lista.length) {
+                box.innerHTML = '<p style="margin:10px 0 0;font-size:11px;color:#856404;line-height:1.4;text-decoration:none;font-weight:600;">Nenhum vale manual deste funcionário neste mês.</p>';
+                return;
+            }
+            let html = '<div style="margin-top:12px;border-top:1px dashed #e0c36a;padding-top:10px;">'
+                + '<b style="font-size:12px;color:#5c4a00;display:block;margin-bottom:8px;">Vales manuais deste holerite (' + lista.length + ') — clique em Excluir se lançou em duplicidade</b>';
+            lista.forEach(function (v) {
+                const hora = v.hora_assinatura || v.hora_criacao || '';
+                const dataTxt = v.data_assinatura || v.data_criacao || v.data || '';
+                html += '<div style="display:flex;gap:8px;align-items:center;justify-content:space-between;background:#fff;border:1px solid #ffe08a;border-radius:8px;padding:8px 10px;margin-bottom:6px;flex-wrap:wrap;">'
+                    + '<div style="flex:1;min-width:160px;font-size:12px;color:#333;line-height:1.35;font-weight:600;">'
+                    + '<b>R$ ' + escapeHtmlBasico(String(v.valor || '0')) + '</b> · ' + escapeHtmlBasico(v.tipo || '') + '<br>'
+                    + '<span style="color:#666;font-weight:500;">' + escapeHtmlBasico(dataTxt) + (hora ? ' às ' + escapeHtmlBasico(hora) : '')
+                    + (v.descricao ? ' — ' + escapeHtmlBasico(v.descricao) : '') + '</span>'
+                    + '</div>'
+                    + '<button type="button" class="btn-excluir-vale-folha" onclick="excluirValeManualDaFolha(\'' + String(v.id).replace(/'/g, '') + '\')" style="background:#d9534f;color:#fff;border:none;border-radius:8px;padding:8px 12px;font-size:11px;font-weight:700;cursor:pointer;white-space:nowrap;">🗑️ Excluir</button>'
+                    + '</div>';
+            });
+            html += '</div>';
+            box.innerHTML = html;
+        } catch (e) {
+            console.error(e);
+            box.innerHTML = '<p style="margin:10px 0 0;font-size:11px;color:#d9534f;">Não foi possível listar os vales manuais.</p>';
+        }
+    };
+
+    window.excluirValeManualDaFolha = async function (id) {
+        if (!id) return;
+        const ok = await Swal.fire({
+            title: 'Excluir vale manual?',
+            html: 'O vale será apagado e <b>sai do desconto deste holerite</b>. Esta ação não pode ser desfeita.',
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#d9534f',
+            cancelButtonColor: '#1a2a43',
+            confirmButtonText: 'Sim, excluir',
+            cancelButtonText: 'Cancelar'
+        });
+        if (!ok.isConfirmed) return;
+        try {
+            await deleteDoc(doc(db, 'vales_sistema', id));
+            if (window.valesEncontrados && window.valesEncontrados[id]) delete window.valesEncontrados[id];
+            if (typeof window.listarValesManuaisDaFolha === 'function') await window.listarValesManuaisDaFolha();
+            const resultado = document.getElementById('resultado-folha');
+            if (resultado && resultado.style.display !== 'none' && typeof window.gerarFolhaPagamento === 'function') {
+                await window.gerarFolhaPagamento();
+            }
+            Swal.fire({ toast: true, position: 'top-end', icon: 'success', title: 'Vale excluído do holerite', showConfirmButton: false, timer: 2200 });
+        } catch (e) {
+            console.error(e);
+            Swal.fire('Erro', 'Não foi possível excluir o vale.', 'error');
+        }
+    };
+
+    ['folha-func-select', 'folha-mes', 'folha-ano'].forEach(function (idEl) {
+        const el = document.getElementById(idEl);
+        if (!el || el._valeManualListaBound) return;
+        el._valeManualListaBound = true;
+        el.addEventListener('change', function () {
+            if (typeof window.listarValesManuaisDaFolha === 'function') window.listarValesManuaisDaFolha();
+        });
+    });
 
     window.imprimirValesDoHolerite = async function () {
         const funcSelect = document.getElementById('folha-func-select');
@@ -25118,7 +25228,12 @@ window.gerarFolhaPagamento = async function() {
                 try {
                     await deleteDoc(doc(db, "vales_sistema", id));
                     Swal.fire('Apagado!', 'Vale removido com sucesso.', 'success');
-                    buscarVales();
+                    if (typeof buscarVales === 'function') buscarVales();
+                    if (typeof window.listarValesManuaisDaFolha === 'function') window.listarValesManuaisDaFolha();
+                    const resultadoFolha = document.getElementById('resultado-folha');
+                    if (resultadoFolha && resultadoFolha.style.display !== 'none' && typeof window.gerarFolhaPagamento === 'function') {
+                        window.gerarFolhaPagamento();
+                    }
                 } catch(e) {
                     Swal.fire('Erro', 'Não foi possível apagar.', 'error');
                 }
