@@ -1,9 +1,11 @@
-const CACHE_NAME = 'fh-construcoes-v19';
+const CACHE_NAME = 'fh-construcoes-v20';
 
 const urlsToCache = [
   './',
   './index.html',
+  './envio.html',
   './manifest.json',
+  './manifest-envio.json',
   'https://i.postimg.cc/zDRJMSTn/69420f5a-5b80-457e-8146-00485162d7f2.jpg',
   'https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap',
   'https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js',
@@ -17,7 +19,7 @@ function isHtmlRequest(request) {
   if (request.mode === 'navigate') return true;
   try {
     const url = new URL(request.url);
-    return url.pathname.endsWith('/') || url.pathname.endsWith('/index.html');
+    return url.pathname.endsWith('/') || url.pathname.endsWith('/index.html') || url.pathname.endsWith('/envio.html');
   } catch (_) {
     return false;
   }

@@ -1,0 +1,22 @@
+{
+  "name": "Envio de Documentos - FH Construções",
+  "short_name": "Enviar Docs",
+  "description": "App rápido para enviar comprovantes e saídas ao Gestor 360",
+  "start_url": "./envio.html",
+  "display": "standalone",
+  "background_color": "#1a2a43",
+  "theme_color": "#1a2a43",
+  "orientation": "portrait",
+  "icons": [
+    {
+      "src": "https://i.postimg.cc/zDRJMSTn/69420f5a-5b80-457e-8146-00485162d7f2.jpg",
+      "sizes": "192x192",
+      "type": "image/jpeg"
+    },
+    {
+      "src": "https://i.postimg.cc/zDRJMSTn/69420f5a-5b80-457e-8146-00485162d7f2.jpg",
+      "sizes": "512x512",
+      "type": "image/jpeg"
+    }
+  ]
+}
