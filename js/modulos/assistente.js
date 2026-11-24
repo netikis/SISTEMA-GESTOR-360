@@ -102,6 +102,7 @@
             const btn = document.createElement('button');
             btn.type = 'button';
             btn.textContent = op.label;
+            if (op.perigo) btn.className = 'perigo';
             btn.onclick = function () {
                 assistenteLimparOpcoes();
                 assistenteAddMsg(escapeHtmlBasico(op.label), 'eu');
@@ -267,13 +268,20 @@
         window._assistenteSessao = { etapa: 'idle', rascunho: {} };
     }
 
+    function assistenteIdDocumentoAtual() {
+        const s = window._assistenteSessao || {};
+        if (s.rascunho && s.rascunho.docId) return s.rascunho.docId;
+        return window._assistenteUltimoDocId || '';
+    }
+
     async function assistentePerguntarTipo() {
         window._assistenteSessao.etapa = 'tipo';
         assistenteAddMsg('Esse arquivo é o quê?', 'bot');
         assistenteAddOpcoes([
             { id: 'tipo', value: 'despesa', label: 'Nova despesa / saída' },
             { id: 'tipo', value: 'pagamento', label: 'Pagamento de conta existente' },
-            { id: 'tipo', value: 'saida', label: 'Saída avulsa' }
+            { id: 'tipo', value: 'saida', label: 'Saída avulsa' },
+            { id: 'excluir', value: assistenteIdDocumentoAtual() || '__recente__', label: '🗑️ Excluir', perigo: true }
         ]);
     }
 
@@ -462,7 +470,61 @@
             return;
         }
         if (op.id === 'fila') {
-            return assistenteAbrirDocumentoFila(op.value);
+            return window.assistenteAbrirDocumentoFila(op.value);
+        }
+        if (op.id === 'excluir') {
+            return window.excluirDocumentoAssistente(op.value);
+        }
+    };
+
+    window.excluirDocumentoAssistenteAtual = function () {
+        return window.excluirDocumentoAssistente(assistenteIdDocumentoAtual() || '__recente__');
+    };
+
+    window.excluirDocumentoAssistente = async function (id) {
+        if (!id) id = '__recente__';
+        if (id === '__recente__') {
+            try {
+                const empresa = getEmpresaGestor();
+                const snap = await getDocs(query(collection(db, COLECAO_ASSISTENTE_DOCS), where('empresa_id', '==', empresa)));
+                let maisNovo = null;
+                snap.forEach(function (d) {
+                    const item = Object.assign({ id: d.id }, d.data() || {});
+                    const st = String(item.status || '');
+                    if (st !== 'pendente' && st !== 'analisando' && st !== 'aguardando') return;
+                    if (!maisNovo || (item.timestamp || 0) > (maisNovo.timestamp || 0)) maisNovo = item;
+                });
+                if (!maisNovo) {
+                    return Swal.fire('Atenção', 'Não há documento na fila para excluir.', 'info');
+                }
+                id = maisNovo.id;
+            } catch (e) {
+                console.error(e);
+                return Swal.fire('Erro', 'Não foi possível localizar o documento.', 'error');
+            }
+        }
+        const ok = await Swal.fire({
+            title: 'Excluir documento?',
+            html: 'O arquivo sai da fila do assistente e <b>não será lançado</b> no sistema. Use se mandou o comprovante errado.',
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#d9534f',
+            cancelButtonColor: '#1a2a43',
+            confirmButtonText: 'Sim, excluir',
+            cancelButtonText: 'Cancelar'
+        });
+        if (!ok.isConfirmed) return;
+        try {
+            await deleteDoc(doc(db, COLECAO_ASSISTENTE_DOCS, id));
+            const sess = window._assistenteSessao;
+            if (sess && sess.rascunho && sess.rascunho.docId === id) assistenteResetSessao();
+            const box = assistenteMsgsEl();
+            if (box) box.dataset.filaMostrada = '';
+            assistenteAddMsg('Documento excluído da fila. Pode enviar o arquivo correto.', 'bot');
+            if (typeof window.listarFilaAssistente === 'function') await window.listarFilaAssistente();
+        } catch (e) {
+            console.error(e);
+            assistenteAddMsg('Não foi possível excluir o documento. Tente de novo.', 'bot');
         }
     };
 
@@ -528,6 +590,7 @@
             if (packed.dataUrl && packed.dataUrl.length < 900000) payloadFila.arquivo = packed.dataUrl;
             const ref = await addDoc(collection(db, COLECAO_ASSISTENTE_DOCS), payloadFila);
             docId = ref.id;
+            window._assistenteUltimoDocId = docId;
         } catch (e) {
             console.warn('fila assistente', e);
         }
@@ -568,11 +631,12 @@
         await assistenteAvancarDepoisDeDados();
     }
 
-    async function assistenteAbrirDocumentoFila(id) {
+    window.assistenteAbrirDocumentoFila = async function (id) {
         try {
             const snap = await getDoc(doc(db, COLECAO_ASSISTENTE_DOCS, id));
             if (!snap.exists()) return assistenteAddMsg('Documento não encontrado na fila.', 'bot');
             const d = snap.data() || {};
+            window._assistenteUltimoDocId = id;
             window._assistenteSessao = {
                 etapa: 'analise',
                 rascunho: {
@@ -604,7 +668,7 @@
         } catch (e) {
             console.error(e);
         }
-    }
+    };
 
     window.listarFilaAssistente = async function () {
         const empresa = getEmpresaGestor();
@@ -621,12 +685,23 @@
             assistenteAtualizarBadge(pend.length);
             if (!pend.length) return;
             const box = assistenteMsgsEl();
-            if (box && box.dataset.filaMostrada === String(pend.length) + pend[0].id) return;
-            if (box) box.dataset.filaMostrada = String(pend.length) + pend[0].id;
-            assistenteAddMsg('Há <b>' + pend.length + '</b> documento(s) enviados pelo app/celular aguardando classificação.', 'bot');
-            assistenteAddOpcoes(pend.slice(0, 6).map(function (p) {
-                return { id: 'fila', value: p.id, label: '📥 ' + (p.arquivo_nome || 'Documento') };
-            }));
+            const chaveFila = 'v3-' + pend.length + '-' + pend[0].id;
+            if (box && box.dataset.filaMostrada === chaveFila) return;
+            if (box) box.dataset.filaMostrada = chaveFila;
+            let html = 'Há <b>' + pend.length + '</b> documento(s) enviados pelo app/celular aguardando classificação.';
+            pend.slice(0, 8).forEach(function (p) {
+                const nome = escapeHtmlBasico(p.arquivo_nome || 'Documento');
+                const obs = p.observacao ? '<div style="font-size:11px;color:#666;margin-top:2px;">' + escapeHtmlBasico(p.observacao) + '</div>' : '';
+                const id = String(p.id).replace(/'/g, '');
+                html += '<div class="asst-fila-card">'
+                    + '<div style="flex:1;min-width:120px;"><b>📥 ' + nome + '</b>' + obs + '</div>'
+                    + '<div style="display:flex;gap:6px;">'
+                    + '<button type="button" style="background:#1a2a43;color:#fff;" onclick="assistenteAbrirDocumentoFila(\'' + id + '\')">Abrir</button>'
+                    + '<button type="button" style="background:#d9534f;color:#fff;" onclick="excluirDocumentoAssistente(\'' + id + '\')">🗑️ Excluir</button>'
+                    + '</div></div>';
+            });
+            assistenteAddMsg(html, 'bot');
+            window._assistenteUltimoDocId = pend[0].id;
         } catch (e) {
             console.warn(e);
         }

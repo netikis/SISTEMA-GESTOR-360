@@ -1,5 +1,5 @@
 /* js/carregar.js — edite este arquivo para alterar só este módulo */
-const BUILD = window.APP_BUILD || 22;
+const BUILD = window.APP_BUILD || 23;
 const TELAS_PAINEL = [
   "inicio",
   "equipe",
