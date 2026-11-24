@@ -1,0 +1,30 @@
+<!-- telas/calendario.html -->
+<div id="aba-calendario" class="view-section">
+        <div style="background: #eef2f5; padding: 15px; border-radius: 10px; margin-bottom: 15px; border: 1px solid #1a2a43;">
+            <h3 style="margin: 0; color: var(--dark-navy); text-align:center;">📅 Calendário de Feriados</h3>
+            <p class="texto-explicacao" style="margin: 8px 0 0 0; text-align:center;">
+                Cadastre feriados municipal/estadual/federal. Esses dias não entram como "horas devidas" e podem virar banco de horas se houver trabalho.
+            </p>
+        </div>
+
+        <label>Data do Feriado</label>
+        <input type="date" id="fer-data">
+
+        <label>Nome / Descrição</label>
+        <input type="text" id="fer-nome" placeholder="Ex.: São João / Consciência Negra / Aniversário da cidade">
+
+        <label>Tipo</label>
+        <select id="fer-tipo">
+            <option value="municipal">Municipal</option>
+            <option value="estadual">Estadual</option>
+            <option value="federal">Federal</option>
+        </select>
+
+        <button class="btn-enviar" id="btnSalvarFeriado" onclick="salvarFeriado()">SALVAR FERIADO</button>
+
+        <hr style="border: 0; border-top: 1px solid #eee; margin: 20px 0;">
+        <button class="btn-gold" onclick="carregarFeriados()" style="margin-top:0; box-shadow:none;">🔄 ATUALIZAR LISTA</button>
+        <div id="lista-feriados" style="margin-top: 15px;">
+            <p style="text-align: center; color: #888; font-size: 13px;">Cadastre e clique em “Atualizar Lista”.</p>
+        </div>
+    </div>

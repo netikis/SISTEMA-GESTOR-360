@@ -1,4 +1,4 @@
-const CACHE_NAME = 'fh-construcoes-v20';
+const CACHE_NAME = 'fh-construcoes-v22';
 
 const urlsToCache = [
   './',
@@ -29,7 +29,8 @@ function deveBuscarSemCache(request) {
   try {
     const url = new URL(request.url);
     const path = url.pathname.toLowerCase();
-    return path.endsWith('/sw.js') || path.endsWith('sw.js') || path.endsWith('app-version.json');
+    return path.endsWith('/sw.js') || path.endsWith('sw.js') || path.endsWith('app-version.json')
+      || path.includes('/js/') || path.includes('/css/') || path.includes('/telas/');
   } catch (_) {
     return false;
   }

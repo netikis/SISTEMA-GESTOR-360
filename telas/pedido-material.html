@@ -1,0 +1,22 @@
+<!-- telas/pedido-material.html -->
+<div class="main-card login-card" id="tela-pedido-material" style="display: none;">
+    <div class="header-logo">
+        <img src="https://i.postimg.cc/zDRJMSTn/69420f5a-5b80-457e-8146-00485162d7f2.jpg" crossorigin="anonymous" class="logo-img">
+        <div class="title-top">Pedido de Material</div>
+    </div>
+    
+    <p style="text-align: center; font-size: 13px; color: #555;">Preencha os dados abaixo para solicitar materiais para sua equipe/obra.</p>
+
+    <label>Seu Nome (Funcionário)</label>
+    <input type="text" id="pm-nome" placeholder="Digite seu nome">
+    
+    <label>Nome da Equipe ou Obra</label>
+    <input type="text" id="pm-equipe" placeholder="Ex: Equipe Pintura, Obra Centro...">
+    
+    <label>Materiais Necessários</label>
+    <textarea id="pm-desc" rows="4" placeholder="Descreva os materiais e as quantidades. Ex: 2 latas de tinta branca, 5 pincéis..."></textarea>
+
+    <button class="btn-entrada" onclick="enviarPedidoMaterial()">ENVIAR PEDIDO</button>
+    
+    <button class="btn-logout" onclick="voltarTelaRelogio()" style="margin-top: 20px; background: transparent; color: #d9534f; border: 1px solid #d9534f;">Cancelar e Voltar</button>
+</div>

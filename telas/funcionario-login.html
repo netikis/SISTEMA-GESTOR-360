@@ -1,0 +1,22 @@
+<!-- telas/funcionario-login.html -->
+<div class="main-card login-card" id="tela-login" style="display: none;">
+    <div class="header-logo">
+        <img src="https://i.postimg.cc/zDRJMSTn/69420f5a-5b80-457e-8146-00485162d7f2.jpg" crossorigin="anonymous" alt="Logo" class="logo-img">
+        <div class="title-top" id="login-nome-empresa">Login do Funcionário</div>
+    </div>
+
+    <p style="text-align: center; font-size: 13px; color: #555;">Digite o seu CPF para aceder ao sistema de ponto da empresa.</p>
+
+    <label>Seu CPF (Somente números)</label>
+    <input type="text" id="login-cpf" inputmode="numeric" pattern="[0-9]*" placeholder="Apenas números" autocomplete="username">
+
+    <label>Sua Senha</label>
+    <input type="password" id="login-senha" placeholder="Digite sua senha">
+    <p style="font-size: 11px; color: #888; margin-top: 5px;"><i>Se for o seu primeiro acesso, digite a senha que deseja criar para o seu usuário.</i></p>
+
+    <button class="btn-enviar" onclick="fazerLogin()">ENTRAR NO SISTEMA</button>
+    
+    <button class="btn-logout" style="margin-top: 15px; background: transparent; color: var(--dark-navy); text-decoration: underline; box-shadow: none;" onclick="esqueciSenha()">Esqueci a minha senha</button>
+    
+    <button class="btn-logout" onclick="voltarTelaInicial()" style="margin-top: 20px; background: transparent; color: #d9534f; border: 1px solid #d9534f;">Voltar ao Início</button>
+</div>

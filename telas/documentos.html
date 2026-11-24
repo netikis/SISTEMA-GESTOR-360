@@ -1,0 +1,173 @@
+<!-- telas/documentos.html -->
+<div id="aba-documentos-fh" class="view-section">
+        <div class="doc-pasta-panel">
+            <h3>📁 Documentos — FH</h3>
+            <p class="texto-explicacao" style="margin: 0 0 4px 0;">Anexe documentos com o nome que quiser. Informe a <b>data de vencimento</b> para alerta faltando até 5 dias. No plano gratuito: use <b>foto</b> ou PDF até <b>~750 KB</b> (PDFs maiores: tire foto do documento).</p>
+            <div class="doc-add-form">
+                <label for="doc-add-nome-fh">Nome do documento</label>
+                <input type="text" id="doc-add-nome-fh" list="doc-sugestoes-nomes" placeholder="Ex: Documento identidade, Conta de luz..." maxlength="120">
+                <label for="doc-add-arquivo-fh">Arquivo (foto ou PDF)</label>
+                <input type="file" id="doc-add-arquivo-fh" accept="image/*,application/pdf" capture="environment">
+                <p class="doc-aviso-tamanho">⚠️ <b>Atenção:</b> o documento deve ser <b>menor que ~750 KB</b>. Se o PDF ou a foto for maior, comprima o arquivo ou tire uma foto do documento com o celular.</p>
+                <label for="doc-add-vencimento-fh">Data de vencimento</label>
+                <input type="date" id="doc-add-vencimento-fh">
+                <input type="hidden" id="doc-add-base64-fh">
+                <input type="hidden" id="doc-add-mime-fh">
+                <div id="doc-add-preview-fh" class="doc-preview-add"></div>
+                <button type="button" class="btn-enviar" style="margin-top: 14px; width: 100%;" onclick="salvarDocumentoPessoal('fh')">💾 Adicionar documento</button>
+            </div>
+            <div id="doc-lista-fh"><p style="text-align:center;color:#888;">Carregue esta aba para ver os documentos.</p></div>
+        </div>
+    </div>
+
+<div id="aba-documentos-hallana" class="view-section">
+        <div class="doc-pasta-panel">
+            <h3>📁 Documentos — Hallana</h3>
+            <p class="texto-explicacao" style="margin: 0 0 4px 0;">Anexe documentos com o nome que quiser. Informe a <b>data de vencimento</b> para alerta faltando até 5 dias. No plano gratuito: use <b>foto</b> ou PDF até <b>~750 KB</b> (PDFs maiores: tire foto do documento).</p>
+            <div class="doc-add-form">
+                <label for="doc-add-nome-hallana">Nome do documento</label>
+                <input type="text" id="doc-add-nome-hallana" list="doc-sugestoes-nomes" placeholder="Ex: Documento identidade, Conta de luz..." maxlength="120">
+                <label for="doc-add-arquivo-hallana">Arquivo (foto ou PDF)</label>
+                <input type="file" id="doc-add-arquivo-hallana" accept="image/*,application/pdf" capture="environment">
+                <p class="doc-aviso-tamanho">⚠️ <b>Atenção:</b> o documento deve ser <b>menor que ~750 KB</b>. Se o PDF ou a foto for maior, comprima o arquivo ou tire uma foto do documento com o celular.</p>
+                <label for="doc-add-vencimento-hallana">Data de vencimento</label>
+                <input type="date" id="doc-add-vencimento-hallana">
+                <input type="hidden" id="doc-add-base64-hallana">
+                <input type="hidden" id="doc-add-mime-hallana">
+                <div id="doc-add-preview-hallana" class="doc-preview-add"></div>
+                <button type="button" class="btn-enviar" style="margin-top: 14px; width: 100%;" onclick="salvarDocumentoPessoal('hallana')">💾 Adicionar documento</button>
+            </div>
+            <div id="doc-lista-hallana"><p style="text-align:center;color:#888;">Carregue esta aba para ver os documentos.</p></div>
+        </div>
+    </div>
+
+<div id="aba-documentos-felipe" class="view-section">
+        <div class="doc-pasta-panel">
+            <h3>📁 Documentos — Felipe</h3>
+            <p class="texto-explicacao" style="margin: 0 0 4px 0;">Anexe documentos com o nome que quiser. Informe a <b>data de vencimento</b> para alerta faltando até 5 dias. No plano gratuito: use <b>foto</b> ou PDF até <b>~750 KB</b> (PDFs maiores: tire foto do documento).</p>
+            <div class="doc-add-form">
+                <label for="doc-add-nome-felipe">Nome do documento</label>
+                <input type="text" id="doc-add-nome-felipe" list="doc-sugestoes-nomes" placeholder="Ex: Documento identidade, Conta de luz..." maxlength="120">
+                <label for="doc-add-arquivo-felipe">Arquivo (foto ou PDF)</label>
+                <input type="file" id="doc-add-arquivo-felipe" accept="image/*,application/pdf" capture="environment">
+                <p class="doc-aviso-tamanho">⚠️ <b>Atenção:</b> o documento deve ser <b>menor que ~750 KB</b>. Se o PDF ou a foto for maior, comprima o arquivo ou tire uma foto do documento com o celular.</p>
+                <label for="doc-add-vencimento-felipe">Data de vencimento</label>
+                <input type="date" id="doc-add-vencimento-felipe">
+                <input type="hidden" id="doc-add-base64-felipe">
+                <input type="hidden" id="doc-add-mime-felipe">
+                <div id="doc-add-preview-felipe" class="doc-preview-add"></div>
+                <button type="button" class="btn-enviar" style="margin-top: 14px; width: 100%;" onclick="salvarDocumentoPessoal('felipe')">💾 Adicionar documento</button>
+            </div>
+            <div id="doc-lista-felipe"><p style="text-align:center;color:#888;">Carregue esta aba para ver os documentos.</p></div>
+        </div>
+    </div>
+
+<div id="aba-documentos-wellington" class="view-section">
+        <div class="doc-pasta-panel">
+            <h3>📁 Documentos — Wellington</h3>
+            <p class="texto-explicacao" style="margin: 0 0 4px 0;">Anexe documentos com o nome que quiser. Informe a <b>data de vencimento</b> para alerta faltando até 5 dias. No plano gratuito: use <b>foto</b> ou PDF até <b>~750 KB</b> (PDFs maiores: tire foto do documento).</p>
+            <div class="doc-add-form">
+                <label for="doc-add-nome-wellington">Nome do documento</label>
+                <input type="text" id="doc-add-nome-wellington" list="doc-sugestoes-nomes" placeholder="Ex: Documento identidade, Conta de luz..." maxlength="120">
+                <label for="doc-add-arquivo-wellington">Arquivo (foto ou PDF)</label>
+                <input type="file" id="doc-add-arquivo-wellington" accept="image/*,application/pdf" capture="environment">
+                <p class="doc-aviso-tamanho">⚠️ <b>Atenção:</b> o documento deve ser <b>menor que ~750 KB</b>. Se o PDF ou a foto for maior, comprima o arquivo ou tire uma foto do documento com o celular.</p>
+                <label for="doc-add-vencimento-wellington">Data de vencimento</label>
+                <input type="date" id="doc-add-vencimento-wellington">
+                <input type="hidden" id="doc-add-base64-wellington">
+                <input type="hidden" id="doc-add-mime-wellington">
+                <div id="doc-add-preview-wellington" class="doc-preview-add"></div>
+                <button type="button" class="btn-enviar" style="margin-top: 14px; width: 100%;" onclick="salvarDocumentoPessoal('wellington')">💾 Adicionar documento</button>
+            </div>
+            <div id="doc-lista-wellington"><p style="text-align:center;color:#888;">Carregue esta aba para ver os documentos.</p></div>
+        </div>
+    </div>
+
+<div id="aba-documentos-licitacoes" class="view-section">
+        <div class="doc-pasta-panel">
+            <h3>📁 Documentos — Licitações</h3>
+            <p class="texto-explicacao" style="margin: 0 0 4px 0;">Anexe editais, propostas e documentos de <b>licitação</b>. Informe a <b>data de vencimento</b> para alerta faltando até 5 dias. No plano gratuito: use <b>foto</b> ou PDF até <b>~750 KB</b>.</p>
+            <div class="doc-add-form">
+                <label for="doc-add-nome-licitacoes">Nome do documento</label>
+                <input type="text" id="doc-add-nome-licitacoes" list="doc-sugestoes-licitacoes" placeholder="Ex: Edital Pregão 001/2026..." maxlength="120">
+                <label for="doc-add-arquivo-licitacoes">Arquivo (foto ou PDF)</label>
+                <input type="file" id="doc-add-arquivo-licitacoes" accept="image/*,application/pdf" capture="environment">
+                <p class="doc-aviso-tamanho">⚠️ <b>Atenção:</b> o documento deve ser <b>menor que ~750 KB</b>. Se o PDF ou a foto for maior, comprima o arquivo ou tire uma foto do documento com o celular.</p>
+                <label for="doc-add-vencimento-licitacoes">Data de vencimento</label>
+                <input type="date" id="doc-add-vencimento-licitacoes">
+                <input type="hidden" id="doc-add-base64-licitacoes">
+                <input type="hidden" id="doc-add-mime-licitacoes">
+                <div id="doc-add-preview-licitacoes" class="doc-preview-add"></div>
+                <button type="button" class="btn-enviar" style="margin-top: 14px; width: 100%;" onclick="salvarDocumentoPessoal('licitacoes')">💾 Adicionar documento</button>
+            </div>
+            <div id="doc-lista-licitacoes"><p style="text-align:center;color:#888;">Carregue esta aba para ver os documentos.</p></div>
+        </div>
+    </div>
+
+<div id="aba-documentos-contratos" class="view-section">
+        <div class="doc-pasta-panel">
+            <h3>📁 Documentos — Contratos</h3>
+            <p class="texto-explicacao" style="margin: 0 0 10px 0;">Cada contrato fica em uma <b>pasta com seu nome</b>. PDFs acima do limite são repartidos por páginas, <b>sem reduzir a qualidade</b>, e todas as partes permanecem juntas. Separe em <b>Ativos</b> e <b>Finalizados</b>.</p>
+            <div class="doc-contratos-tabs" role="tablist">
+                <button type="button" class="doc-contratos-tab active" id="tab-contratos-ativos" onclick="mostrarSecaoContratos('ativos')">Contratos Ativos</button>
+                <button type="button" class="doc-contratos-tab" id="tab-contratos-finalizados" onclick="mostrarSecaoContratos('finalizados')">Contratos Finalizados</button>
+            </div>
+
+            <div id="secao-contratos-ativos" class="doc-contratos-secao active">
+                <h4 style="margin:0 0 8px 0;color:#1a2a43;">Contratos Ativos</h4>
+                <div class="doc-add-form">
+                    <label for="doc-add-nome-contratos_ativos">Nome do contrato</label>
+                    <input type="text" id="doc-add-nome-contratos_ativos" list="doc-sugestoes-contratos" placeholder="Ex: Contrato obra Barracão SP..." maxlength="120">
+                    <label for="doc-add-arquivo-contratos_ativos">Arquivo (foto ou PDF)</label>
+                    <input type="file" id="doc-add-arquivo-contratos_ativos" accept="image/*,application/pdf" capture="environment">
+                    <p class="doc-aviso-tamanho">⚠️ <b>Atenção:</b> o documento deve ser <b>menor que ~750 KB</b> (limite máximo prático do Firestore = 1 MB por registro).</p>
+                    <label for="doc-add-vencimento-contratos_ativos">Data de vencimento</label>
+                    <input type="date" id="doc-add-vencimento-contratos_ativos">
+                    <input type="hidden" id="doc-add-base64-contratos_ativos">
+                    <input type="hidden" id="doc-add-mime-contratos_ativos">
+                    <div id="doc-add-preview-contratos_ativos" class="doc-preview-add"></div>
+                    <button type="button" class="btn-enviar" style="margin-top: 14px; width: 100%;" onclick="salvarDocumentoPessoal('contratos_ativos')">💾 Adicionar contrato ativo</button>
+                </div>
+                <div id="doc-lista-contratos_ativos"><p style="text-align:center;color:#888;">Carregue esta aba para ver os contratos ativos.</p></div>
+            </div>
+
+            <div id="secao-contratos-finalizados" class="doc-contratos-secao">
+                <h4 style="margin:0 0 8px 0;color:#1a2a43;">Contratos Finalizados</h4>
+                <div class="doc-add-form">
+                    <label for="doc-add-nome-contratos_finalizados">Nome do contrato</label>
+                    <input type="text" id="doc-add-nome-contratos_finalizados" list="doc-sugestoes-contratos" placeholder="Ex: Contrato encerrado..." maxlength="120">
+                    <label for="doc-add-arquivo-contratos_finalizados">Arquivo (foto ou PDF)</label>
+                    <input type="file" id="doc-add-arquivo-contratos_finalizados" accept="image/*,application/pdf" capture="environment">
+                    <p class="doc-aviso-tamanho">⚠️ <b>Atenção:</b> o documento deve ser <b>menor que ~750 KB</b> (limite máximo prático do Firestore = 1 MB por registro).</p>
+                    <label for="doc-add-vencimento-contratos_finalizados">Data de vencimento</label>
+                    <input type="date" id="doc-add-vencimento-contratos_finalizados">
+                    <input type="hidden" id="doc-add-base64-contratos_finalizados">
+                    <input type="hidden" id="doc-add-mime-contratos_finalizados">
+                    <div id="doc-add-preview-contratos_finalizados" class="doc-preview-add"></div>
+                    <button type="button" class="btn-enviar" style="margin-top: 14px; width: 100%;" onclick="salvarDocumentoPessoal('contratos_finalizados')">💾 Adicionar contrato finalizado</button>
+                </div>
+                <div id="doc-lista-contratos_finalizados"><p style="text-align:center;color:#888;">Carregue esta aba para ver os contratos finalizados.</p></div>
+            </div>
+        </div>
+    </div>
+
+<div id="aba-documentos-empenhos" class="view-section">
+        <div class="doc-pasta-panel">
+            <h3>📁 Documentos — Empenhos</h3>
+            <p class="texto-explicacao" style="margin: 0 0 4px 0;">Anexe <b>empenhos</b> e documentos relacionados. Informe a <b>data de vencimento</b> para alerta faltando até 5 dias. No plano gratuito: use <b>foto</b> ou PDF até <b>~750 KB</b>.</p>
+            <div class="doc-add-form">
+                <label for="doc-add-nome-empenhos">Nome do documento</label>
+                <input type="text" id="doc-add-nome-empenhos" list="doc-sugestoes-empenhos" placeholder="Ex: Empenho nº 123/2026..." maxlength="120">
+                <label for="doc-add-arquivo-empenhos">Arquivo (foto ou PDF)</label>
+                <input type="file" id="doc-add-arquivo-empenhos" accept="image/*,application/pdf" capture="environment">
+                <p class="doc-aviso-tamanho">⚠️ <b>Atenção:</b> o documento deve ser <b>menor que ~750 KB</b>. Se o PDF ou a foto for maior, comprima o arquivo ou tire uma foto do documento com o celular.</p>
+                <label for="doc-add-vencimento-empenhos">Data de vencimento</label>
+                <input type="date" id="doc-add-vencimento-empenhos">
+                <input type="hidden" id="doc-add-base64-empenhos">
+                <input type="hidden" id="doc-add-mime-empenhos">
+                <div id="doc-add-preview-empenhos" class="doc-preview-add"></div>
+                <button type="button" class="btn-enviar" style="margin-top: 14px; width: 100%;" onclick="salvarDocumentoPessoal('empenhos')">💾 Adicionar documento</button>
+            </div>
+            <div id="doc-lista-empenhos"><p style="text-align:center;color:#888;">Carregue esta aba para ver os documentos.</p></div>
+        </div>
+    </div>

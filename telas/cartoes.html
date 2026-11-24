@@ -1,0 +1,335 @@
+<!-- telas/cartoes.html -->
+<div id="aba-cartoes-cadastro" class="view-section">
+        <h2 style="color:#8e44ad;margin:0 0 8px 0;font-size:18px;">Cadastro de Cartões</h2>
+        <p class="texto-explicacao" style="margin-top:0;">Tabela no mesmo formato do Excel: <b>Titular, Apelido, Nº (últimos 4), Bandeira, Vcto (dia), Limite, Status, Link fatura</b>. O CVC não é gravado.</p>
+        <details open style="margin-bottom:16px;">
+            <summary style="background:#eef2f5;">➕ Cadastrar cartão</summary>
+            <div style="padding:15px;">
+                <form id="formCadastroCartao" onsubmit="event.preventDefault(); window.salvarCartaoCredito();">
+                    <div class="row-entradas">
+                        <div class="col-entradas">
+                            <label>Titular</label>
+                            <input type="text" id="cartao-titular" list="lista-titulares-cartao" placeholder="Ex.: FELIPE, WELLINGTON" autocomplete="off">
+                        </div>
+                        <div class="col-entradas">
+                            <label>Apelido cartão</label>
+                            <input type="text" id="cartao-nome" required placeholder="Ex.: Nubank Pessoal" autocomplete="off">
+                        </div>
+                    </div>
+                    <div class="row-entradas">
+                        <div class="col-entradas">
+                            <label>Número (últimos 4)</label>
+                            <input type="text" id="cartao-numero" inputmode="numeric" autocomplete="off" maxlength="23" placeholder="•••• •••• •••• 1234" oninput="mascaraNumeroCartao(this)">
+                        </div>
+                        <div class="col-entradas">
+                            <label>Bandeira</label>
+                            <select id="cartao-bandeira">
+                                <option value="">Selecione</option>
+                                <option value="Mastercard">Mastercard</option>
+                                <option value="Visa">Visa</option>
+                                <option value="Elo">Elo</option>
+                                <option value="Amex">Amex</option>
+                                <option value="Hipercard">Hipercard</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="row-entradas">
+                        <div class="col-entradas">
+                            <label>Vcto (dia da fatura)</label>
+                            <select id="cartao-dia-fatura"></select>
+                        </div>
+                        <div class="col-entradas">
+                            <label>Limite (R$)</label>
+                            <input type="text" id="cartao-limite" placeholder="0,00" oninput="mascaraMoeda(this)">
+                        </div>
+                    </div>
+                    <div class="row-entradas">
+                        <div class="col-entradas">
+                            <label>Status</label>
+                            <select id="cartao-status">
+                                <option value="ATIVO">ATIVO</option>
+                                <option value="INATIVO">INATIVO</option>
+                                <option value="BLOQUEADO">BLOQUEADO</option>
+                            </select>
+                        </div>
+                        <div class="col-entradas">
+                            <label>Validade do plástico (opcional)</label>
+                            <input type="month" id="cartao-validade">
+                        </div>
+                    </div>
+                    <label>Link fatura</label>
+                    <input type="url" id="cartao-link-fatura" placeholder="https://..." autocomplete="off">
+                    <label>CVC (não é salvo)</label>
+                    <input type="password" id="cartao-cvc" inputmode="numeric" autocomplete="off" maxlength="4" placeholder="Opcional — não fica armazenado">
+                    <button type="submit" class="btn-gold">SALVAR CARTÃO</button>
+                    <button type="button" onclick="limparFormCartao()" style="width:100%;margin-top:10px;background:#7f8c8d;color:#fff;border:none;padding:12px;border-radius:12px;font-weight:700;cursor:pointer;">CANCELAR</button>
+                </form>
+                <datalist id="lista-titulares-cartao">
+                    <option value="FELIPE"></option>
+                    <option value="WELLINGTON"></option>
+                </datalist>
+            </div>
+        </details>
+        <h4 style="margin:0 0 8px;color:#1a2a43;">Tabela — Cadastro de cartões</h4>
+        <div class="tabela-cartoes-excel-wrap">
+            <table class="tabela-cartoes-excel">
+                <thead>
+                    <tr>
+                        <th>TITULAR</th>
+                        <th>APELIDO CARTÃO</th>
+                        <th>NÚMERO (últimos 4)</th>
+                        <th>BANDEIRA</th>
+                        <th>VCTO (dia)</th>
+                        <th>LIMITE</th>
+                        <th>STATUS</th>
+                        <th>LINK FATURA</th>
+                        <th>AÇÕES</th>
+                    </tr>
+                </thead>
+                <tbody id="tabela-cadastro-cartoes">
+                    <tr><td colspan="9" style="text-align:center;color:#888;">Carregando...</td></tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+<div id="aba-cartoes-cadastrados" class="view-section">
+        <h2 style="color:#8e44ad;margin:0 0 8px 0;font-size:18px;">Fatura - Despesas</h2>
+        <p class="texto-explicacao" style="margin-top:0;">Lançamentos no mesmo formato do Excel. Compra parcelada gera <b>uma linha por parcela</b>, com fatura nos meses seguintes. A coluna <b>Valor parcela</b> é calculada.</p>
+        <details open style="margin-bottom:16px;">
+            <summary style="background:#eef2f5;">➕ Lançar compra</summary>
+            <div style="padding:15px;">
+                <div class="row-entradas">
+                    <div class="col-entradas">
+                        <label>Data</label>
+                        <input type="date" id="cartao-desp-data">
+                    </div>
+                    <div class="col-entradas">
+                        <label>Cartão</label>
+                        <select id="cartao-desp-cartao" onchange="aoEscolherCartaoDespesa()"></select>
+                    </div>
+                </div>
+                <div class="row-entradas">
+                    <div class="col-entradas">
+                        <label>Descrição / Fornecedor</label>
+                        <input type="text" id="cartao-desp-descricao" placeholder="Ex.: Kalunga - Material escritório">
+                    </div>
+                    <div class="col-entradas">
+                        <label>Categoria</label>
+                        <select id="cartao-desp-categoria"></select>
+                    </div>
+                </div>
+                <div class="row-entradas">
+                    <div class="col-entradas">
+                        <label>Fatura MM/AAAA</label>
+                        <input type="month" id="cartao-desp-competencia">
+                    </div>
+                    <div class="col-entradas">
+                        <label>Forma</label>
+                        <select id="cartao-desp-tipo" onchange="alternarParcelasCartao()">
+                            <option value="a_vista">A VISTA</option>
+                            <option value="parcelamento">PARCELADO</option>
+                        </select>
+                    </div>
+                </div>
+                <div id="cartao-desp-parcelas-wrap" style="display:none;">
+                    <label>Qtd. parcelas</label>
+                    <input type="number" id="cartao-desp-parcelas" min="2" max="24" value="2">
+                </div>
+                <div class="row-entradas">
+                    <div class="col-entradas">
+                        <label>Valor total (R$)</label>
+                        <input type="text" id="cartao-desp-valor" placeholder="0,00" oninput="mascaraMoeda(this)">
+                    </div>
+                    <div class="col-entradas">
+                        <label>Status</label>
+                        <select id="cartao-desp-status">
+                            <option value="A PAGAR">A PAGAR</option>
+                            <option value="PAGO">PAGO</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="row-entradas">
+                    <div class="col-entradas">
+                        <label>Link comprovante</label>
+                        <input type="url" id="cartao-desp-comprovante" placeholder="https://...">
+                    </div>
+                    <div class="col-entradas">
+                        <label>Reembolsado?</label>
+                        <select id="cartao-desp-reembolsado">
+                            <option value="NÃO">NÃO</option>
+                            <option value="SIM">SIM</option>
+                        </select>
+                    </div>
+                </div>
+                <div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:8px;">
+                    <button type="button" class="btn-gold" style="flex:1;margin-top:8px;" onclick="salvarDespesaCartao()">SALVAR</button>
+                    <button type="button" style="flex:1;margin-top:8px;background:#7f8c8d;color:#fff;border:none;padding:15px;border-radius:12px;font-weight:700;cursor:pointer;" onclick="limparFormDespesaCartao()">CANCELAR</button>
+                </div>
+            </div>
+        </details>
+        <div class="cartoes-filtros">
+            <div>
+                <label>Titular</label>
+                <select id="filtro-desp-titular" onchange="renderTabelaFaturaDespesas()"></select>
+            </div>
+            <div>
+                <label>Cartão</label>
+                <select id="filtro-desp-cartao" onchange="renderTabelaFaturaDespesas()"></select>
+            </div>
+            <div>
+                <label>Fatura</label>
+                <input type="month" id="filtro-desp-fatura" onchange="renderTabelaFaturaDespesas()">
+            </div>
+            <div>
+                <label>Status</label>
+                <select id="filtro-desp-status" onchange="renderTabelaFaturaDespesas()">
+                    <option value="">Todos</option>
+                    <option value="A PAGAR">A PAGAR</option>
+                    <option value="PAGO">PAGO</option>
+                </select>
+            </div>
+            <button type="button" class="btn-enviar" style="min-width:120px;" onclick="renderTabelaFaturaDespesas()">🔄 Atualizar</button>
+        </div>
+        <div style="background:#fff8e8;border:1px solid #ffeeba;border-radius:10px;padding:12px;margin-bottom:12px;display:flex;gap:10px;flex-wrap:wrap;align-items:center;justify-content:space-between;">
+            <p id="cartao-fatura-total" style="margin:0;font-weight:800;color:#c0392b;">Total em aberto: R$ 0,00</p>
+            <button type="button" class="btn-enviar" style="background:#27ae60;margin:0;min-width:180px;" onclick="marcarFaturaCartaoPaga()">✅ FATURA PAGA (filtro atual)</button>
+        </div>
+        <div class="tabela-cartoes-excel-wrap">
+            <table class="tabela-cartoes-excel">
+                <thead>
+                    <tr>
+                        <th>DATA</th>
+                        <th>TITULAR</th>
+                        <th>CARTÃO</th>
+                        <th>Nº CARTÃO</th>
+                        <th>VCTO</th>
+                        <th>DESCRIÇÃO / FORNECEDOR</th>
+                        <th>CATEGORIA</th>
+                        <th>FATURA MM/AAAA</th>
+                        <th>FORMA</th>
+                        <th>QTD PARC.</th>
+                        <th>PARC. ATUAL</th>
+                        <th>VALOR TOTAL</th>
+                        <th>VALOR PARCELA</th>
+                        <th>STATUS</th>
+                        <th>LINK COMPROVANTE</th>
+                        <th>REEMBOLSADO?</th>
+                        <th>AÇÕES</th>
+                    </tr>
+                </thead>
+                <tbody id="tabela-fatura-despesas">
+                    <tr><td colspan="17" style="text-align:center;color:#888;">Carregando...</td></tr>
+                </tbody>
+            </table>
+        </div>
+        <input type="hidden" id="cartao-fatura-competencia">
+        <div id="lista-despesas-cartao" style="display:none;"></div>
+        <div id="cartoes-lista-wrap" style="display:none;"></div>
+        <div id="cartao-detalhe-wrap" style="display:none;"></div>
+        <div id="lista-cartoes-cadastrados" style="display:none;"></div>
+        <div id="cartao-detalhe-cabecalho" style="display:none;"></div>
+    </div>
+
+<div id="aba-cartoes-dashboard" class="view-section">
+        <h2 style="color:#8e44ad;margin:0 0 8px 0;font-size:18px;">Dashboard — Controle de Cartões</h2>
+        <p class="texto-explicacao" style="margin-top:0;">Resumos iguais ao Excel: por categoria, por titular e por mês de fatura.</p>
+        <button type="button" class="btn-enviar" onclick="carregarDashboardCartoes()">🔄 ATUALIZAR DASHBOARD</button>
+        <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:16px;margin-top:16px;">
+            <div>
+                <h4 style="margin:0 0 8px;color:#1a2a43;">Resumo por categoria</h4>
+                <div class="tabela-cartoes-excel-wrap">
+                    <table class="tabela-cartoes-excel" style="min-width:0;">
+                        <thead><tr><th>CATEGORIA</th><th>TOTAL</th><th>%</th></tr></thead>
+                        <tbody id="dash-cartoes-categoria"></tbody>
+                    </table>
+                </div>
+            </div>
+            <div>
+                <h4 style="margin:0 0 8px;color:#1a2a43;">Resumo por titular</h4>
+                <div class="tabela-cartoes-excel-wrap">
+                    <table class="tabela-cartoes-excel" style="min-width:0;">
+                        <thead><tr><th>SÓCIO</th><th>TOTAL</th><th>A VISTA</th><th>PARCELADO</th></tr></thead>
+                        <tbody id="dash-cartoes-titular"></tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+        <h4 style="margin:18px 0 8px;color:#1a2a43;">Resumo por mês de fatura</h4>
+        <div class="tabela-cartoes-excel-wrap">
+            <table class="tabela-cartoes-excel" style="min-width:0;">
+                <thead>
+                    <tr>
+                        <th>MÊS FATURA</th>
+                        <th>TOTAL</th>
+                        <th id="dash-cartoes-mes-th-titulares" colspan="2">POR TITULAR</th>
+                    </tr>
+                </thead>
+                <tbody id="dash-cartoes-mes"></tbody>
+            </table>
+        </div>
+    </div>
+
+<div id="aba-cartoes-reembolso" class="view-section">
+        <h2 style="color:#8e44ad;margin:0 0 8px 0;font-size:18px;">Resumo para Reembolso</h2>
+        <p class="texto-explicacao" style="margin-top:0;">Totais por titular: gasto, já reembolsado e a reembolsar — igual à aba do Excel.</p>
+        <button type="button" class="btn-enviar" onclick="carregarResumoReembolsoCartoes()">🔄 ATUALIZAR</button>
+        <div class="tabela-cartoes-excel-wrap" style="margin-top:16px;">
+            <table class="tabela-cartoes-excel" style="min-width:0;">
+                <thead>
+                    <tr>
+                        <th>SÓCIO</th>
+                        <th>TOTAL GASTO</th>
+                        <th>JÁ REEMBOLSADO</th>
+                        <th>A REEMBOLSAR</th>
+                        <th>%</th>
+                    </tr>
+                </thead>
+                <tbody id="tabela-resumo-reembolso"></tbody>
+            </table>
+        </div>
+    </div>
+
+<div id="aba-cartoes-relatorio" class="view-section">
+        <h2 style="color:#8e44ad;margin:0 0 8px 0;font-size:18px;">Relatório de Faturas Pagas</h2>
+        <p class="texto-explicacao" style="margin-top:0;">Faturas marcadas como <b>pagas</b>. Filtre por data, mês e ano, como nos relatórios de obras.</p>
+        <div style="display:flex;flex-wrap:wrap;gap:10px;align-items:flex-end;">
+            <div style="min-width:160px;flex:1;">
+                <label>Data do pagamento</label>
+                <input type="date" id="cartao-rel-data" style="margin:0;">
+            </div>
+            <div style="min-width:140px;">
+                <label>Mês</label>
+                <select id="cartao-rel-mes" style="margin:0;">
+                    <option value="">Todos</option>
+                    <option value="01">Janeiro</option>
+                    <option value="02">Fevereiro</option>
+                    <option value="03">Março</option>
+                    <option value="04">Abril</option>
+                    <option value="05">Maio</option>
+                    <option value="06">Junho</option>
+                    <option value="07">Julho</option>
+                    <option value="08">Agosto</option>
+                    <option value="09">Setembro</option>
+                    <option value="10">Outubro</option>
+                    <option value="11">Novembro</option>
+                    <option value="12">Dezembro</option>
+                </select>
+            </div>
+            <div style="min-width:110px;">
+                <label>Ano</label>
+                <input type="number" id="cartao-rel-ano" placeholder="2026" style="margin:0;">
+            </div>
+            <button type="button" class="btn-enviar" style="min-width:140px;" onclick="carregarRelatorioFaturasCartoes()">🔍 BUSCAR</button>
+        </div>
+        <div class="rel-geral-obras-toolbar" style="display:flex;margin-top:12px;flex-wrap:wrap;gap:8px;">
+            <button type="button" class="btn-pdf-relatorio" onclick="exportarPDFFaturasCartoes()">🖨️ Exportar PDF</button>
+        </div>
+        <div id="cartao-rel-resumo" style="display:none;margin-top:16px;background:#fff3cd;padding:15px;border-radius:10px;text-align:center;border:1px solid #ffeeba;">
+            <h4 style="margin:0;color:#856404;">Resumo — Faturas de cartão</h4>
+            <div id="cartao-rel-resumo-totais" style="margin-top:8px;"></div>
+        </div>
+        <div id="lista-relatorio-faturas-cartao" style="margin-top:16px;">
+            <p style="text-align:center;color:#888;font-size:13px;">Escolha data, mês ou ano e clique em Buscar.</p>
+        </div>
+    </div>

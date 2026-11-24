@@ -1,0 +1,115 @@
+/* css/assistente.css */
+        #assistente-root {
+            display: none;
+        }
+        body.gestor-ativo #assistente-root {
+            display: block;
+        }
+        #assistente-fab {
+            position: fixed;
+            right: 18px;
+            bottom: 18px;
+            z-index: 99980;
+            width: 58px;
+            height: 58px;
+            border: none;
+            border-radius: 50%;
+            background: linear-gradient(145deg, #d4a017, #b8860b);
+            color: #1a2a43;
+            font-size: 26px;
+            cursor: pointer;
+            box-shadow: 0 8px 22px rgba(26, 42, 67, 0.35);
+        }
+        #assistente-fab-badge {
+            display: none;
+            position: absolute;
+            top: -4px;
+            right: -4px;
+            min-width: 20px;
+            height: 20px;
+            padding: 0 5px;
+            background: #d9534f;
+            color: #fff;
+            border-radius: 10px;
+            font-size: 11px;
+            font-weight: 700;
+            line-height: 20px;
+            text-align: center;
+        }
+        #assistente-painel {
+            display: none;
+            position: fixed;
+            right: 16px;
+            bottom: 84px;
+            z-index: 99981;
+            width: min(420px, calc(100vw - 20px));
+            height: min(620px, calc(100vh - 110px));
+            background: #fff;
+            border-radius: 16px;
+            box-shadow: 0 16px 48px rgba(0,0,0,0.28);
+            overflow: hidden;
+            flex-direction: column;
+        }
+        #assistente-painel.aberto {
+            display: flex;
+        }
+        #assistente-msgs {
+            flex: 1;
+            overflow: auto;
+            padding: 12px;
+            background: #eef2f5;
+        }
+        .asst-msg {
+            max-width: 92%;
+            margin: 0 0 10px;
+            padding: 9px 11px;
+            border-radius: 12px;
+            font-size: 13px;
+            line-height: 1.45;
+            white-space: pre-wrap;
+            word-break: break-word;
+        }
+        .asst-msg.bot { background: #fff; color: #1a2a43; border: 1px solid #e0e6ed; }
+        .asst-msg.eu { background: #1a2a43; color: #fff; margin-left: auto; }
+        .asst-ops {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 6px;
+            margin: 0 0 10px;
+        }
+        .asst-ops button {
+            background: #fff;
+            border: 1px solid #1a2a43;
+            color: #1a2a43;
+            border-radius: 18px;
+            padding: 6px 10px;
+            font-size: 11px;
+            font-weight: 700;
+            cursor: pointer;
+        }
+        .asst-ops button:hover { background: #1a2a43; color: #fff; }
+        #assistente-input-row {
+            display: flex;
+            gap: 6px;
+            padding: 8px;
+            border-top: 1px solid #e0e6ed;
+            background: #fff;
+        }
+        #assistente-texto {
+            flex: 1;
+            margin: 0;
+            height: 42px;
+            border-radius: 10px;
+            border: 1px solid #d0d7de;
+            padding: 0 10px;
+            font-size: 13px;
+        }
+        @media (max-width: 600px) {
+            #assistente-fab { right: 12px; bottom: 12px; }
+            #assistente-painel {
+                right: 8px;
+                left: 8px;
+                width: auto;
+                bottom: 78px;
+            }
+        }

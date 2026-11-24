@@ -1,0 +1,90 @@
+<!-- telas/inicio.html -->
+<div id="aba-inicio" class="view-section gestor-tela-inicio active">
+        <div class="gestor-tela-inicio-conteudo">
+            <div class="gestor-inicio-topo">
+                <img src="https://i.postimg.cc/zDRJMSTn/69420f5a-5b80-457e-8146-00485162d7f2.jpg" crossorigin="anonymous" class="gestor-tela-inicio-logo" id="gestor-inicio-logo" alt="Logo da empresa">
+                <div>
+                    <h3 class="gestor-tela-inicio-nome" id="gestor-inicio-nome">Empresa</h3>
+                    <p class="gestor-tela-inicio-hint">Painel geral do gestor — obras, equipe, cartões e financeiro.</p>
+                </div>
+            </div>
+            <section class="gestor-acesso-rapido" aria-label="Acesso rápido">
+                <h4>Acesso rápido</h4>
+                <p class="gestor-acesso-rapido-hint">Clique no atalho ou use a tecla indicada. O <b>F5</b> continua atualizando a página.</p>
+                <div class="gestor-atalhos-grid">
+                    <button type="button" class="gestor-atalho-card" onclick="abrirAtalhoGestor('F1')">
+                        <span class="gestor-atalho-tecla">F1</span>
+                        <span class="gestor-atalho-icone">🏠</span>
+                        <span class="gestor-atalho-titulo">Início</span>
+                        <span class="gestor-atalho-desc">Painel inicial</span>
+                    </button>
+                    <button type="button" class="gestor-atalho-card" onclick="abrirAtalhoGestor('F2')">
+                        <span class="gestor-atalho-tecla">F2</span>
+                        <span class="gestor-atalho-icone">👥</span>
+                        <span class="gestor-atalho-titulo">Funcionários</span>
+                        <span class="gestor-atalho-desc">Equipe cadastrada</span>
+                    </button>
+                    <button type="button" class="gestor-atalho-card" onclick="abrirAtalhoGestor('F3')">
+                        <span class="gestor-atalho-tecla">F3</span>
+                        <span class="gestor-atalho-icone">➕</span>
+                        <span class="gestor-atalho-titulo">Cadastrar</span>
+                        <span class="gestor-atalho-desc">Novo funcionário</span>
+                    </button>
+                    <button type="button" class="gestor-atalho-card" onclick="abrirAtalhoGestor('F4')">
+                        <span class="gestor-atalho-tecla">F4</span>
+                        <span class="gestor-atalho-icone">🏗️</span>
+                        <span class="gestor-atalho-titulo">Despesas</span>
+                        <span class="gestor-atalho-desc">Adicionar despesas</span>
+                    </button>
+                    <button type="button" class="gestor-atalho-card" onclick="abrirAtalhoGestor('F6')">
+                        <span class="gestor-atalho-tecla">F6</span>
+                        <span class="gestor-atalho-icone">🔍</span>
+                        <span class="gestor-atalho-titulo">Gastos por obra</span>
+                        <span class="gestor-atalho-desc">Relatório de gastos</span>
+                    </button>
+                    <button type="button" class="gestor-atalho-card" onclick="abrirAtalhoGestor('F7')">
+                        <span class="gestor-atalho-tecla">F7</span>
+                        <span class="gestor-atalho-icone">💳</span>
+                        <span class="gestor-atalho-titulo">Cartões</span>
+                        <span class="gestor-atalho-desc">Fatura - Despesas</span>
+                    </button>
+                    <button type="button" class="gestor-atalho-card" onclick="abrirAtalhoGestor('F8')">
+                        <span class="gestor-atalho-tecla">F8</span>
+                        <span class="gestor-atalho-icone">📑</span>
+                        <span class="gestor-atalho-titulo">Faturas</span>
+                        <span class="gestor-atalho-desc">Relatório de faturas</span>
+                    </button>
+                    <button type="button" class="gestor-atalho-card" onclick="abrirAtalhoGestor('F9')">
+                        <span class="gestor-atalho-tecla">F9</span>
+                        <span class="gestor-atalho-icone">📄</span>
+                        <span class="gestor-atalho-titulo">Folha</span>
+                        <span class="gestor-atalho-desc">Folha de pagamento</span>
+                    </button>
+                    <button type="button" class="gestor-atalho-card" onclick="abrirAtalhoGestor('F10')">
+                        <span class="gestor-atalho-tecla">F10</span>
+                        <span class="gestor-atalho-icone">📊</span>
+                        <span class="gestor-atalho-titulo">Relatório obras</span>
+                        <span class="gestor-atalho-desc">Relatório geral</span>
+                    </button>
+                    <button type="button" class="gestor-atalho-card" onclick="abrirAtalhoGestor('F11')">
+                        <span class="gestor-atalho-tecla">F11</span>
+                        <span class="gestor-atalho-icone">⏳</span>
+                        <span class="gestor-atalho-titulo">A receber</span>
+                        <span class="gestor-atalho-desc">Contas a receber</span>
+                    </button>
+                    <button type="button" class="gestor-atalho-card" onclick="abrirAtalhoGestor('F12')">
+                        <span class="gestor-atalho-tecla">F12</span>
+                        <span class="gestor-atalho-icone">📍</span>
+                        <span class="gestor-atalho-titulo">Ponto</span>
+                        <span class="gestor-atalho-desc">Registro de ponto</span>
+                    </button>
+                    <button type="button" class="gestor-atalho-card" onclick="abrirEnvioComprovantesPainel()">
+                        <span class="gestor-atalho-tecla">BOT</span>
+                        <span class="gestor-atalho-icone">📤</span>
+                        <span class="gestor-atalho-titulo">Comprovantes</span>
+                        <span class="gestor-atalho-desc">Enviar e lançar no sistema</span>
+                    </button>
+                </div>
+            </section>
+        </div>
+    </div>

@@ -1,0 +1,34 @@
+<!-- telas/ponto.html -->
+<div id="aba-ponto" class="view-section">
+        <div style="background: #eef2f5; padding: 15px; border-radius: 10px; text-align: center; margin-bottom: 20px;">
+            <p class="texto-explicacao" style="margin: 0 0 10px 0; text-align: center;">Este é o link oficial do sistema que a equipa deve usar:</p>
+            <button class="btn-gold" id="btnLinkPonto" style="margin: 0; padding: 10px; font-size: 13px;">Copiar Link do Sistema</button>
+        </div>
+
+        <label>Consultar Ponto do Funcionário:</label>
+        <p class="texto-explicacao" style="margin:4px 0 10px 0;">Os batimentos ficam agrupados por <b>ano</b> e <b>mês</b>. Ao abrir o mês, aparece o <b>espelho de ponto</b> (tabela diária). Clique numa linha do dia para ver foto, GPS e ações do RH.</p>
+        <p class="texto-explicacao" style="margin:0 0 10px 0;background:#fff5f5;border:1px solid #f5c6cb;border-radius:8px;padding:8px 10px;">
+            <b>Sequência do ponto:</b> Entrada → Início intervalo → Fim intervalo → Saída (apenas 1 de cada, nesta ordem). Batidas fora de ordem aparecem em <b style="color:#b02a37;">vermelho</b> e geram alerta no canto da tela.
+        </p>
+        <p class="texto-explicacao" style="margin:0 0 10px 0;background:#f8f9fa;border:1px solid #dee2e6;border-radius:8px;padding:8px 10px;">
+            <b>Duplicados:</b> se o mesmo tipo for batido no <b>mesmo horário</b> mais de uma vez (comum no offline), o sistema <b>mantém só a batida correta</b> na tela e na folha — as repetidas ficam ocultas.
+        </p>
+        <div style="display: flex; gap: 10px;">
+            <select id="pt-func-select" class="lista-funcs" style="margin: 0; flex: 2;">
+                <option value="">Carregando...</option>
+            </select>
+            <button onclick="buscarPonto()" style="flex: 1; background: var(--dark-navy); color: white; border: none; border-radius: 10px; cursor: pointer; font-weight:bold;">Buscar</button>
+        </div>
+        
+        <div id="ponto-export-toolbar" class="rel-geral-obras-toolbar" style="display:none; margin-top:12px;">
+            <button type="button" id="btnExportarPonto" class="btn-pdf-relatorio" onclick="exportarEspelhoPontoPDF()">📥 Exportar PDF</button>
+        </div>
+        <p class="texto-explicacao" style="margin:8px 0 0 0;">Selecione <b>TODOS OS FUNCIONÁRIOS</b>, clique em <b>Buscar</b> (escolhe o mês) e depois em <b>Exportar PDF</b> — o arquivo de toda a equipe baixa na hora, pronto para o RH.</p>
+        <button type="button" class="btn-enviar" style="margin-top:12px; width:100%; background:#2c6f9e; box-shadow:none;" onclick="abrirRegistoPontoManualRH()">➕ Registar batida manual (RH) — caderno / correção</button>
+        <button type="button" class="btn-enviar" style="margin-top:8px; width:100%; background:#b02a37; box-shadow:none;" onclick="rhGerirFaltaDia()">🚫 Falta injustificada / atestado (RH)</button>
+        <p class="texto-explicacao" style="margin:6px 0 0 0;">Use após escolher o funcionário. <b>Falta injustificada</b> desconta o dia (e DSR, se o RH marcar). <b>Atestado / justificada</b> remove a falta automática (dia sem ponto).</p>
+        
+        <div id="lista-ponto-resultados" style="margin-top: 20px;">
+            <p style="text-align: center; color: #888; font-size: 13px;">Aqui aparecerão os horários e locais.</p>
+        </div>
+    </div>

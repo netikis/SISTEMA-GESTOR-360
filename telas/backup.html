@@ -1,0 +1,52 @@
+<!-- telas/backup.html -->
+<div id="aba-backup" class="view-section">
+        <div class="card-alerta-backup">
+            <h3 style="color: var(--dark-navy); margin-top: 0;">💾 Gestão de Armazenamento</h3>
+            <p class="texto-explicacao" style="text-align: justify; margin-bottom: 20px;">
+                Para manter o seu sistema rápido e evitar cobranças de servidor do Google devido ao excesso de fotos pesadas, recomendamos que, ao fechar o mês, baixe o Backup Completo Offline e, em seguida, faça a Limpeza da Nuvem.
+                <br><br><b style="color:#b02a37;">Importante (setembro):</b> se o ponto parou de gravar, faça backup e limpeza de <b>AGOSTO</b> (não do mês atual). O seletor abaixo inicia no mês de hoje — mude para Agosto antes de apagar.
+            </p>
+
+            <div style="display: flex; gap: 10px; text-align: left;">
+                <div style="flex: 1.5;">
+                    <label>Mês do Backup</label>
+                    <select id="backup-mes">
+                        <option value="01">Janeiro</option>
+                        <option value="02">Fevereiro</option>
+                        <option value="03">Março</option>
+                        <option value="04">Abril</option>
+                        <option value="05">Maio</option>
+                        <option value="06">Junho</option>
+                        <option value="07">Julho</option>
+                        <option value="08">Agosto</option>
+                        <option value="09">Setembro</option>
+                        <option value="10">Outubro</option>
+                        <option value="11">Novembro</option>
+                        <option value="12">Dezembro</option>
+                    </select>
+                </div>
+                <div style="flex: 1;">
+                    <label>Ano</label>
+                    <input type="number" id="backup-ano" value="2026">
+                </div>
+            </div>
+
+            <button class="btn-entrada" onclick="fazerBackupMes()" style="box-shadow: none;">⬇️ 1º PASSO: BAIXAR BACKUP (OFFLINE)</button>
+            <p class="texto-explicacao" style="margin-top: 5px;">* Salva todas as fotos de pontos, vales e despesas em um arquivo seguro no seu computador.</p>
+
+            <button class="btn-limpar-nuvem" onclick="limparDadosMes()">🗑️ 2º PASSO: APAGAR DADOS (LIMPAR NUVEM)</button>
+            <p class="texto-explicacao" style="margin-top: 5px;">* Atenção: Clique apenas após garantir que o arquivo de Backup foi salvo com segurança!</p>
+        </div>
+
+        <div class="card-alerta-backup" style="margin-top:16px;">
+            <h3 style="color: var(--dark-navy); margin-top: 0;">🤖 Assistente de documentos</h3>
+            <p class="texto-explicacao" style="text-align:justify;margin-bottom:12px;">O balão no canto lê comprovantes e sugere a obra. Sem chave do Gemini, ele pergunta e mostra as obras/lojas já cadastradas. Com a chave, ele tenta ler o arquivo sozinho.</p>
+            <label>Chave da API Gemini (opcional)</label>
+            <input type="password" id="assistente-gemini-key" placeholder="Cole a chave do Google AI Studio" autocomplete="off">
+            <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:10px;">
+                <button type="button" class="btn-enviar" style="margin:0;flex:1;min-width:140px;" onclick="salvarChaveGeminiAssistente()">SALVAR CHAVE</button>
+                <button type="button" class="btn-gold" style="margin:0;flex:1;min-width:140px;" onclick="abrirAppEnvioDocumentos()">📱 ABRIR APP DE ENVIO</button>
+            </div>
+            <p class="texto-explicacao" style="margin-top:8px;">No celular, abra o app de envio e use <b>Adicionar à tela inicial</b> — fica um ícone só para mandar comprovantes, sem entrar no painel completo.</p>
+        </div>
+    </div>

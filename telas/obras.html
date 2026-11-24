@@ -1,0 +1,287 @@
+<!-- telas/obras.html -->
+<div id="aba-despesas-cadastrar" class="view-section">
+        <label>Nome da Obra ou Local</label>
+        <div class="busca-despesas-wrap busca-cadastro-desp">
+            <input type="text" id="d-obra" autocomplete="off" placeholder="Digite para buscar obras cadastradas..." style="width:100%;margin:0;" oninput="filtrarAutocompleteCadastroDespesa('obra')" onfocus="filtrarAutocompleteCadastroDespesa('obra')" onkeydown="teclaAutocompleteCadastroDespesa(event, 'obra')">
+            <div id="d-obra-sugestoes" role="listbox" aria-label="Sugestões de obras"></div>
+        </div>
+        <datalist id="datalist-obras-desp"></datalist>
+
+        <label style="margin-top:12px;">Nome da Loja ou Fornecedor</label>
+        <div class="busca-despesas-wrap busca-cadastro-desp">
+            <input type="text" id="d-loja" autocomplete="off" placeholder="Digite para buscar fornecedores cadastrados..." style="width:100%;margin:0;" oninput="filtrarAutocompleteCadastroDespesa('loja')" onfocus="filtrarAutocompleteCadastroDespesa('loja')" onkeydown="teclaAutocompleteCadastroDespesa(event, 'loja')">
+            <div id="d-loja-sugestoes" role="listbox" aria-label="Sugestões de fornecedores"></div>
+        </div>
+        <datalist id="datalist-lojas-desp"></datalist>
+
+        <label style="margin-top:12px;">Número da Nota Fiscal / Recibo</label>
+        <input type="text" id="d-nf" placeholder="Ex: 123456 (Opcional)">
+
+        <label>Valor da Fatura (R$)</label>
+        <input type="text" id="d-valor" placeholder="0,00" oninput="mascaraMoeda(this)">
+        <label>Data de Vencimento</label><input type="date" id="d-vencimento">
+
+        <button type="button" id="btnToggleParcelamento" onclick="toggleParcelamentoDespesa()" style="margin-top:14px;width:100%;padding:12px 14px;border:2px solid #1a2a43;border-radius:10px;background:#eef2f5;color:#1a2a43;font-weight:800;cursor:pointer;font-size:14px;">💳 PARCELAMENTO</button>
+        <p class="texto-explicacao" style="margin:6px 0 0 0;">Use se a nota fiscal for parcelada — abre linhas para informar valor e vencimento de cada parcela.</p>
+
+        <div id="d-parcelamento-box" style="display:none;margin-top:12px;padding:14px;background:#f7f9fb;border:1px solid #d0d7de;border-radius:12px;">
+            <label style="margin:0;">Quantidade de parcelas</label>
+            <div style="display:flex;gap:8px;margin-top:6px;align-items:stretch;">
+                <input type="number" id="d-qtd-parcelas" min="2" max="48" value="2" style="flex:1;margin:0;padding:10px;border:1px solid #ccc;border-radius:8px;">
+                <button type="button" onclick="gerarLinhasParcelasDespesa()" style="flex:1.2;background:#1a2a43;color:#fff;border:none;border-radius:8px;font-weight:700;cursor:pointer;padding:10px;">Gerar linhas</button>
+            </div>
+            <div id="d-parcelas-lista" style="margin-top:12px;"></div>
+            <button type="button" onclick="adicionarLinhaParcelaDespesa()" style="margin-top:8px;width:100%;padding:10px;border:1px dashed #1a2a43;border-radius:8px;background:#fff;color:#1a2a43;font-weight:700;cursor:pointer;">+ Adicionar parcela</button>
+            <p style="margin:10px 0 0 0;text-align:right;font-size:14px;font-weight:700;color:#1a2a43;">Total das parcelas: <span id="d-parcelas-total">R$ 0,00</span></p>
+        </div>
+
+        <label>Descrição / Materiais</label>
+        <textarea id="d-desc" rows="2" placeholder="Descreva os materiais adquiridos"></textarea>
+
+        <label>Foto do Recibo / Fatura</label>
+        <input type="file" id="d-anexo" accept="image/*" capture="environment" style="background: #fff; padding: 10px; border-radius: 8px;">
+        <input type="hidden" id="d-anexo-base64">
+        <p class="texto-explicacao" style="margin-top: 5px;">* Tire a foto <b>bem iluminada e de frente</b>. O sistema agora guarda em alta resolução para o comprovante ficar legível.</p>
+
+        <div class="despesa-acoes-balao" style="display:flex; gap:12px; margin-top:18px; flex-wrap:wrap;">
+            <button type="button" class="btn-balao-despesa btn-balao-confirmar" id="btnConfirmarDespesa" onclick="salvarDespesaObra()">CONFIRMAR</button>
+            <button type="button" class="btn-balao-despesa btn-balao-cancelar" id="btnCancelarDespesa" onclick="cancelarDespesaObra()">CANCELAR</button>
+        </div>
+    </div>
+
+<div id="aba-despesas-relatorio" class="view-section">
+        <label>Procurar despesas da Obra ou Loja:</label>
+        <div style="display: flex; gap: 10px;">
+            <div class="busca-despesas-wrap">
+                <input type="text" id="busca-obra" placeholder="Nome da obra ou fornecedor" autocomplete="off" style="width: 100%; margin: 0;" oninput="filtrarAutocompleteBuscaDespesas()" onfocus="filtrarAutocompleteBuscaDespesas()" onkeydown="teclaAutocompleteBuscaDespesas(event)">
+                <div id="busca-obra-sugestoes" role="listbox" aria-label="Sugestões de busca"></div>
+            </div>
+            <button onclick="buscarDespesasObra()" style="flex: 1; background: var(--dark-navy); color: white; border: none; border-radius: 10px; cursor: pointer; font-weight:bold;">Buscar</button>
+            <button type="button" onclick="abrirUnificarObrasDespesas()" title="Mover despesas de uma obra para outra" style="flex: 0 0 auto; background: #856404; color: #fff; border: none; border-radius: 10px; cursor: pointer; font-weight:bold; padding: 0 14px;">Unificar obras</button>
+        </div>
+
+        <div id="tags-filtros-despesas" class="painel-cadastros-desp">
+            <p class="cadastro-desp-vazio">Carregando cadastros...</p>
+        </div>
+
+        <div id="quadro-controles-despesas" class="quadro-controles-despesas" style="display: none;">
+            <details class="quadro-controles-desp-panel" open>
+                <summary>🎛️ Quadro de Controles <span class="quadro-controles-seta">▲</span></summary>
+                <div class="quadro-controles-desp-inner">
+                    <div id="quadro-controles-aviso"></div>
+                    <div id="quadro-controles-secoes"></div>
+                </div>
+            </details>
+        </div>
+
+        <div id="resumo-total-despesas" style="display: none; margin-top: 20px; background: #fff3cd; padding: 15px; border-radius: 10px; text-align: center; border: 1px solid #ffeeba;">
+            <h4 style="margin: 0; color: #856404;">Total Gasto (Pesquisa Atual):</h4>
+            <h2 style="margin: 5px 0 0 0; color: #d9534f;" id="total-gasto-display">R$ 0,00</h2>
+            
+            <div style="display:flex; flex-wrap:wrap; gap:10px; justify-content:center; margin-top:15px;">
+                <button id="btnExportarDespesas" class="btn-pdf-relatorio" style="display:none; margin:0; background-color: var(--dark-navy);" onclick="exportarPDF('despesas')">📥 EXPORTAR PDF</button>
+                <button id="btnExportarDespesasExcel" class="btn-pdf-relatorio" style="display:none; margin:0; background-color:#217346;" onclick="exportarExcelDespesasBusca()">📊 EXPORTAR EXCEL</button>
+            </div>
+        </div>
+
+        <p class="texto-explicacao" style="margin: 10px 0 0 0;">Contas <b>vencidas</b> e <b>a vencer</b> aparecem por ordem de <b>vencimento</b> (data com ano, do mais antigo ao mais recente). O PDF da busca usa a mesma ordem.</p>
+
+        <div id="lista-despesas-resultados" style="margin-top: 15px;">
+            <p style="text-align: center; color: #888; font-size: 13px;">Selecione uma obra acima para ver os fornecedores e despesas.</p>
+        </div>
+
+        <details style="margin-top: 20px;">
+            <summary style="background: #eef2f5;">📊 Resumo de Gastos (Obra x Fornecedor)</summary>
+            <div style="padding: 15px;">
+                <p class="texto-explicacao" style="text-align: justify;">Esta tabela cruza fornecedores da <b>obra selecionada</b> acima (cadastro em <b>Adicionar Despesas</b> e em <b>Exportar Relatórios</b>). Clique no fornecedor para ver a origem de cada nota, visualizar e editar.</p>
+                <button class="btn-enviar" style="margin-top: 5px;" onclick="gerarResumoFornecedores()">GERAR TABELA DE RESUMO</button>
+                
+                <div id="tabela-resumo-fornecedores" style="margin-top: 20px; overflow-x: auto;"></div>
+            </div>
+        </details>
+    </div>
+
+<div id="aba-relatorio-despesas" class="view-section">
+        <details open style="margin-bottom: 20px;">
+            <summary style="background: #eef2f5;">📋 Relatório de despesas</summary>
+            <div style="padding: 15px;">
+                <p class="texto-explicacao" style="margin-top: 0;">Esta tabela é <b>independente</b> das despesas por obra: só mostra linhas criadas aqui (coleção própria na base de dados). Nome do fornecedor, cheque/boleto, lançamento, vencimento, valor, pago/pendente, observação, editar e excluir.</p>
+
+                <details style="margin-top: 12px; margin-bottom: 18px;">
+                    <summary style="background: #fafcff;">Adicionar linha ao relatório</summary>
+                    <div style="padding: 12px; border: 1px dashed #e0e6ed; border-top: none;">
+                        <label>Nome da Obra ou Local</label>
+                        <input type="text" id="rd-obra" list="datalist-obras-rel" autocomplete="off" placeholder="Onde o material foi usado?" style="margin-top: 4px;">
+                        <label>Nome (fornecedor / loja)</label>
+                        <input type="text" id="rd-loja" list="datalist-lojas-rel" autocomplete="off" placeholder="Nome ou loja" style="margin-top: 4px;">
+                        <label>Número do cheque ou boleto (opcional)</label>
+                        <input type="text" id="rd-cheque-boleto" placeholder="Ex.: chq. 1234 / boleto" style="margin-top: 4px;">
+                        <label>Número da Nota Fiscal / Recibo (opcional)</label>
+                        <input type="text" id="rd-nf" placeholder="Ex.: 123456" style="margin-top: 4px;">
+                        <label>Data de lançamento</label>
+                        <input type="date" id="rd-lancamento" style="margin-top: 4px;">
+                        <label>Data de vencimento</label>
+                        <input type="date" id="rd-vencimento" style="margin-top: 4px;">
+                        <label>Valor (R$)</label>
+                        <input type="text" id="rd-valor" placeholder="0,00" oninput="mascaraMoeda(this)" style="margin-top: 4px;">
+                        <label>Descrição / Materiais</label>
+                        <textarea id="rd-desc" rows="2" placeholder="Descrição" style="margin-top: 4px;"></textarea>
+                        <label>Observação por item (opcional)</label>
+                        <textarea id="rd-observacao" rows="2" placeholder="Ex.: explicação para contabilidade" style="margin-top: 4px;"></textarea>
+                        <label>Foto do recibo (opcional)</label>
+                        <input type="file" id="rd-anexo" accept="image/*" capture="environment" style="background: #fff; padding: 10px; border-radius: 8px; margin-top: 4px;">
+                        <input type="hidden" id="rd-anexo-base64">
+                        <button type="button" class="btn-gold" style="margin-top: 12px;" onclick="salvarDespesaLinhaRelatorio()">Guardar linha no relatório</button>
+                    </div>
+                </details>
+
+                <datalist id="datalist-obras-rel"></datalist>
+                <datalist id="datalist-lojas-rel"></datalist>
+
+                <div style="display: flex; flex-wrap: wrap; gap: 10px; align-items: flex-end; margin-top: 10px;">
+                    <div class="busca-despesas-wrap" style="flex: 1; min-width: 200px;">
+                        <label>Filtrar por texto (obra ou fornecedor)</label>
+                        <input type="text" id="rel-desp-filtro" placeholder="Digite para buscar..." autocomplete="off" style="width: 100%; margin: 0;" oninput="filtrarAutocompleteRelDespesas()" onfocus="filtrarAutocompleteRelDespesas()" onkeydown="teclaAutocompleteRelDespesas(event)">
+                        <div id="rel-desp-filtro-sugestoes" role="listbox" aria-label="Sugestões de filtro"></div>
+                    </div>
+                    <div style="min-width: 140px;">
+                        <label>Estado</label>
+                        <select id="rel-desp-status" style="margin: 0;">
+                            <option value="todos">Todos</option>
+                            <option value="pendente">Pendentes</option>
+                            <option value="pago">Pagos</option>
+                            <option value="vencido">Vencidos</option>
+                        </select>
+                    </div>
+                    <button type="button" class="btn-enviar" style="margin: 0; padding: 12px 18px;" onclick="carregarRelatorioDespesasTabular()">Carregar tabela</button>
+                </div>
+                <p class="texto-explicacao" style="margin: 8px 0 0 0;">Itens com vencimento já passado aparecem em <b style="color:#dc3545;">vermelho</b> como <b>VENCIDA</b>. Clique na coluna <b>Vencimento ↕</b> para alternar a ordem: cronológico → <b>vencidos primeiro</b> → mais recente. O PDF e o Excel usam a mesma ordem da tabela.</p>
+                <div style="display:flex; flex-wrap:wrap; gap:10px; margin-top:12px;">
+                    <button type="button" class="btn-pdf-relatorio" style="margin:0; background-color: var(--dark-navy);" onclick="exportarPDFRelatorioDespesasTabelaAtual()">📥 Exportar PDF (resultado da tabela)</button>
+                    <button type="button" class="btn-pdf-relatorio" style="margin:0; background-color:#217346;" onclick="exportarExcelRelatorioDespesasTabelaAtual()">📊 Exportar Excel (resultado da tabela)</button>
+                </div>
+
+                <div id="resumo-total-rel-despesas" style="display: none; margin-top: 15px; background: #fff3cd; padding: 15px; border-radius: 10px; text-align: center; border: 1px solid #ffeeba;">
+                    <h4 style="margin: 0; color: #856404;">Total Gasto (Pesquisa Atual):</h4>
+                    <p id="resumo-rel-desp-subtitulo" style="margin: 4px 0 0 0; font-size: 12px; color: #666; display: none;"></p>
+                    <div id="total-gasto-display-rel-desp" style="margin-top: 8px;"></div>
+                </div>
+
+                <div id="tabela-relatorio-despesas-wrap" style="margin-top: 15px; overflow-x: auto;"></div>
+            </div>
+        </details>
+    </div>
+
+<div id="aba-obras-relatorio-geral" class="view-section">
+        <p class="texto-explicacao" style="margin-top: 0;">Consolidado de <b>todas as obras</b>: despesas com fornecedores (materiais/obras) + pagamentos a terceiros. Mostra o que está <b>vencido</b>, <b>a vencer</b> e <b>já pago</b>.</p>
+        <button type="button" class="btn-enviar" style="margin-top: 8px;" onclick="carregarRelatorioGeralObras()">🔄 ATUALIZAR RELATÓRIO GERAL</button>
+
+        <div id="rel-geral-obras-acoes" class="rel-geral-obras-toolbar" style="display: none; margin-top: 12px;">
+            <button type="button" class="btn-enviar" onclick="toggleSecoesRelGeralObras(true)">▼ Expandir tudo</button>
+            <button type="button" class="btn-enviar" onclick="toggleSecoesRelGeralObras(false)">▲ Recolher tudo</button>
+            <button type="button" id="btnExportarRelGeralObrasPdf" class="btn-pdf-relatorio" onclick="exportarPDFRelatorioGeralObras()">🖨️ Exportar PDF</button>
+            <button type="button" id="btnExportarRelGeralObrasExcel" class="btn-pdf-relatorio" style="background-color:#217346;" onclick="exportarExcelRelatorioGeralObras()">📊 Exportar Excel</button>
+            <button type="button" class="btn-pdf-relatorio" style="background-color:#c0392b;" onclick="excluirPagamentosParciaisSelecionados()">🗑️ Excluir parciais selecionados</button>
+        </div>
+
+        <div id="rel-geral-obras-resumo" style="display: none; margin-top: 20px; background: #fff3cd; padding: 15px; border-radius: 10px; text-align: center; border: 1px solid #ffeeba;">
+            <h4 style="margin: 0; color: #856404;">Resumo Geral — Obras</h4>
+            <div id="rel-geral-obras-resumo-totais" style="margin-top: 8px;"></div>
+            <p id="rel-geral-obras-resumo-detalhe" class="texto-explicacao" style="margin: 12px 0 0 0; font-size: 12px; text-align: center;"></p>
+        </div>
+
+        <div id="rel-geral-obras-secoes" style="margin-top: 15px;">
+            <p style="text-align: center; color: #888; font-size: 13px;">Clique em "Atualizar Relatório Geral" ou abra esta opção no menu para carregar.</p>
+        </div>
+    </div>
+
+<div id="aba-notas-fiscais-geral" class="view-section">
+        <p class="texto-explicacao" style="margin-top: 0;">Consolidado de <b>notas fiscais e recibos</b> cadastrados em <b>Adicionar Despesas</b> e em <b>Exportar Relatórios</b>. Mostra o que está <b>vencido</b>, <b>a vencer</b> e <b>já pago</b>.</p>
+
+        <div style="display:flex;flex-wrap:wrap;gap:10px;align-items:flex-end;margin-top:12px;">
+            <div style="flex:1;min-width:200px;">
+                <label>Filtrar (obra, fornecedor ou nº NF)</label>
+                <div class="busca-despesas-wrap" style="flex:1;width:100%;">
+                    <input type="text" id="rel-nf-filtro-texto" placeholder="Digite para buscar..." autocomplete="off" style="width:100%;margin:0;" oninput="filtrarAutocompleteRelGeralNF()" onfocus="filtrarAutocompleteRelGeralNF()" onkeydown="teclaAutocompleteRelGeralNF(event)">
+                    <div id="rel-nf-filtro-sugestoes" role="listbox" aria-label="Sugestões de filtro NF"></div>
+                </div>
+            </div>
+            <div style="min-width:140px;">
+                <label>Situação</label>
+                <select id="rel-nf-filtro-status" style="margin:0;">
+                    <option value="todos">Todas</option>
+                    <option value="vencido">Vencidas</option>
+                    <option value="a_vencer">A vencer</option>
+                    <option value="pago">Pagas</option>
+                    <option value="pendente">Pendentes (vencida + a vencer)</option>
+                </select>
+            </div>
+            <label style="display:flex;align-items:center;gap:8px;font-size:13px;cursor:pointer;min-width:200px;margin-bottom:4px;">
+                <input type="checkbox" id="rel-nf-so-com-nf" checked style="width:18px;height:18px;">
+                Só com nº de NF preenchido
+            </label>
+        </div>
+
+        <button type="button" class="btn-enviar" style="margin-top: 12px;" onclick="carregarRelatorioGeralNotasFiscais()">🔄 ATUALIZAR RELATÓRIO DE NF</button>
+
+        <div id="rel-geral-nf-acoes" class="rel-geral-obras-toolbar" style="display: none; margin-top: 12px;">
+            <button type="button" class="btn-enviar" onclick="toggleSecoesRelGeralNF(true)">▼ Expandir tudo</button>
+            <button type="button" class="btn-enviar" onclick="toggleSecoesRelGeralNF(false)">▲ Recolher tudo</button>
+            <button type="button" id="btnExportarRelGeralNfPdf" class="btn-pdf-relatorio" onclick="exportarPDFRelatorioGeralNotasFiscais()">🖨️ Exportar PDF</button>
+            <button type="button" id="btnExportarRelGeralNfExcel" class="btn-pdf-relatorio" style="background-color:#217346;" onclick="exportarExcelRelatorioGeralNotasFiscais()">📊 Exportar Excel</button>
+        </div>
+
+        <div id="rel-geral-nf-resumo" style="display: none; margin-top: 20px; background: #fff3cd; padding: 15px; border-radius: 10px; text-align: center; border: 1px solid #ffeeba;">
+            <h4 style="margin: 0; color: #856404;">Resumo Geral — Notas Fiscais</h4>
+            <div id="rel-geral-nf-resumo-totais" style="margin-top: 8px;"></div>
+            <p id="rel-geral-nf-resumo-detalhe" class="texto-explicacao" style="margin: 12px 0 0 0; font-size: 12px; text-align: center;"></p>
+        </div>
+
+        <div id="rel-geral-nf-secoes" style="margin-top: 15px;">
+            <p style="text-align: center; color: #888; font-size: 13px;">Clique em "Atualizar Relatório de NF" ou abra esta opção no menu para carregar.</p>
+        </div>
+    </div>
+
+<div id="aba-terceiros" class="view-section">
+        <details open style="margin-bottom: 20px;">
+            <summary style="background: #eef2f5;">➕ Cadastrar Pagamento de Terceiro</summary>
+            <div style="padding: 15px;">
+                <label>Nome do Terceiro (Ex: Pintor, Pedreiro)</label><input type="text" id="t-nome" placeholder="Nome do profissional">
+                <label>CPF</label><input type="number" id="t-cpf" placeholder="Apenas números">
+                <label>Telefone / WhatsApp</label><input type="number" id="t-tel" placeholder="Apenas números com DDD">
+                <label>Obra / Local</label><input type="text" id="t-obra" placeholder="Onde ele prestou serviço?">
+                <label>Valor Pago (R$)</label><input type="text" id="t-valor" placeholder="0,00" oninput="mascaraMoeda(this)">
+                <label>Descrição do Serviço</label><textarea id="t-desc" rows="2" placeholder="O que foi feito? Ex: Pintura da fachada"></textarea>
+                <button class="btn-gold" id="btnSalvarTerceiro" onclick="salvarTerceiro()">SALVAR PAGAMENTO</button>
+            </div>
+        </details>
+
+        <details open>
+            <summary style="background: #eef2f5;">🔍 Histórico de Terceiros</summary>
+            <div style="padding: 15px;">
+                <label>Procurar por Obra ou Nome:</label>
+                <div style="display: flex; gap: 10px;">
+                    <input type="text" id="busca-terceiro" placeholder="Nome da obra ou do profissional" style="flex: 2; margin: 0;">
+                    <button onclick="buscarTerceiros()" style="flex: 1; background: var(--dark-navy); color: white; border: none; border-radius: 10px; cursor: pointer; font-weight:bold;">Buscar</button>
+                </div>
+                <div id="lista-terceiros-resultados" style="margin-top: 15px;"></div>
+            </div>
+        </details>
+    </div>
+
+<div id="aba-arquivamento-contas" class="view-section">
+        <div class="doc-pasta-panel">
+            <h3>🗄️ Arquivamento de Contas</h3>
+            <p class="texto-explicacao" style="margin:0 0 12px 0;">Pastas por <b>nome da obra</b> (balões). Clique no balão para abrir o histórico em <b>Ano → Mês → Dia</b>. Use <b>Exportar Excel/PDF</b> para guardar um relatório para o futuro.</p>
+            <div class="rel-geral-obras-toolbar" style="display:flex;margin-bottom:12px;flex-wrap:wrap;gap:8px;align-items:center;">
+                <button type="button" class="btn-enviar" style="margin:0;" onclick="carregarArquivamentoContas()">🔄 Atualizar arquivo</button>
+                <input type="text" id="arq-contas-busca" placeholder="Buscar obra, fornecedor, NF..." style="flex:1;min-width:180px;margin:0;padding:10px;border:1px solid #ccc;border-radius:8px;" onkeydown="if(event.key==='Enter')carregarArquivamentoContas()">
+                <button type="button" class="btn-pdf-relatorio" style="margin:0;background-color:#217346;" onclick="exportarExcelArquivamentoContas()">📊 Exportar Excel</button>
+                <button type="button" class="btn-pdf-relatorio" style="margin:0;background-color:var(--dark-navy);" onclick="exportarPDFArquivamentoContas()">🖨️ Exportar PDF</button>
+            </div>
+            <div id="arq-contas-resumo" style="display:none;margin-bottom:12px;padding:12px;background:#fff3cd;border:1px solid #ffeeba;border-radius:10px;text-align:center;color:#856404;font-weight:700;"></div>
+            <div id="arq-contas-baloes" class="desp-baloes-lista" style="margin-bottom:14px;"></div>
+            <div id="arq-contas-pasta-titulo" style="display:none;margin-bottom:10px;font-size:14px;font-weight:800;color:#1a2a43;"></div>
+            <div id="arq-contas-lista"><p style="text-align:center;color:#888;">Clique em Atualizar arquivo ou abra este menu para carregar.</p></div>
+        </div>
+    </div>

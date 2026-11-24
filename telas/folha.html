@@ -1,0 +1,377 @@
+<!-- telas/folha.html -->
+<div id="aba-ajuda-custo" class="view-section">
+        <div style="background: #eef2f5; padding: 15px; border-radius: 10px; margin-bottom: 15px; border: 1px solid #1a2a43;">
+            <h3 style="margin: 0; color: var(--dark-navy); text-align: center;">🧳 Ajuda de Custo</h3>
+            <p class="texto-explicacao" style="margin: 8px 0 0 0; text-align: center;">
+                Lançamentos por funcionário (dia, mês e ano). Na folha aparecem em <b>Recebimentos (PLUS)</b> — valor à parte, <b>sem somar nem descontar</b> do líquido.
+            </p>
+        </div>
+
+        <label>Funcionário</label>
+        <select id="ac-func-select" class="lista-funcs" style="margin-bottom: 10px;">
+            <option value="">Carregando...</option>
+        </select>
+
+        <label style="margin-top: 12px;">Data do lançamento</label>
+        <div style="display: flex; gap: 10px; flex-wrap: wrap;">
+            <div style="flex: 1; min-width: 72px;">
+                <label style="font-size: 11px; color: #666;">Dia</label>
+                <input type="number" id="ac-dia" min="1" max="31" placeholder="DD" style="margin-top: 4px;">
+            </div>
+            <div style="flex: 1.5; min-width: 120px;">
+                <label style="font-size: 11px; color: #666;">Mês</label>
+                <select id="ac-mes" style="margin-top: 4px;">
+                    <option value="01">Janeiro</option>
+                    <option value="02">Fevereiro</option>
+                    <option value="03">Março</option>
+                    <option value="04">Abril</option>
+                    <option value="05">Maio</option>
+                    <option value="06">Junho</option>
+                    <option value="07">Julho</option>
+                    <option value="08">Agosto</option>
+                    <option value="09">Setembro</option>
+                    <option value="10">Outubro</option>
+                    <option value="11">Novembro</option>
+                    <option value="12">Dezembro</option>
+                </select>
+            </div>
+            <div style="flex: 1; min-width: 88px;">
+                <label style="font-size: 11px; color: #666;">Ano</label>
+                <input type="number" id="ac-ano" min="2000" max="2100" value="2026" style="margin-top: 4px;">
+            </div>
+        </div>
+
+        <label style="margin-top: 12px;">Valor (R$)</label>
+        <input type="text" id="ac-valor" placeholder="0,00" oninput="mascaraMoeda(this)">
+
+        <label style="margin-top: 12px;">Discriminação / motivo da ajuda</label>
+        <textarea id="ac-discriminacao" rows="3" placeholder="Ex.: deslocamento obra X, alimentação viagem, combustível..."></textarea>
+
+        <button type="button" class="btn-gold" style="margin-top: 14px; width: 100%;" onclick="salvarAjudaCusto()">➕ LANÇAR AJUDA DE CUSTO</button>
+
+        <hr style="margin: 22px 0; border: none; border-top: 1px solid #e0e6ed;">
+
+        <label>Consultar lançamentos do funcionário</label>
+        <div style="display: flex; gap: 10px; flex-wrap: wrap; align-items: flex-end;">
+            <div style="flex: 2; min-width: 160px;">
+                <select id="ac-lista-func" class="lista-funcs" style="margin: 0;">
+                    <option value="">Todos (empresa)</option>
+                </select>
+            </div>
+            <div style="flex: 1; min-width: 100px;">
+                <label style="font-size: 11px; color: #666;">Mês ref.</label>
+                <select id="ac-lista-mes" style="margin: 0;">
+                    <option value="">Todos</option>
+                    <option value="01">Jan</option><option value="02">Fev</option><option value="03">Mar</option>
+                    <option value="04">Abr</option><option value="05">Mai</option><option value="06">Jun</option>
+                    <option value="07">Jul</option><option value="08">Ago</option><option value="09">Set</option>
+                    <option value="10">Out</option><option value="11">Nov</option><option value="12">Dez</option>
+                </select>
+            </div>
+            <div style="flex: 1; min-width: 80px;">
+                <label style="font-size: 11px; color: #666;">Ano ref.</label>
+                <input type="number" id="ac-lista-ano" value="2026" style="margin: 0;">
+            </div>
+            <button type="button" class="btn-enviar" style="margin: 0; padding: 12px 16px; flex: 1; min-width: 120px;" onclick="carregarAjudaCustoLista()">Atualizar lista</button>
+        </div>
+
+        <div id="lista-ajuda-custo" style="margin-top: 15px;">
+            <p style="text-align: center; color: #888; font-size: 13px;">Os lançamentos aparecem aqui.</p>
+        </div>
+    </div>
+
+<div id="aba-descontos-folha" class="view-section">
+        <div style="background: #fff5f5; padding: 15px; border-radius: 10px; margin-bottom: 15px; border: 1px solid #dc3545;">
+            <h3 style="margin: 0; color: #922b21; text-align: center;">📋 Descontos na Folha</h3>
+            <p class="texto-explicacao" style="margin: 8px 0 0 0; text-align: center;">
+                Lançamentos por funcionário e <b>mês de referência</b> (INSS, IRRF, vale transporte, etc.).
+                Entram no holerite em <b>Descontos</b> e <b>reduzem o líquido</b> a receber.
+            </p>
+        </div>
+
+        <label>Funcionário</label>
+        <select id="df-func-select" class="lista-funcs" style="margin-bottom: 10px;">
+            <option value="">Carregando...</option>
+        </select>
+
+        <label style="margin-top: 12px;">Mês de referência da folha</label>
+        <div style="display: flex; gap: 10px; flex-wrap: wrap;">
+            <div style="flex: 1.5; min-width: 120px;">
+                <label style="font-size: 11px; color: #666;">Mês</label>
+                <select id="df-mes-ref" style="margin-top: 4px;">
+                    <option value="01">Janeiro</option>
+                    <option value="02">Fevereiro</option>
+                    <option value="03">Março</option>
+                    <option value="04">Abril</option>
+                    <option value="05">Maio</option>
+                    <option value="06">Junho</option>
+                    <option value="07">Julho</option>
+                    <option value="08">Agosto</option>
+                    <option value="09">Setembro</option>
+                    <option value="10">Outubro</option>
+                    <option value="11">Novembro</option>
+                    <option value="12">Dezembro</option>
+                </select>
+            </div>
+            <div style="flex: 1; min-width: 88px;">
+                <label style="font-size: 11px; color: #666;">Ano</label>
+                <input type="number" id="df-ano-ref" min="2000" max="2100" value="2026" style="margin-top: 4px;">
+            </div>
+        </div>
+
+        <label style="margin-top: 12px;">Tipo de desconto</label>
+        <select id="df-tipo" style="margin-bottom: 0;">
+            <option value="INSS">INSS</option>
+            <option value="IRRF">IRRF / IRPF</option>
+            <option value="Vale Transporte">Vale Transporte</option>
+            <option value="Vale Refeição">Vale Refeição</option>
+            <option value="Pensão alimentícia">Pensão alimentícia</option>
+            <option value="Empréstimo consignado">Empréstimo consignado</option>
+            <option value="Plano de saúde">Plano de saúde</option>
+            <option value="Outros">Outros</option>
+        </select>
+
+        <label style="margin-top: 12px;">Valor do desconto (R$)</label>
+        <input type="text" id="df-valor" placeholder="0,00" oninput="mascaraMoeda(this)">
+
+        <label style="margin-top: 12px;">Observação (opcional)</label>
+        <textarea id="df-observacao" rows="2" placeholder="Ex.: competência 05/2026, parcela 3/12, convênio..."></textarea>
+
+        <button type="button" class="btn-enviar" style="margin-top: 14px; width: 100%; background: #dc3545;" onclick="salvarDescontoFolha()">➖ LANÇAR DESCONTO NA FOLHA</button>
+
+        <hr style="margin: 22px 0; border: none; border-top: 1px solid #e0e6ed;">
+
+        <label>Consultar descontos lançados</label>
+        <div style="display: flex; gap: 10px; flex-wrap: wrap; align-items: flex-end;">
+            <div style="flex: 2; min-width: 160px;">
+                <select id="df-lista-func" class="lista-funcs" style="margin: 0;">
+                    <option value="">Todos (empresa)</option>
+                </select>
+            </div>
+            <div style="flex: 1; min-width: 100px;">
+                <label style="font-size: 11px; color: #666;">Mês ref.</label>
+                <select id="df-lista-mes" style="margin: 0;">
+                    <option value="">Todos</option>
+                    <option value="01">Jan</option><option value="02">Fev</option><option value="03">Mar</option>
+                    <option value="04">Abr</option><option value="05">Mai</option><option value="06">Jun</option>
+                    <option value="07">Jul</option><option value="08">Ago</option><option value="09">Set</option>
+                    <option value="10">Out</option><option value="11">Nov</option><option value="12">Dez</option>
+                </select>
+            </div>
+            <div style="flex: 1; min-width: 80px;">
+                <label style="font-size: 11px; color: #666;">Ano ref.</label>
+                <input type="number" id="df-lista-ano" value="2026" style="margin: 0;">
+            </div>
+            <button type="button" class="btn-enviar" style="margin: 0; padding: 12px 16px; flex: 1; min-width: 120px;" onclick="carregarDescontosFolhaLista()">Atualizar lista</button>
+        </div>
+
+        <div id="lista-descontos-folha" style="margin-top: 15px;">
+            <p style="text-align: center; color: #888; font-size: 13px;">Os descontos lançados aparecem aqui.</p>
+        </div>
+    </div>
+
+<div id="aba-folha" class="view-section">
+        <label>Gerar Acerto Mensal (Folha/Holerite)</label>
+        <select id="folha-func-select" class="lista-funcs" style="margin-bottom: 10px;">
+            <option value="">Carregando...</option>
+        </select>
+        
+        <div style="display: flex; gap: 10px;">
+            <div style="flex: 1.5;">
+                <label>Mês</label>
+                <select id="folha-mes">
+                    <option value="01">Janeiro</option>
+                    <option value="02">Fevereiro</option>
+                    <option value="03">Março</option>
+                    <option value="04">Abril</option>
+                    <option value="05">Maio</option>
+                    <option value="06">Junho</option>
+                    <option value="07">Julho</option>
+                    <option value="08">Agosto</option>
+                    <option value="09">Setembro</option>
+                    <option value="10">Outubro</option>
+                    <option value="11">Novembro</option>
+                    <option value="12">Dezembro</option>
+                </select>
+            </div>
+            <div style="flex: 1;">
+                <label>Ano</label>
+                <input type="number" id="folha-ano" value="2026">
+            </div>
+        </div>
+
+        <div style="background:#f8fafc; padding:12px; border-radius:8px; border:1px solid #e0e6ed; margin:12px 0;">
+            <div style="font-size:13px; font-weight:700; color:var(--dark-navy); margin-bottom:8px;">Opções do fechamento (batidas)</div>
+            <label style="display:flex; align-items:center; gap:8px; font-size:13px; cursor:pointer; margin-bottom:6px;">
+                <input type="checkbox" id="folha-opc-extras" checked style="width:18px; height:18px;">
+                <span>Incluir <b>horas extras</b> (+50% dia útil · +100% domingo/feriado) no líquido</span>
+            </label>
+            <label style="display:flex; align-items:center; gap:8px; font-size:13px; cursor:pointer;">
+                <input type="checkbox" id="folha-opc-desconto-horas" checked style="width:18px; height:18px;">
+                <span>Incluir <b>desconto por atrasos</b> (horas que faltaram na jornada) no líquido</span>
+            </label>
+            <p class="texto-explicacao" style="margin:8px 0 0;">Se desmarcar, o sistema ainda <b>calcula e mostra</b> o valor na folha (e na discriminação dia a dia), mas <b>não soma nem desconta</b> no líquido. A escolha fica guardada neste navegador.</p>
+        </div>
+
+        <div id="folha-bloco-vale-manual" style="margin:8px 0 14px;padding:12px;background:#fff8e6;border:1px solid #ffe08a;border-radius:10px;">
+            <p style="margin:0 0 8px;font-size:12px;color:#5c4a00;line-height:1.45;"><b>Vale sem celular:</b> lance aqui. O valor <b>já desconta neste holerite</b>. Depois imprima para o funcionário assinar no papel.</p>
+            <div style="display:flex;gap:8px;flex-wrap:wrap;">
+                <div style="flex:1.2;min-width:120px;">
+                    <label style="font-size:11px;margin:0 0 4px;">Valor (R$)</label>
+                    <input type="text" id="folha-vale-valor" placeholder="0,00" oninput="mascaraMoeda(this)" style="margin:0;">
+                </div>
+                <div style="flex:1;min-width:110px;">
+                    <label style="font-size:11px;margin:0 0 4px;">Tipo</label>
+                    <select id="folha-vale-tipo" style="margin:0;">
+                        <option value="Dinheiro">Dinheiro</option>
+                        <option value="PIX">PIX</option>
+                        <option value="Produto">Produto</option>
+                    </select>
+                </div>
+            </div>
+            <label style="font-size:11px;margin:8px 0 4px;">Descrição</label>
+            <input type="text" id="folha-vale-desc" placeholder="Motivo do vale ou produtos" style="margin:0;">
+            <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:10px;">
+                <button type="button" class="btn-gold" style="flex:1;min-width:160px;margin:0;padding:12px;font-size:13px;" onclick="lancarValeManualNaFolha()">LANÇAR VALE NO HOLERITE</button>
+                <button type="button" style="flex:1;min-width:160px;margin:0;padding:12px;font-size:13px;background:#1a2a43;color:#fff;border:none;border-radius:12px;font-weight:700;cursor:pointer;" onclick="imprimirValesDoHolerite()">🖨️ IMPRIMIR VALES DO MÊS</button>
+            </div>
+            <div id="folha-lista-vales-manuais" style="margin-top:4px;"></div>
+        </div>
+
+        <button class="btn-enviar" onclick="gerarFolhaPagamento()">💰 CALCULAR FECHAMENTO</button>
+
+        <div id="resultado-folha" style="display: none;">
+            <button type="button" id="btnExportarHoleriteFolha" class="btn-pdf-relatorio" style="width:100%; margin-bottom:10px; padding:14px; font-size:14px;" onclick="exportarPDFHoleriteFolha()">🖨️ EXPORTAR ESPELHO DE HOLERITE (PDF PARA IMPRIMIR)</button>
+            <button type="button" id="btnEnviarHoleriteAssinar" class="btn-enviar" style="width:100%; margin-bottom:14px; padding:14px; font-size:14px; background:#25D366; box-shadow:none;" onclick="enviarHoleriteParaAssinar()">✍️ ENVIAR HOLERITE PARA O FUNCIONÁRIO ASSINAR</button>
+            <div class="card-folha">
+                <div style="text-align: center; border-bottom: 1px solid #ccc; padding-bottom: 10px; margin-bottom: 15px;">
+                    <h3 style="margin: 0; color: var(--dark-navy);" id="f-nome-display">Nome</h3>
+                    <p style="margin: 0; font-size: 12px; color: #666;" id="f-periodo-display">Ref: Mês/Ano</p>
+                </div>
+
+                <p id="f-explicacao-regras" class="folha-detalhe" style="margin-top:0; margin-bottom:12px; text-align:left; background:#f8fafc; padding:10px; border-radius:8px; border:1px solid #e0e6ed;">
+                    <b>Mensal (CLT):</b> salário do mês com DSR — dias contados no <b>calendário real</b> (maio = 31, etc.); desconto de <b>falta</b> usa valor do dia (salário ÷ 30 comercial).<br>
+                    <b>Por ponto:</b> salário ÷ dias a trabalhar no mês; dia útil/sábado de escala <b>sem ponto = falta</b> (desconto de 1 dia).<br>
+                    Em ambos: <b>férias CLT</b>, vales/produtos e descontos lançados (INSS). <b>Extras</b> e <b>desconto de atrasos</b> só entram no líquido se estiverem marcados nas opções acima da folha. Ajuda de custo é PLUS (fora do líquido).
+                </p>
+
+                <div class="folha-secao-titulo">Salário do período</div>
+                <div class="folha-linha">
+                    <span>Salário mensal (contrato):</span>
+                    <strong id="f-salario-mensal-contrato">R$ 0,00</strong>
+                </div>
+                <div class="folha-linha">
+                    <span id="f-label-valor-dia">Valor de 1 dia:</span>
+                    <strong id="f-valor-dia-salario">R$ 0,00</strong>
+                </div>
+                <div class="folha-linha" id="f-linha-dias-devidos" style="display:none;">
+                    <span>Dias a trabalhar no mês (escala):</span>
+                    <strong id="f-dias-devidos">0</strong>
+                </div>
+                <div class="folha-linha" id="f-linha-dias-calendario" style="display:none;">
+                    <span>Dias no calendário do mês:</span>
+                    <strong id="f-dias-calendario-mes">0</strong>
+                </div>
+                <div class="folha-linha">
+                    <span id="f-label-dias-pagos">Dias pagos (com registro de trabalho):</span>
+                    <strong id="f-dias-pagos">0</strong>
+                </div>
+                <div class="folha-linha" id="f-linha-faltas-mensal" style="display:none;">
+                    <span>Faltas (desconto 1 dia cada):</span>
+                    <strong id="f-faltas-mensal">0</strong>
+                </div>
+                <div class="folha-linha">
+                    <span>Tipo de remuneração:</span>
+                    <strong id="f-tipo-remuneracao-display">—</strong>
+                </div>
+                <div class="folha-linha acrescimo">
+                    <span>(+) Salário do período:</span>
+                    <strong id="f-salario-base">R$ 0,00</strong>
+                </div>
+                <p id="f-detalhe-salario-proporcional" class="folha-detalhe"></p>
+
+                <div class="folha-secao-titulo">Férias (CLT)</div>
+                <div class="folha-linha">
+                    <span>Dias de férias no mês (gozo):</span>
+                    <strong id="f-dias-ferias-mes">0</strong>
+                </div>
+                <div class="folha-linha acrescimo">
+                    <span>(+) Remuneração de férias + 1/3 constitucional:</span>
+                    <strong id="f-valor-ferias-clt">R$ 0,00</strong>
+                </div>
+                <p id="f-detalhe-ferias-clt" class="folha-detalhe"></p>
+
+                <div class="folha-secao-titulo">Acertos</div>
+                <div class="folha-linha acrescimo">
+                    <span id="f-horas-extras-texto">(+) Horas Extras (0h):</span>
+                    <strong id="f-valor-extras">R$ 0,00</strong>
+                </div>
+                <p id="f-detalhe-extras" class="folha-detalhe"></p>
+
+                <div class="folha-linha" style="color:#1a2a43;">
+                    <span id="f-banco-horas-texto">(=) Banco de horas (saldo):</span>
+                    <strong id="f-banco-horas">0h 0m</strong>
+                </div>
+                <p id="f-detalhe-banco-horas" class="folha-detalhe"></p>
+
+                <div class="folha-secao-titulo">Descontos</div>
+                <div class="folha-linha desconto">
+                    <span>(-) Vales / Adiantamentos:</span>
+                    <strong id="f-valor-vales">R$ 0,00</strong>
+                </div>
+                <div id="f-detalhe-vales" class="folha-detalhe"></div>
+                <div class="folha-linha desconto">
+                    <span>(-) Produtos / Materiais:</span>
+                    <strong id="f-valor-produtos">R$ 0,00</strong>
+                </div>
+                <div class="folha-linha desconto" id="f-linha-desconto-faltas" style="display:none;">
+                    <span id="f-desconto-faltas-texto">(-) Faltas injustificadas (0 dia):</span>
+                    <strong id="f-valor-desconto-faltas">R$ 0,00</strong>
+                </div>
+                <p id="f-detalhe-desconto-faltas" class="folha-detalhe"></p>
+                <div class="folha-linha desconto" id="f-linha-desconto-dsr" style="display:none;">
+                    <span id="f-desconto-dsr-texto">(-) DSR perdido (0 descanso):</span>
+                    <strong id="f-valor-desconto-dsr">R$ 0,00</strong>
+                </div>
+                <p id="f-detalhe-desconto-dsr" class="folha-detalhe"></p>
+                <div class="folha-linha desconto">
+                    <span id="f-desconto-horas-texto">(-) Atrasos / horas devidas (0h):</span>
+                    <strong id="f-valor-desconto-horas">R$ 0,00</strong>
+                </div>
+                <p id="f-detalhe-desconto-atrasos" class="folha-detalhe"></p>
+
+                <div id="f-bloco-descontos-lancados"></div>
+                <p id="f-detalhe-descontos-lancados" class="folha-detalhe"></p>
+                
+                <div class="folha-linha destaque">
+                    <span id="f-label-liquido">LÍQUIDO A RECEBER:</span>
+                    <span id="f-valor-liquido" style="font-size: 18px; font-weight: 700;">R$ 0,00</span>
+                </div>
+                <p id="f-formula-liquido" class="folha-detalhe" style="margin-top:10px; text-align:center;"></p>
+
+                <div class="folha-secao-titulo" style="margin-top:20px; color:#0d6efd;">Recebimentos (PLUS — à parte do líquido)</div>
+                <p class="folha-bloco-plus-aviso">
+                    Valores abaixo são <b>pagamento adicional</b> ao colaborador.<br>
+                    <b>Não somam</b> nem <b>descontam</b> do líquido acima — aparecem só para registro e pagamento à parte.
+                </p>
+                <div class="folha-linha recebimento-plus">
+                    <span id="f-ajuda-custo-texto">🧳 Ajuda de custo — PLUS (0 lançamentos):</span>
+                    <strong id="f-valor-ajuda-custo">R$ 0,00</strong>
+                </div>
+                <div id="f-detalhe-ajuda-custo" class="folha-detalhe-ajuda-custo"></div>
+                <details id="f-ajuda-custo-wrap" style="margin-bottom:16px;">
+                    <summary style="cursor:pointer; font-size:13px; font-weight:600; color:#0d6efd;">📋 Ver discriminação das ajudas de custo no mês</summary>
+                    <div id="f-tabela-ajuda-custo" style="margin-top:8px; overflow-x:auto; max-height:200px; overflow-y:auto; border:1px solid #e0e6ed; border-radius:8px; font-size:11px;"></div>
+                </details>
+
+                <details id="f-discriminacao-wrap" open style="margin-top:18px; border-top:1px solid #eee; padding-top:12px;">
+                    <summary style="cursor:pointer; font-weight:700; color:var(--dark-navy); font-size:13px;">📋 Discriminação dia a dia (jornada esperada × ponto)</summary>
+                    <p class="folha-detalhe" style="margin:10px 0;">Cada linha corresponde a um <b>dia do calendário</b> do mês (01 até o último dia — maio tem <b>31</b>, fevereiro 28, etc.). <b>Role a tabela</b> para ver todos os dias. O salário mensal CLT ainda usa <b>÷ 30</b> comercial; isso não remove o dia 31 da lista.</p>
+                    <button type="button" class="btn-pdf-relatorio" style="margin-bottom:10px;" onclick="exportarPDFDiscriminacaoFolha()">📥 EXPORTAR DISCRIMINAÇÃO EM PDF</button>
+                    <button type="button" class="btn-pdf-relatorio" style="margin-bottom:10px; margin-left:8px; background:#17a2b8;" onclick="rhAjustarJornadaCompletaDia()">🕐 Corrigir jornada completa do dia (RH)</button>
+                    <button type="button" class="btn-pdf-relatorio" style="margin-bottom:10px; margin-left:8px; background:#b02a37;" onclick="rhGerirFaltaDia()">🚫 Falta injustificada / atestado (RH)</button>
+                    <div id="f-tabela-discriminacao" style="overflow-x:auto; max-height:560px; overflow-y:auto; border:1px solid #e0e6ed; border-radius:10px;"></div>
+                </details>
+            </div>
+        </div>
+    </div>

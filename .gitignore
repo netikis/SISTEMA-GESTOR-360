@@ -1,4 +1,5 @@
 # rascunhos, backups e pastas que não devem ir ao GitHub
+index.monolito.html
 *.bak
 CODIGO MANIFEST.txt
 CODIGO SW.txt

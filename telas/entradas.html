@@ -1,0 +1,93 @@
+<!-- telas/entradas.html -->
+<div id="aba-cadastrar-conta" class="view-section">
+        <h2 style="color:#2980b9;margin:0 0 8px 0;font-size:18px;">Cadastrar Conta a Receber</h2>
+        <p class="texto-explicacao" style="margin-top:0;">Cadastre o recebível e acompanhe depois em <b>Contas a Receber</b> / <b>Recebimentos</b>.</p>
+        <form id="formContaReceber" onsubmit="event.preventDefault(); window.salvarContaReceber();">
+            <div class="bloco-lancamento-entradas">
+                <div class="row-entradas">
+                    <div class="col-entradas" style="flex:2;">
+                        <label>Cliente / Devedor</label>
+                        <input type="text" id="crCliente" required placeholder="Nome do cliente ou empresa">
+                    </div>
+                    <div class="col-entradas">
+                        <label>Nº Documento / Parcela</label>
+                        <input type="text" id="crDocumento" placeholder="NF, contrato, parcela...">
+                    </div>
+                </div>
+                <div class="row-entradas">
+                    <div class="col-entradas">
+                        <label>Data de Vencimento</label>
+                        <input type="date" id="crVencimento" required>
+                    </div>
+                    <div class="col-entradas">
+                        <label>Valor (R$)</label>
+                        <input type="text" id="crValor" required placeholder="0,00" oninput="mascaraMoeda(this)">
+                    </div>
+                </div>
+                <label>Descrição / Origem da Dívida</label>
+                <input type="text" id="crDescricao" placeholder="Do que se refere este recebível">
+                <button type="submit" class="btn-enviar" style="margin-top:16px;background:#2980b9;box-shadow:none;">💾 REGISTRAR CONTA</button>
+            </div>
+        </form>
+    </div>
+
+<div id="aba-contas-receber" class="view-section">
+        <h2 style="color:#e67e22;margin:0 0 8px 0;font-size:18px;">Contas a Receber</h2>
+        <p class="texto-explicacao" style="margin-top:0;">Contas <b>pendentes</b>. Use <b>Parcial</b> para receber uma parte e ir abatendo o saldo, ou <b>Receber total</b> para quitar o restante de uma vez.</p>
+        <div style="display:flex;gap:10px;margin-bottom:12px;flex-wrap:wrap;">
+            <input type="text" id="ent-busca-pendentes" placeholder="Buscar cliente, documento ou descrição..." style="flex:2;min-width:180px;margin:0;" onkeydown="if(event.key==='Enter')renderContasReceber()">
+            <button type="button" onclick="renderContasReceber()" style="flex:1;min-width:120px;background:var(--dark-navy);color:#fff;border:none;border-radius:10px;cursor:pointer;font-weight:bold;">Atualizar</button>
+        </div>
+        <div class="rel-geral-obras-toolbar" style="display:flex;margin-bottom:12px;flex-wrap:wrap;gap:8px;">
+            <button type="button" class="btn-pdf-relatorio" onclick="exportarPDFContasReceber()">🖨️ Exportar PDF</button>
+            <button type="button" class="btn-pdf-relatorio" style="background-color:#217346;" onclick="exportarExcelContasReceber()">📊 Exportar Excel</button>
+        </div>
+        <div class="table-responsive-entradas">
+            <table class="tabela-entradas">
+                <thead>
+                    <tr>
+                        <th>Vencimento</th>
+                        <th>Cliente</th>
+                        <th>Documento</th>
+                        <th>Descrição</th>
+                        <th>Valores</th>
+                        <th>Ações</th>
+                    </tr>
+                </thead>
+                <tbody id="tabelaContasReceber">
+                    <tr><td colspan="6" style="text-align:center;color:#888;">Clique em Atualizar para carregar.</td></tr>
+                </tbody>
+            </table>
+        </div>
+        <p style="text-align:right;font-weight:800;color:#b8860b;margin-top:12px;">Total pendente: <span id="ent-total-pendente">R$ 0,00</span></p>
+    </div>
+
+<div id="aba-recebimentos" class="view-section">
+        <h2 style="color:#27ae60;margin:0 0 8px 0;font-size:18px;">Recebimentos Realizados</h2>
+        <p class="texto-explicacao" style="margin-top:0;">Histórico das contas <b>já recebidas</b> (incluindo recebimentos parciais).</p>
+        <div style="display:flex;gap:10px;margin-bottom:12px;flex-wrap:wrap;">
+            <input type="text" id="ent-busca-recebidos" placeholder="Buscar cliente, documento ou descrição..." style="flex:2;min-width:180px;margin:0;" onkeydown="if(event.key==='Enter')renderRecebimentos()">
+            <button type="button" onclick="renderRecebimentos()" style="flex:1;min-width:120px;background:var(--dark-navy);color:#fff;border:none;border-radius:10px;cursor:pointer;font-weight:bold;">Atualizar</button>
+        </div>
+        <div class="rel-geral-obras-toolbar" style="display:flex;margin-bottom:12px;flex-wrap:wrap;gap:8px;">
+            <button type="button" class="btn-pdf-relatorio" onclick="exportarPDFContasReceber()">🖨️ Exportar PDF</button>
+            <button type="button" class="btn-pdf-relatorio" style="background-color:#217346;" onclick="exportarExcelContasReceber()">📊 Exportar Excel</button>
+        </div>
+        <div class="table-responsive-entradas">
+            <table class="tabela-entradas">
+                <thead>
+                    <tr>
+                        <th>Data Recebimento</th>
+                        <th>Cliente</th>
+                        <th>Forma de Pagto</th>
+                        <th>Valor Recebido (R$)</th>
+                        <th>Ações</th>
+                    </tr>
+                </thead>
+                <tbody id="tabelaRecebimentos">
+                    <tr><td colspan="5" style="text-align:center;color:#888;">Clique em Atualizar para carregar.</td></tr>
+                </tbody>
+            </table>
+        </div>
+        <p style="text-align:right;font-weight:800;color:#1e8449;margin-top:12px;">Total recebido: <span id="ent-total-recebido">R$ 0,00</span></p>
+    </div>

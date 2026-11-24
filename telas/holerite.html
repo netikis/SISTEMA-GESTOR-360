@@ -1,0 +1,19 @@
+<!-- telas/holerite.html -->
+<div id="aba-holerites" class="view-section">
+        <div style="background: #eef2f5; padding: 15px; border-radius: 10px; margin-bottom: 15px; border: 1px solid #1a2a43;">
+            <h3 style="margin: 0; color: var(--dark-navy); text-align: center;">✍️ Holerites para Assinatura</h3>
+            <p class="texto-explicacao" style="margin: 8px 0 0 0; text-align: center;">
+                Histórico dos holerites enviados para o funcionário assinar. Nos assinados, confira a <b>assinatura</b> e a <b>selfie</b> de comprovação.
+            </p>
+        </div>
+        <label>Funcionário</label>
+        <div style="display: flex; gap: 10px;">
+            <select id="hol-func-select" class="lista-funcs" style="margin: 0; flex: 2;">
+                <option value="">Carregando...</option>
+            </select>
+            <button type="button" onclick="buscarHoleritesAssinatura()" style="flex: 1; background: var(--dark-navy); color: white; border: none; border-radius: 10px; cursor: pointer; font-weight:bold;">Buscar</button>
+        </div>
+        <div id="lista-holerites-resultados" style="margin-top: 20px;">
+            <p style="text-align: center; color: #888; font-size: 13px;">Selecione o funcionário para ver os holerites.</p>
+        </div>
+    </div>
