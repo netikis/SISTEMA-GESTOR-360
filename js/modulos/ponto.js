@@ -1506,9 +1506,21 @@
                 + escapeHtmlBasico(String(infAtPonto.dias)) + ' dia(s), de '
                 + escapeHtmlBasico(formatarDataBrDeIso(infAtPonto.inicioIso)) + ' até '
                 + escapeHtmlBasico(formatarDataBrDeIso(infAtPonto.fimIso))
-                + '. Sem ponto nestes dias não gera falta. Depois dessa data, o salário volta a contar só com o ponto batido.</div>';
+                + '. Sem ponto nestes dias não gera falta. Depois dessa data, o salário volta a contar só com o ponto batido.';
+            if (func.atestado_tem_anexo) {
+                html += '<br><button type="button" onclick="event.stopPropagation();visualizarAtestadoFuncionario(\''
+                    + escapeAttrBasico(String(pack.funcId || ''))
+                    + '\')" style="margin-top:8px;background:#1a2a43;color:#fff;border:none;border-radius:8px;padding:8px 12px;font-size:12px;font-weight:700;cursor:pointer;">📄 Ver atestado anexado</button>';
+            }
+            html += '</div>';
         } else if (montado.linhas.some(function (ln) { return ln.emAtestado; })) {
-            html += '<div style="margin:0 0 10px 0;padding:10px 12px;background:#fff8e6;border:1px solid #ffeeba;border-radius:10px;color:#856404;font-size:12px;text-align:center;">Neste mês há dia(s) de <b>atestado médico</b> no cadastro do funcionário (coluna Motivo).</div>';
+            html += '<div style="margin:0 0 10px 0;padding:10px 12px;background:#fff8e6;border:1px solid #ffeeba;border-radius:10px;color:#856404;font-size:12px;text-align:center;">Neste mês há dia(s) de <b>atestado médico</b> no cadastro do funcionário (coluna Motivo).';
+            if (func.atestado_tem_anexo) {
+                html += '<br><button type="button" onclick="event.stopPropagation();visualizarAtestadoFuncionario(\''
+                    + escapeAttrBasico(String(pack.funcId || ''))
+                    + '\')" style="margin-top:8px;background:#1a2a43;color:#fff;border:none;border-radius:8px;padding:8px 12px;font-size:12px;font-weight:700;cursor:pointer;">📄 Ver atestado anexado</button>';
+            }
+            html += '</div>';
         }
 
         html += '<div class="espelho-ponto-scroll"><table class="espelho-ponto-tabela">';
@@ -1712,6 +1724,9 @@
             if (ln.emAtestado) {
                 html += '<p style="text-align:center;color:#856404;font-size:13px;font-weight:700;margin:0 0 8px 0;padding:10px;background:#fff3cd;border-radius:8px;">🏥 Funcionário em atestado médico</p>';
                 html += '<p style="text-align:center;color:#666;font-size:12px;margin:0;">Sem batidas neste dia — não desconta falta e o dia entra no salário.</p>';
+                if (pack.funcionario && pack.funcionario.atestado_tem_anexo) {
+                    html += '<button type="button" onclick="visualizarAtestadoFuncionario(\'' + escapeAttrBasico(String(funcId || '')) + '\')" style="margin-top:8px;width:100%;background:#1a2a43;color:#fff;border:none;padding:10px;border-radius:8px;font-weight:700;cursor:pointer;">📄 Ver atestado anexado</button>';
+                }
             } else {
                 html += '<p style="text-align:center;color:#888;font-size:12px;margin:0;">Sem batidas neste dia.</p>';
                 const dataBrJs = String(ln.dataBr || '').replace(/\\/g, '\\\\').replace(/'/g, "\\'");

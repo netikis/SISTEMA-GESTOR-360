@@ -10,6 +10,131 @@
         return iso;
     }
 
+    const ATESTADO_MAX_B64 = 900000;
+    const COLECAO_ATESTADOS_FUNC = 'funcionario_atestados';
+
+    function desenharDocumentoTextoNoCanvas(source, maxLado, qualidade) {
+        const limite = Math.max(800, Number(maxLado) || 2200);
+        const q = qualidade != null ? qualidade : 0.92;
+        let width = source.width || 1;
+        let height = source.height || 1;
+        const maior = Math.max(width, height);
+        if (maior > limite) {
+            const escala = limite / maior;
+            width = Math.round(width * escala);
+            height = Math.round(height * escala);
+        }
+        const canvas = document.createElement('canvas');
+        canvas.width = Math.max(1, width);
+        canvas.height = Math.max(1, height);
+        const ctx = canvas.getContext('2d');
+        ctx.fillStyle = '#ffffff';
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+        ctx.imageSmoothingEnabled = true;
+        ctx.imageSmoothingQuality = 'high';
+        ctx.drawImage(source, 0, 0, canvas.width, canvas.height);
+        return canvas.toDataURL('image/jpeg', q);
+    }
+
+    async function carregarBitmapComOrientacao(file) {
+        if (typeof createImageBitmap === 'function') {
+            try {
+                return await createImageBitmap(file, { imageOrientation: 'from-image' });
+            } catch (_) {}
+        }
+        const dataUrl = await new Promise(function (resolve, reject) {
+            const r = new FileReader();
+            r.onload = function () { resolve(String(r.result || '')); };
+            r.onerror = function () { reject(new Error('leitura')); };
+            r.readAsDataURL(file);
+        });
+        return await new Promise(function (resolve, reject) {
+            const img = new Image();
+            img.onload = function () { resolve(img); };
+            img.onerror = function () { reject(new Error('imagem')); };
+            img.src = dataUrl;
+        });
+    }
+
+    /** Foto/PDF de atestado: alta qualidade, proporção original, letras nítidas. */
+    async function comprimirArquivoAtestadoParaBase64(file) {
+        if (!file) return null;
+        const nome = file.name || 'atestado';
+        const ehPdf = file.type === 'application/pdf' || /\.pdf$/i.test(nome);
+        const maxB64 = Math.min(typeof DOC_FIRESTORE_MAX_B64 === 'number' ? DOC_FIRESTORE_MAX_B64 : ATESTADO_MAX_B64, 850000);
+        if (ehPdf) {
+            const maxRaw = typeof DOC_PDF_MAX_FIRESTORE_RAW === 'number' ? DOC_PDF_MAX_FIRESTORE_RAW : 750000;
+            if (file.size > maxRaw) throw new Error('pdf-grande');
+            const b64 = await new Promise(function (resolve, reject) {
+                const r = new FileReader();
+                r.onload = function () { resolve(String(r.result || '')); };
+                r.onerror = function () { reject(new Error('leitura')); };
+                r.readAsDataURL(file);
+            });
+            if (b64.length > maxB64) throw new Error('pdf-grande');
+            return { dataUrl: b64, tipo: 'pdf', nome: nome };
+        }
+        const bmp = await carregarBitmapComOrientacao(file);
+        const tentativas = [
+            { lado: 2200, q: 0.92 },
+            { lado: 2000, q: 0.90 },
+            { lado: 1800, q: 0.88 },
+            { lado: 1600, q: 0.85 }
+        ];
+        let dataUrl = '';
+        try {
+            for (let i = 0; i < tentativas.length; i++) {
+                dataUrl = desenharDocumentoTextoNoCanvas(bmp, tentativas[i].lado, tentativas[i].q);
+                if (dataUrl.length <= maxB64) break;
+            }
+        } finally {
+            if (bmp && typeof bmp.close === 'function') {
+                try { bmp.close(); } catch (_) {}
+            }
+        }
+        if (!dataUrl || dataUrl.length > maxB64) throw new Error('img-grande');
+        return { dataUrl: dataUrl, tipo: 'img', nome: nome };
+    }
+    window.comprimirArquivoAtestadoParaBase64 = comprimirArquivoAtestadoParaBase64;
+
+    async function salvarAnexoAtestadoFuncionario(funcId, packed, empresaId) {
+        if (!funcId || !packed || !packed.dataUrl) return;
+        await setDoc(doc(db, COLECAO_ATESTADOS_FUNC, funcId), {
+            funcionario_id: funcId,
+            empresa_id: empresaId || getEmpresaGestor() || '',
+            arquivo: packed.dataUrl,
+            nome: packed.nome || 'atestado',
+            tipo: packed.tipo === 'pdf' ? 'pdf' : 'img',
+            atualizado_em: Date.now()
+        });
+    }
+    window.salvarAnexoAtestadoFuncionario = salvarAnexoAtestadoFuncionario;
+
+    async function apagarAnexoAtestadoFuncionario(funcId) {
+        if (!funcId) return;
+        try { await deleteDoc(doc(db, COLECAO_ATESTADOS_FUNC, funcId)); } catch (_) {}
+    }
+    window.apagarAnexoAtestadoFuncionario = apagarAnexoAtestadoFuncionario;
+
+    window.visualizarAtestadoFuncionario = async function (funcId) {
+        if (!funcId) return;
+        try {
+            const snap = await getDoc(doc(db, COLECAO_ATESTADOS_FUNC, funcId));
+            if (!snap.exists()) {
+                return Swal.fire('Atenção', 'Este funcionário ainda não tem atestado anexado.', 'info');
+            }
+            const d = snap.data() || {};
+            const func = (window.listaFuncionarios && window.listaFuncionarios[funcId]) || {};
+            const titulo = 'Atestado médico' + (func.nome ? ' — ' + func.nome : '');
+            if (typeof window.abrirVisualizadorDocumento === 'function') {
+                window.abrirVisualizadorDocumento(d.arquivo, titulo, d.tipo === 'pdf' ? 'pdf' : 'img');
+            }
+        } catch (e) {
+            console.error(e);
+            Swal.fire('Erro', 'Não foi possível abrir o atestado.', 'error');
+        }
+    };
+
     /** Comprime anexo (recibo/comprovante) mantendo texto legível — lado maior até 1600px, JPEG ~82%. */
     function comprimirImagemAnexoLegivelFromImg(img, maxLado, qualidade) {
         const limite = maxLado || 1600;

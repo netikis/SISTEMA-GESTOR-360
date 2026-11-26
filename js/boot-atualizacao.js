@@ -1,5 +1,5 @@
 /* js/boot-atualizacao.js — edite este arquivo para alterar só este módulo */
-    window.APP_BUILD = 24;
+    window.APP_BUILD = 25;
     window.addEventListener('DOMContentLoaded', function () {
       const elVer = document.getElementById('versao-app-ponto');
       if (elVer) elVer.textContent = 'versão ' + window.APP_BUILD;

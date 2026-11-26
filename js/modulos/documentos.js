@@ -1046,7 +1046,15 @@
             if (img) {
                 img.src = srcRaw;
                 img.style.display = 'block';
+                img.style.width = 'auto';
+                img.style.height = 'auto';
+                img.style.maxWidth = '100%';
+                img.style.maxHeight = '100%';
+                img.style.objectFit = 'contain';
+                img.style.objectPosition = 'center';
+                img.style.imageRendering = 'auto';
                 img.style.transform = 'scale(1)';
+                img.style.transformOrigin = 'center center';
             }
             if (zoomCtrls) zoomCtrls.style.display = 'inline-flex';
         }

@@ -111,6 +111,14 @@
                 </div>
             </div>
             <p class="texto-explicacao" style="margin: 6px 0 0 0;">Ex.: 5 dias a partir de hoje. No espelho de ponto aparece <b>Funcionário em atestado médico</b> em cada um desses dias.</p>
+            <label style="margin-top: 12px;">Anexar atestado (foto ou PDF)</label>
+            <input type="file" id="c-atestado-arquivo" accept="image/*,application/pdf,.pdf" capture="environment" style="background:#fff;padding:10px;border-radius:8px;border:1px solid #d0d7de;">
+            <p class="texto-explicacao" style="margin:6px 0 0 0;">A imagem é gravada em <b>qualidade alta</b>, sem esticar as letras. Prefira foto nítida do papel ou PDF.</p>
+            <div id="c-atestado-prev" style="display:none;margin-top:8px;text-align:center;">
+                <img id="c-atestado-prev-img" alt="Prévia do atestado" style="max-width:100%;max-height:220px;width:auto;height:auto;object-fit:contain;border-radius:8px;border:1px solid #e0e6ed;background:#fff;cursor:pointer;">
+                <div id="c-atestado-prev-pdf" style="display:none;padding:10px;background:#eef2f5;border-radius:8px;font-size:12px;font-weight:700;"></div>
+                <button type="button" id="c-atestado-limpar" style="margin-top:8px;background:#6c757d;color:#fff;border:none;border-radius:8px;padding:6px 10px;font-size:11px;font-weight:700;cursor:pointer;">Remover anexo</button>
+            </div>
         </div>
         
         <button class="btn-gold" id="btnCadastrarFunc">SALVAR FUNCIONÁRIO</button>

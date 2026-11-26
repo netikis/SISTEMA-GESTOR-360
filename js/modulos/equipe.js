@@ -47,11 +47,16 @@
                             <span style="font-size: 11px; color: #28a745;">R$ ${func.salario || '0,00'} | ${labelTipoRemuneracao(func.tipo_remuneracao)} | Horário: ${func.hora_entrada || '07:00'} às ${func.hora_saida || '17:00'} | Almoço: ${(func.intervalo_minutos ?? 60)} min | Sábado: ${(func.sabado_horas ?? 0)}h</span><br>
                             <span style="font-size: 10px; color: #666;">Entrada: ${formatarDataBrDeIso(parseDataIsoFuncionario(func.data_admissao))} | Saída: ${formatarDataBrDeIso(parseDataIsoFuncionario(func.data_demissao))} | Férias desde: ${formatarDataBrDeIso(parseDataIsoFuncionario(func.data_inicio_ferias))} (${func.ferias_dias ?? 30} dias)</span>${(function () {
                     const inf = infoAtestadoFuncionario(func);
-                    if (!inf.inicioIso) return '';
+                    const btnVer = func.atestado_tem_anexo
+                        ? ` <button type="button" onclick="event.stopPropagation();visualizarAtestadoFuncionario('${func.id}')" style="margin-left:6px;background:#1a2a43;color:#fff;border:none;border-radius:6px;padding:3px 8px;font-size:10px;font-weight:700;cursor:pointer;">📄 Ver atestado</button>`
+                        : '';
                     if (inf.ativo) {
-                        return `<br><span style="display:inline-block;margin-top:4px;font-size:11px;font-weight:700;color:#856404;background:#fff3cd;border:1px solid #ffeeba;border-radius:6px;padding:3px 8px;">🏥 Em atestado médico — ${inf.dias} dia(s), até ${formatarDataBrDeIso(inf.fimIso)}</span>`;
+                        return `<br><span style="display:inline-block;margin-top:4px;font-size:11px;font-weight:700;color:#856404;background:#fff3cd;border:1px solid #ffeeba;border-radius:6px;padding:3px 8px;">🏥 Em atestado médico — ${inf.dias} dia(s), até ${formatarDataBrDeIso(inf.fimIso)}</span>${btnVer}`;
                     }
-                    return `<br><span style="font-size:10px;color:#888;">Último atestado: ${formatarDataBrDeIso(inf.inicioIso)} a ${formatarDataBrDeIso(inf.fimIso)} (${inf.dias} dia(s))</span>`;
+                    if (inf.inicioIso) {
+                        return `<br><span style="font-size:10px;color:#888;">Último atestado: ${formatarDataBrDeIso(inf.inicioIso)} a ${formatarDataBrDeIso(inf.fimIso)} (${inf.dias} dia(s))</span>${btnVer}`;
+                    }
+                    return btnVer ? `<br>${btnVer}` : '';
                 })()}
                         </div>
                         <div style="display: flex; gap: 5px; flex-direction: column;">
@@ -1407,7 +1412,8 @@ window.gerarFolhaPagamento = async function() {
         btn.disabled = true;
 
         try {
-            await addDoc(collection(db, "funcionarios"), {
+            const packedAtestadoCad = window._cadAtestadoPendente || null;
+            const refFunc = await addDoc(collection(db, "funcionarios"), {
                 empresa_id: empresaLogada,
                 nome: nome,
                 cpf: cpf,
@@ -1424,10 +1430,15 @@ window.gerarFolhaPagamento = async function() {
                 ferias_dias: Number.isFinite(feriasDiasCad) ? Math.min(30, Math.max(1, feriasDiasCad)) : 30,
                 data_inicio_atestado: payloadAtestadoCad.data_inicio_atestado,
                 atestado_dias: payloadAtestadoCad.atestado_dias,
+                atestado_tem_anexo: Boolean(packedAtestadoCad && packedAtestadoCad.dataUrl),
+                atestado_arquivo_nome: packedAtestadoCad && packedAtestadoCad.nome ? packedAtestadoCad.nome : '',
                 tipo_remuneracao: normalizarTipoRemuneracao(tipoRemuneracaoCad),
                 descontar_inss: descontarInss,
                 senha: "" // Senha vazia para ele criar no 1º acesso
             });
+            if (packedAtestadoCad && packedAtestadoCad.dataUrl && typeof window.salvarAnexoAtestadoFuncionario === 'function') {
+                await window.salvarAnexoAtestadoFuncionario(refFunc.id, packedAtestadoCad, empresaLogada);
+            }
             
             Swal.fire('Sucesso!', 'Funcionário cadastrado na equipa.', 'success');
             
@@ -1446,6 +1457,11 @@ window.gerarFolhaPagamento = async function() {
             if (document.getElementById('c-em-atestado')) document.getElementById('c-em-atestado').checked = false;
             if (document.getElementById('c-data-inicio-atestado')) document.getElementById('c-data-inicio-atestado').value = '';
             if (document.getElementById('c-atestado-dias')) document.getElementById('c-atestado-dias').value = '1';
+            window._cadAtestadoPendente = null;
+            const inpAtArq = document.getElementById('c-atestado-arquivo');
+            if (inpAtArq) inpAtArq.value = '';
+            const prevAt = document.getElementById('c-atestado-prev');
+            if (prevAt) prevAt.style.display = 'none';
             if (typeof window.sincronizarCamposAtestadoCadastro === 'function') window.sincronizarCamposAtestadoCadastro('c');
             if (document.getElementById('c-tipo-remuneracao')) document.getElementById('c-tipo-remuneracao').value = 'mensal';
             if (document.getElementById('c-descontar-inss')) document.getElementById('c-descontar-inss').checked = false;
@@ -1564,6 +1580,13 @@ window.gerarFolhaPagamento = async function() {
                         <input id="edit-f-inicio-atestado" type="date" class="swal2-input" style="margin: 0; width: 100%; height: 40px; font-size: 14px;" value="${vAtInicio}">
                         <label style="margin-top: 8px;">Quantidade de dias</label>
                         <input id="edit-f-atestado-dias" type="number" class="swal2-input" style="margin: 0; width: 100%; height: 40px; font-size: 14px;" value="${vAtDias}" min="1" max="365" step="1">
+                        <label style="margin-top: 12px;">Anexar atestado (foto ou PDF)</label>
+                        <input id="edit-f-atestado-arquivo" type="file" accept="image/*,application/pdf,.pdf" capture="environment" style="width:100%;padding:8px;border:1px solid #d0d7de;border-radius:8px;background:#fff;box-sizing:border-box;">
+                        <p style="font-size:11px;color:#666;margin:6px 0 0 0;">Qualidade alta, sem distorcer as letras. ${func.atestado_tem_anexo ? 'Já existe um atestado anexado — envie outro só se quiser substituir.' : ''}</p>
+                        <div id="edit-f-atestado-prev" style="margin-top:8px;text-align:center;${func.atestado_tem_anexo ? '' : 'display:none;'}">
+                            <div id="edit-f-atestado-prev-nome" style="font-size:12px;font-weight:700;color:#1a2a43;">${escapeHtmlBasico(func.atestado_arquivo_nome || (func.atestado_tem_anexo ? 'Atestado anexado' : ''))}</div>
+                            ${func.atestado_tem_anexo ? `<button type="button" onclick="visualizarAtestadoFuncionario('${id}')" style="margin-top:6px;background:#1a2a43;color:#fff;border:none;border-radius:8px;padding:7px 12px;font-size:12px;font-weight:700;cursor:pointer;">📄 Ver atestado</button>` : ''}
+                        </div>
                     </div>
                 </div>
             `,
@@ -1573,8 +1596,33 @@ window.gerarFolhaPagamento = async function() {
             confirmButtonText: 'SALVAR',
             cancelButtonText: 'Cancelar',
             didOpen: () => {
+                window._editAtestadoPendente = null;
+                window._editAtestadoRemover = false;
                 if (typeof window.sincronizarCamposAtestadoCadastro === 'function') {
                     window.sincronizarCamposAtestadoCadastro('edit-f');
+                }
+                const inpEditAt = document.getElementById('edit-f-atestado-arquivo');
+                if (inpEditAt) {
+                    inpEditAt.addEventListener('change', async function () {
+                        const f = inpEditAt.files && inpEditAt.files[0];
+                        if (!f) return;
+                        const nomeEl = document.getElementById('edit-f-atestado-prev-nome');
+                        const prevEl = document.getElementById('edit-f-atestado-prev');
+                        if (prevEl) prevEl.style.display = 'block';
+                        if (nomeEl) nomeEl.textContent = 'Processando anexo em qualidade alta...';
+                        try {
+                            window._editAtestadoPendente = await comprimirArquivoAtestadoParaBase64(f);
+                            window._editAtestadoRemover = false;
+                            if (nomeEl) nomeEl.textContent = (window._editAtestadoPendente && window._editAtestadoPendente.nome) || f.name;
+                        } catch (errAt) {
+                            inpEditAt.value = '';
+                            window._editAtestadoPendente = null;
+                            if (nomeEl) nomeEl.textContent = '';
+                            Swal.showValidationMessage(errAt && errAt.message === 'pdf-grande'
+                                ? 'PDF grande demais (máx. ~750 KB).'
+                                : 'Não foi possível ler o atestado com boa qualidade. Tire uma foto nítida do papel.');
+                        }
+                    });
                 }
             },
             preConfirm: () => {
@@ -1608,11 +1656,20 @@ window.gerarFolhaPagamento = async function() {
         }).then(async (result) => {
             if (result.isConfirmed) {
                 try {
-                    await updateDoc(doc(db, "funcionarios", id), result.value);
+                    const packedEdit = window._editAtestadoPendente;
+                    const payloadEdit = Object.assign({}, result.value);
+                    if (packedEdit && packedEdit.dataUrl) {
+                        payloadEdit.atestado_tem_anexo = true;
+                        payloadEdit.atestado_arquivo_nome = packedEdit.nome || '';
+                        await window.salvarAnexoAtestadoFuncionario(id, packedEdit, getEmpresaGestor());
+                    }
+                    await updateDoc(doc(db, "funcionarios", id), payloadEdit);
+                    window._editAtestadoPendente = null;
                     Swal.fire('Atualizado!', 'Os dados do funcionário foram alterados.', 'success');
                     carregarListaDeFuncionarios();
                 } catch (e) {
-                    Swal.fire('Erro', 'Não foi possível editar.', 'error');
+                    console.error(e);
+                    Swal.fire('Erro', 'Não foi possível editar. Se o atestado for muito grande, tire uma foto mais próxima e nítida.', 'error');
                 }
             }
         });
@@ -1649,7 +1706,10 @@ window.gerarFolhaPagamento = async function() {
         }).then(async (result) => {
             if (result.isConfirmed) { 
                 try { 
-                    await deleteDoc(doc(db, "funcionarios", id)); 
+                    await deleteDoc(doc(db, "funcionarios", id));
+                    if (typeof window.apagarAnexoAtestadoFuncionario === 'function') {
+                        await window.apagarAnexoAtestadoFuncionario(id);
+                    } 
                     Swal.fire('Excluído!', 'Removido.', 'success'); 
                     carregarListaDeFuncionarios(); 
                 } catch (e) { 
@@ -1658,3 +1718,60 @@ window.gerarFolhaPagamento = async function() {
             }
         });
     };
+
+    (function iniciarAnexoAtestadoCadastro() {
+        const inp = document.getElementById('c-atestado-arquivo');
+        if (!inp || inp._atestadoBound) return;
+        inp._atestadoBound = true;
+        window._cadAtestadoPendente = null;
+        const prev = document.getElementById('c-atestado-prev');
+        const prevImg = document.getElementById('c-atestado-prev-img');
+        const prevPdf = document.getElementById('c-atestado-prev-pdf');
+        const btnLimpar = document.getElementById('c-atestado-limpar');
+        function limparPrev() {
+            window._cadAtestadoPendente = null;
+            inp.value = '';
+            if (prev) prev.style.display = 'none';
+            if (prevImg) {
+                prevImg.src = '';
+                prevImg.style.display = 'none';
+            }
+            if (prevPdf) {
+                prevPdf.style.display = 'none';
+                prevPdf.textContent = '';
+            }
+        }
+        if (btnLimpar) btnLimpar.onclick = limparPrev;
+        inp.addEventListener('change', async function () {
+            const f = inp.files && inp.files[0];
+            if (!f) return;
+            try {
+                const packed = await comprimirArquivoAtestadoParaBase64(f);
+                window._cadAtestadoPendente = packed;
+                if (prev) prev.style.display = 'block';
+                if (packed.tipo === 'pdf') {
+                    if (prevImg) prevImg.style.display = 'none';
+                    if (prevPdf) {
+                        prevPdf.style.display = 'block';
+                        prevPdf.textContent = '📄 ' + (packed.nome || 'atestado.pdf');
+                    }
+                } else {
+                    if (prevPdf) prevPdf.style.display = 'none';
+                    if (prevImg) {
+                        prevImg.src = packed.dataUrl;
+                        prevImg.style.display = 'inline-block';
+                        prevImg.onclick = function () {
+                            if (typeof window.abrirVisualizadorDocumento === 'function') {
+                                window.abrirVisualizadorDocumento(packed.dataUrl, 'Atestado médico', 'img');
+                            }
+                        };
+                    }
+                }
+            } catch (errAt) {
+                limparPrev();
+                Swal.fire('Atenção', errAt && errAt.message === 'pdf-grande'
+                    ? 'PDF grande demais (máx. ~750 KB). Comprima o arquivo ou fotografe o atestado.'
+                    : 'Não foi possível ler o atestado. Tire uma foto nítida, de frente, sem cortar as letras.', 'warning');
+            }
+        });
+    })();
