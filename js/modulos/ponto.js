@@ -117,6 +117,7 @@
             }
         }
         if (typeof aplicarTravaPontoDiaAnterior === 'function') aplicarTravaPontoDiaAnterior();
+        atualizarAvisoAtestadoRelogio();
     };
 
     /** Mensagem única exibida ao funcionário quando clica fora da ordem ou repete batida. */
@@ -473,6 +474,37 @@
         });
         return true;
     }
+
+    async function atualizarAvisoAtestadoRelogio() {
+        const el = document.getElementById('aviso-atestado-relogio');
+        if (!el) return;
+        const tela = document.getElementById('tela-relogio');
+        if (!tela || tela.style.display === 'none') {
+            el.style.display = 'none';
+            return;
+        }
+        const funcId = typeof getSessaoFunc === 'function' ? getSessaoFunc('funcLogadoId') : null;
+        if (!funcId) {
+            el.style.display = 'none';
+            return;
+        }
+        try {
+            const snap = await getDoc(doc(db, 'funcionarios', funcId));
+            const inf = infoAtestadoFuncionario(snap.exists() ? snap.data() : {});
+            if (!inf.ativo) {
+                el.style.display = 'none';
+                return;
+            }
+            el.style.display = 'block';
+            el.innerHTML = '<b>🏥 Funcionário em atestado médico</b><br>Período de '
+                + escapeHtmlBasico(formatarDataBrDeIso(inf.inicioIso)) + ' até '
+                + escapeHtmlBasico(formatarDataBrDeIso(inf.fimIso))
+                + ' (' + escapeHtmlBasico(String(inf.dias)) + ' dia(s)). Nestes dias o ponto não é obrigatório e o salário não desconta falta. Depois dessa data, volta a contar só o horário batido.';
+        } catch (_) {
+            el.style.display = 'none';
+        }
+    }
+    window.atualizarAvisoAtestadoRelogio = atualizarAvisoAtestadoRelogio;
 
     function atualizarAvisoPontoPendente() {
         const el = document.getElementById('alerta-ponto-pendente');
@@ -1329,7 +1361,15 @@
             const trabalhado = calc.horasFechadas || 0;
             const motivos = [];
 
-            if (faltaRh) {
+            const emAtestadoDia = isDiaEmAtestado(
+                iso,
+                funcionario.data_inicio_atestado,
+                funcionario.atestado_dias
+            );
+            if (emAtestadoDia) {
+                motivos.push('Funcionário em atestado médico');
+                if (trabalhado < 0.01) debito = 0;
+            } else if (faltaRh) {
                 if (faltaRh.tipo === 'FALTA_INJUSTIFICADA') {
                     motivos.push('Falta injustificada');
                     if (meta.esperado > 0 && trabalhado < 0.01) debito = meta.esperado;
@@ -1361,6 +1401,7 @@
             } else if (!motivos.length && meta.tipo === 'util') {
                 // dia útil sem ponto — deixa em branco (falta automática só na folha)
             }
+            if (emAtestadoDia) debito = 0;
 
             if (!intervaloH && hIni && hFim && hIni.timestamp && hFim.timestamp && hFim.timestamp > hIni.timestamp) {
                 intervaloH = (hFim.timestamp - hIni.timestamp) / 3600000;
@@ -1392,6 +1433,7 @@
                 ht,
                 saldo,
                 motivo: motivos.filter((v, i, a) => a.indexOf(v) === i).join(' / '),
+                emAtestado: emAtestadoDia,
                 batidas: batidas.slice(),
                 temBatida: batidas.length > 0
             });
@@ -1458,6 +1500,16 @@
         html += '<b>Intervalo:</b> ' + escapeHtmlBasico(String(intMin)) + ' min<br>';
         html += '<b>Sábado:</b> ' + escapeHtmlBasico(String(sab)) + ' h</div>';
         html += '</div>';
+        const infAtPonto = infoAtestadoFuncionario(func);
+        if (infAtPonto.ativo) {
+            html += '<div style="margin:0 0 10px 0;padding:10px 12px;background:#fff3cd;border:1px solid #ffeeba;border-radius:10px;color:#856404;font-size:13px;font-weight:700;text-align:center;">🏥 Funcionário em atestado médico — '
+                + escapeHtmlBasico(String(infAtPonto.dias)) + ' dia(s), de '
+                + escapeHtmlBasico(formatarDataBrDeIso(infAtPonto.inicioIso)) + ' até '
+                + escapeHtmlBasico(formatarDataBrDeIso(infAtPonto.fimIso))
+                + '. Sem ponto nestes dias não gera falta. Depois dessa data, o salário volta a contar só com o ponto batido.</div>';
+        } else if (montado.linhas.some(function (ln) { return ln.emAtestado; })) {
+            html += '<div style="margin:0 0 10px 0;padding:10px 12px;background:#fff8e6;border:1px solid #ffeeba;border-radius:10px;color:#856404;font-size:12px;text-align:center;">Neste mês há dia(s) de <b>atestado médico</b> no cadastro do funcionário (coluna Motivo).</div>';
+        }
 
         html += '<div class="espelho-ponto-scroll"><table class="espelho-ponto-tabela">';
         html += '<thead>';
@@ -1477,8 +1529,8 @@
         html += '</tr></thead><tbody>';
 
         montado.linhas.forEach((ln, idx) => {
-            const cls = ln.temBatida || ln.motivo ? 'espelho-dia-clicavel' : '';
-            html += '<tr class="' + cls + '" data-espelho-mes="' + escapeAttrBasico(chaveMes) + '" data-espelho-idx="' + idx + '" onclick="selecionarDiaEspelhoPonto(\'' + escapeAttrBasico(chaveMes) + '\',' + idx + ')">';
+            const cls = (ln.temBatida || ln.motivo ? 'espelho-dia-clicavel' : '') + (ln.emAtestado ? ' espelho-dia-atestado' : '');
+            html += '<tr class="' + cls.trim() + '" data-espelho-mes="' + escapeAttrBasico(chaveMes) + '" data-espelho-idx="' + idx + '" onclick="selecionarDiaEspelhoPonto(\'' + escapeAttrBasico(chaveMes) + '\',' + idx + ')"' + (ln.emAtestado ? ' style="background:#fff8e6;"' : '') + '>';
             html += '<td class="col-data">' + escapeHtmlBasico(ln.labelData) + '</td>';
             html += htmlCelulaHoraEspelho(ln.c1, chaveMes, idx, 'c1');
             html += htmlCelulaHoraEspelho(ln.c2, chaveMes, idx, 'c2');
@@ -1492,7 +1544,7 @@
             html += '<td>' + escapeHtmlBasico(formatarHorasEspelhoHM(ln.he100)) + '</td>';
             html += '<td>' + escapeHtmlBasico(formatarHorasEspelhoHM(ln.ht)) + '</td>';
             html += '<td>' + escapeHtmlBasico(formatarHorasEspelhoHM(ln.saldo)) + '</td>';
-            html += '<td class="col-motivo">' + escapeHtmlBasico(ln.motivo || '') + '</td>';
+            html += '<td class="col-motivo"' + (ln.emAtestado ? ' style="color:#856404;font-weight:700;"' : '') + '>' + escapeHtmlBasico(ln.motivo || '') + '</td>';
             html += '</tr>';
         });
 
@@ -1657,9 +1709,14 @@
                 + '</p>';
         }
         if (!batidasOrd.length) {
-            html += '<p style="text-align:center;color:#888;font-size:12px;margin:0;">Sem batidas neste dia.</p>';
-            const dataBrJs = String(ln.dataBr || '').replace(/\\/g, '\\\\').replace(/'/g, "\\'");
-            html += `<button type="button" onclick="rhGerirFaltaDia('${dataBrJs}')" style="margin-top:8px;width:100%;background:#b02a37;color:#fff;border:none;padding:10px;border-radius:8px;font-weight:700;cursor:pointer;">🚫 Falta / atestado neste dia (RH)</button>`;
+            if (ln.emAtestado) {
+                html += '<p style="text-align:center;color:#856404;font-size:13px;font-weight:700;margin:0 0 8px 0;padding:10px;background:#fff3cd;border-radius:8px;">🏥 Funcionário em atestado médico</p>';
+                html += '<p style="text-align:center;color:#666;font-size:12px;margin:0;">Sem batidas neste dia — não desconta falta e o dia entra no salário.</p>';
+            } else {
+                html += '<p style="text-align:center;color:#888;font-size:12px;margin:0;">Sem batidas neste dia.</p>';
+                const dataBrJs = String(ln.dataBr || '').replace(/\\/g, '\\\\').replace(/'/g, "\\'");
+                html += `<button type="button" onclick="rhGerirFaltaDia('${dataBrJs}')" style="margin-top:8px;width:100%;background:#b02a37;color:#fff;border:none;padding:10px;border-radius:8px;font-weight:700;cursor:pointer;">🚫 Falta / atestado neste dia (RH)</button>`;
+            }
         } else {
             batidasOrd.forEach((b) => {
                 html += htmlCardBatidaEspelhoDetalhe(b, idsErro, idsDup, funcId);
@@ -1821,7 +1878,9 @@
             totalFaltasRh += 1;
         });
 
-        if (querySnapshot.empty && totalFaltasRh === 0) {
+        const infAtestadoPack = infoAtestadoFuncionario(funcionario);
+        const mesesAtestadoPack = mesesCobertosPorPeriodo(infAtestadoPack.inicioIso, infAtestadoPack.dias);
+        if (querySnapshot.empty && totalFaltasRh === 0 && !mesesAtestadoPack.length) {
             return null;
         }
 
@@ -1861,6 +1920,10 @@
             Object.keys(faltasRhPorMes[anoF]).forEach(function (mesF) {
                 if (!agrupado[anoF][mesF]) agrupado[anoF][mesF] = true;
             });
+        });
+        mesesAtestadoPack.forEach(function (per) {
+            if (!agrupado[per.ano]) agrupado[per.ano] = {};
+            if (!agrupado[per.ano][per.mes]) agrupado[per.ano][per.mes] = true;
         });
 
         const holidayByYear = {};

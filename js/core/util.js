@@ -373,6 +373,103 @@
         return cur >= ini && cur <= fim;
     }
 
+    function dateLocalParaIso(dt) {
+        if (!dt || !(dt instanceof Date) || Number.isNaN(dt.getTime())) return '';
+        return dt.getFullYear() + '-' + String(dt.getMonth() + 1).padStart(2, '0') + '-' + String(dt.getDate()).padStart(2, '0');
+    }
+
+    function normalizarDiasAtestado(dias) {
+        const n = Number(dias);
+        if (!Number.isFinite(n) || n < 1) return 0;
+        return Math.min(365, Math.max(1, Math.round(n)));
+    }
+
+    function fimIsoPeriodoDias(inicioIso, dias) {
+        const ini = isoParaDateLocal(inicioIso);
+        const n = normalizarDiasAtestado(dias);
+        if (!ini || n < 1) return '';
+        const fim = new Date(ini.getTime());
+        fim.setDate(fim.getDate() + n - 1);
+        return dateLocalParaIso(fim);
+    }
+
+    function isDiaEmAtestado(isoD, inicioAtestadoIso, diasAtestado) {
+        const dia = parseDataIsoFuncionario(isoD) || isoD;
+        const inicio = parseDataIsoFuncionario(inicioAtestadoIso) || inicioAtestadoIso;
+        if (!dia || !inicio) return false;
+        const n = normalizarDiasAtestado(diasAtestado);
+        if (n < 1) return false;
+        const ini = isoParaDateLocal(inicio);
+        const cur = isoParaDateLocal(dia);
+        const fimIso = fimIsoPeriodoDias(inicio, n);
+        const fim = isoParaDateLocal(fimIso);
+        if (!ini || !cur || !fim) return false;
+        return cur >= ini && cur <= fim;
+    }
+
+    function infoAtestadoFuncionario(func, hojeIso) {
+        const inicioIso = parseDataIsoFuncionario(func && func.data_inicio_atestado);
+        const dias = normalizarDiasAtestado(func && func.atestado_dias);
+        if (!inicioIso || dias < 1) {
+            return { ativo: false, inicioIso: null, fimIso: null, dias: 0 };
+        }
+        const fimIso = fimIsoPeriodoDias(inicioIso, dias);
+        const hoje = hojeIso || obterIsoHojeLocal();
+        return {
+            ativo: isDiaEmAtestado(hoje, inicioIso, dias),
+            inicioIso: inicioIso,
+            fimIso: fimIso,
+            dias: dias
+        };
+    }
+
+    function mesesCobertosPorPeriodo(inicioIso, dias) {
+        const out = [];
+        const ini = isoParaDateLocal(inicioIso);
+        const n = normalizarDiasAtestado(dias);
+        if (!ini || n < 1) return out;
+        const seen = {};
+        for (let i = 0; i < n; i++) {
+            const d = new Date(ini.getTime());
+            d.setDate(d.getDate() + i);
+            const y = String(d.getFullYear());
+            const m = String(d.getMonth() + 1).padStart(2, '0');
+            const key = y + '-' + m;
+            if (seen[key]) continue;
+            seen[key] = true;
+            out.push({ ano: y, mes: m });
+        }
+        return out;
+    }
+
+    function payloadAtestadoParaSalvar(emAtestado, inicioForm, diasForm, existenteInicio, existenteDias) {
+        const hoje = obterIsoHojeLocal();
+        if (emAtestado) {
+            const ini = parseDataIsoFuncionario(inicioForm) || hoje;
+            const n = normalizarDiasAtestado(diasForm) || 1;
+            return { data_inicio_atestado: ini, atestado_dias: n };
+        }
+        const iniEx = parseDataIsoFuncionario(existenteInicio);
+        const diasEx = normalizarDiasAtestado(existenteDias);
+        if (iniEx && diasEx && isDiaEmAtestado(hoje, iniEx, diasEx)) {
+            const iniDt = isoParaDateLocal(iniEx);
+            const ontem = isoParaDateLocal(hoje);
+            if (iniDt && ontem) {
+                ontem.setDate(ontem.getDate() - 1);
+                const diff = Math.round((ontem.getTime() - iniDt.getTime()) / 86400000) + 1;
+                if (diff < 1) return { data_inicio_atestado: null, atestado_dias: 0 };
+                return { data_inicio_atestado: iniEx, atestado_dias: Math.min(365, diff) };
+            }
+        }
+        if (iniEx && diasEx) {
+            return { data_inicio_atestado: iniEx, atestado_dias: diasEx };
+        }
+        return { data_inicio_atestado: null, atestado_dias: 0 };
+    }
+
+    window.infoAtestadoFuncionario = infoAtestadoFuncionario;
+    window.isDiaEmAtestado = isDiaEmAtestado;
+
     function normalizarTipoRemuneracao(tipo) {
         const s = String(tipo || 'ponto').toLowerCase().trim();
         return s === 'mensal' ? 'mensal' : 'ponto';

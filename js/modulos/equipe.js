@@ -1,4 +1,20 @@
 /* js/modulos/equipe.js — edite este arquivo para alterar só este módulo */
+    window.sincronizarCamposAtestadoCadastro = function (prefixo) {
+        const p = prefixo || 'c';
+        const chk = document.getElementById(p === 'c' ? 'c-em-atestado' : p + '-em-atestado');
+        const box = document.getElementById(p === 'c' ? 'c-atestado-campos' : p + '-atestado-campos');
+        const dt = document.getElementById(p === 'c' ? 'c-data-inicio-atestado' : p + '-inicio-atestado');
+        const dias = document.getElementById(p === 'c' ? 'c-atestado-dias' : p + '-atestado-dias');
+        const on = Boolean(chk && chk.checked);
+        if (box) box.style.display = on ? 'block' : 'none';
+        if (on) {
+            const nDias = Number(dias && dias.value) || 0;
+            const cobreHoje = dt && dt.value && isDiaEmAtestado(obterIsoHojeLocal(), dt.value, nDias);
+            if (dt && !cobreHoje) dt.value = obterIsoHojeLocal();
+            if (dias && (!dias.value || Number(dias.value) < 1)) dias.value = '1';
+        }
+    };
+
     async function carregarListaDeFuncionarios() {
         const empresaLogada = getEmpresaGestor();
         try {
@@ -29,7 +45,14 @@
                             <span style="font-size: 11px; color: #666;">📱 ${func.tel} | CPF: ${func.cpf}</span><br>
                             <span style="font-size: 11px; color: #d4a017; font-weight: bold;">💸 PIX: ${func.pix || 'Não informado'}</span><br>
                             <span style="font-size: 11px; color: #28a745;">R$ ${func.salario || '0,00'} | ${labelTipoRemuneracao(func.tipo_remuneracao)} | Horário: ${func.hora_entrada || '07:00'} às ${func.hora_saida || '17:00'} | Almoço: ${(func.intervalo_minutos ?? 60)} min | Sábado: ${(func.sabado_horas ?? 0)}h</span><br>
-                            <span style="font-size: 10px; color: #666;">Entrada: ${formatarDataBrDeIso(parseDataIsoFuncionario(func.data_admissao))} | Saída: ${formatarDataBrDeIso(parseDataIsoFuncionario(func.data_demissao))} | Férias desde: ${formatarDataBrDeIso(parseDataIsoFuncionario(func.data_inicio_ferias))} (${func.ferias_dias ?? 30} dias)</span>
+                            <span style="font-size: 10px; color: #666;">Entrada: ${formatarDataBrDeIso(parseDataIsoFuncionario(func.data_admissao))} | Saída: ${formatarDataBrDeIso(parseDataIsoFuncionario(func.data_demissao))} | Férias desde: ${formatarDataBrDeIso(parseDataIsoFuncionario(func.data_inicio_ferias))} (${func.ferias_dias ?? 30} dias)</span>${(function () {
+                    const inf = infoAtestadoFuncionario(func);
+                    if (!inf.inicioIso) return '';
+                    if (inf.ativo) {
+                        return `<br><span style="display:inline-block;margin-top:4px;font-size:11px;font-weight:700;color:#856404;background:#fff3cd;border:1px solid #ffeeba;border-radius:6px;padding:3px 8px;">🏥 Em atestado médico — ${inf.dias} dia(s), até ${formatarDataBrDeIso(inf.fimIso)}</span>`;
+                    }
+                    return `<br><span style="font-size:10px;color:#888;">Último atestado: ${formatarDataBrDeIso(inf.inicioIso)} a ${formatarDataBrDeIso(inf.fimIso)} (${inf.dias} dia(s))</span>`;
+                })()}
                         </div>
                         <div style="display: flex; gap: 5px; flex-direction: column;">
                             <button class="btn-gold" style="padding: 6px 10px; margin: 0; font-size: 11px;" onclick="resetarSenhaFuncionario('${func.id}', '${func.nome}')">🔑 Resetar</button>
@@ -100,6 +123,9 @@ window.gerarFolhaPagamento = async function() {
         const demIso = parseDataIsoFuncionario(funcionario.data_demissao);
         const feriasInicioIso = parseDataIsoFuncionario(funcionario.data_inicio_ferias);
         const feriasDiasCad = Number(funcionario.ferias_dias ?? 30);
+        const infoAtestadoFolha = infoAtestadoFuncionario(funcionario);
+        const atestadoInicioIso = infoAtestadoFolha.inicioIso;
+        const atestadoDiasCad = infoAtestadoFolha.dias;
         const tipoRemuneracao = normalizarTipoRemuneracao(funcionario.tipo_remuneracao);
 
         let [eH, eM] = horaEntPadrão.split(':').map(Number);
@@ -663,10 +689,23 @@ window.gerarFolhaPagamento = async function() {
 
                 const marcadaRhInjust = faltasRhInjust.has(isoD);
                 const marcadaRhJust = faltasRhJust.has(isoD);
-                const diaAguardando = diaAguardandoPontoFolha(isoD, hojeIsoFolha, marcadaRhInjust, marcadaRhJust, workedD);
-                const ehFaltaInjust = ehFaltaInjustificadaNoDia(isoD, workedD, faltasRhInjust, faltasRhJust, hojeIsoFolha);
+                const emAtestadoDia = isDiaEmAtestado(isoD, atestadoInicioIso, atestadoDiasCad);
+                const diaAguardando = !emAtestadoDia && diaAguardandoPontoFolha(isoD, hojeIsoFolha, marcadaRhInjust, marcadaRhJust, workedD);
+                const ehFaltaInjust = !emAtestadoDia && ehFaltaInjustificadaNoDia(isoD, workedD, faltasRhInjust, faltasRhJust, hojeIsoFolha);
 
-                if (diaAguardando) {
+                if (emAtestadoDia) {
+                    diasPagos += 1;
+                    diaPago = true;
+                    tipoDia = 'Atestado médico';
+                    situacao = 'Funcionário em atestado médico'
+                        + (infoAtestadoFolha.inicioIso
+                            ? ' (' + formatarDataBrDeIso(infoAtestadoFolha.inicioIso) + ' a ' + formatarDataBrDeIso(infoAtestadoFolha.fimIso) + ', ' + infoAtestadoFolha.dias + ' dia(s))'
+                            : '')
+                        + '. Sem ponto não desconta falta; o dia entra no salário. Depois do período, só conta horário com ponto batido.';
+                    if (workedD > 0) {
+                        situacao += ' Há registro de ponto neste dia (não gera desconto de atraso).';
+                    }
+                } else if (diaAguardando) {
                     diaPago = false;
                     situacao = isoD > hojeIsoFolha
                         ? 'Dia futuro — ainda não ocorreu. Não conta como falta até passar a data.'
@@ -739,11 +778,13 @@ window.gerarFolhaPagamento = async function() {
                     esperadoTxt: esperadoTxtLinha,
                     trabalhadoTxt: formatarHorasDecimais(workedD),
                     diferencaTxt: formatarHorasDecimais(expectedD - workedD),
-                    diaPagoTxt: diaAguardando
+                    diaPagoTxt: emAtestadoDia
+                        ? 'Atestado'
+                        : (diaAguardando
                         ? 'Pendente'
                         : ((tipoRemuneracao === 'mensal' || tipoRemuneracao === 'ponto')
                             ? (diaPago ? 'Sim' : 'Falta')
-                            : (diaPago ? 'Sim' : 'Não')),
+                            : (diaPago ? 'Sim' : 'Não'))),
                     situacao
                 });
             }
@@ -1343,6 +1384,14 @@ window.gerarFolhaPagamento = async function() {
         const dataDemissao = document.getElementById('c-data-demissao') ? document.getElementById('c-data-demissao').value : '';
         const dataInicioFerias = document.getElementById('c-data-inicio-ferias') ? document.getElementById('c-data-inicio-ferias').value : '';
         const feriasDiasCad = Number(document.getElementById('c-ferias-dias')?.value || 30);
+        const emAtestadoCad = Boolean(document.getElementById('c-em-atestado') && document.getElementById('c-em-atestado').checked);
+        const payloadAtestadoCad = payloadAtestadoParaSalvar(
+            emAtestadoCad,
+            document.getElementById('c-data-inicio-atestado') ? document.getElementById('c-data-inicio-atestado').value : '',
+            document.getElementById('c-atestado-dias') ? document.getElementById('c-atestado-dias').value : 1,
+            null,
+            0
+        );
         const tipoRemuneracaoCad = document.getElementById('c-tipo-remuneracao') ? document.getElementById('c-tipo-remuneracao').value : 'mensal';
        const descontarInss = Boolean(document.getElementById('c-descontar-inss') && document.getElementById('c-descontar-inss').checked);
 
@@ -1373,6 +1422,8 @@ window.gerarFolhaPagamento = async function() {
                 data_demissao: dataDemissao || null,
                 data_inicio_ferias: dataInicioFerias || null,
                 ferias_dias: Number.isFinite(feriasDiasCad) ? Math.min(30, Math.max(1, feriasDiasCad)) : 30,
+                data_inicio_atestado: payloadAtestadoCad.data_inicio_atestado,
+                atestado_dias: payloadAtestadoCad.atestado_dias,
                 tipo_remuneracao: normalizarTipoRemuneracao(tipoRemuneracaoCad),
                 descontar_inss: descontarInss,
                 senha: "" // Senha vazia para ele criar no 1º acesso
@@ -1392,6 +1443,10 @@ window.gerarFolhaPagamento = async function() {
             if (document.getElementById('c-data-demissao')) document.getElementById('c-data-demissao').value = '';
             if (document.getElementById('c-data-inicio-ferias')) document.getElementById('c-data-inicio-ferias').value = '';
             if (document.getElementById('c-ferias-dias')) document.getElementById('c-ferias-dias').value = '30';
+            if (document.getElementById('c-em-atestado')) document.getElementById('c-em-atestado').checked = false;
+            if (document.getElementById('c-data-inicio-atestado')) document.getElementById('c-data-inicio-atestado').value = '';
+            if (document.getElementById('c-atestado-dias')) document.getElementById('c-atestado-dias').value = '1';
+            if (typeof window.sincronizarCamposAtestadoCadastro === 'function') window.sincronizarCamposAtestadoCadastro('c');
             if (document.getElementById('c-tipo-remuneracao')) document.getElementById('c-tipo-remuneracao').value = 'mensal';
             if (document.getElementById('c-descontar-inss')) document.getElementById('c-descontar-inss').checked = false;
             
@@ -1427,6 +1482,9 @@ window.gerarFolhaPagamento = async function() {
         const vDem = escapeHtmlBasico(parseDataIsoFuncionario(func.data_demissao) || '');
         const vFer = escapeHtmlBasico(parseDataIsoFuncionario(func.data_inicio_ferias) || '');
         const vFerDias = escapeHtmlBasico(String(func.ferias_dias ?? 30));
+        const infAtEdit = infoAtestadoFuncionario(func);
+        const vAtInicio = escapeHtmlBasico(infAtEdit.inicioIso || '');
+        const vAtDias = escapeHtmlBasico(String(infAtEdit.dias || 1));
         const tipoRemEdit = normalizarTipoRemuneracao(func.tipo_remuneracao);
         const descontarInssEdit = func.descontar_inss === true;
 
@@ -1492,6 +1550,21 @@ window.gerarFolhaPagamento = async function() {
                     <input id="edit-f-inicio-ferias" type="date" class="swal2-input" style="margin: 0; width: 100%; height: 40px; font-size: 14px;" value="${vFer}">
                     <label style="margin-top: 8px;">Dias de férias (CLT)</label>
                     <input id="edit-f-ferias-dias" type="number" class="swal2-input" style="margin: 0; width: 100%; height: 40px; font-size: 14px;" value="${vFerDias}" min="1" max="30" step="1">
+
+                    <p style="margin:14px 0 6px 0;font-weight:700;color:#1a2a43;border-bottom:1px solid #eee;padding-bottom:4px;">Atestado médico</p>
+                    <label style="display:flex;align-items:flex-start;gap:10px;margin:8px 0 10px 0;padding:10px;border:1px solid #e0e6ed;border-radius:10px;background:#fff8f0;cursor:pointer;">
+                        <input type="checkbox" id="edit-f-em-atestado" style="width:18px;height:18px;margin-top:2px;" ${infAtEdit.ativo ? 'checked' : ''} onchange="sincronizarCamposAtestadoCadastro('edit-f')">
+                        <span style="font-size:13px;color:#333;">
+                            <b>Funcionário em atestado médico</b><br>
+                            <span style="font-size:12px;color:#666;">Sem ponto nesses dias não desconta falta e o dia entra no salário. Depois do período, volta a contar só o ponto batido.</span>
+                        </span>
+                    </label>
+                    <div id="edit-f-atestado-campos" style="display:${infAtEdit.ativo ? 'block' : 'none'};">
+                        <label style="margin-top: 8px;">Início do atestado</label>
+                        <input id="edit-f-inicio-atestado" type="date" class="swal2-input" style="margin: 0; width: 100%; height: 40px; font-size: 14px;" value="${vAtInicio}">
+                        <label style="margin-top: 8px;">Quantidade de dias</label>
+                        <input id="edit-f-atestado-dias" type="number" class="swal2-input" style="margin: 0; width: 100%; height: 40px; font-size: 14px;" value="${vAtDias}" min="1" max="365" step="1">
+                    </div>
                 </div>
             `,
             showCancelButton: true,
@@ -1499,8 +1572,20 @@ window.gerarFolhaPagamento = async function() {
             cancelButtonColor: '#d9534f',
             confirmButtonText: 'SALVAR',
             cancelButtonText: 'Cancelar',
+            didOpen: () => {
+                if (typeof window.sincronizarCamposAtestadoCadastro === 'function') {
+                    window.sincronizarCamposAtestadoCadastro('edit-f');
+                }
+            },
             preConfirm: () => {
                 const fd = Number(document.getElementById('edit-f-ferias-dias').value || 30);
+                const atestadoPayload = payloadAtestadoParaSalvar(
+                    Boolean(document.getElementById('edit-f-em-atestado') && document.getElementById('edit-f-em-atestado').checked),
+                    document.getElementById('edit-f-inicio-atestado') ? document.getElementById('edit-f-inicio-atestado').value : '',
+                    document.getElementById('edit-f-atestado-dias') ? document.getElementById('edit-f-atestado-dias').value : 1,
+                    func.data_inicio_atestado,
+                    func.atestado_dias
+                );
                 return {
                     nome: document.getElementById('edit-f-nome').value.trim(),
                     salario: document.getElementById('edit-f-salario').value.trim(),
@@ -1514,6 +1599,8 @@ window.gerarFolhaPagamento = async function() {
                     data_demissao: document.getElementById('edit-f-demissao').value || null,
                     data_inicio_ferias: document.getElementById('edit-f-inicio-ferias').value || null,
                     ferias_dias: Number.isFinite(fd) ? Math.min(30, Math.max(1, fd)) : 30,
+                    data_inicio_atestado: atestadoPayload.data_inicio_atestado,
+                    atestado_dias: atestadoPayload.atestado_dias,
                     tipo_remuneracao: normalizarTipoRemuneracao(document.getElementById('edit-f-tipo-remuneracao').value),
                     descontar_inss: Boolean(document.getElementById('edit-f-descontar-inss') && document.getElementById('edit-f-descontar-inss').checked)
                 }

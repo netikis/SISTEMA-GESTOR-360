@@ -22,9 +22,9 @@ const novo = `<!DOCTYPE html>
     <meta http-equiv="Pragma" content="no-cache">
     <meta http-equiv="Expires" content="0">
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="./css/base.css?v=23">
-    <link rel="stylesheet" href="./css/painel.css?v=23">
-    <link rel="stylesheet" href="./css/assistente.css?v=23">
+    <link rel="stylesheet" href="./css/base.css?v=24">
+    <link rel="stylesheet" href="./css/painel.css?v=24">
+    <link rel="stylesheet" href="./css/assistente.css?v=24">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.31/jspdf.plugin.autotable.min.js"></script>
@@ -35,8 +35,8 @@ const novo = `<!DOCTYPE html>
     <script src="https://cdn.jsdelivr.net/npm/pdf-lib@1.17.1/dist/pdf-lib.min.js"></script>
 </head>
 <body>
-<script src="./js/boot-erro.js?v=23"></script>
-<script src="./js/boot-atualizacao.js?v=23"></script>
+<script src="./js/boot-erro.js?v=24"></script>
+<script src="./js/boot-atualizacao.js?v=24"></script>
 
 ${slice(3517, 3533)}
 
@@ -50,7 +50,7 @@ ${slice(3557, 3698)}
 
 ${slice(5554, 5624)}
 
-<script type="module" src="./js/carregar.js?v=23"></script>
+<script type="module" src="./js/carregar.js?v=24"></script>
 </body>
 </html>
 `;
